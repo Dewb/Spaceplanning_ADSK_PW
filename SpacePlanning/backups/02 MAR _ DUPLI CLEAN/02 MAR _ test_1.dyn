@@ -1,0 +1,26 @@
+<Workspace Version="0.9.1.4054" X="-216.161659878363" Y="-212.194064411813" zoom="1.05429821501133" Name="Home" Description="" RunType="Automatic" RunPeriod="1000" HasRunWithoutCrash="True">
+  <NamespaceResolutionMap>
+    <ClassMap partialName="Point2d" resolvedName="stuffer.Point2d" assemblyName="SpacePlanning.dll" />
+  </NamespaceResolutionMap>
+  <Elements>
+    <Dynamo.Graph.Nodes.ZeroTouch.DSFunction guid="56f0c183-876e-4975-9f91-fb638efa3a77" type="Dynamo.Graph.Nodes.ZeroTouch.DSFunction" nickname="BuildLayout.CleanDuplicatePoint2d" x="760.377212710258" y="853.80029330542" isVisible="true" isUpstreamVisible="true" lacing="Shortest" isSelectedInput="False" IsFrozen="false" assembly="C:\Users\t_dassu\Documents\Visual%20Studio%202015\Projects\SpacePlanning\SpacePlanning\bin\Debug\SpacePlanning.dll" function="SpacePlanning.BuildLayout.CleanDuplicatePoint2d@var[]" />
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="7067f436-58f1-4389-9b5d-208d6ae5eda3" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="327" y="869" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" CodeText="a={Point2d.ByCoordinates(0,0)};" ShouldFocus="false" />
+    <Dynamo.Graph.Nodes.ZeroTouch.DSFunction guid="389be600-fe35-40d3-9e30-cf6aaa5af147" type="Dynamo.Graph.Nodes.ZeroTouch.DSFunction" nickname="BuildLayout.CleanDuplicatePoint2d" x="651.357975432104" y="533.663803456831" isVisible="true" isUpstreamVisible="true" lacing="Shortest" isSelectedInput="False" IsFrozen="false" assembly="C:\Users\t_dassu\Documents\Visual%20Studio%202015\Projects\SpacePlanning\SpacePlanning\bin\Debug\SpacePlanning.dll" function="SpacePlanning.BuildLayout.CleanDuplicatePoint2d@var[]" />
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="be22d909-67a2-4821-9f79-a57ed48950ca" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="149.8" y="362" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" CodeText="a  ={&#xA;Point2d.ByCoordinates(105,32),&#xA;Point2d.ByCoordinates(105,32),&#xA;Point2d.ByCoordinates(500,32),&#xA;Point2d.ByCoordinates(5,32)&#xA;};" ShouldFocus="false" />
+    <CoreNodeModels.Watch guid="781b80b8-5515-4d42-93ef-02e72eef366e" type="CoreNodeModels.Watch" nickname="Watch" x="1069.2" y="346.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" />
+    <Dynamo.Graph.Nodes.ZeroTouch.DSFunction guid="8e925d74-ab55-4e4f-b5a2-670f2514d330" type="Dynamo.Graph.Nodes.ZeroTouch.DSFunction" nickname="BuildLayout.CleanDuplicatePoint2dNew" x="561.903815583445" y="373.357950683526" isVisible="true" isUpstreamVisible="true" lacing="Shortest" isSelectedInput="False" IsFrozen="false" assembly="C:\Users\t_dassu\Documents\Visual%20Studio%202015\Projects\SpacePlanning\SpacePlanning\bin\Debug\SpacePlanning.dll" function="SpacePlanning.BuildLayout.CleanDuplicatePoint2dNew@var[]" />
+    <CoreNodeModels.Watch guid="855b90cc-a41f-4b07-b6ca-5d5e6cba4483" type="CoreNodeModels.Watch" nickname="Watch" x="1099.2" y="514.4" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" />
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="7067f436-58f1-4389-9b5d-208d6ae5eda3" start_index="0" end="56f0c183-876e-4975-9f91-fb638efa3a77" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="389be600-fe35-40d3-9e30-cf6aaa5af147" start_index="0" end="781b80b8-5515-4d42-93ef-02e72eef366e" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="be22d909-67a2-4821-9f79-a57ed48950ca" start_index="0" end="8e925d74-ab55-4e4f-b5a2-670f2514d330" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="8e925d74-ab55-4e4f-b5a2-670f2514d330" start_index="0" end="855b90cc-a41f-4b07-b6ca-5d5e6cba4483" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

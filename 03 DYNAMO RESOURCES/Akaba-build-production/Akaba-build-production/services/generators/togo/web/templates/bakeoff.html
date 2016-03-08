@@ -1,0 +1,14 @@
+<%inherit file="base.html" />
+<%!
+    import os
+%>
+
+<%block name="title">
+    bakeoff
+</%block>
+
+<ul>
+% for dirname in os.listdir(bakeoff_path):
+    <li> <a href="${last_path}${dirname}/">${dirname}/</a>
+% endfor
+</ul>

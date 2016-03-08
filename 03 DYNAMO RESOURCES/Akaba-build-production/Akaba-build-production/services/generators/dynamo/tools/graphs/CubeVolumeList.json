@@ -1,0 +1,129 @@
+{
+  "$type": "System.Dynamic.ExpandoObject, System.Core",
+  "guid": "00000000-0000-0000-0000-000000000000",
+  "name": "Home",
+  "nodes": [
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "3f028193-6379-43b1-b133-e775bb06381e",
+      "name": "DefaultNodeName",
+      "position": [
+        165.12041884816801,
+        253.832460732984
+      ],
+      "typeName": "Autodesk.DesignScript.Geometry.Cuboid.ByLengths@double,double,double",
+      "creationName": "Autodesk.DesignScript.Geometry.Cuboid.ByLengths@double,double,double",
+      "displayName": "Cuboid.ByLengths",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [
+        false,
+        false,
+        false
+      ],
+      "replication": "applyShortest",
+      "extra": {
+        "$type": "<>f__AnonymousType7, Reach"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "36ea0c5f-8a0d-4e3f-8f08-44d60e6f04c0",
+      "name": "DefaultNodeName",
+      "position": [
+        330.858638743456,
+        256.722513089005
+      ],
+      "typeName": "Autodesk.DesignScript.Geometry.Solid.Volume",
+      "creationName": "Autodesk.DesignScript.Geometry.Solid.Volume",
+      "displayName": "Solid.Volume",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [
+        true
+      ],
+      "replication": "applyShortest",
+      "extra": {
+        "$type": "<>f__AnonymousType7, Reach"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "9d043b5c-b37b-488a-804e-e19052f544b5",
+      "name": "DefaultNodeName",
+      "position": [
+        497.602094240838,
+        254.586387434555
+      ],
+      "typeName": "DSCoreNodesUI.CreateList",
+      "creationName": "DSCoreNodesUI.CreateList",
+      "displayName": "Akaba.Result",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [
+        true
+      ],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType5`1[[<>f__AnonymousType4`2[[System.String, mscorlib],[System.String, mscorlib]][], Reach]], Reach",
+        "varInputs": [
+          {
+            "$type": "<>f__AnonymousType4`2[[System.String, mscorlib],[System.String, mscorlib]], Reach",
+            "name": "index0",
+            "type": "Item Index #0"
+          }
+        ]
+      }
+    }
+  ],
+  "connections": [
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "3aa3914e-3f4b-4540-b027-f42ebce19ac2",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 0,
+      "startNodeId": "3f028193-6379-43b1-b133-e775bb06381e",
+      "endNodeId": "36ea0c5f-8a0d-4e3f-8f08-44d60e6f04c0",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "af4e58b7-d2a0-47a1-b826-c8305ff43056",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 0,
+      "startNodeId": "36ea0c5f-8a0d-4e3f-8f08-44d60e6f04c0",
+      "endNodeId": "9d043b5c-b37b-488a-804e-e19052f544b5",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    }
+  ],
+  "isCustomNode": false,
+  "customNodeDescription": "",
+  "customNodeCategory": "",
+  "offset": [
+    0.0,
+    0.0
+  ],
+  "isCustomizer": true
+}

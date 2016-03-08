@@ -1,0 +1,113 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{2E5BB870-8E95-4E1D-8392-05145073F3C4}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ShellTools</RootNamespace>
+    <AssemblyName>ShellTools</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="ProtoGeometry">
+      <HintPath>..\..\..\..\..\..\ZeroTouchEssentials-master\ZeroTouchEssentials-master\ProtoGeometry.dll</HintPath>
+    </Reference>
+    <Reference Include="ProtoInterface">
+      <HintPath>..\..\..\..\..\..\ZeroTouchEssentials-master\ZeroTouchEssentials-master\ProtoInterface.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Core\Core.cs" />
+    <Compile Include="Geometry\DynamoGeometry.cs" />
+    <Compile Include="IO\Design.cs" />
+    <Compile Include="IO\Mesh.cs" />
+    <Compile Include="Plan\Cell.cs" />
+    <Compile Include="Plan\Area.cs" />
+    <Compile Include="Plan\BuildData.cs" />
+    <Compile Include="Shell\STL.cs" />
+    <Compile Include="Shell\STLx.cs" />
+    <Compile Include="Shell\STLxGrids.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Shell\STLxOutlines.cs" />
+    <Compile Include="Strategy\PlaceCoreStrategy.cs" />
+    <Compile Include="Strategy\OutdoorConnectionStrategy.cs" />
+    <Compile Include="Strategy\ShellStrategy.cs" />
+    <Compile Include="Strategy\ListStrategy.cs" />
+    <Compile Include="Strategy\Strategy.cs" />
+    <Compile Include="Plan\Plan.cs" />
+    <Compile Include="Strategy\CreateSpaceStrategy.cs" />
+    <Compile Include="Utility\Bag.cs" />
+    <Compile Include="Utility\double\Grid2d.cs" />
+    <Compile Include="Utility\double\Point1d.cs" />
+    <Compile Include="Utility\double\Range2d.cs" />
+    <Compile Include="Utility\double\Range3d.cs" />
+    <Compile Include="Utility\double\Facet3d.cs" />
+    <Compile Include="Utility\double\Line3d.cs" />
+    <Compile Include="Utility\double\Plane3d.cs" />
+    <Compile Include="Utility\double\Outline2d.cs" />
+    <Compile Include="Utility\double\Range1d.cs" />
+    <Compile Include="Utility\double\Polygon2d.cs" />
+    <Compile Include="Utility\double\Point3d.cs" />
+    <Compile Include="Utility\double\PointAxis2d.cs" />
+    <Compile Include="Utility\double\RangeAxis2d.cs" />
+    <Compile Include="Utility\double\Vector3d.cs" />
+    <Compile Include="Utility\double\Vector2d.cs" />
+    <Compile Include="Utility\int\Line2i.cs" />
+    <Compile Include="Utility\int\Range1i.cs" />
+    <Compile Include="Utility\int\Point2i.cs" />
+    <Compile Include="Utility\int\Rect2i.cs" />
+    <Compile Include="Utility\GridBasis.cs" />
+    <Compile Include="Utility\double\Line2d.cs" />
+    <Compile Include="Utility\double\Point2d.cs" />
+    <Compile Include="IO\Space.cs" />
+    <Compile Include="Plan\StrategyArgs.cs" />
+    <Compile Include="Phenotype\Floor.cs" />
+    <Compile Include="Phenotype\Region.cs" />
+    <Compile Include="Phenotype\Building.cs" />
+    <Compile Include="Genotype\Ribosome.cs" />
+    <Compile Include="Shell\Shell.cs" />
+    <Compile Include="Genotype\Genome.cs" />
+    <Compile Include="Plan\JobData.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Plan\Requirements.cs" />
+    <Compile Include="Utility\StringUtil.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

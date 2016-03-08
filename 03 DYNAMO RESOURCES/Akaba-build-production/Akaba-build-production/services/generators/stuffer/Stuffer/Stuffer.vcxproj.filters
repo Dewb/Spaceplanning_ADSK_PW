@@ -1,0 +1,683 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Generator">
+      <UniqueIdentifier>{57516af7-d38c-401f-b9be-2acdc84a869b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generator\Phenotype">
+      <UniqueIdentifier>{22f0cfdb-d212-4c69-a818-4c63a30dce81}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generator\Phenotype\Include">
+      <UniqueIdentifier>{b0951910-1198-46ca-94d7-f8952a06c469}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generator\Genotype">
+      <UniqueIdentifier>{a96128de-ee73-4e2f-86b1-1c1d805e139d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generator\Genotype\Include">
+      <UniqueIdentifier>{0e641025-839b-41a5-ba41-725806a1f598}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generator\Plan">
+      <UniqueIdentifier>{1fa093ea-4e25-4085-9801-a16a8d97a8f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generator\Plan\Include">
+      <UniqueIdentifier>{09b4954c-e34e-47d2-921f-789f93c148bd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Application">
+      <UniqueIdentifier>{b9ca8e9f-0ca8-4f4a-82ad-8ff6cd0db730}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Application\Include">
+      <UniqueIdentifier>{b84f1e93-7214-473a-8c9d-495651b75dde}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Application\Resources">
+      <UniqueIdentifier>{736f7ed0-6c0e-4677-ac85-a47116f4bbf1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Display">
+      <UniqueIdentifier>{ae5f272e-0dd9-4325-a8f7-d08b1154f1ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Display\Include">
+      <UniqueIdentifier>{7225b832-34a2-4741-aeca-228f2c0d4662}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Display\Include\API">
+      <UniqueIdentifier>{51e65387-1500-498f-97bb-7f0e108eb355}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generator\Display">
+      <UniqueIdentifier>{72bc729c-9a0d-4919-8dd7-31c1fed05947}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generator\Display\Include">
+      <UniqueIdentifier>{bd5ad907-aa69-4693-9e1a-3690ef35511d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generator\Display\Include\API">
+      <UniqueIdentifier>{ae6f62f9-1c6d-469a-8ca3-0ec4d53d27e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generator\Utility">
+      <UniqueIdentifier>{a8df0188-60da-434b-8a74-e1904f0b973c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generator\Utility\Include">
+      <UniqueIdentifier>{e3168664-d310-4a0a-99c8-68d406c0258c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Casablanca">
+      <UniqueIdentifier>{3c25ed17-e44d-430d-943d-28a153e3555c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Casablanca\Include">
+      <UniqueIdentifier>{0fb18038-38a2-45a3-ae1a-b5d7458797a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generator\Utility\Grid">
+      <UniqueIdentifier>{af203c6c-ba17-40ca-b276-4b8f55bab15c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generator\Utility\Grid\Include">
+      <UniqueIdentifier>{cff6a640-372a-4a57-bee0-b0d7b84cc1d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generator\Shell">
+      <UniqueIdentifier>{fa848be0-cdc3-4d09-97fd-6101b725b270}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generator\Shell\Include">
+      <UniqueIdentifier>{1b922a9f-764a-47dd-af1c-60fa33e17f5b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generator\Shell\Include\STL">
+      <UniqueIdentifier>{0de16c09-ef8c-4e25-b7f6-7574d0bf0635}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generator\Vision">
+      <UniqueIdentifier>{cd66c884-324d-4147-8899-fe6f68005eb5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generator\Vision\Include">
+      <UniqueIdentifier>{7bee465b-4345-4f92-8740-925278402184}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generator\Optimizer">
+      <UniqueIdentifier>{6f36ce44-7efd-4332-93f0-0e2946b52f87}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generator\Optimizer\Include">
+      <UniqueIdentifier>{27af119d-3a04-4319-84b7-517d79158c1f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generator\Analyzer">
+      <UniqueIdentifier>{3b87c2d1-c993-46d3-8b0b-120dca048972}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generator\Analyzer\Include">
+      <UniqueIdentifier>{df7288cc-3b6e-41ae-be94-4df6f86e01df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generator\Utility\Bag">
+      <UniqueIdentifier>{de5b82f6-aef0-4bfc-92ae-2cf91613a7ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generator\Utility\Bag\Include">
+      <UniqueIdentifier>{174514ff-73e7-4055-9715-d86ece077b1a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generator\Strategy">
+      <UniqueIdentifier>{346cd57b-1ee8-482a-9f49-b159bf5e295e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generator\Strategy\System">
+      <UniqueIdentifier>{e27c9fd6-a9d9-4eec-94c2-b31e0975a9c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generator\Strategy\System\Include">
+      <UniqueIdentifier>{73f0d439-a376-4f6f-854f-23ceddf0b368}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generator\Strategy\Phenotype">
+      <UniqueIdentifier>{b7d51233-59d8-4439-b473-2c5a91007256}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generator\Strategy\Phenotype\Include">
+      <UniqueIdentifier>{13f7d072-ca81-48d5-85d7-5bd78d88da27}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generator\Strategy\BuildData">
+      <UniqueIdentifier>{0014fcde-9931-4cfe-a4d0-c704778d1e08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generator\Strategy\BuildData\Include">
+      <UniqueIdentifier>{89b716f0-6a12-473c-a660-aa9dd610aabb}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Generator\Plan\Include\Plan.h">
+      <Filter>Generator\Plan\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Plan\Include\Strategy.h">
+      <Filter>Generator\Plan\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Plan\Include\Args.h">
+      <Filter>Generator\Plan\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Plan\Include\BuildData.h">
+      <Filter>Generator\Plan\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Plan\Include\Area.h">
+      <Filter>Generator\Plan\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Plan\Include\Cell.h">
+      <Filter>Generator\Plan\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Application\Include\stdafx.h">
+      <Filter>Application\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Application\Include\Stuffer.h">
+      <Filter>Application\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Application\Include\StufferDlg.h">
+      <Filter>Application\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Display\Include\API\DisplayAppAPI.h">
+      <Filter>Display\Include\API</Filter>
+    </ClInclude>
+    <ClInclude Include="Display\Include\D2DDisplay.h">
+      <Filter>Display\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Display\Include\API\DisplayContextAPI.h">
+      <Filter>Display\Include\API</Filter>
+    </ClInclude>
+    <ClInclude Include="Display\Include\D2DContext.h">
+      <Filter>Display\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Display\Include\API\GeneratorGraphicsAPI.h">
+      <Filter>Generator\Display\Include\API</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Display\Include\GeneratorGraphics.h">
+      <Filter>Generator\Display\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Display\Include\GridContext.h">
+      <Filter>Generator\Display\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Phenotype\Include\Phenotype.h">
+      <Filter>Generator\Phenotype\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Phenotype\Include\Floor.h">
+      <Filter>Generator\Phenotype\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Utility\Include\Range.h">
+      <Filter>Generator\Utility\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Application\Include\targetver.h">
+      <Filter>Application\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Casablanca\Include\GeneratorListener.h">
+      <Filter>Casablanca\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Casablanca\Include\SpaceLayout.h">
+      <Filter>Casablanca\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Casablanca\Include\StufferListener.h">
+      <Filter>Casablanca\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Casablanca\Include\LayoutJob.h">
+      <Filter>Casablanca\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Casablanca\Include\StufferJob.h">
+      <Filter>Casablanca\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Phenotype\Include\Section.h">
+      <Filter>Generator\Phenotype\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Application\Resources\resource.h">
+      <Filter>Application\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="Casablanca\Include\JobRequest.h">
+      <Filter>Casablanca\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Utility\Include\Point2.h">
+      <Filter>Generator\Utility\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Utility\Include\Point3.h">
+      <Filter>Generator\Utility\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Utility\Include\Rect2.h">
+      <Filter>Generator\Utility\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Utility\Include\Segment.h">
+      <Filter>Generator\Utility\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Utility\Include\Outline2.h">
+      <Filter>Generator\Utility\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Utility\Include\Plane3.h">
+      <Filter>Generator\Utility\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Utility\Include\Facet3.h">
+      <Filter>Generator\Utility\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Utility\Grid\Include\GridValue.h">
+      <Filter>Generator\Utility\Grid\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Utility\Grid\Include\GridRef.h">
+      <Filter>Generator\Utility\Grid\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Utility\Grid\Include\GridPoint.h">
+      <Filter>Generator\Utility\Grid\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Utility\Grid\Include\GridScanner.h">
+      <Filter>Generator\Utility\Grid\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Utility\Grid\Include\GridVisitor.h">
+      <Filter>Generator\Utility\Grid\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Plan\Include\CellVisitor.h">
+      <Filter>Generator\Plan\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Plan\Include\CellScanner.h">
+      <Filter>Generator\Plan\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Plan\Include\EdgeVisitor.h">
+      <Filter>Generator\Plan\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Genotype\Include\RangeTable.h">
+      <Filter>Generator\Genotype\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Genotype\Include\Ribosome.h">
+      <Filter>Generator\Genotype\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Shell\Include\STL\STL_20x20x1.h">
+      <Filter>Generator\Shell\Include\STL</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Shell\Include\STL\STL_20x20x2.h">
+      <Filter>Generator\Shell\Include\STL</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Shell\Include\STL\STL_TwoTowers.h">
+      <Filter>Generator\Shell\Include\STL</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Shell\Include\Axis.h">
+      <Filter>Generator\Shell\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Shell\Include\Grid.h">
+      <Filter>Generator\Shell\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Shell\Include\Level.h">
+      <Filter>Generator\Shell\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Shell\Include\Shell.h">
+      <Filter>Generator\Shell\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Vision\Include\Vision.h">
+      <Filter>Generator\Vision\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Vision\Include\TrapelloVision.h">
+      <Filter>Generator\Vision\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Optimizer\Include\Optimizer.h">
+      <Filter>Generator\Optimizer\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Optimizer\Include\HillClimbingOptimizer.h">
+      <Filter>Generator\Optimizer\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Analyzer\Include\Analyzer.h">
+      <Filter>Generator\Analyzer\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Genotype\Include\Genome.h">
+      <Filter>Generator\Genotype\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Analyzer\Include\UsageAnalyzer.h">
+      <Filter>Generator\Analyzer\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Phenotype\Include\AdjacencyGraph.h">
+      <Filter>Generator\Phenotype\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Phenotype\Include\Adjacency.h">
+      <Filter>Generator\Phenotype\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Shell\Include\STLShell.h">
+      <Filter>Generator\Shell\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Shell\Include\RectShell.h">
+      <Filter>Generator\Shell\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Vision\Include\XYVision.h">
+      <Filter>Generator\Vision\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Utility\Grid\Include\GridBasis.h">
+      <Filter>Generator\Utility\Grid\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Utility\Bag\Include\Bag.h">
+      <Filter>Generator\Utility\Bag\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Utility\Bag\Include\BagCache.h">
+      <Filter>Generator\Utility\Bag\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Vision\Include\DominoVision.h">
+      <Filter>Generator\Vision\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Phenotype\Include\Usage.h">
+      <Filter>Generator\Phenotype\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Vision\Include\EdgeEffectTestVision.h">
+      <Filter>Generator\Vision\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Plan\Include\CellHelper.h">
+      <Filter>Generator\Plan\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Plan\Include\CellHelperNotClaimed.h">
+      <Filter>Generator\Plan\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Plan\Include\CellHelperConnectedUp.h">
+      <Filter>Generator\Plan\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Plan\Include\Shaft.h">
+      <Filter>Generator\Plan\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Strategy\BuildData\Include\AreaDivisionStrategy.h">
+      <Filter>Generator\Strategy\BuildData\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Strategy\BuildData\Include\EdgeSpacesStrategy.h">
+      <Filter>Generator\Strategy\BuildData\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Strategy\BuildData\Include\LevelConnectionStrategy.h">
+      <Filter>Generator\Strategy\BuildData\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Strategy\BuildData\Include\OutdoorConnectionStrategy.h">
+      <Filter>Generator\Strategy\BuildData\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Strategy\BuildData\Include\RingHallwayStrategy.h">
+      <Filter>Generator\Strategy\BuildData\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Strategy\Phenotype\Include\DominoAddSpaceStrategy.h">
+      <Filter>Generator\Strategy\Phenotype\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Strategy\Phenotype\Include\DominoBacktrackStrategy.h">
+      <Filter>Generator\Strategy\Phenotype\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Strategy\Phenotype\Include\SetUsageStrategy.h">
+      <Filter>Generator\Strategy\Phenotype\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Strategy\Phenotype\Include\SpaceDivisionStrategy.h">
+      <Filter>Generator\Strategy\Phenotype\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Strategy\System\Include\ChoiceStrategy.h">
+      <Filter>Generator\Strategy\System\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Strategy\System\Include\ListStrategy.h">
+      <Filter>Generator\Strategy\System\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Strategy\System\Include\LoopStrategy.h">
+      <Filter>Generator\Strategy\System\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Strategy\System\Include\OptimizingStrategy.h">
+      <Filter>Generator\Strategy\System\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Strategy\System\Include\SideStrategy.h">
+      <Filter>Generator\Strategy\System\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Plan\Include\JobData.h">
+      <Filter>Generator\Plan\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Strategy\System\Include\EdgeEffectStrategy.h">
+      <Filter>Generator\Strategy\System\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Vision\Include\StairPlacementVision.h">
+      <Filter>Generator\Vision\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Strategy\Phenotype\Include\CreateStairsStrategy.h">
+      <Filter>Generator\Strategy\Phenotype\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Strategy\Phenotype\Include\CreateSpaceStrategy.h">
+      <Filter>Generator\Strategy\Phenotype\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Vision\Include\StackedVision.h">
+      <Filter>Generator\Vision\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Vision\Include\BuildingCoreVision.h">
+      <Filter>Generator\Vision\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Shell\Include\STL\STL_L_Shell.h">
+      <Filter>Generator\Shell\Include\STL</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Shell\Include\STL\STL_O_Shell.h">
+      <Filter>Generator\Shell\Include\STL</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Shell\Include\STL\STL_R_Shell.h">
+      <Filter>Generator\Shell\Include\STL</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Shell\Include\STL\STL_U_Shell.h">
+      <Filter>Generator\Shell\Include\STL</Filter>
+    </ClInclude>
+    <ClInclude Include="Casablanca\Include\JSONUtil.h">
+      <Filter>Casablanca\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Vision\Include\ShellAndCoreVision.h">
+      <Filter>Generator\Vision\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Shell\Include\STLxShell.h">
+      <Filter>Generator\Shell\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Strategy\Phenotype\Include\ShellStrategy.h">
+      <Filter>Generator\Strategy\Phenotype\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Generator\Strategy\Phenotype\Include\ExistingDesignStrategy.h">
+      <Filter>Generator\Strategy\Phenotype\Include</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Generator\Plan\Plan.cpp">
+      <Filter>Generator\Plan</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Plan\Args.cpp">
+      <Filter>Generator\Plan</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Plan\BuildData.cpp">
+      <Filter>Generator\Plan</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Plan\Area.cpp">
+      <Filter>Generator\Plan</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Plan\Cell.cpp">
+      <Filter>Generator\Plan</Filter>
+    </ClCompile>
+    <ClCompile Include="Application\stdafx.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
+    <ClCompile Include="Application\Stuffer.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
+    <ClCompile Include="Application\StufferDlg.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
+    <ClCompile Include="Display\D2DDisplay.cpp">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="Display\D2DContext.cpp">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Display\GeneratorGraphics.cpp">
+      <Filter>Generator\Display</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Display\GridContext.cpp">
+      <Filter>Generator\Display</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Phenotype\Phenotype.cpp">
+      <Filter>Generator\Phenotype</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Phenotype\Floor.cpp">
+      <Filter>Generator\Phenotype</Filter>
+    </ClCompile>
+    <ClCompile Include="Casablanca\GeneratorListener.cpp">
+      <Filter>Casablanca</Filter>
+    </ClCompile>
+    <ClCompile Include="Casablanca\SpaceLayout.cpp">
+      <Filter>Casablanca</Filter>
+    </ClCompile>
+    <ClCompile Include="Casablanca\StufferListener.cpp">
+      <Filter>Casablanca</Filter>
+    </ClCompile>
+    <ClCompile Include="Casablanca\LayoutJob.cpp">
+      <Filter>Casablanca</Filter>
+    </ClCompile>
+    <ClCompile Include="Casablanca\StufferJob.cpp">
+      <Filter>Casablanca</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Phenotype\Section.cpp">
+      <Filter>Generator\Phenotype</Filter>
+    </ClCompile>
+    <ClCompile Include="Casablanca\JobRequest.cpp">
+      <Filter>Casablanca</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Utility\Grid\GridValue.cpp">
+      <Filter>Generator\Utility\Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Utility\Grid\GridRef.cpp">
+      <Filter>Generator\Utility\Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Utility\Grid\GridPoint.cpp">
+      <Filter>Generator\Utility\Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Utility\Grid\GridScanner.cpp">
+      <Filter>Generator\Utility\Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Plan\CellScanner.cpp">
+      <Filter>Generator\Plan</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Plan\EdgeVisitor.cpp">
+      <Filter>Generator\Plan</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Genotype\Ribosome.cpp">
+      <Filter>Generator\Genotype</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Shell\Axis.cpp">
+      <Filter>Generator\Shell</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Shell\Grid.cpp">
+      <Filter>Generator\Shell</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Shell\Level.cpp">
+      <Filter>Generator\Shell</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Shell\Shell.cpp">
+      <Filter>Generator\Shell</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Vision\Vision.cpp">
+      <Filter>Generator\Vision</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Vision\TrapelloVision.cpp">
+      <Filter>Generator\Vision</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Optimizer\HillClimbingOptimizer.cpp">
+      <Filter>Generator\Optimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Genotype\Genome.cpp">
+      <Filter>Generator\Genotype</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Analyzer\UsageAnalyzer.cpp">
+      <Filter>Generator\Analyzer</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Phenotype\AdjacencyGraph.cpp">
+      <Filter>Generator\Phenotype</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Phenotype\Adjacency.cpp">
+      <Filter>Generator\Phenotype</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Shell\STLShell.cpp">
+      <Filter>Generator\Shell</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Shell\RectShell.cpp">
+      <Filter>Generator\Shell</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Vision\XYVision.cpp">
+      <Filter>Generator\Vision</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Utility\Grid\GridBasis.cpp">
+      <Filter>Generator\Utility\Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Utility\Bag\Bag.cpp">
+      <Filter>Generator\Utility\Bag</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Utility\Bag\BagCache.cpp">
+      <Filter>Generator\Utility\Bag</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Vision\DominoVision.cpp">
+      <Filter>Generator\Vision</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Phenotype\Usage.cpp">
+      <Filter>Generator\Phenotype</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Vision\EdgeEffectTestVision.cpp">
+      <Filter>Generator\Vision</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Plan\CellHelperNotClaimed.cpp">
+      <Filter>Generator\Plan</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Plan\CellHelperConnectedUp.cpp">
+      <Filter>Generator\Plan</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Plan\Shaft.cpp">
+      <Filter>Generator\Plan</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Strategy\BuildData\AreaDivisionStrategy.cpp">
+      <Filter>Generator\Strategy\BuildData</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Strategy\BuildData\EdgeSpacesStrategy.cpp">
+      <Filter>Generator\Strategy\BuildData</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Strategy\BuildData\LevelConnectionStrategy.cpp">
+      <Filter>Generator\Strategy\BuildData</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Strategy\BuildData\OutdoorConnectionStrategy.cpp">
+      <Filter>Generator\Strategy\BuildData</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Strategy\BuildData\RingHallwayStrategy.cpp">
+      <Filter>Generator\Strategy\BuildData</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Strategy\Phenotype\DominoAddSpaceStrategy.cpp">
+      <Filter>Generator\Strategy\Phenotype</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Strategy\Phenotype\DominoBacktrackStrategy.cpp">
+      <Filter>Generator\Strategy\Phenotype</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Strategy\Phenotype\SetUsageStrategy.cpp">
+      <Filter>Generator\Strategy\Phenotype</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Strategy\Phenotype\SpaceDivisionStrategy.cpp">
+      <Filter>Generator\Strategy\Phenotype</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Strategy\System\ChoiceStrategy.cpp">
+      <Filter>Generator\Strategy\System</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Strategy\System\ListStrategy.cpp">
+      <Filter>Generator\Strategy\System</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Strategy\System\LoopStrategy.cpp">
+      <Filter>Generator\Strategy\System</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Strategy\System\OptimizingStrategy.cpp">
+      <Filter>Generator\Strategy\System</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Strategy\System\SideStrategy.cpp">
+      <Filter>Generator\Strategy\System</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Plan\JobData.cpp">
+      <Filter>Generator\Plan</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Strategy\System\EdgeEffectStrategy.cpp">
+      <Filter>Generator\Strategy\System</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Vision\StairPlacementVision.cpp">
+      <Filter>Generator\Vision</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Strategy\Phenotype\CreateStairsStrategy.cpp">
+      <Filter>Generator\Strategy\Phenotype</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Strategy\Phenotype\CreateSpaceStrategy.cpp">
+      <Filter>Generator\Strategy\Phenotype</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Vision\StackedVision.cpp">
+      <Filter>Generator\Vision</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Vision\BuildingCoreVision.cpp">
+      <Filter>Generator\Vision</Filter>
+    </ClCompile>
+    <ClCompile Include="Casablanca\JSONUtil.cpp">
+      <Filter>Casablanca</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Vision\ShellAndCoreVision.cpp">
+      <Filter>Generator\Vision</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Shell\STLxShell.cpp">
+      <Filter>Generator\Shell</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Strategy\Phenotype\ShellStrategy.cpp">
+      <Filter>Generator\Strategy\Phenotype</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator\Strategy\Phenotype\ExistingDesignStrategy.cpp">
+      <Filter>Generator\Strategy\Phenotype</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Application\Resources\Stuffer.rc2">
+      <Filter>Application\Resources</Filter>
+    </None>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Application\Resources\Stuffer.rc">
+      <Filter>Application\Resources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

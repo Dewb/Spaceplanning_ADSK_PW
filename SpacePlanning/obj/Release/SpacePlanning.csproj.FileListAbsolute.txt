@@ -1,0 +1,12 @@
+c:\users\t_dassu\documents\visual studio 2015\Projects\SpacePlanning\SpacePlanning\bin\Release\SpacePlanning.dll
+c:\users\t_dassu\documents\visual studio 2015\Projects\SpacePlanning\SpacePlanning\bin\Release\SpacePlanning.pdb
+c:\users\t_dassu\documents\visual studio 2015\Projects\SpacePlanning\SpacePlanning\bin\Release\ProtoGeometry.dll
+c:\users\t_dassu\documents\visual studio 2015\Projects\SpacePlanning\SpacePlanning\bin\Release\ProtoInterface.dll
+c:\users\t_dassu\documents\visual studio 2015\Projects\SpacePlanning\SpacePlanning\obj\Release\SpacePlanning.csprojResolveAssemblyReference.cache
+c:\users\t_dassu\documents\visual studio 2015\Projects\SpacePlanning\SpacePlanning\obj\Release\SpacePlanning.dll
+c:\users\t_dassu\documents\visual studio 2015\Projects\SpacePlanning\SpacePlanning\obj\Release\SpacePlanning.pdb
+C:\Users\t_dassu\Documents\Visual Studio 2015\Projects\SpacePlanning\SpacePlanning\bin\Release\ProtoAssociative.dll
+C:\Users\t_dassu\Documents\Visual Studio 2015\Projects\SpacePlanning\SpacePlanning\bin\Release\ProtoCore.dll
+C:\Users\t_dassu\Documents\Visual Studio 2015\Projects\SpacePlanning\SpacePlanning\bin\Release\ProtoGeometry.customization.dll
+C:\Users\t_dassu\Documents\Visual Studio 2015\Projects\SpacePlanning\SpacePlanning\bin\Release\ProtoImperative.dll
+C:\Users\t_dassu\Documents\Visual Studio 2015\Projects\SpacePlanning\SpacePlanning\bin\Release\ProtoScript.dll

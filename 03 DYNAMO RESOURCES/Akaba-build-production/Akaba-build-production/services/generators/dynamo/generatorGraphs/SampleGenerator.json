@@ -1,0 +1,499 @@
+{
+  "$type": "System.Dynamic.ExpandoObject, System.Core",
+  "guid": "00000000-0000-0000-0000-000000000000",
+  "name": "Home",
+  "nodes": [
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "296565b7-e9ba-4a42-b577-a03f0c201f18",
+      "name": "List.Create",
+      "position": [
+        1473.41589227592,
+        253.515962822517
+      ],
+      "typeName": "List.Create",
+      "creationName": "List.Create",
+      "displayName": "List.Create",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [
+        true
+      ],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType6`1[[<>f__AnonymousType7`2[[System.String, mscorlib],[System.String, mscorlib]][], Reach]], Reach",
+        "varInputs": [
+          {
+            "$type": "<>f__AnonymousType7`2[[System.String, mscorlib],[System.String, mscorlib]], Reach",
+            "name": "index0",
+            "type": "Item Index #0"
+          }
+        ]
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "72a36ce3-9474-4a4e-b6de-b9dc9532ae85",
+      "name": "DynamoGeometry.SpaceByCorners",
+      "position": [
+        1188.65665202754,
+        255.467583783721
+      ],
+      "typeName": "stuffer.DynamoGeometry.SpaceByCorners@Autodesk.DesignScript.Geometry.Point,Autodesk.DesignScript.Geometry.Point,string",
+      "creationName": "stuffer.DynamoGeometry.SpaceByCorners@Autodesk.DesignScript.Geometry.Point,Autodesk.DesignScript.Geometry.Point,string",
+      "displayName": "akaba.result",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [
+        true,
+        true,
+        true
+      ],
+      "replication": "applyShortest",
+      "extra": {
+        "$type": "<>f__AnonymousType9, Reach"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "ef2bad85-463a-48ca-ac0e-36e82305005c",
+      "name": "Point.ByCoordinates",
+      "position": [
+        872.494056312524,
+        131.62836279096979
+      ],
+      "typeName": "Autodesk.DesignScript.Geometry.Point.ByCoordinates@double,double,double",
+      "creationName": "Autodesk.DesignScript.Geometry.Point.ByCoordinates@double,double,double",
+      "displayName": "Point.ByCoordinates",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [
+        false,
+        false,
+        false
+      ],
+      "replication": "applyShortest",
+      "extra": {
+        "$type": "<>f__AnonymousType9, Reach"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "c18badc9-390f-4af0-8c16-a1a5c38654ad",
+      "name": "Number",
+      "position": [
+        732.509607367996,
+        161.257517383791
+      ],
+      "typeName": "Number",
+      "creationName": "Number",
+      "displayName": "Number",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType1`2[[System.Boolean, mscorlib],[System.String, mscorlib]], Reach",
+        "lock": false,
+        "value": "0"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "1e3fa7ff-b9b6-48be-982d-5253e48e84b7",
+      "name": "String",
+      "position": [
+        932.462045847696,
+        470.500729690905
+      ],
+      "typeName": "String",
+      "creationName": "String",
+      "displayName": "String",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType3`2[[System.String, mscorlib],[System.Boolean, mscorlib]], Reach",
+        "value": "\"core\"",
+        "lock": false
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "70541108-10cd-420c-9222-84f40cf2ae55",
+      "name": "akaba.input.requirements.site.height",
+      "position": [
+        256.846353096411,
+        391.016530543695
+      ],
+      "typeName": "Number",
+      "creationName": "Number",
+      "displayName": "akaba.input.requirements.site.height",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType1`2[[System.Boolean, mscorlib],[System.String, mscorlib]], Reach",
+        "lock": false,
+        "value": "0"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "a08a8b99-c64f-41dc-bb45-6d3de328c256",
+      "name": "akaba.input.requirements.site.width",
+      "position": [
+        262.346375805258,
+        273.741852784084
+      ],
+      "typeName": "Number",
+      "creationName": "Number",
+      "displayName": "akaba.input.requirements.site.width",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType1`2[[System.Boolean, mscorlib],[System.String, mscorlib]], Reach",
+        "lock": false,
+        "value": "0"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "d7aaf2c2-ad6a-4bd6-8401-2e03345a074e",
+      "name": "akaba.input.requirements.site.length",
+      "position": [
+        258.620553970233,
+        331.758221358052
+      ],
+      "typeName": "Number",
+      "creationName": "Number",
+      "displayName": "akaba.input.requirements.site.length",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType1`2[[System.Boolean, mscorlib],[System.String, mscorlib]], Reach",
+        "lock": false,
+        "value": "0"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "8d924fcb-ec11-49e6-9555-47d1cc9b6dac",
+      "name": "Point.ByCoordinates",
+      "position": [
+        870.897275526085,
+        301.06454624093703
+      ],
+      "typeName": "Autodesk.DesignScript.Geometry.Point.ByCoordinates@double,double,double",
+      "creationName": "Autodesk.DesignScript.Geometry.Point.ByCoordinates@double,double,double",
+      "displayName": "Point.ByCoordinates",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [
+        false,
+        false,
+        false
+      ],
+      "replication": "applyShortest",
+      "extra": {
+        "$type": "<>f__AnonymousType9, Reach"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "7f2a0cd1-0bbd-4ea9-a63c-69fcd794aea1",
+      "name": "Code Block",
+      "position": [
+        598.912281569226,
+        250.499821337021
+      ],
+      "typeName": "Code Block",
+      "creationName": "Code Block",
+      "displayName": "Code Block",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [
+        true,
+        true
+      ],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType5`5[[System.String, mscorlib],[System.Boolean, mscorlib],[System.String[], mscorlib],[System.String[], mscorlib],[System.Int32[], mscorlib]], Reach",
+        "code": "w;\nl;\n\nnw = w/3;\nnl = l/3;",
+        "lock": true,
+        "inputs": [
+          "w",
+          "l"
+        ],
+        "outputs": [
+          "temp6BBA4B28C5E54CF89F300D510499A00E_0",
+          "temp6BBA4B28C5E54CF89F300D510499A00E_1",
+          "nw",
+          "nl"
+        ],
+        "lineIndices": [
+          0,
+          1,
+          3,
+          4
+        ]
+      }
+    }
+  ],
+  "connections": [
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "46930234-ae30-4bf6-a922-f37dbf122052",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 0,
+      "startNodeId": "72a36ce3-9474-4a4e-b6de-b9dc9532ae85",
+      "endNodeId": "296565b7-e9ba-4a42-b577-a03f0c201f18",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "381bbeb5-2634-4bb2-8fc6-13cf5c159532",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 0,
+      "startNodeId": "ef2bad85-463a-48ca-ac0e-36e82305005c",
+      "endNodeId": "72a36ce3-9474-4a4e-b6de-b9dc9532ae85",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "3fb83434-02ab-48e8-99ff-f91d94da7e17",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 0,
+      "startNodeId": "c18badc9-390f-4af0-8c16-a1a5c38654ad",
+      "endNodeId": "ef2bad85-463a-48ca-ac0e-36e82305005c",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "20be8766-3b84-4586-b284-09f4441e0b83",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 1,
+      "startNodeId": "c18badc9-390f-4af0-8c16-a1a5c38654ad",
+      "endNodeId": "ef2bad85-463a-48ca-ac0e-36e82305005c",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "99baba81-4fca-4f1a-ab41-71ae8221c32c",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 2,
+      "startNodeId": "c18badc9-390f-4af0-8c16-a1a5c38654ad",
+      "endNodeId": "ef2bad85-463a-48ca-ac0e-36e82305005c",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "51494c6f-9d78-44c5-b34c-457e8aba9fa1",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 2,
+      "startNodeId": "1e3fa7ff-b9b6-48be-982d-5253e48e84b7",
+      "endNodeId": "72a36ce3-9474-4a4e-b6de-b9dc9532ae85",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "8ec4f86b-d0b4-4861-8ebc-c92a639105da",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 2,
+      "startNodeId": "70541108-10cd-420c-9222-84f40cf2ae55",
+      "endNodeId": "8d924fcb-ec11-49e6-9555-47d1cc9b6dac",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "4a6e768a-407f-4460-b588-4eeef5b54c3e",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 0,
+      "startNodeId": "a08a8b99-c64f-41dc-bb45-6d3de328c256",
+      "endNodeId": "7f2a0cd1-0bbd-4ea9-a63c-69fcd794aea1",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "2f2ce996-355b-40e6-b0bc-d7b42ac9e57b",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 1,
+      "startNodeId": "d7aaf2c2-ad6a-4bd6-8401-2e03345a074e",
+      "endNodeId": "7f2a0cd1-0bbd-4ea9-a63c-69fcd794aea1",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "3a8569d1-c2e2-45f2-b4fd-5401dc7e027e",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 1,
+      "startNodeId": "8d924fcb-ec11-49e6-9555-47d1cc9b6dac",
+      "endNodeId": "72a36ce3-9474-4a4e-b6de-b9dc9532ae85",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "cbf33881-0214-4233-88bd-4bdaa96c788f",
+      "kind": "addConnection",
+      "startPortIndex": 2,
+      "endPortIndex": 0,
+      "startNodeId": "7f2a0cd1-0bbd-4ea9-a63c-69fcd794aea1",
+      "endNodeId": "8d924fcb-ec11-49e6-9555-47d1cc9b6dac",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "b1d10e34-df92-4ef0-b8e2-8752c8b766a7",
+      "kind": "addConnection",
+      "startPortIndex": 3,
+      "endPortIndex": 1,
+      "startNodeId": "7f2a0cd1-0bbd-4ea9-a63c-69fcd794aea1",
+      "endNodeId": "8d924fcb-ec11-49e6-9555-47d1cc9b6dac",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    }
+  ],
+  "isCustomNode": false,
+  "customNodeDescription": "",
+  "customNodeCategory": "",
+  "offset": [
+    0.0,
+    0.0
+  ],
+  "isCustomizer": true
+}

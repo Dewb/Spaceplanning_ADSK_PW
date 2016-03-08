@@ -1,0 +1,121 @@
+<Workspace Version="0.8.0.1233" X="551.576618402737" Y="-146.886452075036" zoom="0.592156310807184" Name="Home" RunType="Automatic" RunPeriod="100" HasRunWithoutCrash="True">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Nodes.DSFunction guid="84cb827c-f19e-4de1-a9f3-d622e5dc3485" type="Dynamo.Nodes.DSFunction" nickname="Cuboid.ByCorners" x="40.8440481823948" y="-14.2159588739122" isVisible="false" isUpstreamVisible="true" lacing="Shortest" assembly="ProtoGeometry.dll" function="Autodesk.DesignScript.Geometry.Cuboid.ByCorners@Autodesk.DesignScript.Geometry.Point,Autodesk.DesignScript.Geometry.Point" />
+    <Dynamo.Nodes.DSFunction guid="2375593c-ea18-4e83-89af-1c8d341bf7ac" type="Dynamo.Nodes.DSFunction" nickname="Point.ByCoordinates" x="-211.106573137827" y="-12.8686293481356" isVisible="true" isUpstreamVisible="true" lacing="Shortest" assembly="ProtoGeometry.dll" function="Autodesk.DesignScript.Geometry.Point.ByCoordinates@double,double">
+      <PortInfo index="0" default="True" />
+      <PortInfo index="1" default="True" />
+    </Dynamo.Nodes.DSFunction>
+    <Dynamo.Nodes.DSFunction guid="de30bee8-4600-4940-8613-8a5dce119f54" type="Dynamo.Nodes.DSFunction" nickname="Point.ByCoordinates" x="-209.75924361205" y="156.894890899714" isVisible="true" isUpstreamVisible="true" lacing="Shortest" assembly="ProtoGeometry.dll" function="Autodesk.DesignScript.Geometry.Point.ByCoordinates@double,double,double">
+      <PortInfo index="0" default="True" />
+      <PortInfo index="1" default="True" />
+      <PortInfo index="2" default="True" />
+    </Dynamo.Nodes.DSFunction>
+    <DSCoreNodesUI.Input.IntegerSlider guid="76d54508-2137-4449-875f-30b64c0050fd" type="DSCoreNodesUI.Input.IntegerSlider" nickname="Integer Slider" x="-927.88588085097" y="-50.5938560698799" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <System.Int32>70</System.Int32>
+      <Range min="60" max="75" step="5" />
+    </DSCoreNodesUI.Input.IntegerSlider>
+    <DSCoreNodesUI.Input.IntegerSlider guid="513a33b5-d591-4e65-981a-f5e6ecfe3535" type="DSCoreNodesUI.Input.IntegerSlider" nickname="Integer Slider" x="-930.387896253314" y="276.999862343039" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <System.Int32>29</System.Int32>
+      <Range min="20" max="45" step="1" />
+    </DSCoreNodesUI.Input.IntegerSlider>
+    <DSCoreNodesUI.Input.IntegerSlider guid="27e8fd69-569d-4564-9058-a0117b009b7b" type="DSCoreNodesUI.Input.IntegerSlider" nickname="Integer Slider" x="-928.471873407974" y="113.19435351786" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <System.Int32>40</System.Int32>
+      <Range min="30" max="45" step="5" />
+    </DSCoreNodesUI.Input.IntegerSlider>
+    <Dynamo.Nodes.DSFunction guid="0197b3ca-786e-40ff-86e3-80732115a6e1" type="Dynamo.Nodes.DSFunction" nickname="*" x="-413.206002004315" y="266.028582487617" isVisible="true" isUpstreamVisible="true" lacing="Shortest" assembly="" function="*@var[]..[],var[]..[]" />
+    <Dynamo.Nodes.DoubleInput guid="4592f4fd-821b-491d-adbc-5c2eae27c525" type="Dynamo.Nodes.DoubleInput" nickname="Number" x="-705.994331745305" y="379.284895093591" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <System.Double value="3.5" />
+    </Dynamo.Nodes.DoubleInput>
+    <Dynamo.Nodes.DSFunction guid="24471b6d-c7be-453b-b08f-07ba527ae97a" type="Dynamo.Nodes.DSFunction" nickname="Cuboid.ByCorners" x="98.7619185533474" y="482.931336900207" isVisible="false" isUpstreamVisible="true" lacing="Shortest" assembly="ProtoGeometry.dll" function="Autodesk.DesignScript.Geometry.Cuboid.ByCorners@Autodesk.DesignScript.Geometry.Point,Autodesk.DesignScript.Geometry.Point" />
+    <Dynamo.Nodes.DSFunction guid="02b21d25-86fa-4da9-9c7f-0f9cf27a5439" type="Dynamo.Nodes.DSFunction" nickname="Point.ByCoordinates" x="-136.452055137991" y="600.717698962334" isVisible="true" isUpstreamVisible="true" lacing="Shortest" assembly="ProtoGeometry.dll" function="Autodesk.DesignScript.Geometry.Point.ByCoordinates@double,double,double">
+      <PortInfo index="0" default="True" />
+      <PortInfo index="1" default="True" />
+      <PortInfo index="2" default="True" />
+    </Dynamo.Nodes.DSFunction>
+    <Dynamo.Nodes.DSFunction guid="67df97b5-c3d0-44de-81f1-25bd97140275" type="Dynamo.Nodes.DSFunction" nickname="Point.ByCoordinates" x="-137.799384663768" y="430.954178714484" isVisible="true" isUpstreamVisible="true" lacing="Shortest" assembly="ProtoGeometry.dll" function="Autodesk.DesignScript.Geometry.Point.ByCoordinates@double,double">
+      <PortInfo index="0" default="True" />
+      <PortInfo index="1" default="True" />
+    </Dynamo.Nodes.DSFunction>
+    <DSCoreNodesUI.Input.IntegerSlider guid="ded1d1c5-a441-480d-85f2-bd982a5c8c4b" type="DSCoreNodesUI.Input.IntegerSlider" nickname="Integer Slider" x="-930.807782026612" y="516.404632157973" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <System.Int32>40</System.Int32>
+      <Range min="20" max="45" step="1" />
+    </DSCoreNodesUI.Input.IntegerSlider>
+    <Dynamo.Nodes.DSFunction guid="c75700b1-d62d-4a20-9e3d-cfd9a37946f3" type="Dynamo.Nodes.DSFunction" nickname="+" x="-449.732706746549" y="625.616758323698" isVisible="true" isUpstreamVisible="true" lacing="Shortest" assembly="" function="+@var[]..[],var[]..[]" />
+    <DSCoreNodesUI.Input.IntegerSlider guid="e24712ee-e6e7-4448-9ea6-941d72147fb3" type="DSCoreNodesUI.Input.IntegerSlider" nickname="Integer Slider" x="-924.219941943996" y="723.7445715813" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <System.Int32>20</System.Int32>
+      <Range min="20" max="45" step="1" />
+    </DSCoreNodesUI.Input.IntegerSlider>
+    <Dynamo.Nodes.DSFunction guid="4a80957a-629f-4baf-8160-1f9308b55f09" type="Dynamo.Nodes.DSFunction" nickname="-" x="-450.931228726058" y="503.158579024296" isVisible="true" isUpstreamVisible="true" lacing="Shortest" assembly="" function="-@var[]..[],var[]..[]" />
+    <Dynamo.Nodes.DSFunction guid="56e90143-ae24-486e-a57f-bfcbe54c60e4" type="Dynamo.Nodes.DSFunction" nickname="*" x="-409.164013426985" y="801.11104787013" isVisible="true" isUpstreamVisible="true" lacing="Shortest" assembly="" function="*@var[]..[],var[]..[]" />
+    <DSCoreNodesUI.Input.IntegerSlider guid="6ede6cd9-dee7-492a-980d-6d7dc9c25f6e" type="DSCoreNodesUI.Input.IntegerSlider" nickname="Integer Slider" x="-926.345907675984" y="812.082327725552" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <System.Int32>45</System.Int32>
+      <Range min="20" max="45" step="1" />
+    </DSCoreNodesUI.Input.IntegerSlider>
+    <DSCoreNodesUI.CreateList guid="9210a650-852f-44e8-8ab0-4f28e5cd8057" type="DSCoreNodesUI.CreateList" nickname="List.Create" x="338.60387337902" y="477.559318034541" isVisible="false" isUpstreamVisible="true" lacing="Disabled" inputcount="2" />
+    <Dynamo.Nodes.DSFunction guid="bdffdd84-dbde-421a-b399-4fa191796ebd" type="Dynamo.Nodes.DSFunction" nickname="Solid.UnionAll" x="613.459096637444" y="329.353070199117" isVisible="true" isUpstreamVisible="true" lacing="Shortest" assembly="ProtoGeometry.dll" function="Autodesk.DesignScript.Geometry.Solid.UnionAll@Autodesk.DesignScript.Geometry.Solid[]" />
+    <DSCoreNodesUI.Input.IntegerSlider guid="0b302a14-241d-43d5-8c37-06e6a21ad39b" type="DSCoreNodesUI.Input.IntegerSlider" nickname="Integer Slider" x="-906.201485057958" y="1249.49344467815" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <System.Int32>21</System.Int32>
+      <Range min="20" max="45" step="1" />
+    </DSCoreNodesUI.Input.IntegerSlider>
+    <DSCoreNodesUI.Input.IntegerSlider guid="1de00909-b94e-46d1-b53e-e82ce050e442" type="DSCoreNodesUI.Input.IntegerSlider" nickname="Integer Slider" x="-908.128503236128" y="1111.16888697529" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <System.Int32>37</System.Int32>
+      <Range min="20" max="45" step="1" />
+    </DSCoreNodesUI.Input.IntegerSlider>
+    <DSCoreNodesUI.Input.IntegerSlider guid="1cc220f4-34fe-4874-8e29-6ae39086a61e" type="DSCoreNodesUI.Input.IntegerSlider" nickname="Integer Slider" x="-910.663359408586" y="953.815749110574" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <System.Int32>-28</System.Int32>
+      <Range min="-30" max="45" step="1" />
+    </DSCoreNodesUI.Input.IntegerSlider>
+    <Dynamo.Nodes.DSFunction guid="1b1fdedd-a92a-4435-95b6-4e6f3ec410d1" type="Dynamo.Nodes.DSFunction" nickname="*" x="-407.663935445263" y="1215.83440030795" isVisible="true" isUpstreamVisible="true" lacing="Shortest" assembly="" function="*@var[]..[],var[]..[]" />
+    <Dynamo.Nodes.DSFunction guid="e63e288e-10d0-40c7-8a15-4c82142c4605" type="Dynamo.Nodes.DSFunction" nickname="+" x="-402.29881111637" y="1075.46597131622" isVisible="true" isUpstreamVisible="true" lacing="Shortest" assembly="" function="+@var[]..[],var[]..[]" />
+    <Dynamo.Nodes.DSFunction guid="e15b2ef7-e4b4-43cc-bf1e-382dfe7c6d55" type="Dynamo.Nodes.DSFunction" nickname="-" x="-403.497333095879" y="953.007792016819" isVisible="true" isUpstreamVisible="true" lacing="Shortest" assembly="" function="-@var[]..[],var[]..[]" />
+    <Dynamo.Nodes.DSFunction guid="9f45df8c-040b-4ef4-91a3-0755932bff41" type="Dynamo.Nodes.DSFunction" nickname="Point.ByCoordinates" x="-128.706049409836" y="1088.18848925293" isVisible="true" isUpstreamVisible="true" lacing="Shortest" assembly="ProtoGeometry.dll" function="Autodesk.DesignScript.Geometry.Point.ByCoordinates@double,double,double">
+      <PortInfo index="0" default="True" />
+      <PortInfo index="1" default="True" />
+      <PortInfo index="2" default="True" />
+    </Dynamo.Nodes.DSFunction>
+    <Dynamo.Nodes.DSFunction guid="9c32e06b-32c5-4587-8692-13926f9b5668" type="Dynamo.Nodes.DSFunction" nickname="Cuboid.ByCorners" x="106.507924281502" y="970.402127190805" isVisible="false" isUpstreamVisible="true" lacing="Shortest" assembly="ProtoGeometry.dll" function="Autodesk.DesignScript.Geometry.Cuboid.ByCorners@Autodesk.DesignScript.Geometry.Point,Autodesk.DesignScript.Geometry.Point" />
+    <Dynamo.Nodes.DSFunction guid="d8978927-407f-4619-927d-d8052fd05ba5" type="Dynamo.Nodes.DSFunction" nickname="Point.ByCoordinates" x="-130.053378935613" y="918.424969005082" isVisible="true" isUpstreamVisible="true" lacing="Shortest" assembly="ProtoGeometry.dll" function="Autodesk.DesignScript.Geometry.Point.ByCoordinates@double,double">
+      <PortInfo index="0" default="True" />
+      <PortInfo index="1" default="True" />
+    </Dynamo.Nodes.DSFunction>
+  </Elements>
+  <Connectors>
+    <Dynamo.Models.ConnectorModel start="84cb827c-f19e-4de1-a9f3-d622e5dc3485" start_index="0" end="bdffdd84-dbde-421a-b399-4fa191796ebd" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="2375593c-ea18-4e83-89af-1c8d341bf7ac" start_index="0" end="84cb827c-f19e-4de1-a9f3-d622e5dc3485" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="de30bee8-4600-4940-8613-8a5dce119f54" start_index="0" end="84cb827c-f19e-4de1-a9f3-d622e5dc3485" end_index="1" portType="0" />
+    <Dynamo.Models.ConnectorModel start="76d54508-2137-4449-875f-30b64c0050fd" start_index="0" end="de30bee8-4600-4940-8613-8a5dce119f54" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="76d54508-2137-4449-875f-30b64c0050fd" start_index="0" end="67df97b5-c3d0-44de-81f1-25bd97140275" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="76d54508-2137-4449-875f-30b64c0050fd" start_index="0" end="4a80957a-629f-4baf-8160-1f9308b55f09" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="76d54508-2137-4449-875f-30b64c0050fd" start_index="0" end="d8978927-407f-4619-927d-d8052fd05ba5" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="513a33b5-d591-4e65-981a-f5e6ecfe3535" start_index="0" end="0197b3ca-786e-40ff-86e3-80732115a6e1" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="27e8fd69-569d-4564-9058-a0117b009b7b" start_index="0" end="de30bee8-4600-4940-8613-8a5dce119f54" end_index="1" portType="0" />
+    <Dynamo.Models.ConnectorModel start="27e8fd69-569d-4564-9058-a0117b009b7b" start_index="0" end="67df97b5-c3d0-44de-81f1-25bd97140275" end_index="1" portType="0" />
+    <Dynamo.Models.ConnectorModel start="27e8fd69-569d-4564-9058-a0117b009b7b" start_index="0" end="c75700b1-d62d-4a20-9e3d-cfd9a37946f3" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="0197b3ca-786e-40ff-86e3-80732115a6e1" start_index="0" end="de30bee8-4600-4940-8613-8a5dce119f54" end_index="2" portType="0" />
+    <Dynamo.Models.ConnectorModel start="4592f4fd-821b-491d-adbc-5c2eae27c525" start_index="0" end="0197b3ca-786e-40ff-86e3-80732115a6e1" end_index="1" portType="0" />
+    <Dynamo.Models.ConnectorModel start="4592f4fd-821b-491d-adbc-5c2eae27c525" start_index="0" end="56e90143-ae24-486e-a57f-bfcbe54c60e4" end_index="1" portType="0" />
+    <Dynamo.Models.ConnectorModel start="4592f4fd-821b-491d-adbc-5c2eae27c525" start_index="0" end="1b1fdedd-a92a-4435-95b6-4e6f3ec410d1" end_index="1" portType="0" />
+    <Dynamo.Models.ConnectorModel start="24471b6d-c7be-453b-b08f-07ba527ae97a" start_index="0" end="9210a650-852f-44e8-8ab0-4f28e5cd8057" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="02b21d25-86fa-4da9-9c7f-0f9cf27a5439" start_index="0" end="24471b6d-c7be-453b-b08f-07ba527ae97a" end_index="1" portType="0" />
+    <Dynamo.Models.ConnectorModel start="67df97b5-c3d0-44de-81f1-25bd97140275" start_index="0" end="24471b6d-c7be-453b-b08f-07ba527ae97a" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="ded1d1c5-a441-480d-85f2-bd982a5c8c4b" start_index="0" end="4a80957a-629f-4baf-8160-1f9308b55f09" end_index="1" portType="0" />
+    <Dynamo.Models.ConnectorModel start="c75700b1-d62d-4a20-9e3d-cfd9a37946f3" start_index="0" end="02b21d25-86fa-4da9-9c7f-0f9cf27a5439" end_index="1" portType="0" />
+    <Dynamo.Models.ConnectorModel start="c75700b1-d62d-4a20-9e3d-cfd9a37946f3" start_index="0" end="d8978927-407f-4619-927d-d8052fd05ba5" end_index="1" portType="0" />
+    <Dynamo.Models.ConnectorModel start="c75700b1-d62d-4a20-9e3d-cfd9a37946f3" start_index="0" end="e63e288e-10d0-40c7-8a15-4c82142c4605" end_index="1" portType="0" />
+    <Dynamo.Models.ConnectorModel start="e24712ee-e6e7-4448-9ea6-941d72147fb3" start_index="0" end="c75700b1-d62d-4a20-9e3d-cfd9a37946f3" end_index="1" portType="0" />
+    <Dynamo.Models.ConnectorModel start="4a80957a-629f-4baf-8160-1f9308b55f09" start_index="0" end="02b21d25-86fa-4da9-9c7f-0f9cf27a5439" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="56e90143-ae24-486e-a57f-bfcbe54c60e4" start_index="0" end="02b21d25-86fa-4da9-9c7f-0f9cf27a5439" end_index="2" portType="0" />
+    <Dynamo.Models.ConnectorModel start="6ede6cd9-dee7-492a-980d-6d7dc9c25f6e" start_index="0" end="56e90143-ae24-486e-a57f-bfcbe54c60e4" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="9210a650-852f-44e8-8ab0-4f28e5cd8057" start_index="0" end="bdffdd84-dbde-421a-b399-4fa191796ebd" end_index="1" portType="0" />
+    <Dynamo.Models.ConnectorModel start="0b302a14-241d-43d5-8c37-06e6a21ad39b" start_index="0" end="1b1fdedd-a92a-4435-95b6-4e6f3ec410d1" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="1de00909-b94e-46d1-b53e-e82ce050e442" start_index="0" end="e63e288e-10d0-40c7-8a15-4c82142c4605" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="1cc220f4-34fe-4874-8e29-6ae39086a61e" start_index="0" end="9f45df8c-040b-4ef4-91a3-0755932bff41" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="1b1fdedd-a92a-4435-95b6-4e6f3ec410d1" start_index="0" end="9f45df8c-040b-4ef4-91a3-0755932bff41" end_index="2" portType="0" />
+    <Dynamo.Models.ConnectorModel start="e63e288e-10d0-40c7-8a15-4c82142c4605" start_index="0" end="9f45df8c-040b-4ef4-91a3-0755932bff41" end_index="1" portType="0" />
+    <Dynamo.Models.ConnectorModel start="9f45df8c-040b-4ef4-91a3-0755932bff41" start_index="0" end="9c32e06b-32c5-4587-8692-13926f9b5668" end_index="1" portType="0" />
+    <Dynamo.Models.ConnectorModel start="9c32e06b-32c5-4587-8692-13926f9b5668" start_index="0" end="9210a650-852f-44e8-8ab0-4f28e5cd8057" end_index="1" portType="0" />
+    <Dynamo.Models.ConnectorModel start="d8978927-407f-4619-927d-d8052fd05ba5" start_index="0" end="9c32e06b-32c5-4587-8692-13926f9b5668" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+</Workspace>

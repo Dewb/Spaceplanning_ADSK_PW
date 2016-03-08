@@ -1,0 +1,513 @@
+<Workspace Version="0.8.0.1233" X="312.89367939967" Y="-521.261301179807" zoom="0.616107147327431" Name="ShellMakerInbuilt" ID="76c3c267-fdfc-433d-9aea-96d93656537d" Description="Builds four types of shell based on inbuilt algorithm" Category="Service Core Modeller">
+  <NamespaceResolutionMap>
+    <ClassMap partialName="Point" resolvedName="Autodesk.DesignScript.Geometry.Point" assemblyName="ProtoGeometry.dll" />
+    <ClassMap partialName="Rectangle.Points[0]" resolvedName="Autodesk.DesignScript.Geometry.Rectangle" assemblyName="ProtoGeometry.dll" />
+    <ClassMap partialName="Rectangle" resolvedName="Autodesk.DesignScript.Geometry.Rectangle" assemblyName="ProtoGeometry.dll" />
+    <ClassMap partialName="Point.Z" resolvedName="Autodesk.DesignScript.Geometry.Point" assemblyName="ProtoGeometry.dll" />
+    <ClassMap partialName="List" resolvedName="DSCore.List" assemblyName="DSCoreNodes.dll" />
+    <ClassMap partialName="Vector" resolvedName="Autodesk.DesignScript.Geometry.Vector" assemblyName="ProtoGeometry.dll" />
+    <ClassMap partialName="Curve" resolvedName="Autodesk.DesignScript.Geometry.Curve" assemblyName="ProtoGeometry.dll" />
+    <ClassMap partialName="Curve.reverse" resolvedName="Autodesk.DesignScript.Geometry.Curve" assemblyName="ProtoGeometry.dll" />
+    <ClassMap partialName="Vector.ZAxis" resolvedName="Autodesk.DesignScript.Geometry.Vector" assemblyName="ProtoGeometry.dll" />
+  </NamespaceResolutionMap>
+  <Elements>
+    <DSIronPythonNode.PythonNode guid="eb68e48c-1c76-4c23-aade-773bc469c8e3" type="DSIronPythonNode.PythonNode" nickname="Irregular Shape Maker" x="250" y="0" isVisible="false" isUpstreamVisible="true" lacing="Disabled" inputcount="5">
+      <Script>import clr
+clr.AddReference('ProtoGeometry')
+from Autodesk.DesignScript.Geometry import *
+#The inputs to this node will be stored as a list in the IN variable.
+dataEnteringNode = IN
+
+
+x = IN[0]
+y = IN[1]
+lenX = IN[2]
+lenY = IN[3]
+type = int(IN[4])
+
+pt = Point.ByCoordinates(x,y,0)
+
+#find the closest point from a point-------------------------------------------------------------------------------------	
+def closestPoint(ptA,ptList):
+	shortLen	=	100000000000000 # set as a really high value
+	index		=	0
+	for i in range(len(ptList)):
+		vec				= 	Vector.ByTwoPoints(ptA,ptList[i])
+		vecLen			=	vec.Length
+		if ( vecLen &lt; shortLen ):
+			shortLen	=	vecLen
+			index		=	i
+	# returns the closest point to ptA from the list
+	return ptList[index]
+#------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+def typeListMaker():
+	if type == 1:		
+		len = [lenX,lenY,lenX,lenY]
+		dir = [0,0,1,1]
+		sides = 4		
+	if type == 2:
+		a = int(lenX/2)		
+		b = int(lenY/3)			
+		len = [lenX,a,b,lenY-a,lenX-b,lenY]
+		dir = [0,0,1,0,1,1]
+		sides = 6
+	if type == 3:		
+		a1 = int(lenX/3)
+		a2 = int(lenX/4)
+		b = int(lenY/2)	
+		len = [lenX,lenY,a1,b,a2,b,lenX-a1-a2,lenY]
+		dir = [0,0,1,1,1,0,1,1]
+		sides = 8
+	if type == 4:
+		len = [lenX,lenY,lenX,lenY]
+		dir = [0,0,1,1]
+		sides = 4	
+	return len,dir,sides
+
+
+#function which makes l shaped profile-----------------------------------------------------------------------------------
+def shapeGenerator():
+	linList = []
+	ptList = []
+	
+	ptX = Point.ByCoordinates(200000,0,0)
+	ptY = Point.ByCoordinates(0,200000,0)
+	
+	xvec = Vector.ByTwoPoints(pt,ptX)
+	yvec = Vector.ByTwoPoints(pt,ptY)
+	xvecN = xvec.Reverse()
+	yvecN = yvec.Reverse()
+	a = int(lenX/2)
+	b = int(lenY/3)
+	 
+	len = typeListMaker()[0]
+	dir = typeListMaker()[1]
+	sides = typeListMaker()[2]
+	
+	point = pt
+	ptList.append(point)
+	for i in range(sides):
+		#toggle vec values
+		if i%2 ==0:
+			if dir[i]==0: vec = xvec
+			else: vec = xvecN
+		else:
+			if dir[i]==0: vec = yvec
+			else: vec = yvecN	
+		l1 = Line.ByStartPointDirectionLength(point,vec,len[i])
+		linList.append(l1)
+		point = l1.EndPoint
+		ptList.append(point)
+	polygon = Polygon.ByPoints(ptList)
+	polyCenter = polygon.Center()
+	closePt = closestPoint(polyCenter,ptList)
+	return polygon,closePt
+#---------------------------------------------------------------------------------------------------------------------------
+
+
+
+#function which makes  shaped profile---------------------------------------------------------------------------------------
+def shapeGenType4():
+	linList = []
+	ptList = []
+	
+	ptX = Point.ByCoordinates(200000,0,0)
+	ptY = Point.ByCoordinates(0,200000,0)
+	
+	xvec = Vector.ByTwoPoints(pt,ptX)
+	yvec = Vector.ByTwoPoints(pt,ptY)
+	xvecN = xvec.Reverse()
+	yvecN = yvec.Reverse()
+		
+	 
+	len = typeListMaker()[0]
+	dir = typeListMaker()[1]
+	sides = typeListMaker()[2]
+	
+	#1st outer polygon===============================================================
+	point = pt
+	ptList.append(point)
+	for i in range(sides):
+		#toggle vec values
+		if i%2 ==0:
+			if dir[i]==0: vec = xvec
+			else: vec = xvecN
+		else:
+			if dir[i]==0: vec = yvec
+			else: vec = yvecN	
+		l1 = Line.ByStartPointDirectionLength(point,vec,len[i])
+		linList.append(l1)
+		point = l1.EndPoint
+		ptList.append(point)
+	polygon = Polygon.ByPoints(ptList)
+	polyCenter = polygon.Center()
+	closePt = closestPoint(polyCenter,ptList)
+	#================================================================================
+	a = lenX/1.8
+	b = lenY/2.2
+	len[0] = len[0] - a
+	len[1] = len[1] - b
+	len[2] = len[0]
+	len[3] = len[1]
+	
+	linList = []
+	ptList = []
+	#inner polygon====================================================================
+	point = pt
+	ptList.append(point)
+	for i in range(sides):
+		#toggle vec values
+		if i%2 ==0:
+			if dir[i]==0: vec = xvec
+			else: vec = xvecN
+		else:
+			if dir[i]==0: vec = yvec
+			else: vec = yvecN	
+		l1 = Line.ByStartPointDirectionLength(point,vec,len[i])
+		linList.append(l1)
+		point = l1.EndPoint
+		ptList.append(point)
+	polygon2 = Polygon.ByPoints(ptList)
+	ptN = Point.ByCoordinates(pt.X+(a/2),pt.Y+(b/2))
+	vecShift = Vector.ByTwoPoints(pt,ptN)
+	polygon2 = polygon2.Translate(vecShift)
+	#================================================================================
+	
+	
+	return [polygon,polygon2],closePt
+#---------------------------------------------------------------------------------------------------------------------------
+
+
+if type == 4: out = shapeGenType4()
+else : out = shapeGenerator()
+
+#Assign your output to the OUT variable
+OUT = out</Script>
+    </DSIronPythonNode.PythonNode>
+    <DSIronPythonNode.PythonNode guid="610726c8-9438-402b-a664-40cd1f68a523" type="DSIronPythonNode.PythonNode" nickname="Generates Floor Plane Heights" x="259.304934910713" y="190.574307808124" isVisible="true" isUpstreamVisible="true" lacing="Disabled" inputcount="4">
+      <Script>import clr
+clr.AddReference('ProtoGeometry')
+from Autodesk.DesignScript.Geometry import *
+import math
+#The inputs to this node will be stored as a list in the IN variable.
+dataEnteringNode = IN
+
+#inputs------------------------------------------------------------
+twr_Height = IN[0]
+regflr_Ht  = IN[1]
+mechflr_Ht = IN[2]
+keyflr_Mech= IN[3]
+#inputs------------------------------------------------------------
+
+approxNum_Floors  =  twr_Height / regflr_Ht
+numberof_MechFloors = math.ceil(approxNum_Floors / keyflr_Mech)
+height_Counter = 0
+height_List=[]
+height = 0
+tag = 0
+
+while height&lt;twr_Height:		
+	#iterate to add the heights for the regular floors till first mechanical lvl
+	for i in range(keyflr_Mech):
+		if i == 0 and tag == 0:
+			height += 0
+			tag = 1
+		else:
+			height += regflr_Ht
+		height_List.append(height)
+		
+		if ((height + mechflr_Ht + 1) &gt; twr_Height): break
+				
+	if ((height) &gt; twr_Height):	break		
+		
+	height += mechflr_Ht
+	# add the mechanical floor height to the height list
+	height_List.append(height)
+ 
+
+
+
+
+#Assign your output to the OUT variable
+OUT = height_List</Script>
+    </DSIronPythonNode.PythonNode>
+    <DSIronPythonNode.PythonNode guid="b3be7621-290a-4051-a99d-f441a4b91295" type="DSIronPythonNode.PythonNode" nickname="Box Maker" x="638.346553646052" y="62.414112174516" isVisible="false" isUpstreamVisible="true" lacing="Disabled" inputcount="2">
+      <Script>import clr
+clr.AddReference('ProtoGeometry')
+from Autodesk.DesignScript.Geometry import *
+#The inputs to this node will be stored as a list in the IN variable.
+dataEnteringNode = IN
+
+polygon = IN[0][0]
+closPt = IN[0][1]
+type = IN[1]
+if type!=4:
+	polyPts = polygon.Points
+
+#finds the opposite point to the closest point-------------------------------------------------
+def oppPointFinder(poly,closPt):
+	polyPts = poly.Points
+	for i in range(len(polyPts)):
+		if closPt == polyPts[i]:
+			oppPt = polyPts[i-3]
+			index = i
+			break	
+	return oppPt,index
+#---------------------------------------------------------------------------------------------
+
+
+#find the closest point from a point-------------------------------------------------------------------------------------	
+def closestPoint(ptA,ptList):
+	shortLen	=	100000000000000 # set as a really high value
+	index		=	0
+	for i in range(len(ptList)):
+		vec				= 	Vector.ByTwoPoints(ptA,ptList[i])
+		vecLen			=	vec.Length
+		if ( vecLen &lt; shortLen ):
+			shortLen	=	vecLen
+			index		=	i
+	# returns the closest point to ptA from the list
+	return ptList[index]
+#------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+#func to split the type3 polygon to regular rect and l shape rect-----------------------------
+def multiRecMaker():
+	oppPt = oppPointFinder(polygon,closPt)[0]
+	id = oppPointFinder(polygon,closPt)[1]-3
+	siz = len(polyPts)
+	
+	lin = Line.ByStartPointEndPoint(closPt,polyPts[id+4])
+	lin = lin.Extend(300,lin.StartPoint)
+	
+	crvsPoly = polygon.Curves()
+	for crvs in crvsPoly:		
+		pt = Geometry.Intersect(lin,crvs)
+		if pt != None:
+			break
+	ptListA = [polyPts[0],pt[0],polyPts[id+4],polyPts[id+5]]
+	ptListB = [pt[0],polyPts[id-1],polyPts[id],polyPts[id+1],polyPts[id+2],polyPts[id+3]]
+	polyA = Polygon.ByPoints(ptListA)	
+	polyB = Polygon.ByPoints(ptListB)
+	polyNew = recMakers(polyB)
+	#return lin,oppPt,polyPts[id],crvsPoly,pt,polyA,polyB
+	return polyA,polyNew[0],polyNew[1]
+#----------------------------------------------------------------------------------------------	
+	
+	
+def recFromType4():
+	poly1 = polygon[0]
+	poly2 = polygon[1]
+	polyPts1 = poly1.Points
+	polyPts2 = poly2.Points
+	pt=[]
+	
+	lin1 = Line.ByStartPointEndPoint(polyPts2[0],polyPts2[1])
+	lin1 = lin1.Extend(300,lin1.StartPoint)
+	lin1 = lin1.Extend(300,lin1.EndPoint)
+	
+	lin2 = Line.ByStartPointEndPoint(polyPts2[2],polyPts2[3])
+	lin2 = lin2.Extend(300,lin2.StartPoint)
+	lin2 = lin2.Extend(300,lin2.EndPoint)
+	
+	crvsPoly1 = poly1.Curves()
+	for crvs in crvsPoly1:
+		ptInt = Geometry.Intersect(lin1,crvs)
+		if len(ptInt) == 0:	continue
+		else: pt.append(ptInt[0])
+		
+	ptList1 = [pt[0],pt[1],polyPts1[0],polyPts1[1]]
+	polyA = Polygon.ByPoints(ptList1)	
+	for crvs in crvsPoly1:		
+		ptInt = Geometry.Intersect(lin2,crvs)
+		if len(ptInt) == 0:	continue
+		else: pt.append(ptInt[0])	
+		
+	ptList2 = [pt[3],pt[2],polyPts1[2],polyPts1[3]]
+	polyB = Polygon.ByPoints(ptList2)
+	
+	ptList3 = [pt[2],pt[0],polyPts2[1],polyPts2[2]]
+	polyC = Polygon.ByPoints(ptList3)
+	
+	ptList4 = [pt[3],pt[1],polyPts2[0],polyPts2[3]]
+	polyD = Polygon.ByPoints(ptList4)
+	return polyA,polyB,polyC,polyD
+	
+	
+	
+	
+#func to convert polygon to a rectangle---------------------------------------------------
+def polytoRect(poly):
+	crvs = poly.Curves()
+	polyPts = poly.Points
+	polyCen = poly.Center()
+	wid = Line.ByStartPointEndPoint(polyPts[0],polyPts[1]).Length
+	ht = Line.ByStartPointEndPoint(polyPts[0],polyPts[3]).Length
+	
+	cs = CoordinateSystem.ByOrigin(polyCen)
+	#rec = Rectangle.ByWidthHeight(cs,wid,ht)
+	
+	ptList=[]
+	for i in range(len(crvs)-1):
+		pt = crvs[i].StartPoint
+		ptList.append(pt)	
+	rec = Rectangle.ByCornerPoints(ptList)
+	return rec
+#-----------------------------------------------------------------------------------------
+
+#makes two polygons for two places in the l shape---------------------------------------------
+def recMakers(poly):
+	#poly = multiRecMaker()[1]
+	polyPts = poly.Points
+	polyCen = poly.Center()
+	
+	closPt = closestPoint(polyCen,polyPts)
+	 
+	oppPt = oppPointFinder(poly,closPt)[0]
+	id = oppPointFinder(poly,closPt)[1]-3
+	line1 = Line.ByStartPointEndPoint(polyPts[id],polyPts[id+1])
+	line2 = Line.ByStartPointEndPoint(polyPts[id-1],polyPts[id-2])
+	dist = line2.Length	
+	ptNew = line1.PointAtParameter(dist/line1.Length)
+	
+	ptListA = [polyPts[id],polyPts[id-1],polyPts[id-2],ptNew]
+	ptListB = [ptNew,polyPts[id-3],polyPts[id-4],polyPts[id-5]]
+	
+	polyA = Polygon.ByPoints(ptListA)
+	polyB = Polygon.ByPoints(ptListB)
+	
+	return polyA,polyB
+#---------------------------------------------------------------------------------------------
+
+if type==1: out = [polygon]
+if type==2: out = recMakers(polygon)
+if type==3: out = multiRecMaker()
+if type==4: out = recFromType4()
+
+recListFinal = [polytoRect(out[i]) for i in range(len(out)) ]
+#Assign your output to the OUT variable
+OUT = recListFinal
+#OUT = recMakers()</Script>
+    </DSIronPythonNode.PythonNode>
+    <DSIronPythonNode.PythonNode guid="2a0d07c4-7860-4d2b-944d-5eb29f3fe507" type="DSIronPythonNode.PythonNode" nickname="Floor Maker" x="635.973217443577" y="176.586805591603" isVisible="false" isUpstreamVisible="true" lacing="Disabled" inputcount="3">
+      <Script>import clr
+clr.AddReference('ProtoGeometry')
+from Autodesk.DesignScript.Geometry import *
+import sys
+sys.path.append("C:\Program Files (x86)\IronPython 2.7\Lib")
+import random
+#The inputs to this node will be stored as a list in the IN variable.
+dataEnteringNode = IN
+
+recList=IN[0]
+floorHeights = IN[1]
+
+#makes variable length floor height list-------------------------------------------------------------------------------------------
+def variableFloorHeight(flrHtList):
+	newFlrHtList = []
+	for i in range(len(recList)):
+		y = len(flrHtList)
+		x = y/2
+		a = int(random.uniform(x,y))
+		flrTest = flrHtList[:a]
+		newFlrHtList.append(flrTest)
+	return newFlrHtList
+#----------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+#makes floors translate to given height list---------------------------------------------------------------------------------------
+def floorTranslator(recList,flrHtList):
+	newRecList = []
+	ptA = Point.ByCoordinates(0,0,0)
+	ptB = Point.ByCoordinates(0,0,100)
+	vec = Vector.ByTwoPoints(ptA,ptB)
+	for i in range(len(recList)):
+		rec = recList[i]
+		recNList=[]
+		flrHeights = flrHtList[i]
+		for j in range(len(flrHeights)):
+			dist = flrHeights[j]
+			newRec = rec.Translate(vec,dist)
+			recNList.append(newRec)
+		newRecList.append(recNList)
+	return newRecList
+#---------------------------------------------------------------------------------------------------------------------------------
+
+
+flrNewHeights = variableFloorHeight(floorHeights)
+out = floorTranslator(recList,flrNewHeights)
+
+#Assign your output to the OUT variable
+OUT = out</Script>
+    </DSIronPythonNode.PythonNode>
+    <Dynamo.Nodes.CodeBlockNodeModel guid="b622230f-94ed-4b02-82bd-d690cc947d17" type="Dynamo.Nodes.CodeBlockNodeModel" nickname="Shell Type" x="639.650483159156" y="315.567130775108" isVisible="false" isUpstreamVisible="true" lacing="Disabled" CodeText="shellType;" ShouldFocus="false" />
+    <Dynamo.Nodes.Symbol guid="901bdcbc-f8a1-4f7b-bde4-ea14c81b412f" type="Dynamo.Nodes.Symbol" nickname="Input" x="0" y="0" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <Symbol value="posX" />
+    </Dynamo.Nodes.Symbol>
+    <Dynamo.Nodes.Symbol guid="1cd99a88-bed8-4a01-96c8-c380f7bded52" type="Dynamo.Nodes.Symbol" nickname="Input" x="0" y="64.7312532761208" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <Symbol value="posY" />
+    </Dynamo.Nodes.Symbol>
+    <Dynamo.Nodes.Symbol guid="e4b24972-fa20-40a0-8ab3-f0927ba20c60" type="Dynamo.Nodes.Symbol" nickname="Input" x="0" y="130.341565796818" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <Symbol value="length" />
+    </Dynamo.Nodes.Symbol>
+    <Dynamo.Nodes.Symbol guid="106138af-a0dc-494a-9f7b-71481f45c82d" type="Dynamo.Nodes.Symbol" nickname="Input" x="0.879059244576069" y="199.468115295819" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <Symbol value="width" />
+    </Dynamo.Nodes.Symbol>
+    <Dynamo.Nodes.Symbol guid="fd23616e-a5e0-4025-b9bd-230f0f5c8ee4" type="Dynamo.Nodes.Symbol" nickname="Input" x="7.09778947953362" y="406.307302972262" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <Symbol value="shellType" />
+    </Dynamo.Nodes.Symbol>
+    <Dynamo.Nodes.Symbol guid="ce4ba233-d3c1-47c8-a190-5317d54a56b6" type="Dynamo.Nodes.Symbol" nickname="Input" x="0" y="748.112358491358" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <Symbol value="totalHeight" />
+    </Dynamo.Nodes.Symbol>
+    <Dynamo.Nodes.Symbol guid="dd248913-e687-4aea-8dff-ea39249a9f19" type="Dynamo.Nodes.Symbol" nickname="Input" x="0" y="900" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <Symbol value="regularFloorHeight" />
+    </Dynamo.Nodes.Symbol>
+    <Dynamo.Nodes.Symbol guid="e11d2e57-a7a0-401c-bb3f-3cae50aa056b" type="Dynamo.Nodes.Symbol" nickname="Input" x="0" y="1050" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <Symbol value="mechanicalFloorHeight" />
+    </Dynamo.Nodes.Symbol>
+    <Dynamo.Nodes.Symbol guid="955e24bc-6e76-4792-aec9-a314dd638635" type="Dynamo.Nodes.Symbol" nickname="Input" x="0" y="1200" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <Symbol value="mechanicalFloorFreq" />
+    </Dynamo.Nodes.Symbol>
+    <Dynamo.Nodes.Symbol guid="71b75daf-7d7e-4c00-a4e8-64fa9137f353" type="Dynamo.Nodes.Symbol" nickname="Input" x="0" y="1500" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <Symbol value="randomKey" />
+    </Dynamo.Nodes.Symbol>
+    <Dynamo.Nodes.Output guid="f2b2b0ab-c013-46cc-b900-09d8495376a2" type="Dynamo.Nodes.Output" nickname="Output" x="903.450483159156" y="0" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <Symbol value="lowLevelBoxes" />
+    </Dynamo.Nodes.Output>
+    <Dynamo.Nodes.Output guid="f99b1a8e-7a86-4273-aead-b884b851e107" type="Dynamo.Nodes.Output" nickname="Output" x="903.450483159156" y="150" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <Symbol value="shellType" />
+    </Dynamo.Nodes.Output>
+    <Dynamo.Nodes.Output guid="a98dc8f6-e281-447a-bc33-ee9b5d1feb70" type="Dynamo.Nodes.Output" nickname="Output" x="902" y="73.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <Symbol value="floorCurves" />
+    </Dynamo.Nodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Models.ConnectorModel start="eb68e48c-1c76-4c23-aade-773bc469c8e3" start_index="0" end="b3be7621-290a-4051-a99d-f441a4b91295" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="610726c8-9438-402b-a664-40cd1f68a523" start_index="0" end="2a0d07c4-7860-4d2b-944d-5eb29f3fe507" end_index="1" portType="0" />
+    <Dynamo.Models.ConnectorModel start="b3be7621-290a-4051-a99d-f441a4b91295" start_index="0" end="2a0d07c4-7860-4d2b-944d-5eb29f3fe507" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="b3be7621-290a-4051-a99d-f441a4b91295" start_index="0" end="f2b2b0ab-c013-46cc-b900-09d8495376a2" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="2a0d07c4-7860-4d2b-944d-5eb29f3fe507" start_index="0" end="a98dc8f6-e281-447a-bc33-ee9b5d1feb70" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="b622230f-94ed-4b02-82bd-d690cc947d17" start_index="0" end="f99b1a8e-7a86-4273-aead-b884b851e107" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="901bdcbc-f8a1-4f7b-bde4-ea14c81b412f" start_index="0" end="eb68e48c-1c76-4c23-aade-773bc469c8e3" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="1cd99a88-bed8-4a01-96c8-c380f7bded52" start_index="0" end="eb68e48c-1c76-4c23-aade-773bc469c8e3" end_index="1" portType="0" />
+    <Dynamo.Models.ConnectorModel start="e4b24972-fa20-40a0-8ab3-f0927ba20c60" start_index="0" end="eb68e48c-1c76-4c23-aade-773bc469c8e3" end_index="2" portType="0" />
+    <Dynamo.Models.ConnectorModel start="106138af-a0dc-494a-9f7b-71481f45c82d" start_index="0" end="eb68e48c-1c76-4c23-aade-773bc469c8e3" end_index="3" portType="0" />
+    <Dynamo.Models.ConnectorModel start="fd23616e-a5e0-4025-b9bd-230f0f5c8ee4" start_index="0" end="eb68e48c-1c76-4c23-aade-773bc469c8e3" end_index="4" portType="0" />
+    <Dynamo.Models.ConnectorModel start="fd23616e-a5e0-4025-b9bd-230f0f5c8ee4" start_index="0" end="b3be7621-290a-4051-a99d-f441a4b91295" end_index="1" portType="0" />
+    <Dynamo.Models.ConnectorModel start="fd23616e-a5e0-4025-b9bd-230f0f5c8ee4" start_index="0" end="b622230f-94ed-4b02-82bd-d690cc947d17" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="ce4ba233-d3c1-47c8-a190-5317d54a56b6" start_index="0" end="610726c8-9438-402b-a664-40cd1f68a523" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="dd248913-e687-4aea-8dff-ea39249a9f19" start_index="0" end="610726c8-9438-402b-a664-40cd1f68a523" end_index="1" portType="0" />
+    <Dynamo.Models.ConnectorModel start="e11d2e57-a7a0-401c-bb3f-3cae50aa056b" start_index="0" end="610726c8-9438-402b-a664-40cd1f68a523" end_index="2" portType="0" />
+    <Dynamo.Models.ConnectorModel start="955e24bc-6e76-4792-aec9-a314dd638635" start_index="0" end="610726c8-9438-402b-a664-40cd1f68a523" end_index="3" portType="0" />
+    <Dynamo.Models.ConnectorModel start="71b75daf-7d7e-4c00-a4e8-64fa9137f353" start_index="0" end="2a0d07c4-7860-4d2b-944d-5eb29f3fe507" end_index="2" portType="0" />
+  </Connectors>
+  <Notes />
+</Workspace>

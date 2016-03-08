@@ -1,0 +1,23 @@
+c:\users\t_dassu\documents\visual studio 2015\Projects\SpacePlanning\SpacePlanning\bin\Debug\SpacePlanning.dll
+c:\users\t_dassu\documents\visual studio 2015\Projects\SpacePlanning\SpacePlanning\bin\Debug\SpacePlanning.pdb
+c:\users\t_dassu\documents\visual studio 2015\Projects\SpacePlanning\SpacePlanning\bin\Debug\ProtoGeometry.dll
+c:\users\t_dassu\documents\visual studio 2015\Projects\SpacePlanning\SpacePlanning\bin\Debug\ProtoInterface.dll
+c:\users\t_dassu\documents\visual studio 2015\Projects\SpacePlanning\SpacePlanning\obj\Debug\SpacePlanning.dll
+c:\users\t_dassu\documents\visual studio 2015\Projects\SpacePlanning\SpacePlanning\obj\Debug\SpacePlanning.pdb
+C:\Program Files\Autodesk\Dynamo Studio 2016\SpacePlanning.dll
+C:\Program Files\Autodesk\Dynamo Studio 2016\SpacePlanning.pdb
+C:\Users\t_dassu\Documents\Visual Studio 2015\Projects\SpacePlanning\SpacePlanning\bin\debug\ProtoAssociative.dll
+C:\Users\t_dassu\Documents\Visual Studio 2015\Projects\SpacePlanning\SpacePlanning\bin\debug\ProtoCore.dll
+C:\Users\t_dassu\Documents\Visual Studio 2015\Projects\SpacePlanning\SpacePlanning\bin\debug\ProtoGeometry.customization.dll
+C:\Users\t_dassu\Documents\Visual Studio 2015\Projects\SpacePlanning\SpacePlanning\bin\debug\ProtoImperative.dll
+C:\Users\t_dassu\Documents\Visual Studio 2015\Projects\SpacePlanning\SpacePlanning\bin\debug\ProtoScript.dll
+C:\Users\t_dassu\Documents\Visual Studio 2015\Projects\SpacePlanning\SpacePlanning\obj\Debug\SpacePlanning.csprojResolveAssemblyReference.cache
+C:\Users\t_dassu\Documents\Visual Studio 2015\Projects\SpacePlanning\SpacePlanning\obj\Debug\SpacePlanning.Properties.Resources.resources
+C:\Users\t_dassu\Documents\Visual Studio 2015\Projects\SpacePlanning\SpacePlanning\obj\Debug\SpacePlanning.csproj.GenerateResource.Cache
+C:\Users\dass\Documents\Visual Studio 2015\Projects\SpacePlanning\SpacePlanning\obj\Debug\SpacePlanning.csprojResolveAssemblyReference.cache
+C:\Users\dass\Documents\Visual Studio 2015\Projects\SpacePlanning\SpacePlanning\obj\Debug\SpacePlanning.Properties.Resources.resources
+C:\Users\dass\Documents\Visual Studio 2015\Projects\SpacePlanning\SpacePlanning\obj\Debug\SpacePlanning.csproj.GenerateResource.Cache
+C:\Users\dass\Documents\Visual Studio 2015\Projects\SpacePlanning\SpacePlanning\obj\Debug\SpacePlanning.dll
+C:\Users\dass\Documents\Visual Studio 2015\Projects\SpacePlanning\SpacePlanning\obj\Debug\SpacePlanning.pdb
+C:\Users\dass\Documents\Visual Studio 2015\Projects\SpacePlanning\SpacePlanning\bin\debug\SpacePlanning.dll
+C:\Users\dass\Documents\Visual Studio 2015\Projects\SpacePlanning\SpacePlanning\bin\debug\SpacePlanning.pdb

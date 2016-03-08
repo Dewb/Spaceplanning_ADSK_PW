@@ -1,0 +1,1180 @@
+{
+  "$type": "System.Dynamic.ExpandoObject, System.Core",
+  "guid": "00000000-0000-0000-0000-000000000000",
+  "name": "Home",
+  "nodes": [
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "60ea5bf8-350d-40cc-868a-4d6ecab8c87d",
+      "name": "DefaultNodeName",
+      "position": [
+        63.0890052356021,
+        57.560209424083773
+      ],
+      "typeName": "String",
+      "creationName": "String",
+      "displayName": "String",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType1`1[[System.String, mscorlib]], Reach",
+        "value": ""
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "1991140c-f8ba-4958-a2d5-7cb8bd40bf87",
+      "name": "DefaultNodeName",
+      "position": [
+        182.083769633508,
+        55.926701570680606
+      ],
+      "typeName": "DSCoreNodesUI.DummyNode",
+      "creationName": "DSCoreNodesUI.DummyNode",
+      "displayName": "Requirements.ByJSON",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [
+        true
+      ],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType7, Reach"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "a77c430d-00ba-4010-b510-8f3cbd11a67b",
+      "name": "DefaultNodeName",
+      "position": [
+        402.104712041885,
+        56.303664921465966
+      ],
+      "typeName": "DSCoreNodesUI.DummyNode",
+      "creationName": "DSCoreNodesUI.DummyNode",
+      "displayName": "JobData.ByRequirements",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [
+        true
+      ],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType7, Reach"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "9def607b-a981-48ce-95d5-93ec0086f53b",
+      "name": "DefaultNodeName",
+      "position": [
+        59.6963350785341,
+        145.14136125654449
+      ],
+      "typeName": "Number",
+      "creationName": "Number",
+      "displayName": "Number",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType1`1[[System.String, mscorlib]], Reach",
+        "value": ".5"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "77cb8daa-e0ef-4ae2-8154-4f1337ca1a4a",
+      "name": "DefaultNodeName",
+      "position": [
+        58.062827225130889,
+        217.392670157068
+      ],
+      "typeName": "Number",
+      "creationName": "Number",
+      "displayName": "Number",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType1`1[[System.String, mscorlib]], Reach",
+        "value": "3.5"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "7a311baf-c426-45d3-8f09-a9f4c84f1b0d",
+      "name": "DefaultNodeName",
+      "position": [
+        168.13612565444998,
+        169.141361256544
+      ],
+      "typeName": "DSCoreNodesUI.DummyNode",
+      "creationName": "DSCoreNodesUI.DummyNode",
+      "displayName": "GridBasis.BySize",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [
+        true,
+        true
+      ],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType7, Reach"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "1e652c36-1443-47f9-a0bc-a9f58c396a13",
+      "name": "DefaultNodeName",
+      "position": [
+        438.921465968586,
+        169.51832460733
+      ],
+      "typeName": "DSCoreNodesUI.DummyNode",
+      "creationName": "DSCoreNodesUI.DummyNode",
+      "displayName": "BuildData.ByBasis",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [
+        true
+      ],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType7, Reach"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "5e32333a-c521-440a-aa3a-2174754726c3",
+      "name": "DefaultNodeName",
+      "position": [
+        445.329842931937,
+        277.45549738219904
+      ],
+      "typeName": "DSCoreNodesUI.DummyNode",
+      "creationName": "DSCoreNodesUI.DummyNode",
+      "displayName": "Genome.ByInitialData",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [
+        true
+      ],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType7, Reach"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "1d376e83-91a5-40b3-8278-f925aaefb113",
+      "name": "DefaultNodeName",
+      "position": [
+        495.968586387435,
+        382.376963350785
+      ],
+      "typeName": "DSCoreNodesUI.DummyNode",
+      "creationName": "DSCoreNodesUI.DummyNode",
+      "displayName": "Design.Empty",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [
+        true
+      ],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType7, Reach"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "9c070133-1f22-4878-870e-483e44a0df44",
+      "name": "DefaultNodeName",
+      "position": [
+        715.486910994764,
+        195.277486910995
+      ],
+      "typeName": "DSCoreNodesUI.DummyNode",
+      "creationName": "DSCoreNodesUI.DummyNode",
+      "displayName": "StrategyArgs.ByInitialData",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType7, Reach"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "a38a4a23-767f-4105-b923-d967d704c919",
+      "name": "DefaultNodeName",
+      "position": [
+        167.23663422335198,
+        627.5129260899
+      ],
+      "typeName": "String",
+      "creationName": "String",
+      "displayName": "20x20.stl",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType1`1[[System.String, mscorlib]], Reach",
+        "value": "solid Home\r\n\tfacet normal 0 0 1\r\n\t\touter loop\r\n\t\t\tvertex 10 10 3.5\r\n\t\t\tvertex -10 10 3.5\r\n\t\t\tvertex 10 -10 3.5\r\n\t\tendloop\r\n\tendfacet\r\n\tfacet normal 0 0 1\r\n\t\touter loop\r\n\t\t\tvertex 10 -10 3.5\r\n\t\t\tvertex -10 10 3.5\r\n\t\t\tvertex -10 -10 3.5\r\n\t\tendloop\r\n\tendfacet\r\n\tfacet normal 0 0 1\r\n\t\touter loop\r\n\t\t\tvertex 10 -10 0\r\n\t\t\tvertex -10 -10 0\r\n\t\t\tvertex 10 10 0\r\n\t\tendloop\r\n\tendfacet\r\n\tfacet normal 0 0 1\r\n\t\touter loop\r\n\t\t\tvertex 10 10 0\r\n\t\t\tvertex -10 -10 0\r\n\t\t\tvertex -10 10 0\r\n\t\tendloop\r\n\tendfacet\r\n\tfacet normal 0 0 1\r\n\t\touter loop\r\n\t\t\tvertex -10 -10 3.5\r\n\t\t\tvertex -10 -10 0\r\n\t\t\tvertex 10 -10 3.5\r\n\t\tendloop\r\n\tendfacet\r\n\tfacet normal 0 0 1\r\n\t\touter loop\r\n\t\t\tvertex 10 -10 3.5\r\n\t\t\tvertex -10 -10 0\r\n\t\t\tvertex 10 -10 0\r\n\t\tendloop\r\n\tendfacet\r\n\tfacet normal 0 0 -1\r\n\t\touter loop\r\n\t\t\tvertex -10 10 3.5\r\n\t\t\tvertex -10 10 0\r\n\t\t\tvertex -10 -10 3.5\r\n\t\tendloop\r\n\tendfacet\r\n\tfacet normal 0 0 -1\r\n\t\touter loop\r\n\t\t\tvertex -10 -10 3.5\r\n\t\t\tvertex -10 10 0\r\n\t\t\tvertex -10 -10 0\r\n\t\tendloop\r\n\tendfacet\r\n\tfacet normal 0 0 -1\r\n\t\touter loop\r\n\t\t\tvertex 10 10 3.5\r\n\t\t\tvertex 10 10 0\r\n\t\t\tvertex -10 10 3.5\r\n\t\tendloop\r\n\tendfacet\r\n\tfacet normal 0 0 -1\r\n\t\touter loop\r\n\t\t\tvertex -10 10 3.5\r\n\t\t\tvertex 10 10 0\r\n\t\t\tvertex -10 10 0\r\n\t\tendloop\r\n\tendfacet\r\n\tfacet normal 0 0 -1\r\n\t\touter loop\r\n\t\t\tvertex 10 -10 3.5\r\n\t\t\tvertex 10 -10 0\r\n\t\t\tvertex 10 10 3.5\r\n\t\tendloop\r\n\tendfacet\r\n\tfacet normal 0 0 -1\r\n\t\touter loop\r\n\t\t\tvertex 10 10 3.5\r\n\t\t\tvertex 10 -10 0\r\n\t\t\tvertex 10 10 0\r\n\t\tendloop\r\n\tendfacet\r\nendsolid Home\r\n"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "65c5398a-2e3b-419c-8cdb-a31fca3bcea0",
+      "name": "DefaultNodeName",
+      "position": [
+        480.854833891607,
+        627.699288114353
+      ],
+      "typeName": "DSCoreNodesUI.DummyNode",
+      "creationName": "DSCoreNodesUI.DummyNode",
+      "displayName": "STL.ByASCII",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [
+        true
+      ],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType7, Reach"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "d014a66e-21cb-4ad9-bd3b-3f391f09550b",
+      "name": "DefaultNodeName",
+      "position": [
+        784.013645841948,
+        629.505340611078
+      ],
+      "typeName": "DSCoreNodesUI.DummyNode",
+      "creationName": "DSCoreNodesUI.DummyNode",
+      "displayName": "Shell.BySTL",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [
+        true
+      ],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType7, Reach"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "f2bdd791-88bd-4d74-8489-6e743bf8406b",
+      "name": "DefaultNodeName",
+      "position": [
+        1125.07839995352,
+        310.263922038632
+      ],
+      "typeName": "DSCoreNodesUI.DummyNode",
+      "creationName": "DSCoreNodesUI.DummyNode",
+      "displayName": "ShellStrategy.Create",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [
+        true,
+        true
+      ],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType7, Reach"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "89ea9048-735f-4199-9430-2ce2512d37f0",
+      "name": "DefaultNodeName",
+      "position": [
+        1111.85625193203,
+        501.773851997625
+      ],
+      "typeName": "DSCoreNodesUI.DummyNode",
+      "creationName": "DSCoreNodesUI.DummyNode",
+      "displayName": "PlaceCoreStrategy.Create",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [
+        true
+      ],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType7, Reach"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "38f97259-e9fb-4261-babb-b36921e17b41",
+      "name": "DefaultNodeName",
+      "position": [
+        1483.05340044893,
+        385.284340349231
+      ],
+      "typeName": "DSCoreNodesUI.CreateList",
+      "creationName": "DSCoreNodesUI.CreateList",
+      "displayName": "List.Create",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [
+        true,
+        true
+      ],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType5`1[[<>f__AnonymousType4`2[[System.String, mscorlib],[System.String, mscorlib]][], Reach]], Reach",
+        "varInputs": [
+          {
+            "$type": "<>f__AnonymousType4`2[[System.String, mscorlib],[System.String, mscorlib]], Reach",
+            "name": "index0",
+            "type": "Item Index #0"
+          },
+          {
+            "$type": "<>f__AnonymousType4`2[[System.String, mscorlib],[System.String, mscorlib]], Reach",
+            "name": "index1",
+            "type": "Item Index #1"
+          }
+        ]
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "08ba62f8-5d86-48ba-a465-0736e838cc49",
+      "name": "DefaultNodeName",
+      "position": [
+        1709.5250916594,
+        241.260216925662
+      ],
+      "typeName": "DSCoreNodesUI.DummyNode",
+      "creationName": "DSCoreNodesUI.DummyNode",
+      "displayName": "ListStrategy.Create",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [
+        true,
+        true
+      ],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType7, Reach"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "6c72af9f-dbe1-4380-a2d4-9a661872a63b",
+      "name": "DefaultNodeName",
+      "position": [
+        1998.56638303359,
+        145.90273535594
+      ],
+      "typeName": "DSCoreNodesUI.DummyNode",
+      "creationName": "DSCoreNodesUI.DummyNode",
+      "displayName": "Plan.Execute",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [
+        true,
+        true
+      ],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType7, Reach"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "07cd7b2a-8844-4164-b2af-e2ebc3290124",
+      "name": "DefaultNodeName",
+      "position": [
+        2379.57278516544,
+        238.411293381603
+      ],
+      "typeName": "DSCoreNodesUI.DummyNode",
+      "creationName": "DSCoreNodesUI.DummyNode",
+      "displayName": "StrategyArgs.Design",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [
+        true
+      ],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType7, Reach"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "0f4be34d-5045-4fc4-a6ce-397e069c088f",
+      "name": "DefaultNodeName",
+      "position": [
+        2377.11289433458,
+        83.1487721156123
+      ],
+      "typeName": "DSCoreNodesUI.DummyNode",
+      "creationName": "DSCoreNodesUI.DummyNode",
+      "displayName": "StrategyArgs.BuildData",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [
+        true
+      ],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType7, Reach"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "8e07781c-cb9b-49f8-ad58-0f6df021bd3c",
+      "name": "DefaultNodeName",
+      "position": [
+        2613.8412119405,
+        237.687796078407
+      ],
+      "typeName": "DSCoreNodesUI.DummyNode",
+      "creationName": "DSCoreNodesUI.DummyNode",
+      "displayName": "Design.Floors",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [
+        true
+      ],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType7, Reach"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "90691a01-68e7-4766-9251-9dd36b713356",
+      "name": "DefaultNodeName",
+      "position": [
+        2822.06373580049,
+        237.543096617767
+      ],
+      "typeName": "DSCore.List.FirstItem@var[]..[]",
+      "creationName": "DSCore.List.FirstItem@var[]..[]",
+      "displayName": "List.FirstItem",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [
+        true
+      ],
+      "replication": "applyShortest",
+      "extra": {
+        "$type": "<>f__AnonymousType7, Reach"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "fa5939b9-ce26-49b5-8615-e5c09ceb7852",
+      "name": "DefaultNodeName",
+      "position": [
+        3018.13150496677,
+        237.398397157128
+      ],
+      "typeName": "DSCoreNodesUI.DummyNode",
+      "creationName": "DSCoreNodesUI.DummyNode",
+      "displayName": "Floor.Regions",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [
+        true
+      ],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType7, Reach"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "c2693a82-2630-4f0d-b389-5f795f86ddeb",
+      "name": "DefaultNodeName",
+      "position": [
+        2979.78614789735,
+        82.7146737336943
+      ],
+      "typeName": "DSCoreNodesUI.DummyNode",
+      "creationName": "DSCoreNodesUI.DummyNode",
+      "displayName": "BuildData.GridBasis",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [
+        true
+      ],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType7, Reach"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "47d23cf1-0c7a-4b3b-9686-244ad1be198f",
+      "name": "DefaultNodeName",
+      "position": [
+        3241.651353059,
+        143.19904828093041
+      ],
+      "typeName": "DSCoreNodesUI.DummyNode",
+      "creationName": "DSCoreNodesUI.DummyNode",
+      "displayName": "GridBasis.FromGrid",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [
+        true
+      ],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType7, Reach"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "707624cf-64c0-4b3e-a1fe-f65e66ea8623",
+      "name": "DefaultNodeName",
+      "position": [
+        3466.1210351061,
+        71.283416343188009
+      ],
+      "typeName": "DSCore.List.FirstItem@var[]..[]",
+      "creationName": "DSCore.List.FirstItem@var[]..[]",
+      "displayName": "Akaba.Result",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [
+        true
+      ],
+      "replication": "applyShortest",
+      "extra": {
+        "$type": "<>f__AnonymousType7, Reach"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "9aee6b13-27c4-4850-9e40-3df6025ff584",
+      "name": "DefaultNodeName",
+      "position": [
+        3471.76431407104,
+        204.841018513281
+      ],
+      "typeName": "DSCoreNodesUI.DummyNode",
+      "creationName": "DSCoreNodesUI.DummyNode",
+      "displayName": "DynamoGeometry.CuboidBySpace",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [
+        true
+      ],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType7, Reach"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "3ea7d929-9b31-4694-b9d6-bc1ba047efe9",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 0,
+      "startNodeId": "60ea5bf8-350d-40cc-868a-4d6ecab8c87d",
+      "endNodeId": "1991140c-f8ba-4958-a2d5-7cb8bd40bf87",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "3c0c9aa7-53a0-42a6-996a-a85b21cf30d6",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 0,
+      "startNodeId": "1991140c-f8ba-4958-a2d5-7cb8bd40bf87",
+      "endNodeId": "a77c430d-00ba-4010-b510-8f3cbd11a67b",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "5de9e5d7-05ed-4f6d-b13e-8524182d7dbb",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 0,
+      "startNodeId": "a77c430d-00ba-4010-b510-8f3cbd11a67b",
+      "endNodeId": "9c070133-1f22-4878-870e-483e44a0df44",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "92eb115a-04f7-4a02-a0f6-8cf8f39ee255",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 0,
+      "startNodeId": "9def607b-a981-48ce-95d5-93ec0086f53b",
+      "endNodeId": "7a311baf-c426-45d3-8f09-a9f4c84f1b0d",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "d8024d6c-cedf-40c9-8d96-e24d2df172e1",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 1,
+      "startNodeId": "77cb8daa-e0ef-4ae2-8154-4f1337ca1a4a",
+      "endNodeId": "7a311baf-c426-45d3-8f09-a9f4c84f1b0d",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "2846175e-dcf4-4a01-9304-7b5b6552fe69",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 0,
+      "startNodeId": "7a311baf-c426-45d3-8f09-a9f4c84f1b0d",
+      "endNodeId": "1e652c36-1443-47f9-a0bc-a9f58c396a13",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "e6a056d5-a2a7-4760-8d27-a56e878c1212",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 1,
+      "startNodeId": "1e652c36-1443-47f9-a0bc-a9f58c396a13",
+      "endNodeId": "9c070133-1f22-4878-870e-483e44a0df44",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "7167625c-8936-4c26-bfd2-3afefe7c2922",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 2,
+      "startNodeId": "5e32333a-c521-440a-aa3a-2174754726c3",
+      "endNodeId": "9c070133-1f22-4878-870e-483e44a0df44",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "57593ead-aa27-4761-b232-c592763d322e",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 3,
+      "startNodeId": "1d376e83-91a5-40b3-8278-f925aaefb113",
+      "endNodeId": "9c070133-1f22-4878-870e-483e44a0df44",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "aeadf591-b9fc-42fd-8b96-624babdb4628",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 0,
+      "startNodeId": "9c070133-1f22-4878-870e-483e44a0df44",
+      "endNodeId": "f2bdd791-88bd-4d74-8489-6e743bf8406b",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "6b71c9ff-1ea1-41ca-a9e2-9f600c0beaf9",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 0,
+      "startNodeId": "9c070133-1f22-4878-870e-483e44a0df44",
+      "endNodeId": "89ea9048-735f-4199-9430-2ce2512d37f0",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "d73b6268-c4ea-44ae-8ae8-afc660c7fbb0",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 0,
+      "startNodeId": "9c070133-1f22-4878-870e-483e44a0df44",
+      "endNodeId": "08ba62f8-5d86-48ba-a465-0736e838cc49",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "cc650124-4d20-4882-acd9-c36b750e5306",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 0,
+      "startNodeId": "9c070133-1f22-4878-870e-483e44a0df44",
+      "endNodeId": "6c72af9f-dbe1-4380-a2d4-9a661872a63b",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "8cfe024d-7903-4845-8b54-2b056d5cf33a",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 0,
+      "startNodeId": "a38a4a23-767f-4105-b923-d967d704c919",
+      "endNodeId": "65c5398a-2e3b-419c-8cdb-a31fca3bcea0",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "4dfda968-07b7-4910-9b79-bccf1c9d0d8a",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 0,
+      "startNodeId": "65c5398a-2e3b-419c-8cdb-a31fca3bcea0",
+      "endNodeId": "d014a66e-21cb-4ad9-bd3b-3f391f09550b",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "883acbd9-e72b-452d-ad0c-333d5f9095df",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 1,
+      "startNodeId": "d014a66e-21cb-4ad9-bd3b-3f391f09550b",
+      "endNodeId": "f2bdd791-88bd-4d74-8489-6e743bf8406b",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "064a2d19-52ca-4f95-ad19-24dd993a385d",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 0,
+      "startNodeId": "f2bdd791-88bd-4d74-8489-6e743bf8406b",
+      "endNodeId": "38f97259-e9fb-4261-babb-b36921e17b41",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "8896a2ee-a857-4805-a5c1-d0d189571401",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 1,
+      "startNodeId": "89ea9048-735f-4199-9430-2ce2512d37f0",
+      "endNodeId": "38f97259-e9fb-4261-babb-b36921e17b41",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "90a7a25a-9aa4-457b-81dc-f1b6dd085e44",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 1,
+      "startNodeId": "38f97259-e9fb-4261-babb-b36921e17b41",
+      "endNodeId": "08ba62f8-5d86-48ba-a465-0736e838cc49",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "5c83a0f6-afe3-4bb7-8bed-f0857f423b73",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 1,
+      "startNodeId": "08ba62f8-5d86-48ba-a465-0736e838cc49",
+      "endNodeId": "6c72af9f-dbe1-4380-a2d4-9a661872a63b",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "091eb8c1-27f1-420c-85b2-56f3bf919dfd",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 0,
+      "startNodeId": "6c72af9f-dbe1-4380-a2d4-9a661872a63b",
+      "endNodeId": "0f4be34d-5045-4fc4-a6ce-397e069c088f",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "bdbc17bc-ba72-4855-ae81-b7efe50170d7",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 0,
+      "startNodeId": "6c72af9f-dbe1-4380-a2d4-9a661872a63b",
+      "endNodeId": "07cd7b2a-8844-4164-b2af-e2ebc3290124",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "0c9c1d84-d9a1-471d-b7b0-b5070153106a",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 0,
+      "startNodeId": "07cd7b2a-8844-4164-b2af-e2ebc3290124",
+      "endNodeId": "8e07781c-cb9b-49f8-ad58-0f6df021bd3c",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "42570ca2-3112-4efd-99e2-627e37d6fecf",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 0,
+      "startNodeId": "0f4be34d-5045-4fc4-a6ce-397e069c088f",
+      "endNodeId": "c2693a82-2630-4f0d-b389-5f795f86ddeb",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "0687e76d-5dfa-40df-9ad7-dd901a71c9d1",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 0,
+      "startNodeId": "8e07781c-cb9b-49f8-ad58-0f6df021bd3c",
+      "endNodeId": "90691a01-68e7-4766-9251-9dd36b713356",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "1ed2b946-38d5-4d47-9ebd-071715577ad2",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 0,
+      "startNodeId": "90691a01-68e7-4766-9251-9dd36b713356",
+      "endNodeId": "fa5939b9-ce26-49b5-8615-e5c09ceb7852",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "2feb53b5-5543-412d-b20d-4940ea3e7b77",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 0,
+      "startNodeId": "c2693a82-2630-4f0d-b389-5f795f86ddeb",
+      "endNodeId": "47d23cf1-0c7a-4b3b-9686-244ad1be198f",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "0e3ab729-85c5-42d8-8b35-f9e122de9408",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 0,
+      "startNodeId": "47d23cf1-0c7a-4b3b-9686-244ad1be198f",
+      "endNodeId": "707624cf-64c0-4b3e-a1fe-f65e66ea8623",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "55024ced-d82b-4798-984d-dbbe4f829ebc",
+      "kind": "addConnection",
+      "startPortIndex": 0,
+      "endPortIndex": 0,
+      "startNodeId": "47d23cf1-0c7a-4b3b-9686-244ad1be198f",
+      "endNodeId": "9aee6b13-27c4-4850-9e40-3df6025ff584",
+      "startProxy": false,
+      "endProxy": false,
+      "startProxyPosition": [
+        0,
+        1
+      ],
+      "endProxyPosition": [
+        0,
+        1
+      ],
+      "hidden": false
+    }
+  ],
+  "isCustomNode": false,
+  "customNodeDescription": "",
+  "customNodeCategory": "",
+  "offset": [
+    0.0,
+    0.0
+  ],
+  "isCustomizer": true
+}

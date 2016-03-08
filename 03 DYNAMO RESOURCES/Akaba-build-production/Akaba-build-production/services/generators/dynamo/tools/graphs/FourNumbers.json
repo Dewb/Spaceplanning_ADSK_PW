@@ -1,0 +1,99 @@
+{
+  "$type": "System.Dynamic.ExpandoObject, System.Core",
+  "guid": "00000000-0000-0000-0000-000000000000",
+  "name": "Home",
+  "nodes": [
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "118279a4-240d-4ed8-842c-8cfd8baa8824",
+      "name": "DefaultNodeName",
+      "position": [
+        451.86387434555,
+        362.900523560209
+      ],
+      "typeName": "Number",
+      "creationName": "Number",
+      "displayName": "Akaba.Input.Requirements.Site.Width",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType1`1[[System.String, mscorlib]], Reach",
+        "value": "1"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "83b03825-136b-43a7-a2b3-cd9df7a4ca23",
+      "name": "DefaultNodeName",
+      "position": [
+        388.408376963351,
+        444.198952879581
+      ],
+      "typeName": "DSCoreNodesUI.Input.DoubleSlider",
+      "creationName": "DSCoreNodesUI.Input.DoubleSlider",
+      "displayName": "akaba.input.requirements.site.height",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType0`4[[System.Double, mscorlib],[System.Double, mscorlib],[System.Double, mscorlib],[System.Double, mscorlib]], Reach",
+        "value": 1.0,
+        "min": 0.0,
+        "max": 100.0,
+        "step": 0.5
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "bf59c3e9-0a75-4cda-bc1e-2a009a5899bc",
+      "name": "DefaultNodeName",
+      "position": [
+        618.48167539267,
+        676.282722513089
+      ],
+      "typeName": "Number",
+      "creationName": "Number",
+      "displayName": "Akaba.Result",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType1`1[[System.String, mscorlib]], Reach",
+        "value": "1"
+      }
+    },
+    {
+      "$type": "System.Dynamic.ExpandoObject, System.Core",
+      "_id": "7fe355e6-1754-4f27-9c0b-8d502994ad6a",
+      "name": "DefaultNodeName",
+      "position": [
+        438.418848167539,
+        609.811518324607
+      ],
+      "typeName": "Number",
+      "creationName": "Number",
+      "displayName": "Akaba.iNpUt.requirements.SiTe.LengTH",
+      "selected": false,
+      "visible": true,
+      "ignoreDefaults": [],
+      "replication": "applyDisabled",
+      "extra": {
+        "$type": "<>f__AnonymousType1`1[[System.String, mscorlib]], Reach",
+        "value": "1"
+      }
+    }
+  ],
+  "connections": [],
+  "isCustomNode": false,
+  "customNodeDescription": "",
+  "customNodeCategory": "",
+  "offset": [
+    0.0,
+    0.0
+  ],
+  "isCustomizer": true
+}

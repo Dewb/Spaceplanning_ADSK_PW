@@ -1,0 +1,62 @@
+dice.svg 
+
+Designed by Richard Schumann
+Berlin Friedrichshain, Berlin, DE 2014
+Creative Commons – Attribution (CC BY 3.0) 
+
+graph.svg
+“Graph designed by Erin Standley from the thenounproject.com”
+
+home.svg
+
+Anisha Varghese
+GK II, New Delhi, IN 2013
+Creative Commons – Attribution (CC BY 3.0) 
+
+
+question.svg
+
+Designed by Icomatic
+San Francisco, CA, US 2013
+Creative Commons – Attribution (CC BY 3.0) 
+
+
+information.svg
+
+Information by Marcos Folio from The Noun Project
+2013
+Creative Commons – Attribution (CC BY 3.0) 
+
+
+layers.svg
+
+Layers designed by Nono Martínez Alonso from the Noun Project
+Creative Commons – Attribution (CC BY 3.0) 
+
+
+programIcons/hospital.svg
+
+Hospital designed by MaJo Ox from the Noun Project
+Creative Commons – Attribution (CC BY 3.0) 
+
+
+programIcons/school.svg
+
+School designed by PJ Souders from the Noun Project
+Creative Commons – Attribution (CC BY 3.0) 
+
+
+programIcons/plant.svg
+
+Plant by Ashley van Dyck from the Noun Project
+Creative Commons – Attribution (CC BY 3.0) 
+
+
+flip.svg
+Rotate by Lemon Liu from the Noun Project
+Creative Commons – Attribution (CC BY 3.0) 
+
+
+filter.svg
+Funnel by Naomi Atkinson from the Noun Project
+Creative Commons – Attribution (CC BY 3.0) 

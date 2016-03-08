@@ -1,0 +1,13 @@
+build
+.*sw*
+*.pyc
+*.svg
+*.png
+logbook.txt
+bakeoff
+env
+*DS_Store*
+*.pickle
+attic
+dist
+*.egg*

@@ -1,0 +1,412 @@
+<Workspace Version="0.8.0.1233" X="-1600.95261402956" Y="85.8165375165431" zoom="0.803321593462598" Name="ShellSlicerFromSTL" ID="facd847a-56ee-40cc-9903-90e6dea13775" Description="Slices an input shell object from an STL file" Category="Service Core Modeller">
+  <NamespaceResolutionMap>
+    <ClassMap partialName="Point" resolvedName="Autodesk.DesignScript.Geometry.Point" assemblyName="ProtoGeometry.dll" />
+    <ClassMap partialName="Rectangle.Points[0]" resolvedName="Autodesk.DesignScript.Geometry.Rectangle" assemblyName="ProtoGeometry.dll" />
+    <ClassMap partialName="Rectangle" resolvedName="Autodesk.DesignScript.Geometry.Rectangle" assemblyName="ProtoGeometry.dll" />
+    <ClassMap partialName="Point.Z" resolvedName="Autodesk.DesignScript.Geometry.Point" assemblyName="ProtoGeometry.dll" />
+    <ClassMap partialName="List" resolvedName="DSCore.List" assemblyName="DSCoreNodes.dll" />
+    <ClassMap partialName="Vector" resolvedName="Autodesk.DesignScript.Geometry.Vector" assemblyName="ProtoGeometry.dll" />
+    <ClassMap partialName="Curve" resolvedName="Autodesk.DesignScript.Geometry.Curve" assemblyName="ProtoGeometry.dll" />
+    <ClassMap partialName="Curve.reverse" resolvedName="Autodesk.DesignScript.Geometry.Curve" assemblyName="ProtoGeometry.dll" />
+    <ClassMap partialName="Vector.ZAxis" resolvedName="Autodesk.DesignScript.Geometry.Vector" assemblyName="ProtoGeometry.dll" />
+  </NamespaceResolutionMap>
+  <Elements>
+    <DSCore.File.FileObject guid="994dfb2f-708c-42f3-85bc-5de37c548c09" type="DSCore.File.FileObject" nickname="File.FromPath" x="250" y="0" isVisible="true" isUpstreamVisible="true" lacing="Disabled" />
+    <Dynamo.Nodes.DSFunction guid="34816f19-2103-4670-a18a-09bd38627f01" type="Dynamo.Nodes.DSFunction" nickname="File.ReadText" x="410.12654836102" y="1.18461971764009" isVisible="true" isUpstreamVisible="true" lacing="Shortest" assembly="DSCoreNodes.dll" function="DSCore.IO.File.ReadText@var" />
+    <Dynamo.Nodes.DSFunction guid="486793af-3bdb-42f0-a8a6-e21f785c600d" type="Dynamo.Nodes.DSFunction" nickname="STL.ByASCII" x="553.26264771517" y="2.36923943528018" isVisible="true" isUpstreamVisible="true" lacing="Shortest" assembly="D:\SUBHAJIT%20PROJECTS\WORK\00%20DYNAMO%20AUTOMATED%20STAIRCORE\3RD%20AUG\SINGLE%20WITH%20COLINS%20SLICER\stuffer.dll" function="stuffer.STL.ByASCII@string" />
+    <Dynamo.Nodes.DoubleInput guid="21b3d305-6202-47e3-891a-6bc648af473a" type="Dynamo.Nodes.DoubleInput" nickname="Number" x="597.90288461143" y="138.52336328284" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <System.Double value="0.5" />
+    </Dynamo.Nodes.DoubleInput>
+    <Dynamo.Nodes.DoubleInput guid="364fee3c-719a-46e1-b76d-aba434c12b29" type="Dynamo.Nodes.DoubleInput" nickname="Number" x="598.40169465993" y="198.28245855729" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <System.Double value="3.5" />
+    </Dynamo.Nodes.DoubleInput>
+    <Dynamo.Nodes.DSFunction guid="b0f8e0a4-6911-4d46-a9e5-95bb320804f6" type="Dynamo.Nodes.DSFunction" nickname="STL.Mesh" x="710.34971772727" y="0.680023631220138" isVisible="false" isUpstreamVisible="true" lacing="Shortest" assembly="D:\SUBHAJIT%20PROJECTS\WORK\00%20DYNAMO%20AUTOMATED%20STAIRCORE\3RD%20AUG\SINGLE%20WITH%20COLINS%20SLICER\stuffer.dll" function="stuffer.STL.Mesh" />
+    <Dynamo.Nodes.DoubleInput guid="45e39647-3f7c-406d-bb3b-497d34fbc577" type="Dynamo.Nodes.DoubleInput" nickname="Level" x="597.63917825032" y="257.4266631835" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <System.Double value="1" />
+    </Dynamo.Nodes.DoubleInput>
+    <Dynamo.Nodes.DSFunction guid="8c7b0f36-0516-4e9a-baaa-1ffa65cc440b" type="Dynamo.Nodes.DSFunction" nickname="Shell.ByMesh" x="863.91893847579" y="0.985314955790045" isVisible="true" isUpstreamVisible="true" lacing="Shortest" assembly="D:\SUBHAJIT%20PROJECTS\WORK\00%20DYNAMO%20AUTOMATED%20STAIRCORE\3RD%20AUG\SINGLE%20WITH%20COLINS%20SLICER\stuffer.dll" function="stuffer.Shell.ByMesh@Autodesk.DesignScript.Geometry.Mesh" />
+    <Dynamo.Nodes.DSFunction guid="3b2fc48e-1857-4e3a-bf58-40d90bc7669b" type="Dynamo.Nodes.DSFunction" nickname="GridBasis.BySize" x="813.52434221679" y="127.38182899928" isVisible="true" isUpstreamVisible="true" lacing="Shortest" assembly="D:\SUBHAJIT%20PROJECTS\WORK\00%20DYNAMO%20AUTOMATED%20STAIRCORE\3RD%20AUG\SINGLE%20WITH%20COLINS%20SLICER\stuffer.dll" function="stuffer.GridBasis.BySize@double,double" />
+    <Dynamo.Nodes.DoubleInput guid="ca6fa458-b8b8-4298-b0cb-14f716beb8ae" type="Dynamo.Nodes.DoubleInput" nickname="Number" x="1092.05895706867" y="67.4144573159801" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <System.Double value="0" />
+    </Dynamo.Nodes.DoubleInput>
+    <Dynamo.Nodes.DSFunction guid="d7c09ee0-4cdb-446d-b307-32d7b79dfb29" type="Dynamo.Nodes.DSFunction" nickname="GridBasis.FloorHeight" x="1090.9109482544" y="219.11632712805" isVisible="true" isUpstreamVisible="true" lacing="Shortest" assembly="D:\SUBHAJIT%20PROJECTS\WORK\00%20DYNAMO%20AUTOMATED%20STAIRCORE\3RD%20AUG\SINGLE%20WITH%20COLINS%20SLICER\stuffer.dll" function="stuffer.GridBasis.FloorHeight@int" />
+    <Dynamo.Nodes.DSFunction guid="1833ba76-d704-4cb7-8cb7-1d1c4fb3ed1c" type="Dynamo.Nodes.DSFunction" nickname="Shell.Height" x="1091.59714774767" y="133.08142504374" isVisible="true" isUpstreamVisible="true" lacing="Shortest" assembly="D:\SUBHAJIT%20PROJECTS\WORK\00%20DYNAMO%20AUTOMATED%20STAIRCORE\3RD%20AUG\SINGLE%20WITH%20COLINS%20SLICER\stuffer.dll" function="stuffer.Shell.Height" />
+    <DSCoreNodesUI.NumberRange guid="97730fc3-c87f-41e9-846d-f570326b474b" type="DSCoreNodesUI.NumberRange" nickname="Number Range" x="1331.64253446185" y="61.68210760702" isVisible="true" isUpstreamVisible="true" lacing="Longest" />
+    <Dynamo.Nodes.DSFunction guid="b0cd8233-bd61-4101-b826-9db82372a70f" type="Dynamo.Nodes.DSFunction" nickname="/" x="1333.17993878428" y="216.07871292194" isVisible="true" isUpstreamVisible="true" lacing="Shortest" assembly="" function="/@var[]..[],var[]..[]" />
+    <Dynamo.Nodes.DSFunction guid="364c65b8-ec95-471c-9ef8-6c4e2c3bc083" type="Dynamo.Nodes.DSFunction" nickname="GridBasis.FloorHeight" x="1559.15295759492" y="85.3081956128901" isVisible="true" isUpstreamVisible="true" lacing="Shortest" assembly="D:\SUBHAJIT%20PROJECTS\WORK\00%20DYNAMO%20AUTOMATED%20STAIRCORE\3RD%20AUG\SINGLE%20WITH%20COLINS%20SLICER\stuffer.dll" function="stuffer.GridBasis.FloorHeight@int" />
+    <Dynamo.Nodes.DSFunction guid="bb691d31-ac50-4057-b4ef-223ea3cbaff6" type="Dynamo.Nodes.DSFunction" nickname="Shell.GetFloorOutline" x="1853.88998229895" y="69.39647334858" isVisible="false" isUpstreamVisible="true" lacing="Shortest" assembly="D:\SUBHAJIT%20PROJECTS\WORK\00%20DYNAMO%20AUTOMATED%20STAIRCORE\3RD%20AUG\SINGLE%20WITH%20COLINS%20SLICER\stuffer.dll" function="stuffer.Shell.GetFloorOutline@double" />
+    <Dynamo.Nodes.DSFunction guid="c2e683c3-4818-4de5-8eb6-1af02e3b3626" type="Dynamo.Nodes.DSFunction" nickname="Flatten" x="1900.41743885711" y="184.73689859072" isVisible="false" isUpstreamVisible="true" lacing="Shortest" assembly="" function="Flatten@var[]..[]" />
+    <DSCoreNodesUI.Input.DoubleSlider guid="5275c5d4-76ff-4333-a92d-a1a7a40768bd" type="DSCoreNodesUI.Input.DoubleSlider" nickname="Random Generator" x="1895.16719183204" y="279.08280971057" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <System.Double>51.1</System.Double>
+      <Range min="0" max="100" step="0.1" />
+    </DSCoreNodesUI.Input.DoubleSlider>
+    <DSIronPythonNode.PythonNode guid="3fe44acf-c10d-4498-8cb9-628c92f1ec17" type="DSIronPythonNode.PythonNode" nickname="Shell Type" x="2355.41635943723" y="554.52025161579" isVisible="true" isUpstreamVisible="true" lacing="Disabled" inputcount="1">
+      <Script>import clr
+clr.AddReference('ProtoGeometry')
+from Autodesk.DesignScript.Geometry import *
+#The inputs to this node will be stored as a list in the IN variable.
+dataEnteringNode = IN
+
+
+a = IN[0][-5]
+
+
+a = int(a)
+
+
+#Assign your output to the OUT variable
+OUT = a</Script>
+    </DSIronPythonNode.PythonNode>
+    <Dynamo.Nodes.CodeBlockNodeModel guid="9d0d5b2c-b87d-4ee2-805a-17064900d5f3" type="Dynamo.Nodes.CodeBlockNodeModel" nickname="Floor Curves" x="2377.80891774605" y="468.22707479789" isVisible="false" isUpstreamVisible="true" lacing="Disabled" CodeText="a[1];" ShouldFocus="false" />
+    <Dynamo.Nodes.CodeBlockNodeModel guid="7984c679-751b-45c7-924c-2552ed3b900e" type="Dynamo.Nodes.CodeBlockNodeModel" nickname="Box  Low Level" x="2376.02651622129" y="385.15522473294" isVisible="false" isUpstreamVisible="true" lacing="Disabled" CodeText="a[0];" ShouldFocus="false" />
+    <DSIronPythonNode.PythonNode guid="b8c018d0-da74-4629-8a73-b463bd6cfb76" type="DSIronPythonNode.PythonNode" nickname="Box + Floor Maker " x="2370.82986784052" y="210.41500857634" isVisible="false" isUpstreamVisible="true" lacing="Disabled" inputcount="4">
+      <Script>import clr
+clr.AddReference('ProtoGeometry')
+from Autodesk.DesignScript.Geometry import *
+import math
+#The inputs to this node will be stored as a list in the IN variable.
+dataEnteringNode = IN
+
+polygonList = IN[0]
+type = IN[1]
+heightList = IN[2]
+iter = IN[3]
+
+#last polygon is null, so take it off
+del polygonList[-1]
+
+srfAreaList=[]
+selectedpolyList=[]
+zHeightList=[]
+
+
+#computes for all except type 4-----------------------------------------------------------------------------------------------
+def boxFloorMaker4():	
+	newpolygonList=[]
+	poly1st = polygonList[0]
+	srf0 = Surface.ByPatch(poly1st)
+	area1st = srf0.Area
+	# compute floor areas	
+	for i in range(len(polygonList)):
+		
+		polygon = polygonList[i]
+		srf = Surface.ByPatch(polygon)		
+		area  = srf.Area
+		if math.pow((area1st - area),2) &lt; 5 :continue 
+		srfAreaList.append(area)
+		newpolygonList.append(polygon)
+		
+	# select floors where area changes
+	for i in range(len(srfAreaList)-1):
+		areaCurrent = srfAreaList[i]
+		
+		areaNext = srfAreaList[i+1]
+		areaSubtract = areaNext-areaCurrent
+		if math.pow(areaSubtract,2) &lt; 5:
+			pass
+		else:
+			selectedpolyList.append(newpolygonList[i])	
+	selectedpolyList.append(newpolygonList[-1])
+	
+	#translate the selected floors to ground lvl
+	newPolyList=[]
+	zHeightList=[]
+	
+	for i in range(len(selectedpolyList)):
+		selPolygon = selectedpolyList[i]
+		pCenter = selPolygon.Center()
+		pOrigin = Point.ByCoordinates(pCenter.X,pCenter.Y,0)		 
+		vec = Vector.ByTwoPoints(pCenter,pOrigin)
+		newPoly = selPolygon.Translate(vec)
+					
+		newPolyList.append(newPoly)
+		zHeightList.append(pCenter.Z)	
+		
+	#trim the floors polygons to make individual blocks
+	trimmedSrfList=[]
+	perimeterList = []
+	for i in range(len(newPolyList)-1):
+		polyA = newPolyList[i]
+		polyB = newPolyList[i+1]
+		polyBSolid = polyB.ExtrudeAsSolid(Vector.ZAxis(),5)
+		polyASrf = Surface.ByPatch(polyA)
+		trimmedSurf = Surface.SubtractFrom(polyASrf,polyBSolid)
+		trimmedSrfList.append(trimmedSurf)
+		pass	
+	trimmedSrfList.append(Surface.ByPatch(newPolyList[-1]))
+	
+	#just for type4
+	polyBSolid = poly1st.ExtrudeAsSolid(Vector.ZAxis(),-5)
+	polyASrf = trimmedSrfList[0][0]
+	trimmedSurf = Surface.SubtractFrom(polyASrf,polyBSolid)
+	trimmedSrfList[0] = trimmedSurf	
+	
+	newtrimmedList=[]
+	newperimeterList = []
+	
+	
+	# flatten the list
+	for i in range(len(trimmedSrfList)):
+		crv = trimmedSrfList[i]
+		try :
+			for j in range(len(crv)):
+				newtrimmedList.append(crv[j])
+				perim = crv[j].Perimeter
+				newperimeterList.append(perim)
+		except:
+			newtrimmedList.append(crv)
+			perim = crv.Perimeter
+			newperimeterList.append(perim)
+			
+	#make floor curves for the individual blocks		
+	trimmedCurvesList=[]
+	ptList=[]
+	rectangleList = []
+	testL=[]
+	for i in range(len(newtrimmedList)):
+		srf = newtrimmedList[i]
+		crvs = srf.PerimeterCurves()
+		crvs = PolyCurve.ByJoinedCurves(crvs)
+		testL.append(crvs)		
+
+		#IF ERROR TRIGGER THESE DIST VALUES, BOTH WORKS
+		dist= crvs.Length/4
+		#dist= float(newperimeterList[i]/4)
+		
+		#pt1 = crvs.PointAtDistance(dist)
+		pt2 = crvs.PointAtDistance(dist*2)
+		pt4 = crvs.PointAtDistance(dist*3.999)
+		pt1 = Point.ByCoordinates(pt2.X,pt4.Y)
+		pt3 = Point.ByCoordinates(pt4.X,pt2.Y)
+		#pt3 = crvs.PointAtDistance(dist*3)
+		
+		# make rectangles for the floor curves
+		ptList.append((pt1,pt2,pt3,pt4))
+		"""
+		if type == 3:
+			rec = Rectangle.ByCornerPoints(pt3,pt4,pt1,pt2)
+		else:
+		"""
+		rec = Rectangle.ByCornerPoints(pt1,pt2,pt3,pt4)
+		rectangleList.append(rec)
+		trimmedCurvesList.append(crvs)
+		
+	if type == 3:
+		tmp = rectangleList[1]
+		tmp1 = zHeightList[1]
+		zHeightList[1] = zHeightList[2]
+		zHeightList[2] = tmp1
+		rectangleList[1] = rectangleList[2]
+		rectangleList[2] = tmp
+	
+	# make floor curves as rectangle objects
+	newRecList = []
+	boxRecList = []
+	for i in range(len(rectangleList)):
+		rec = rectangleList[i]
+		boxRecList.append(rec)
+		zHeight = zHeightList[i]
+		newRecL=[]
+		for j in range(len(heightList)):
+			
+			heightVal =  heightList[j]
+			if zHeight &lt; heightVal : break		 
+			vec = Vector.ZAxis()
+			newRecs = rec.Translate(vec,heightVal)
+			newRecL.append(newRecs)
+		newRecList.append(newRecL)
+	#return testL
+	return boxRecList,newRecList
+#-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+	
+	
+	
+
+	
+	
+#computes for all except type 4-----------------------------------------------------------------------------------------------
+def boxFloorMakerAll():	
+	# compute floor areas	
+	for i in range(len(polygonList)):
+		polygon = polygonList[i]
+		srf = Surface.ByPatch(polygon)
+		area  = srf.Area
+		srfAreaList.append(area)
+		
+	# select floors where area changes
+	for i in range(len(srfAreaList)-1):
+		areaCurrent = srfAreaList[i]
+		areaNext = srfAreaList[i+1]
+		areaSubtract = areaNext-areaCurrent
+		if math.pow(areaSubtract,2) &lt; 5:
+			pass
+		else:
+			selectedpolyList.append(polygonList[i])	
+	selectedpolyList.append(polygonList[-1])
+	
+	#translate the selected floors to ground lvl
+	newPolyList=[]
+	zHeightList=[]
+	for i in range(len(selectedpolyList)):
+		selPolygon = selectedpolyList[i]
+		pCenter = selPolygon.Center()
+		pOrigin = Point.ByCoordinates(pCenter.X,pCenter.Y,0)		 
+		vec = Vector.ByTwoPoints(pCenter,pOrigin)
+		newPoly = selPolygon.Translate(vec)		
+		newPolyList.append(newPoly)
+		zHeightList.append(pCenter.Z)	
+		
+	#trim the floors polygons to make individual blocks
+	trimmedSrfList=[]
+	perimeterList = []
+	for i in range(len(newPolyList)-1):
+		polyA = newPolyList[i]
+		polyB = newPolyList[i+1]
+		polyBSolid = polyB.ExtrudeAsSolid(Vector.ZAxis(),5)
+		polyASrf = Surface.ByPatch(polyA)
+		trimmedSurf = Surface.SubtractFrom(polyASrf,polyBSolid)
+		trimmedSrfList.append(trimmedSurf)
+		pass	
+	trimmedSrfList.append(Surface.ByPatch(newPolyList[-1]))
+		
+	newtrimmedList=[]
+	newperimeterList = []
+	
+	# flatten the list
+	for i in range(len(trimmedSrfList)):
+		crv = trimmedSrfList[i]
+		try :
+			for j in range(len(crv)):
+				newtrimmedList.append(crv[j])
+				perim = crv[j].Perimeter
+				newperimeterList.append(perim)
+		except:
+			newtrimmedList.append(crv)
+			perim = crv.Perimeter
+			newperimeterList.append(perim)
+			
+	#make floor curves for the individual blocks		
+	trimmedCurvesList=[]
+	ptList=[]
+	rectangleList = []
+	for i in range(len(newtrimmedList)):
+		srf = newtrimmedList[i]
+		crvs = srf.PerimeterCurves()
+		crvs = PolyCurve.ByJoinedCurves(crvs)
+	
+		#IF ERROR TRIGGER THESE DIST VALUES, BOTH WORKS
+		#dist= crvs.Length/4
+		dist= float(newperimeterList[i]/4)
+		
+		#pt1 = crvs.PointAtDistance(dist)
+		pt2 = crvs.PointAtDistance(dist*0)
+		pt4 = crvs.PointAtDistance(dist*2)
+		pt1 = Point.ByCoordinates(pt2.X,pt4.Y)
+		pt3 = Point.ByCoordinates(pt4.X,pt2.Y)
+		#pt3 = crvs.PointAtDistance(dist*3)
+		
+		# make rectangles for the floor curves
+		ptList.append((pt1,pt2,pt3,pt4))
+		"""
+		if type == 3:
+			rec = Rectangle.ByCornerPoints(pt3,pt4,pt1,pt2)
+		else:
+		"""
+		rec = Rectangle.ByCornerPoints(pt1,pt2,pt3,pt4)
+		rectangleList.append(rec)
+		trimmedCurvesList.append(crvs)
+		
+	if type == 3:
+		tmp = rectangleList[1]
+		tmp1 = zHeightList[1]
+		zHeightList[1] = zHeightList[2]
+		zHeightList[2] = tmp1
+		rectangleList[1] = rectangleList[2]
+		rectangleList[2] = tmp
+	
+	# make floor curves as rectangle objects
+	newRecList = []
+	boxRecList = []
+	for i in range(len(rectangleList)):
+		rec = rectangleList[i]
+		boxRecList.append(rec)
+		zHeight = zHeightList[i]
+		newRecL=[]
+		for j in range(len(heightList)):
+			
+			heightVal =  heightList[j]
+			if zHeight &lt; heightVal : break		 
+			vec = Vector.ZAxis()
+			newRecs = rec.Translate(vec,heightVal)
+			newRecL.append(newRecs)
+		newRecList.append(newRecL)
+	
+	return boxRecList,newRecList
+#-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# type 4 is O SHELL, so needs different treatment
+
+if type == 4:
+	out =boxFloorMaker4()
+else :	
+	out = boxFloorMakerAll()
+	
+			
+	
+	
+	
+	
+#Assign your output to the OUT variable
+#OUT = newPolyList,trimmedSrfList,zHeightList,newtrimmedList,newRecList,ptList
+OUT = out</Script>
+    </DSIronPythonNode.PythonNode>
+    <Dynamo.Nodes.Symbol guid="49162ab9-d655-417c-82f5-3d7c9149a989" type="Dynamo.Nodes.Symbol" nickname="Input" x="0" y="0" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <Symbol value="STLPath" />
+    </Dynamo.Nodes.Symbol>
+    <Dynamo.Nodes.Output guid="22443797-e270-4547-b9ba-f325c6707d60" type="Dynamo.Nodes.Output" nickname="Output" x="2685.40554800576" y="528.153174104421" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <Symbol value="shellTypes" />
+    </Dynamo.Nodes.Output>
+    <Dynamo.Nodes.Output guid="3f9d7e71-19b9-4276-b133-09ff7bb9d923" type="Dynamo.Nodes.Output" nickname="Output" x="2688.10020705731" y="450.454484248178" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <Symbol value="floorCurves" />
+    </Dynamo.Nodes.Output>
+    <Dynamo.Nodes.Output guid="1dd5f0cb-f072-49f1-ade0-84715c639cce" type="Dynamo.Nodes.Output" nickname="Output" x="2685.40554800576" y="375.450453443489" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <Symbol value="lowLevelBoxes" />
+    </Dynamo.Nodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Models.ConnectorModel start="994dfb2f-708c-42f3-85bc-5de37c548c09" start_index="0" end="34816f19-2103-4670-a18a-09bd38627f01" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="34816f19-2103-4670-a18a-09bd38627f01" start_index="0" end="486793af-3bdb-42f0-a8a6-e21f785c600d" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="486793af-3bdb-42f0-a8a6-e21f785c600d" start_index="0" end="b0f8e0a4-6911-4d46-a9e5-95bb320804f6" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="21b3d305-6202-47e3-891a-6bc648af473a" start_index="0" end="3b2fc48e-1857-4e3a-bf58-40d90bc7669b" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="364fee3c-719a-46e1-b76d-aba434c12b29" start_index="0" end="3b2fc48e-1857-4e3a-bf58-40d90bc7669b" end_index="1" portType="0" />
+    <Dynamo.Models.ConnectorModel start="b0f8e0a4-6911-4d46-a9e5-95bb320804f6" start_index="0" end="8c7b0f36-0516-4e9a-baaa-1ffa65cc440b" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="45e39647-3f7c-406d-bb3b-497d34fbc577" start_index="0" end="d7c09ee0-4cdb-446d-b307-32d7b79dfb29" end_index="1" portType="0" />
+    <Dynamo.Models.ConnectorModel start="8c7b0f36-0516-4e9a-baaa-1ffa65cc440b" start_index="0" end="1833ba76-d704-4cb7-8cb7-1d1c4fb3ed1c" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="8c7b0f36-0516-4e9a-baaa-1ffa65cc440b" start_index="0" end="bb691d31-ac50-4057-b4ef-223ea3cbaff6" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="3b2fc48e-1857-4e3a-bf58-40d90bc7669b" start_index="0" end="d7c09ee0-4cdb-446d-b307-32d7b79dfb29" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="3b2fc48e-1857-4e3a-bf58-40d90bc7669b" start_index="0" end="364c65b8-ec95-471c-9ef8-6c4e2c3bc083" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="ca6fa458-b8b8-4298-b0cb-14f716beb8ae" start_index="0" end="97730fc3-c87f-41e9-846d-f570326b474b" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="d7c09ee0-4cdb-446d-b307-32d7b79dfb29" start_index="0" end="97730fc3-c87f-41e9-846d-f570326b474b" end_index="2" portType="0" />
+    <Dynamo.Models.ConnectorModel start="d7c09ee0-4cdb-446d-b307-32d7b79dfb29" start_index="0" end="b0cd8233-bd61-4101-b826-9db82372a70f" end_index="1" portType="0" />
+    <Dynamo.Models.ConnectorModel start="1833ba76-d704-4cb7-8cb7-1d1c4fb3ed1c" start_index="0" end="97730fc3-c87f-41e9-846d-f570326b474b" end_index="1" portType="0" />
+    <Dynamo.Models.ConnectorModel start="97730fc3-c87f-41e9-846d-f570326b474b" start_index="0" end="b0cd8233-bd61-4101-b826-9db82372a70f" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="b0cd8233-bd61-4101-b826-9db82372a70f" start_index="0" end="364c65b8-ec95-471c-9ef8-6c4e2c3bc083" end_index="1" portType="0" />
+    <Dynamo.Models.ConnectorModel start="364c65b8-ec95-471c-9ef8-6c4e2c3bc083" start_index="0" end="bb691d31-ac50-4057-b4ef-223ea3cbaff6" end_index="1" portType="0" />
+    <Dynamo.Models.ConnectorModel start="364c65b8-ec95-471c-9ef8-6c4e2c3bc083" start_index="0" end="b8c018d0-da74-4629-8a73-b463bd6cfb76" end_index="2" portType="0" />
+    <Dynamo.Models.ConnectorModel start="bb691d31-ac50-4057-b4ef-223ea3cbaff6" start_index="0" end="c2e683c3-4818-4de5-8eb6-1af02e3b3626" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="c2e683c3-4818-4de5-8eb6-1af02e3b3626" start_index="0" end="b8c018d0-da74-4629-8a73-b463bd6cfb76" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="5275c5d4-76ff-4333-a92d-a1a7a40768bd" start_index="0" end="b8c018d0-da74-4629-8a73-b463bd6cfb76" end_index="3" portType="0" />
+    <Dynamo.Models.ConnectorModel start="3fe44acf-c10d-4498-8cb9-628c92f1ec17" start_index="0" end="b8c018d0-da74-4629-8a73-b463bd6cfb76" end_index="1" portType="0" />
+    <Dynamo.Models.ConnectorModel start="3fe44acf-c10d-4498-8cb9-628c92f1ec17" start_index="0" end="22443797-e270-4547-b9ba-f325c6707d60" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="9d0d5b2c-b87d-4ee2-805a-17064900d5f3" start_index="0" end="3f9d7e71-19b9-4276-b133-09ff7bb9d923" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="7984c679-751b-45c7-924c-2552ed3b900e" start_index="0" end="1dd5f0cb-f072-49f1-ade0-84715c639cce" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="b8c018d0-da74-4629-8a73-b463bd6cfb76" start_index="0" end="9d0d5b2c-b87d-4ee2-805a-17064900d5f3" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="b8c018d0-da74-4629-8a73-b463bd6cfb76" start_index="0" end="7984c679-751b-45c7-924c-2552ed3b900e" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="49162ab9-d655-417c-82f5-3d7c9149a989" start_index="0" end="994dfb2f-708c-42f3-85bc-5de37c548c09" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="49162ab9-d655-417c-82f5-3d7c9149a989" start_index="0" end="3fe44acf-c10d-4498-8cb9-628c92f1ec17" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+</Workspace>

@@ -1,0 +1,447 @@
+class Element *polymorphic *extensible
+   uniqueId :string
+   host :string *optional
+   hosted :array<string> *optional
+   type :string   *internal
+   schema :string *internal *optional
+   lastModifiedBy :object *atomic *internal
+   parents :object *atomic *optional
+   children :object *atomic *optional
+   designOptionId :string *optional 
+
+class Mass :Element
+   numLevels :int     # is this just levels.size() ?
+   levelHeight :double
+   width :double
+   depth :double
+   styleName :string
+   offset :Vector *optional
+   levels :array<string>
+      # Initialize with an empty array.
+      # ids of each Level, ordered from lowest level to highest
+   roomGen :int 
+      # Used by BuildingMaker; initialize with 0.
+      # Change in this field means the space plan should regenerate rooms.
+      
+class Level :Element
+   footprint :Footprint
+   height :double
+   styleName :string
+   purpose :Purpose
+   exteriorWallIds :array<string>
+      # Initialize with an empty array.
+   name :string *optional
+   floorId :string *optional
+   roomIds :array<string> *optional
+   
+class Wall :Element
+   point1 :Vector
+   point2 :Vector
+   height :double
+   width :double
+   purpose :Purpose
+   styleName :string *optional
+   levelId :string *optional
+
+class Floor :Element
+   footprint :Footprint
+   levelId :string
+   styleName :string *optional
+
+class Room :Element
+   footprint :Footprint
+   height :double
+   levelId :string *optional
+   roomFinderId :string *optional
+   usageColorIndex :int *optional
+   usageId :string *optional
+   
+typedef Footprint :array<Vector>
+
+class Vector *atomic
+   elements :array<double, 3>
+
+class Color *atomic
+   # All numbers are 0.-1.
+   red :double
+   green :double
+   blue :double
+   alpha :double *optional
+
+class Material :Element
+   color :Color
+
+   # To add a texture, provide one of the following:
+   textureId :string *optional         # a reference to a texture element containing an image
+   commonTextureName :string *optional # a few textures are historically assumed to be in all apps - this name should mean something to them
+
+   # Additional fields for textured materials:
+   horizontalScale :double *optional
+   verticalScale :double *optional
+
+class Texture :Element
+   image :string # base-64 representation of the image
+
+enum Purpose
+   base
+   intermediate
+   roof
+   
+class Window :Element
+   centerpoint :Vector
+   verticalOffset :double  # height above the centerpoint to draw the window
+   width :double
+   depth :double
+   height :double
+   rotation :double  # degrees
+   levelId :string *optional
+   positionOnHost: double *optional  # distance between our centerpoint and the host's first endpoint
+   
+class Door :Element
+   centerpoint :Vector
+   width :double
+   depth :double
+   height :double
+   rotation :double # degrees
+   host :string *optional
+   positionOnHost :double *optional
+      # distance between our centerpoint and the host's first endpoint
+   levelId :string *optional
+      # Spaceplan swoops elements away based on levelId; not a hosting relationship.
+      
+class Solid :Element
+   # An AModeler body.
+   shape :string
+   position :array<double, 3>
+   rotation :array<double, 4>
+   scriptId :string *optional # ID of the script element that was used to generate our faces
+   scriptParameters :object *atomic *optional
+   scale :array<double, 3>  *atomic *optional
+   faces :array<AModelerFace>
+   surfaces :map<string, Surface> *atomic *optional  
+      # The map may be empty or have null Surfaces, 
+      # corresp. to AModeler::UnspecifiedSurface.
+      # BTW the type should be map<int, Surface> !
+
+   # Deprecating, see face Material:
+   color :Color *optional # may be overridden by face colors
+   textureName :string *optional # Temporary texture representation. This name should mean something to your client
+
+class AModelerFace *atomic
+   # An AModeler face.
+   id :string *optional      # For Formit Web beta, the id string must be a positive int32.
+   vertices :array<Vertex>
+   materialId :string *optional
+   surface :int  *optional   # The id of one of the surfaces owned by the Solid.
+                             # The presence of a surface with the id is optional!
+
+class ParameterDefinition *atomic
+   initial :double
+   min :double
+   max :double
+
+class Script :Element
+   name :string
+   code :string
+   parameters :map<string, ParameterDefinition> *atomic
+   
+class Vertex *atomic
+   # An AModeler vertex.
+   point :array<double, 3>
+   normal :array<double, 3>
+   edgeId :string *optional # Edges are not stored in Solids yet. This is the id for the edge that begins at this vertex.
+                            # For Formit Web beta, the id string must be a positive int32.
+   facetag :int *optional
+
+class ProximityRequirement
+   distanceTo :map<string, double>
+
+class ProgramRequirement
+   requiredArea :double *optional
+   quantity :int    *optional
+   spaceStandards :map<string, array<double, 3>>    *optional
+
+class ProgramAssignment
+   area :double
+   quantity :int
+ 
+class Use *atomic
+   name :string
+   colorIndex :int
+
+class Program :Element *extensible
+   uses :map<string, Use> *atomic
+   programReqs :map<string, ProgramRequirement>    *optional *atomic
+   proximityReqs :map<string, ProximityRequirement>    *optional *atomic
+   assignedProgram :map<string, ProgramAssignment>    *optional *atomic   
+   unassignedSpace :double *optional
+
+class BuildingStandards :Element
+   coreReqs : map<string, double> *optional
+
+class AnalysisPriorities :Element
+   weights :map<string, double> # key: analysis type, value: importance [0.0 (least), 1.0 (most)]
+
+class SpaceAssignmentResults :Element
+   assignedSpace :map<string, ProgramAssignment> *atomic
+   
+class RuleViolation :Element
+   ruleKey :string
+   id :string       # id of element that violates the rule
+   message :string
+
+class Camera :Element
+   eye :Vector
+   look :Vector
+   up :Vector
+   
+class AutodeskCommonCamera :Element
+   # Tim Wiegand's universal camera.
+   # See http://wiki.autodesk.com/display/nw/JSON+Values
+   # and http://psebshare/sites/platform/Policies/Policy%20library/P-0087%20Camera%20Interoperability.docx
+   worldUpDirection :Vector
+   worldFrontDirection :Vector
+   worldRightDirection :Vector
+   position :Vector
+   viewDirection :Vector
+   upDirection :Vector
+   # Anonymous enums are broken in C++.
+   #projection :enum
+   #   Orthographic
+   #   Perspective
+   verticalExtent :double
+   horizontalExtent :double
+   targetDistance :double
+   nearDistance :double *optional
+   nearDistanceType :AutodeskCommonCameraDistanceType *optional
+   farDistance :double *optional
+   farDistanceType :AutodeskCommonCameraDistanceType *optional
+   upOffset :double *optional
+   rightOffset :double *optional
+   #imageFit :enum *optional
+   #   Mask
+   #   Fill
+   #   Vertical
+   #   Horizontal
+   #   Overscan
+   horizontalScale :double *optional
+   apertureDiameter :double *optional
+   shutterSpeed :double *optional
+   
+enum AutodeskCommonCameraDistanceType
+   Fixed
+   Constrained
+   Auto
+   
+# Temporary version of Vector that is an array instead of an object.
+typedef ASMVector : array<double, 3>
+
+class Transform *atomic
+   # A conformal transform. Apply to a vector by multiplying by 
+   # 'ortho' on the left, then scaling by 'scale', finally adding
+   # 'translation'.
+   ortho :array<ASMVector, 3>
+      # An orthogonal matrix. 
+      # The ASMVectors are the *columns* of the transform, corresponding to functions like:
+      #   ASM:      coordinate_transf(new_origin, new_x_axis, new_y_axis)
+      #   AModeler: Transf3d::getCoordSystem(origin, xDir, yDir, zDir)
+      #   Revit:    Trf::getVectors(xDir, yDir, zDir, origin)
+      # Note that C/C++ programs typically store matrices in row-major order, so
+      # that indexing M[i][j] corresponds to mathematical notation. In this case
+      # the program will need to transpose this matrix (assuming the program also
+      # transforms vectors by multiplying on the left).
+   translation :ASMVector
+   scale :double
+   
+class Brep : Element
+   body :Body
+   transform :Transform *atomic *optional
+
+class Body *atomic 
+   shells   :map<string, string>
+      # Key is a shell id; value is a lump id.
+      # (Lumps have no data, just an identity.)
+   faces    :map<string, Face>
+   surfaces :map<string, Surface>
+   loops    :map<string, Loop>
+   edges    :map<string, Edge>
+   vertices :map<string, ASMVector> # notice, we use ASMVector, not Vertex.
+
+class Face
+   shell :string
+   surface :string *optional
+   reversed :bool *optional # default = false
+   doubleSided :bool *optional # default = false
+   approx :bool *optional # default = false; means this face is a facet of a larger, curved surface.
+   materialId :string *optional
+   
+class Loop
+   face :string
+   coedges :array<Coedge>
+
+class Coedge
+   edge :string
+   reversed :bool *optional # default = false
+   startNormal :ASMVector *optional 
+      # For Formit Web, store the face normal at the start vertex.
+      # This makes it possible for Formit Web to render the Groundhog body
+      # directly, without constructing an AModeler body. Whether this is
+      # an important feature is debated.
+
+class Edge
+   start :string
+   end :string
+   reversed :bool *optional # default = false
+   curve :Curve *optional # default = a straight line connecting the vertices
+   approx :bool *optional # default = false; means this edge is a piece of a larger, curved edge.
+   bridge :bool *optional # default = false; is an AModeler bridge edge.
+  
+class Surface *polymorphic
+   
+class Plane : Surface
+   rootPoint :ASMVector
+   normal :ASMVector
+   
+class Cone : Surface
+   # See http://asmdoc/218sdk/dd/d9a/class_a_s_m_1_1cone__xs.html for an explanation.
+   center :ASMVector
+   axis :ASMVector
+   majorRadius :ASMVector
+   radiusRatio :double
+   sineAngle :double
+   cosineAngle :double
+   facets :int *optional  # AModeler tessellation parameter: number of facets
+
+class Sphere : Surface
+   center :ASMVector
+   radius :double
+   facets :int *optional  # AModeler tessellation parameter: number of facets
+
+class Torus : Surface
+   center :ASMVector
+   normal :ASMVector
+   majorRadius :double
+   minorRadius :double
+   
+class Spline : Surface
+   def :Bs3surface
+
+class Bs3surface
+   type :string # always "Bs3surface" for now
+   degree :array<int, 2>  # u-degree and v-degree
+   controlPoints :array<array<ASMVector>>
+   weights :array<array<double>> *optional
+   knots :array<array<double>, 2> # u-knots and v-knots
+   
+class UnspecifiedSurface : Surface
+   # For AModeler only.
+
+class Curve *polymorphic
+   paramRange :array<double, 2> *optional
+   
+class Straight : Curve
+   rootPoint :ASMVector
+   direction :ASMVector
+   
+class Ellipse : Curve
+   center :ASMVector
+   normal :ASMVector
+   majorAxis :ASMVector
+   radiusRatio :double
+
+class Intcurve : Curve
+   def :Bs3curve
+
+class Bs3curve
+   type :string # always "Bs3curve" for now
+   degree :int
+   controlPoints :array<ASMVector>
+   weights :array<double> *optional
+   knots :array<double>
+   
+class ImportedImage :Element
+   width :int
+   height :int
+   alpha :double
+   name :string *optional
+   zIndex :int *optional
+   uri :string *optional
+   image :string *optional # base-64 representation, overrules URI
+   rotation :double *optional
+   scale :double *optional
+   offset :array<double> *optional
+
+   zoomLevel :int *optional   # used for satellite images: defines pixels/distance in satellite map providers. Effectively unitless (differnt ratio at different latitudes)
+
+enum UnitSystem
+   Imperial
+   Metric
+
+class UnitDisplaySettings :Element
+   unitSystem :UnitSystem
+
+class RevitNativeElement : Element
+   element :object
+      # The Revit type, e.g. "SWall", may be found in element.type.
+
+class Site : Element
+   latitude :double
+   longitude :double
+
+class FuzzySiteDimensions : Element
+   width :double *optional
+   height :double *optional
+
+class Keynote : Element
+   key :string
+   text :string
+   parentKey :string
+
+class Pick
+   elementId :string
+   subpicks :array<string>
+   
+class UserSelection : Element
+   userId :string
+      # Oxygen user ID
+   picks :array<Pick>
+      # Current selection for user
+   firstName :string *optional
+      # Temporary, will be removed once clients can pull this data directly from Oxygen
+   lastName :string *optional
+      # Temporary, will be removed once clients can pull this data directly from Oxygen
+   avatarUri :string *optional
+      # Temporary, will be removed once clients can pull this data directly from Oxygen
+
+
+# Space layout elements
+
+class Stairs :Element
+   position :array<double, 3>
+   rotation :double
+   height :double
+
+class Hall :Element
+   position1 :array<double, 3>
+   position2 :array<double, 3>
+      # for historical reasons, hallway extents go past these positions by 1/2 the default width (4m)
+   rotation :double
+   width :double *optional
+
+class Space :Element
+   position :array<double, 3>
+   dimensions :array<double, 3>
+   usageName :string *optional
+   rotation :double
+
+class Thumbnail :Element
+   data :string
+   thumbnailDesignOptionId :string
+
+class Mesh :Element
+   name :string
+   url :string *optional
+   inlineData :string *optional  
+   position :array<double, 3>
+   dimensions :array<double, 3>
+   rotation :double 

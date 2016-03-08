@@ -1,0 +1,40 @@
+<%inherit file="base.html" />
+<%!
+    import pprint
+%>
+
+<%block name="title">
+    bakeoff report
+</%block>
+
+
+<table>
+% for row in assets:
+    <tr>
+        <td colspan="${len(row) - 1}">
+            <% score_info = row[-1] %>
+            <% total_score = score_info["total_score"] %>
+            <% scores = score_info["scores"] %>
+            <h1> Total Score: ${"%.2f" % total_score} </h1>
+            % for score in scores:
+                <h2> 
+                    ${score["name"]}: 
+                    raw: ${"%.2f" % score["raw_score"]} 
+                    scaled: ${"%.2f" % score["scaled_score"]} 
+                    factor: x${score["scale"]} 
+                </h2>
+            % endfor
+        </td>
+    </tr>
+    <tr>
+    % for col in row[:-1]:
+        % if col.endswith(".svg"):
+            <td style="border: 1px solid black"><img src="${col}" /></td>
+            ## <td><object type="image/svg+xml" data="${col}" /></td>
+        % else:
+            <td style="border: 1px solid black"><img width="500" src="${col}" /></td>
+        % endif
+    % endfor
+    </tr>
+% endfor
+</table>
