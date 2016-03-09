@@ -291,7 +291,6 @@ namespace SpacePlanning
             {
                 return null;
             }
-            double eps = 100;
             //reduce number of points
             Polygon2d polyReg = new Polygon2d(poly.Points);
             Polygon2d otherReg = new Polygon2d(other.Points);
@@ -325,22 +324,9 @@ namespace SpacePlanning
             lineInPolyReg.extend();
 
             //check = GraphicsUtility.AreLinesCollinear(lineInPolyReg, lineInOtherReg);
-            //check = GraphicsUtility.CheckLineCollinear(lineInPolyReg, lineInOtherReg);
+            check = GraphicsUtility.CheckLineCollinear(lineInPolyReg, lineInOtherReg);
 
-            //find distance d1 and d2 from two centers to linepolyintersection line
-            Point2d projectedPtOnPolyReg = GraphicsUtility.ProjectedPointOnLine(lineInPolyReg, centerPoly);
-            Point2d projectedPtOnOtherReg = GraphicsUtility.ProjectedPointOnLine(lineInOtherReg, centerOther);
-
-            double dist1 = GraphicsUtility.DistanceBetweenPoints(centerPoly, projectedPtOnPolyReg);
-            double dist2 = GraphicsUtility.DistanceBetweenPoints(centerOther, projectedPtOnOtherReg);
-
-            double totalDistance = dist1 + dist2;
-            lineInPolyReg.move(centerPoly);
-            Point2d projectedPt = GraphicsUtility.ProjectedPointOnLine(lineInPolyReg, centerOther);
-            double distance = GraphicsUtility.DistanceBetweenPoints(projectedPt, centerOther);
-
-
-            if (totalDistance - eps < distance && distance < totalDistance + eps)
+            if (check)
             {
                 return lineInPolyReg;
             }

@@ -753,8 +753,6 @@ namespace SpacePlanning
             return (val > 0) ? 1 : 2; // clock or counterclock wise
         }
 
-
-        // WORKS SOMEWHAT
         internal static bool CheckLineCollinear(Line2d lineA, Line2d lineB)
         {
 
@@ -872,11 +870,41 @@ namespace SpacePlanning
         }
 
 
+        public static Point2d GetClosestPointOnLineSegment(Line testline, Point2d P)
+        {
+            Line2d line = new Line2d(Point2d.ByCoordinates(testline.StartPoint.X, testline.StartPoint.Y), Point2d.ByCoordinates(testline.EndPoint.X, testline.EndPoint.Y));
+
+            Point2d A = line.StartPoint;
+            Point2d B = line.EndPoint;
+            Vector2d AP = new Vector2d(A, P);//P - A;       //Vector from A to P   
+            Vector2d AB = new Vector2d(A, B); //B - A;       //Vector from A to B  
+
+            double magnitudeAB = AB.Length;     //Magnitude of AB vector (it's length squared)     
+            double ABAPproduct = AP.Dot(AB);    //The DOT product of a_to_p and a_to_b     
+            double distance = ABAPproduct / magnitudeAB; //The normalized "distance" from a to your closest point  
+
+            if (distance < 0)     //Check if P projection is over vectorAB     
+            {
+                //return A;
+
+            }
+            else if (distance > 1)
+            {
+                //return B;
+            }
+            else
+            {
+                //return A + AB * distance;
+            }
+            Trace.WriteLine("Distance found is : " + distance);
+            //return A + AB * distance;
+            return new Point2d(A.X + AB.X * distance, A.Y + AB.Y * distance);
+        }
 
 
 
-        // CORRECT IMPLEMENTATION OF CLOSEST PT TO LINE
-        public static Point2d ProjectedPointOnLine(Line2d testline, Point2d P)
+
+        public static Point2d ClosestPointOnLine(Line testline, Point2d P)
         {
 
             Line2d line = new Line2d(Point2d.ByCoordinates(testline.StartPoint.X, testline.StartPoint.Y), Point2d.ByCoordinates(testline.EndPoint.X, testline.EndPoint.Y));
@@ -906,33 +934,7 @@ namespace SpacePlanning
 
 
 
-        //FINDS VERTICAL OR HORIZONTAL COMPONENT LENGTH DEPENDING ON REQUIREMENT
-        internal static double OrthogonalDistance(Point2d p1, Point2d p2)
-        {
-            double eps = 1000;
-            double extend = 100000;
-            double dist = 0;
-            Vector2d vecLine = new Vector2d(p1, p2);
-            Vector2d vecX = new Vector2d(p1, Point2d.ByCoordinates(p1.X + eps, 0));
-            Vector2d vecY = new Vector2d(p1, Point2d.ByCoordinates(0, p1.X + eps));
 
-            double dotX = vecLine.Dot(vecX);
-            double dotY = vecLine.Dot(vecY);
-
-            if (dotX == 0)
-            {
-                //line is vertical
-             
-
-            }
-            else if (dotY == 0)
-            {
-                //line is horizontal
-                
-
-            }
-            return dist;
-        }
 
 
 
