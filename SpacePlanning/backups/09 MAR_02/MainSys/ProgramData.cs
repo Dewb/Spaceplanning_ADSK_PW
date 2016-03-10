@@ -1,5 +1,4 @@
 ﻿
-using stuffer;
 using System;
 using System.Collections.Generic;
 
@@ -32,7 +31,6 @@ namespace SpacePlanning
         private int _numCells;
         private double _areaGiven;
         private bool _IsAreaSatsifed;
-        private Polygon2d _polyProgs;
         // We make the constructor for this object internal because the 
         // Dynamo user should construct an object through a static method
         public ProgramData(int programID,string programName,string programDept,
@@ -54,7 +52,7 @@ namespace SpacePlanning
             _areaGiven = 0;
             _IsAreaSatsifed = false;
             _CellsAssigned = new List<Cell>();
-            _polyProgs = null;
+
 
 
 
@@ -81,24 +79,11 @@ namespace SpacePlanning
             _IsAreaSatsifed = other.IsAreaSatisfied;
             _CellsAssigned = new List<Cell>();
 
-            if (other.PolyProgAssigned != null)
-            {
-                _polyProgs = other.PolyProgAssigned;
-            }
-            else
-            {
-                _polyProgs = null;
-            }
-
 
 
 
         }
-        public Polygon2d PolyProgAssigned
-        {
-            get { return _polyProgs; }
-            set { _polyProgs = value; }
-        }
+
         public List<Cell> ProgramCells
         {
             get { return _CellsAssigned; }

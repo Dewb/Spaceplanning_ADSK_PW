@@ -965,7 +965,7 @@ namespace SpacePlanning
 
         
         //PROGRAM ANALYTICS
-        [MultiReturn(new[] { "ProgramNames", "NumCellsTaken", "AreaSatisfied","AreaNeeded","AreaProvided","Quantity","PolyAssignedProgs"})]
+        [MultiReturn(new[] { "ProgramNames", "NumCellsTaken", "AreaSatisfied","AreaNeeded","AreaProvided","Quantity"})]
         public static Dictionary<string, object> ProgramAnalytics(List<ProgramData> progData)
         {
             List<string> progNameList = new List<string>();
@@ -974,7 +974,6 @@ namespace SpacePlanning
             List<double> areaNeededList = new List<double>();
             List<double> areaProvidedList = new List<double>();
             List<double> quantList = new List<double>();
-            List<Polygon2d> polyProgList = new List<Polygon2d>();
             for (int i = 0; i < progData.Count; i++)
             {
                 progNameList.Add(progData[i].ProgName);
@@ -983,7 +982,6 @@ namespace SpacePlanning
                 areaNeededList.Add(progData[i].AreaNeeded);
                 areaProvidedList.Add(progData[i].AreaProvided);
                 quantList.Add(progData[i].Quantity);
-                polyProgList.Add(progData[i].PolyProgAssigned);
             }
 
            
@@ -994,9 +992,8 @@ namespace SpacePlanning
                 { "AreaSatisfied", (areaSatisfiedList) },
                 { "AreaNeeded", (areaNeededList) },
                 { "AreaProvided", (areaProvidedList) },
-                { "Quantity", (quantList) },
-                { "PolyAssignedProgs", (polyProgList) }
-
+                { "Quantity", (quantList) }
+                
             };
         }
 

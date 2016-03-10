@@ -247,15 +247,6 @@ namespace SpacePlanning
             {
                 ProgramData progItem = progData[i];
                 ProgramData progNew = new ProgramData(progItem);
-                if (i < polyList.Count)
-                {
-                    progNew.PolyProgAssigned = polyList[i];
-                }
-                else
-                {
-                    progNew.PolyProgAssigned = null;
-                }
-              
                 AllProgramDataList.Add(progNew);
             }
 
@@ -272,105 +263,6 @@ namespace SpacePlanning
 
 
         }
-
-
-        //changes the center of one or both polys to ensure correct intersection line is found
-        [MultiReturn(new[] { "CenterPolyA", "CenterPolyB", "PolyA", "PolyA" })]
-        public static Dictionary<string, object> ComputePolyCenters(Polygon2d polyA, Polygon2d polyB)
-        {
-            double extents = 10000;
-            //compute orig centers
-            Point2d centerPolyA = GraphicsUtility.CentroidInPointLists(polyA.Points);
-            Point2d centerPolyB = GraphicsUtility.CentroidInPointLists(polyB.Points);
-
-            //make infinite lines via both centers 0 - horizontal line, 1 - vertical line
-            Line2d lineAX = new Line2d(centerPolyA, extents, 0);
-            Line2d lineAY = new Line2d(centerPolyA, extents, 1);
-
-            Line2d lineBX = new Line2d(centerPolyB, extents, 0);
-            Line2d lineBY = new Line2d(centerPolyB, extents, 1);
-
-        
-            //get line line intersection for these lines
-            //AX-BY and BX-AY
-            Point2d pAXBY = GraphicsUtility.LineLineIntersection(lineAX, lineBY);
-            Point2d pBXAY = GraphicsUtility.LineLineIntersection(lineBX, lineAY);
-
-            //check for point containment test for these two
-            bool checkA_AXBY = GraphicsUtility.PointInsidePolygonTest(polyA.Points, pAXBY);
-            bool checkA_BXAY = GraphicsUtility.PointInsidePolygonTest(polyA.Points, pBXAY);
-            bool checkB_AXBY = GraphicsUtility.PointInsidePolygonTest(polyB.Points, pAXBY);            
-            bool checkB_BXAY = GraphicsUtility.PointInsidePolygonTest(polyB.Points, pBXAY);
-            ////////////////////////////////////////////////////
-            if(checkA_BXAY ==true && checkB_AXBY ==true)
-            {
-                return new Dictionary<string, object>
-                {
-                { "CenterPolyA", (centerPolyA) },
-                { "CenterPolyB", (centerPolyB) },
-                { "PolyA", (polyA) },
-                { "PolyB", (polyB) }
-                };
-            }
-
-            if (checkA_AXBY == true && checkB_BXAY == true)
-            {
-                return new Dictionary<string, object>
-                {
-                { "CenterPolyA", (centerPolyA) },
-                { "CenterPolyB", (centerPolyB) },
-                { "PolyA", (polyA) },
-                { "PolyB", (polyB) }
-                };
-            }
-            ////////////////////////////////////////////////////
-
-
-            if(checkA_AXBY == true)
-            {
-                
-                //centerPolyB.X = centerPolyA.X;
-
-            }else if(checkA_BXAY == true)
-            {
-                //centerPolyB.Y = centerPolyA.Y;
-
-            }
-            else if(checkB_AXBY== true)
-            {
-
-            }else if(checkB_BXAY == true)
-            {
-
-            }
-            else
-            {
-                return new Dictionary<string, object>
-                {
-                { "CenterPolyA", (centerPolyA) },
-                { "CenterPolyB", (centerPolyB) },
-                { "PolyA", (polyA) },
-                { "PolyB", (polyB) }
-                };
-            }
-
-
-
-
-
-                return new Dictionary<string, object>
-                {
-                { "CenterPolyA", (centerPolyA) },
-                { "CenterPolyB", (centerPolyB) },
-                { "PolyA", (polyA) },
-                { "PolyB", (polyB) }
-                };
-        }
-
-
-
-
-
         [MultiReturn(new[] { "Neighbour", "SharedEdgeA", "SharedEdgeB" })]
         public static Dictionary<string, object> PolygonPolygonCommonEdgeDict(Polygon2d poly, Polygon2d other)
         {
@@ -404,22 +296,10 @@ namespace SpacePlanning
             Point2d centerPoly = GraphicsUtility.CentroidInPointLists(polyReg.Points);
             Point2d centerOther = GraphicsUtility.CentroidInPointLists(otherReg.Points);
 
-
-
-
             //make vectors
             Vector2d centerToCen = new Vector2d(centerPoly, centerOther);
             Vector2d centerToCenX = new Vector2d(centerToCen.X, 0);
             Vector2d centerToCenY = new Vector2d(0, centerToCen.Y);
-
-
-
-            //reassign centers to each poly
-            Dictionary<string,object> UpdatedCenters  = ComputePolyCenters(polyReg, otherReg);
-
-            centerPoly = (Point2d)UpdatedCenters["CenterPolyA"];
-            centerOther = (Point2d)UpdatedCenters["CenterPolyB"];
-
 
             //make centerLine
             Line2d centerLine = new Line2d(centerPoly, centerOther);
@@ -477,63 +357,6 @@ namespace SpacePlanning
 
             };
 
-        }
-
-        //Make Dept Topology Matrix
-        [MultiReturn(new[] { "DeptTopologyList", "DeptNeighborNameList", "DeptNamesFlatten", "SharedEdgeSetA", "SharedEdgeSetB" })]
-        public static Dictionary<string, object> MakeDeptTopologyChart(List<DeptData> deptData)
-        {
-
-            //List<Dictionary<int, Polygon2d>> polygonsAllDeptList = new List<Dictionary<int, Polygon2d>>();
-            //List<Dictionary<int, DeptData>> deptDataAllDeptList = new List<Dictionary<int, DeptData>>();
-            List<Polygon2d> polygonsAllDeptList = new List<Polygon2d>();
-            List<DeptData> deptDataAllDeptList = new List<DeptData>();
-            List<List<string>> deptNamesNeighbors = new List<List<string>>();
-            for (int i = 0; i < deptData.Count; i++)
-            {
-                List<string> neighbors = new List<string>();
-                List<Polygon2d> polyListA = deptData[i].PolyDeptAssigned;                
-                for(int j = 0; j < polyListA.Count; j++)
-                {
-                    Polygon2d polyA = polyListA[j];
-                    for (int k = i+1; k < deptData.Count; k++)
-                    {
-                        List<Polygon2d> polyListB = deptData[k].PolyDeptAssigned;
-                        for (int l = 0; l < polyListB.Count; l++)
-                        {
-                            Polygon2d polyB = polyListB[l];
-                            Dictionary<string, object> checkNeighbor = PolygonPolygonCommonEdgeDict(polyA, polyB);
-                            if ((bool)checkNeighbor["Neighbour"] == true)
-                            {
-                                neighbors.Add(deptData[k].DepartmentName);
-                            }
-                            
-                        }// 4th for loop done
-                    } // 3rd for loop done
-                } // 2nd for loop done
-                deptNamesNeighbors.Add(neighbors);
-            } // 1st for loop done
-
-
-
-
-
-
-            List<List<string>> deptNeighborNames = new List<List<string>>();
-            List<Line2d> sharedEdgeAList = new List<Line2d>();
-            List<Line2d> sharedEdgeBList = new List<Line2d>();
-
-            sharedEdgeAList = null;
-            sharedEdgeBList = null;
-            return new Dictionary<string, object>
-            {
-                { "DeptTopologyList", (deptNamesNeighbors) },
-                { "DeptNeighborNameList", (deptNamesNeighbors) },
-                { "DeptNamesFlatten", (deptNamesNeighbors) },
-                { "SharedEdgeSetA", (sharedEdgeAList) },
-                { "SharedEdgeSetB", (sharedEdgeBList) }
-
-            };
         }
 
 
@@ -1560,15 +1383,7 @@ namespace SpacePlanning
         {
             ProgramData progItem = progData[i];
             ProgramData progNew = new ProgramData(progItem);
-                if (i < polyList.Count)
-                {
-                    progNew.PolyProgAssigned = polyList[i];
-                }
-                else
-                {
-                    progNew.PolyProgAssigned = null;
-                }
-                UpdatedProgramDataList.Add(progNew);
+            UpdatedProgramDataList.Add(progNew);
         }
 
             pointsList = null;
