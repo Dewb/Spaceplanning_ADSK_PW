@@ -493,7 +493,7 @@ namespace SpacePlanning
         }
 
         // find the centroid of group of  cells
-        internal static Point2d CentroidInPointLists(List<Point2d> ptList)
+        public static Point2d CentroidInPointLists(List<Point2d> ptList)
         {
             double x = 0, y = 0;
             for (int i = 0; i < ptList.Count; i++)
@@ -796,43 +796,7 @@ namespace SpacePlanning
             
  
 
-        /////// - not using
-        //IMPLEMENTS LINE AND LINE INTERSECTION
-        public static Point2d LineLineIntersectionNew(Line2d s1, Line2d s2)
-        {
-            Point2d startS1 = s1.StartPoint;
-            Point2d endS1 = s1.EndPoint;
-            Point2d startS2 = s2.StartPoint;
-            Point2d endS2 = s2.EndPoint;
-
-            //make line equations
-
-            double As1, Bs1, Cs1;
-            double As2, Bs2, Cs2;
-
-            As1 = endS1.Y - startS1.Y;
-            Bs1 = startS1.X - endS1.X;
-            Cs1 = As1 * startS1.X + Bs1 * startS1.Y;
-
-            As2 = endS2.Y - startS2.Y;
-            Bs2 = startS2.X - endS2.X;
-            Cs2 = As1 * startS2.X + Bs2 * startS2.Y;
-
-            double det = As1 * Bs2 - As2 * Bs1;
-            if(det == 0)
-            {
-                return null;
-            }
-            else
-            {
-                double x = (Bs2 * Cs1 - Bs1 * Cs2) / det;
-                double y = (As1 * Cs2 - As2 * Cs1) / det;
-                return new Point2d(x, y);
-            }
-
-            
-        }
-
+    
 
         //FIND PERP PROJECTION ON A LINE FROM A POINT
         public static Point2d PerpProjectionPointOnLine(Line line, Point2d C)
@@ -935,6 +899,42 @@ namespace SpacePlanning
         }
 
 
+        /////// - using now
+        //IMPLEMENTS LINE AND LINE INTERSECTION
+        public static Point2d LineLineIntersectionNew(Line2d s1, Line2d s2)
+        {
+            Point2d startS1 = s1.StartPoint;
+            Point2d endS1 = s1.EndPoint;
+            Point2d startS2 = s2.StartPoint;
+            Point2d endS2 = s2.EndPoint;
+
+            //make line equations
+
+            double As1, Bs1, Cs1;
+            double As2, Bs2, Cs2;
+
+            As1 = endS1.Y - startS1.Y;
+            Bs1 = startS1.X - endS1.X;
+            Cs1 = As1 * startS1.X + Bs1 * startS1.Y;
+
+            As2 = endS2.Y - startS2.Y;
+            Bs2 = startS2.X - endS2.X;
+            Cs2 = As1 * startS2.X + Bs2 * startS2.Y;
+
+            double det = As1 * Bs2 - As2 * Bs1;
+            if (det == 0)
+            {
+                return null;
+            }
+            else
+            {
+                double x = (Bs2 * Cs1 - Bs1 * Cs2) / det;
+                double y = (As1 * Cs2 - As2 * Cs1) / det;
+                return new Point2d(x, y);
+            }
+
+
+        }
 
 
 
@@ -1025,37 +1025,49 @@ namespace SpacePlanning
         }
 
         //LINE AND POLY INTERSECTION TEST AND RETURNS THE LINE INTERSECTED IN THE POLY
-        public static Line2d LinePolygonIntersectionReturnLine(List<Point2d> poly, Line2d testLine)
+        public static Line2d LinePolygonIntersectionReturnLine(List<Point2d> poly, Line2d testLine, Point2d centerPt)
         {
+            Random ran = new Random();
             double dist = 10000000000000000;
+            SortedDictionary<double, Line2d> sortedIntersectionLines = new SortedDictionary<double, Line2d>();
             List<Point2d> ptList = new List<Point2d>();
             double x = (testLine.StartPoint.X + testLine.EndPoint.X) / 2;
             double y = (testLine.StartPoint.Y + testLine.EndPoint.Y) / 2;
             Point2d midPt = new Point2d(x, y);
             Line2d intersectedLineInPoly = null;
+            int count = 0;
             for (int i = 0; i < poly.Count - 1; i++)
             {
                 Point2d pt1 = poly[i];
                 Point2d pt2 = poly[i + 1];
                 Line2d edge = new Line2d(pt1, pt2);
 
-                if (LineLineIntersection(edge, testLine) != null)
+                if (LineLineIntersectionNew(edge, testLine) != null)
                 {
 
                     double xE = (edge.StartPoint.X + edge.EndPoint.X) / 2;
                     double yE = (edge.StartPoint.Y + edge.EndPoint.Y) / 2;
                     Point2d EdgeMidPt = new Point2d(xE, yE);
-                    double checkDist = GraphicsUtility.DistanceBetweenPoints(midPt, EdgeMidPt);
-                    if(checkDist < dist)
+                    double checkDist = GraphicsUtility.DistanceBetweenPoints(centerPt, EdgeMidPt);
+                    Trace.WriteLine("CheckDist is : " + checkDist + " . Dist is :  " + dist);
+
+                    try
                     {
-                        dist = checkDist;
-                        intersectedLineInPoly = edge;
-                        Trace.WriteLine(" Good ! Intersections found : ");
+                        sortedIntersectionLines.Add(checkDist, edge);
                     }
-
-
-                   
-                }
+                    catch (Exception)
+                    {
+                        
+                        double eps = ran.NextDouble() * 2;
+                        double newDist = checkDist - eps;
+                        sortedIntersectionLines.Add(newDist, edge);
+                        //throw;
+                    }
+                    intersectedLineInPoly = edge;
+                    count += 1;
+                    Trace.WriteLine(" Instersection : " + count + " . Dist is :  " + dist);
+                    //Trace.WriteLine(" Good ! Intersections found : ");
+                    }
                 else
                 {
                     //intersectedLineInPoly = null;
@@ -1063,9 +1075,28 @@ namespace SpacePlanning
                 }
 
             }
+
+            Trace.WriteLine("Sorted Dictionary length is : " + sortedIntersectionLines.Count);
+            if (sortedIntersectionLines.Count > 0)
+            {
+                
+                foreach (KeyValuePair<double, Line2d> p in sortedIntersectionLines)
+                {
+                    intersectedLineInPoly = p.Value;
+                    break;
+                }
+            }
+            else
+            {
+                intersectedLineInPoly = null;
+            }
+            
+
             Trace.WriteLine("++++++++++++++++++++++++++++++++++++++++++");
             return intersectedLineInPoly;
         }
+
+
 
 
         internal static List<Point2d> LinePolygonIntersectionInd(List<Point2d> poly, Line2d testLine)
