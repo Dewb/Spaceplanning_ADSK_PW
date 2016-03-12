@@ -175,6 +175,7 @@
     <Compile Include="MainSys\BasicUtility.cs" />
     <Compile Include="MainSys\Bubble Chart.cs" />
     <Compile Include="MainSys\Cell.cs" />
+    <Compile Include="MainSys\Circulation.cs" />
     <Compile Include="MainSys\DeptData.cs" />
     <Compile Include="MainSys\Dump.cs" />
     <Compile Include="MainSys\GridObject.cs" />

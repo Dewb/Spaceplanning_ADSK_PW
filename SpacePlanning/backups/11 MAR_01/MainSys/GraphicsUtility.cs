@@ -136,27 +136,11 @@ namespace SpacePlanning
             }
             else
             {
-                return 0;
+                return -1;
             }
         }
 
       
-
-        //joins two collinear lines to make one line
-        public static Line2d JoinCollinearLines(Line2d lineA, Line2d lineB)
-        {
-            List<Point2d> allPoints = new List<Point2d>();
-            allPoints.Add(lineA.StartPoint);
-            allPoints.Add(lineA.EndPoint);
-            allPoints.Add(lineB.StartPoint);
-            allPoints.Add(lineB.EndPoint);
-
-            int p = ReturnLowestPointFromListNew(allPoints);
-            int q = ReturnHighestPointFromListNew(allPoints);
-            Line2d lineJoined = new Line2d(allPoints[p],allPoints[q]);
-            return lineJoined;
-        }
-
 
         //finds and returns the lowest position
         internal static int ReturnLowestPointFromList(List<Point2d> ptList)
@@ -233,88 +217,6 @@ namespace SpacePlanning
                 }
             }
             return cleanLineList;
-        }
-
-
-        //removes duplicates lines from a list of lines
-        public static List<Line2d> CleanLines(List<Line2d> lineList)
-        {
-            List<Line2d> cleanList = new List<Line2d>();
-            List<bool> taggedList = new List<bool>();
-            //set a new copy list of lines and initial tagged list
-            for(int i = 0; i < lineList.Count; i++)
-            {
-                Line2d lin = new Line2d(lineList[i].StartPoint, lineList[i].EndPoint);
-                cleanList.Add(lin);
-                taggedList.Add(false);
-            }
-
-            for(int i = 0; i < lineList.Count; i++)
-            {
-                double eps = 1;
-                Line2d lineA = lineList[i];
-                for(int j = i + 1; j < lineList.Count; j++)
-                {
-                    Line2d lineB = lineList[j];
-                    int orientA = CheckLineOrient(lineA);
-                    int orientB = CheckLineOrient(lineB);
-                    if(orientA != orientB)
-                    {
-                        
-                        continue;
-                    }
-                    else
-                    {
-                        Point2d midA = lineA.midPt();
-                        Point2d midB = lineB.midPt();
-                        if (orientA == 0)
-                        {
-                            //lines are horizontal                           
-                            if((midA.Y - eps < midB.Y && midB.Y < midA.Y + eps) || 
-                                (midB.Y - eps < midA.Y && midA.Y < midB.Y + eps))
-                            {
-                                // lines are duplicate check length, whichever has longer length will be added to list
-                                double lenA = lineA.Length;
-                                double lenB = lineB.Length;
-                                if(lenA > lenB)
-                                {
-                                    taggedList[i] = true;
-                                    //cleanList.Add(lineA);
-                                }
-                                else
-                                {
-                                    taggedList[j] = true;
-                                    //cleanList.Add(lineB);
-                                }
-
-                            }// end of if statement
-                        }
-                        else
-                        {
-                            //lines are vertical
-                            if ((midA.X - eps < midB.X && midB.X < midA.X + eps) ||
-                               (midB.X - eps < midA.X && midA.X < midB.X + eps))
-                            {
-                                // lines are duplicate check length, whichever has longer length will be added to list
-                                double lenA = lineA.Length;
-                                double lenB = lineB.Length;
-                                if (lenA > lenB)
-                                {
-                                    cleanList.Add(lineA);
-                                }
-                                else
-                                {
-                                    cleanList.Add(lineB);
-                                }
-
-                            }// end of if statement
-
-                        }
-                    }
-                }
-            }
-            // check of the line is horizontal or vertical
-            return cleanList;
         }
 
         internal static List<Point2d> PointUniqueChecker(List<Point2d> testList)
@@ -852,7 +754,7 @@ namespace SpacePlanning
             return sortedPointList;
         }
 
-        // can be discarded
+
         internal static bool AreLinesCollinear(Line2d lineA, Line2d lineB, double threshold = 0)
         {
 
@@ -898,67 +800,8 @@ namespace SpacePlanning
         }
 
 
-
-        //GIVEN THREE POINTS CHECKS IF POINT Q IS INSIDE THE LINE PR
-        // Given three colinear points p, q, r, the function checks if
-        // point q lies on line segment 'pr'
-        public static bool onSegment(Line2d givenLine, Point2d q)
-        {
-            if(givenLine == null || q == null)
-            {
-                return false;
-            }
-
-            Point2d p = givenLine.StartPoint;
-            Point2d r = givenLine.EndPoint;
-            if (q.X <= Math.Max(p.X, r.X) && q.X >= Math.Min(p.X, r.X) &&
-                q.Y <= Math.Max(p.Y, r.Y) && q.Y >= Math.Min(p.Y, r.Y))
-                return true;
-            return false;
-        }
-
-
-        public static bool LineAdjacencyCheck(Line2d lineA, Line2d lineB)
-        {
-
-            Point2d pA = lineA.StartPoint;
-            Point2d qA = lineA.EndPoint;
-            Point2d pB = lineB.StartPoint;
-            Point2d qB = lineB.EndPoint;
-
-            
-
-            Vector2d vecA = new Vector2d(pA, qA);
-            Vector2d vecB = new Vector2d(pB, qB);
-
-            double crossMag = vecA.Cross(vecB);
-
-            if(crossMag != 0)
-            {
-                return false;
-            }
-            
-
-            bool checkA1 = onSegment(lineB, pA);
-            bool checkA2 = onSegment(lineB, qA);
-            bool checkB1 = onSegment(lineA, pB);
-            bool checkB2 = onSegment(lineA, qB);
-
-            if(checkA1 || checkA2)
-            {
-                return true;
-            }
-            if (checkB1 || checkB2)
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-
         // WORKS SOMEWHAT
-        public static bool CheckLineCollinear(Line2d lineA, Line2d lineB)
+        internal static bool CheckLineCollinear(Line2d lineA, Line2d lineB)
         {
 
             // The main function that returns true if line segment 'p1q1'
@@ -1272,9 +1115,9 @@ namespace SpacePlanning
                 double val = Math.Round(u * mA + v * intercA);
                 //double val = mA + intercA
                 slopeInterceptList.Add(Math.Abs(mA));
-                //Trace.WriteLine("Value is : " + val);
-                //Trace.WriteLine("Slope is : " + Math.Round(mA));
-                //Trace.WriteLine("Intercept is : " + Math.Round(intercA));
+                Trace.WriteLine("Value is : " + val);
+                Trace.WriteLine("Slope is : " + Math.Round(mA));
+                Trace.WriteLine("Intercept is : " + Math.Round(intercA));
             }
      
             return slopeInterceptList;
