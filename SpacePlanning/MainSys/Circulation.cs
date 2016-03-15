@@ -133,74 +133,104 @@ namespace SpacePlanning
 
 
 
-        //Make Dept Topology Matrix - Using Now
-        [MultiReturn(new[] { "ProgTopologyList", "ProgNeighborNameList", "ProgAllPolygons", "SharedEdge" })]
-        public static Dictionary<string, object> MakeCirculationTopology(Polygon2d polyOutline, List<Polygon2d> polyA = null,List<Polygon2d> polyB = null, List<Polygon2d> polyC = null )
+        //Make Circulation Polygons between depts
+        [MultiReturn(new[] { "CirculationPolygons", "UpdatedDeptPolygons" })]
+        public static Dictionary<string, object> MakeDeptCirculation(List<DeptData> deptData, List<List<Line2d>> lineList, double width = 8)
         {
-            List<Polygon2d> polygonsAllProgList = new List<Polygon2d>();
-            List<DeptData> deptDataAllDeptList = new List<DeptData>();
-            List<List<Line2d>> lineCollection = new List<List<Line2d>>();
 
-            if(polyA != null)
+            //flatten the list
+            List<Line2d> flatLineList = new List<Line2d>();
+            List<bool> IsDuplicateList = new List<bool>();
+            List<Line2d> cleanLineList = GraphicsUtility.FlattenLine2dList(lineList);
+
+
+            //flatten all the polys in each depts to make it one list
+            List<Polygon2d> allDeptPolyList = new List<Polygon2d>();
+            List<Polygon2d> circulationPolyList = new List<Polygon2d>();
+            List<Polygon2d> updatedDeptPolyList = new List<Polygon2d>();
+            List<Polygon2d> reforemedDeptPolyList = new List<Polygon2d>();
+            List<int> deptIdList = new List<int>();
+            for (int i = 0; i < deptData.Count; i++)
             {
-                polygonsAllProgList.AddRange(polyA);
-            }
+                List<Polygon2d> deptPolyList = deptData[i].PolyDeptAssigned;
 
-            if (polyB != null)
-            {
-                polygonsAllProgList.AddRange(polyB);
-            }
-
-            if (polyC != null)
-            {
-                polygonsAllProgList.AddRange(polyC);
-            }
-
-         
-
-            List<Line2d> networkLine = new List<Line2d>();
-            for (int i = 0; i < polygonsAllProgList.Count; i++)
-            {
-                Polygon2d poly1 = polygonsAllProgList[i];
-                for (int j = i + 1; j < polygonsAllProgList.Count; j++)
+                for (int j = 0; j < deptPolyList.Count; j++)
                 {
-                    Polygon2d poly2 = polygonsAllProgList[j];
-                    Dictionary<string, object> checkNeighbor = FindPolyAdjacentEdge(poly1, poly2);
+                    deptIdList.Add(i);
+                    allDeptPolyList.Add(deptPolyList[j]);
+                }
+            }
 
-                    if ((bool)checkNeighbor["Neighbour"] == true)
+            for (int i = 0; i < cleanLineList.Count; i++)
+            {
+                Line2d splitter = cleanLineList[i];
+                for (int j = 0; j < allDeptPolyList.Count; j++)
+                {
+                    Polygon2d deptPoly = allDeptPolyList[j];
+                    Point2d midPt = splitter.midPt();
+                    Point2d nudgedMidPt = splitter.NudgeLineMidPt(deptPoly, 0.5);
+                    bool checkInside = GraphicsUtility.PointInsidePolygonTest(deptPoly, nudgedMidPt);
+
+                    if (checkInside)
                     {
-                        networkLine.Add((Line2d)checkNeighbor["SharedEdge"]);
-                    }
+                        Dictionary<string, object> splitResult = BuildLayout.SplitByLineMake(deptPoly, splitter, width);
+                        List<Polygon2d> polyAfterSplit = (List<Polygon2d>)(splitResult["PolyAfterSplit"]);
+                        if (polyAfterSplit != null)
+                        {
+                            double areaA = GraphicsUtility.AreaPolygon2d(polyAfterSplit[0].Points);
+                            double areaB = GraphicsUtility.AreaPolygon2d(polyAfterSplit[1].Points);
+                            if (areaA < areaB)
+                            {
+                                circulationPolyList.Add(polyAfterSplit[0]);
+                                updatedDeptPolyList.Add(polyAfterSplit[1]);
+                            }
+                            else
+                            {
+                                circulationPolyList.Add(polyAfterSplit[1]);
+                                updatedDeptPolyList.Add(polyAfterSplit[0]);
+                            }
 
-                }
-            }
+                        }
+
+                    } // end of check inside
 
 
+                }// end of for loop j
+            }// end of for loop i
 
-            //remove duplicate lines from the found common lines
-            List<Line2d> cleanNetworkLines = RemoveDuplicateLines(networkLine);
-            //remove any lines falling on the border
-            cleanNetworkLines = RemoveDuplicateslinesWithPoly(polyOutline, cleanNetworkLines);
-            List<List<string>> deptNeighborNames = new List<List<string>>();
 
-            List<Line2d> onlyOrthoLineList = new List<Line2d>();
-            for(int i = 0; i < cleanNetworkLines.Count; i++)
+            List<List<Polygon2d>> deptPolyBranchedInList = new List<List<Polygon2d>>();
+
+            List<int> distinctIdList = deptIdList.Distinct().ToList();
+            for (int i = 0; i < distinctIdList.Count; i++)
             {
-                bool checkOrtho = GraphicsUtility.IsLineOrthogonalCheck(cleanNetworkLines[i]);
-                if(checkOrtho == true)
+                List<Polygon2d> polyForDeptBranch = new List<Polygon2d>();
+                for (int j = 0; j < deptIdList.Count; j++)
                 {
-                    onlyOrthoLineList.Add(cleanNetworkLines[i]);
+                    if (deptIdList[j] == i)
+                    {
+                        if (j < updatedDeptPolyList.Count)
+                        {
+                            polyForDeptBranch.Add(updatedDeptPolyList[j]);
+                        }
+
+                    }
                 }
+                deptPolyBranchedInList.Add(polyForDeptBranch);
             }
+
+
+
+
+
             return new Dictionary<string, object>
             {
-                { "ProgTopologyList", (null) },
-                { "ProgNeighborNameList", (networkLine) },
-                { "ProgAllPolygons", (polygonsAllProgList) },
-                { "SharedEdge", (onlyOrthoLineList) }
+                { "CirculationPolygons", (circulationPolyList) },
+                { "UpdatedDeptPolygons", (deptPolyBranchedInList) }
 
             };
         }
+
 
 
         // Removes the lines which are on the poly lines
@@ -309,141 +339,7 @@ namespace SpacePlanning
         }
 
 
-        //Make Circulation Polygons between depts
-        [MultiReturn(new[] { "IsDuplicate", "CleanLineList", "CirculationPolygons", "UpdatedProgPolygons" })]
-        public static Dictionary<string, object> CirculationMakeInPrograms(List<Polygon2d> polyProgList, List<Line2d> lineList,  double width = 8, double allowedCircRatio = 3, double frequencyCorridor = 0.5)
-        {
-
-            //flatten the list
-            List<Line2d> flatLineList = new List<Line2d>();
-            List<bool> IsDuplicateList = new List<bool>();
-            
-            
-
-
-            //flatten all the polys in each depts to make it one list
-            List<Polygon2d> circulationPolyList = new List<Polygon2d>();
-            List<Polygon2d> updatedProgPolyList = new List<Polygon2d>();
-            List<int> deptIdList = new List<int>();
-            double num = allowedCircRatio;
-            List<double> areaProgPolyList = new List<double>();
-            for(int i = 0; i < polyProgList.Count; i++)
-            {
-                double area = GraphicsUtility.AreaPolygon2d(polyProgList[i].Points);
-                areaProgPolyList.Add(area);
-            }
-
-            double maxArea = areaProgPolyList.Max();
-            areaProgPolyList.Sort();
-            int value = (int)(areaProgPolyList.Count / 3);
-            double areaThresh = areaProgPolyList[value];
-            Random ran = new Random();
-          
-            for (int i = 0; i < lineList.Count; i++)
-            {
-                Line2d splitter = lineList[i];
-                double someNumber = ran.NextDouble();
-                if(someNumber > frequencyCorridor)
-                {
-                    //Trace.WriteLine("Not doing it , lets continue");
-                    continue;
-                }
-                for (int j = 0; j < polyProgList.Count; j++)
-                {
-                    Polygon2d progPoly = polyProgList[j];
-                    double areaPoly = GraphicsUtility.AreaPolygon2d(progPoly.Points);
-                    if (areaPoly < areaThresh)
-                    {
-                        //continue;
-                    }
-
-                    //List<Point2d> progSmoothPolyPts = Polygon2d.SmoothPolygon(progPoly.Points, 3);
-                    //Polygon2d progSmoothPoly = Polygon2d.ByPoints(progSmoothPolyPts);
-                    //progPoly = progSmoothPoly;
-                    
-                    Point2d midPt = splitter.midPt();
-                    Point2d nudgedMidPt = splitter.NudgeLineMidPt(progPoly, 0.5);
-                    bool checkInside = GraphicsUtility.PointInsidePolygonTest(progPoly, nudgedMidPt);
-              
-                        if (checkInside)
-                        {
-                            Dictionary<string, object> splitResult = BuildLayout.SplitByLineMake(progPoly, splitter, width);
-                            List<Polygon2d> polyAfterSplit = (List<Polygon2d>)(splitResult["PolyAfterSplit"]);
-                            if (polyAfterSplit != null)
-                            {
-                                double areaA = GraphicsUtility.AreaPolygon2d(polyAfterSplit[0].Points);
-                                double areaB = GraphicsUtility.AreaPolygon2d(polyAfterSplit[1].Points);
-                                if (areaA < areaB)
-                                {
-                                    if (polyAfterSplit[0].Points != null)
-                                    {
-                                        bool check = CheckPolyBBox(polyAfterSplit[0], num);
-                                        if (check)
-                                        {
-                                            circulationPolyList.Add(polyAfterSplit[0]);
-                                        }
-                                    }
-                                    updatedProgPolyList.Add(polyAfterSplit[1]);
-                                }
-                                else
-                                {
-                                    if (polyAfterSplit[1].Points != null)
-                                    {
-                                        bool check = CheckPolyBBox(polyAfterSplit[1], num);
-                                        if (check)
-                                        {
-                                            circulationPolyList.Add(polyAfterSplit[1]);
-                                        }
-                                    }
-                                    updatedProgPolyList.Add(polyAfterSplit[0]);
-                                }
-
-                            
-
-                        }
-                    } // end of check inside
-
-
-                }// end of for loop j
-            }// end of for loop i
-
-            string foo = "";
-            /*
-            List<List<Polygon2d>> deptPolyBranchedInList = new List<List<Polygon2d>>();
-
-            List<int> distinctIdList = deptIdList.Distinct().ToList();
-            for (int i = 0; i < distinctIdList.Count; i++)
-            {
-                List<Polygon2d> polyForDeptBranch = new List<Polygon2d>();
-                for (int j = 0; j < deptIdList.Count; j++)
-                {
-                    if (deptIdList[j] == i)
-                    {
-                        if (j < updatedDeptPolyList.Count)
-                        {
-                            polyForDeptBranch.Add(updatedDeptPolyList[j]);
-                        }
-
-                    }
-                }
-                deptPolyBranchedInList.Add(polyForDeptBranch);
-            }
-            */
-
-
-
-
-
-            return new Dictionary<string, object>
-            {
-                { "IsDuplicate", (areaThresh) },
-                { "CleanLineList", (lineList) },
-                { "CirculationPolygons", (circulationPolyList) },
-                { "UpdatedProgPolygons", (updatedProgPolyList) }
-
-            };
-        }
-
+        
         //Make Circulation Polygons between depts
         [MultiReturn(new[] { "CirculationPolygons", "UpdatedProgPolygons" })]
         public static Dictionary<string, object> MakeProgramCirculation(List<Polygon2d> polyProgList, List<Line2d> lineList, double width = 8, double allowedCircRatio = 3, double frequencyCorridor = 0.5)
@@ -613,207 +509,71 @@ namespace SpacePlanning
             return check;
         }
 
-
-        //Make Circulation Polygons between depts
-        [MultiReturn(new[] { "IsDuplicate", "CleanLineList", "CirculationPolygons", "UpdatedDeptPolygons" })]
-        public static Dictionary<string, object> CirculationMake(List<DeptData> deptData, List<List<Line2d>> lineList, double width = 8)
+        //Make Dept Topology Matrix - Using Now
+        [MultiReturn(new[] { "ProgTopologyList", "ProgNeighborNameList", "ProgAllPolygons", "SharedEdge" })]
+        public static Dictionary<string, object> MakeCirculationTopology(Polygon2d polyOutline, List<Polygon2d> polyA = null, List<Polygon2d> polyB = null, List<Polygon2d> polyC = null)
         {
+            List<Polygon2d> polygonsAllProgList = new List<Polygon2d>();
+            List<DeptData> deptDataAllDeptList = new List<DeptData>();
+            List<List<Line2d>> lineCollection = new List<List<Line2d>>();
 
-            //flatten the list
-            List<Line2d> flatLineList = new List<Line2d>();
-            List<bool> IsDuplicateList = new List<bool>();
-            List<Line2d> cleanLineList = GraphicsUtility.FlattenLine2dList(lineList);
-
-            // get clean lines - remove duplicates
-            //List<double> slopeInterceptList = GraphicsUtility.LineSlopeIntercept(flatLineList);
-            //List<double> cleanIndexes = BasicUtility.DuplicateIndexes(slopeInterceptList);
-            //List<Line2d> cleanLineList = GraphicsUtility.RemoveDuplicateLines(slopeInterceptList, flatLineList);
-            string foo = "";
-
-            
-            //flatten all the polys in each depts to make it one list
-            List<Polygon2d> allDeptPolyList = new List<Polygon2d>();
-            List<Polygon2d> circulationPolyList = new List<Polygon2d>();
-            List<Polygon2d> updatedDeptPolyList = new List<Polygon2d>();
-            List<Polygon2d> reforemedDeptPolyList = new List<Polygon2d>();
-            List<int> deptIdList = new List<int>();
-            for (int i = 0; i < deptData.Count; i++)
+            if (polyA != null)
             {
-               List<Polygon2d> deptPolyList = deptData[i].PolyDeptAssigned;
-           
-                for(int j = 0; j < deptPolyList.Count; j++)
-                {
-                    deptIdList.Add(i);
-                    allDeptPolyList.Add(deptPolyList[j]);
-                }
+                polygonsAllProgList.AddRange(polyA);
             }
 
-            for (int i = 0; i < cleanLineList.Count; i++)
+            if (polyB != null)
             {
-                Line2d splitter = cleanLineList[i];
-                for (int j = 0; j < allDeptPolyList.Count; j++)
-                {
-                    Polygon2d deptPoly = allDeptPolyList[j];
-                    Point2d midPt = splitter.midPt();
-                    Point2d nudgedMidPt = splitter.NudgeLineMidPt(deptPoly, 0.5);
-                    bool checkInside = GraphicsUtility.PointInsidePolygonTest(deptPoly, nudgedMidPt);
-                 
-                        if (checkInside)
-                        {
-                            Dictionary<string, object> splitResult = BuildLayout.SplitByLineMake(deptPoly, splitter, width);
-                            List<Polygon2d> polyAfterSplit = (List<Polygon2d>)(splitResult["PolyAfterSplit"]);
-                            if (polyAfterSplit != null)
-                            {
-                                double areaA = GraphicsUtility.AreaPolygon2d(polyAfterSplit[0].Points);
-                                double areaB = GraphicsUtility.AreaPolygon2d(polyAfterSplit[1].Points);
-                                if (areaA < areaB)
-                                {
-                                    circulationPolyList.Add(polyAfterSplit[0]);
-                                    updatedDeptPolyList.Add(polyAfterSplit[1]);
-                                }
-                                else
-                                {
-                                    circulationPolyList.Add(polyAfterSplit[1]);
-                                    updatedDeptPolyList.Add(polyAfterSplit[0]);
-                                }
+                polygonsAllProgList.AddRange(polyB);
+            }
 
-                            }
-                    
-                } // end of check inside
-
-
-            }// end of for loop j
-            }// end of for loop i
-
-
-            List <List<Polygon2d>> deptPolyBranchedInList = new List<List<Polygon2d>>();
-
-            List<int> distinctIdList = deptIdList.Distinct().ToList();
-            for (int i=0;i< distinctIdList.Count; i++)
+            if (polyC != null)
             {
-                List<Polygon2d> polyForDeptBranch = new List<Polygon2d>();
-                for(int j = 0; j < deptIdList.Count; j++)
+                polygonsAllProgList.AddRange(polyC);
+            }
+
+
+
+            List<Line2d> networkLine = new List<Line2d>();
+            for (int i = 0; i < polygonsAllProgList.Count; i++)
+            {
+                Polygon2d poly1 = polygonsAllProgList[i];
+                for (int j = i + 1; j < polygonsAllProgList.Count; j++)
                 {
-                    if(deptIdList[j] == i)
+                    Polygon2d poly2 = polygonsAllProgList[j];
+                    Dictionary<string, object> checkNeighbor = FindPolyAdjacentEdge(poly1, poly2);
+
+                    if ((bool)checkNeighbor["Neighbour"] == true)
                     {
-                        if(j<updatedDeptPolyList.Count)
-                        {
-                            polyForDeptBranch.Add(updatedDeptPolyList[j]);
-                        }
-                        
+                        networkLine.Add((Line2d)checkNeighbor["SharedEdge"]);
                     }
+
                 }
-                deptPolyBranchedInList.Add(polyForDeptBranch);
             }
 
 
 
+            //remove duplicate lines from the found common lines
+            List<Line2d> cleanNetworkLines = RemoveDuplicateLines(networkLine);
+            //remove any lines falling on the border
+            cleanNetworkLines = RemoveDuplicateslinesWithPoly(polyOutline, cleanNetworkLines);
+            List<List<string>> deptNeighborNames = new List<List<string>>();
 
-
+            List<Line2d> onlyOrthoLineList = new List<Line2d>();
+            for (int i = 0; i < cleanNetworkLines.Count; i++)
+            {
+                bool checkOrtho = GraphicsUtility.IsLineOrthogonalCheck(cleanNetworkLines[i]);
+                if (checkOrtho == true)
+                {
+                    onlyOrthoLineList.Add(cleanNetworkLines[i]);
+                }
+            }
             return new Dictionary<string, object>
             {
-                { "IsDuplicate", (deptIdList) },
-                { "CleanLineList", (cleanLineList) },
-                { "CirculationPolygons", (circulationPolyList) },
-                { "UpdatedDeptPolygons", (deptPolyBranchedInList) }
-
-            };
-        }
-
-        //Make Circulation Polygons between depts
-        [MultiReturn(new[] {  "CirculationPolygons", "UpdatedDeptPolygons" })]
-        public static Dictionary<string, object> MakeDeptCirculation(List<DeptData> deptData, List<List<Line2d>> lineList, double width = 8)
-        {
-
-            //flatten the list
-            List<Line2d> flatLineList = new List<Line2d>();
-            List<bool> IsDuplicateList = new List<bool>();
-            List<Line2d> cleanLineList = GraphicsUtility.FlattenLine2dList(lineList);
-
-
-            //flatten all the polys in each depts to make it one list
-            List<Polygon2d> allDeptPolyList = new List<Polygon2d>();
-            List<Polygon2d> circulationPolyList = new List<Polygon2d>();
-            List<Polygon2d> updatedDeptPolyList = new List<Polygon2d>();
-            List<Polygon2d> reforemedDeptPolyList = new List<Polygon2d>();
-            List<int> deptIdList = new List<int>();
-            for (int i = 0; i < deptData.Count; i++)
-            {
-                List<Polygon2d> deptPolyList = deptData[i].PolyDeptAssigned;
-
-                for (int j = 0; j < deptPolyList.Count; j++)
-                {
-                    deptIdList.Add(i);
-                    allDeptPolyList.Add(deptPolyList[j]);
-                }
-            }
-
-            for (int i = 0; i < cleanLineList.Count; i++)
-            {
-                Line2d splitter = cleanLineList[i];
-                for (int j = 0; j < allDeptPolyList.Count; j++)
-                {
-                    Polygon2d deptPoly = allDeptPolyList[j];
-                    Point2d midPt = splitter.midPt();
-                    Point2d nudgedMidPt = splitter.NudgeLineMidPt(deptPoly, 0.5);
-                    bool checkInside = GraphicsUtility.PointInsidePolygonTest(deptPoly, nudgedMidPt);
-
-                    if (checkInside)
-                    {
-                        Dictionary<string, object> splitResult = BuildLayout.SplitByLineMake(deptPoly, splitter, width);
-                        List<Polygon2d> polyAfterSplit = (List<Polygon2d>)(splitResult["PolyAfterSplit"]);
-                        if (polyAfterSplit != null)
-                        {
-                            double areaA = GraphicsUtility.AreaPolygon2d(polyAfterSplit[0].Points);
-                            double areaB = GraphicsUtility.AreaPolygon2d(polyAfterSplit[1].Points);
-                            if (areaA < areaB)
-                            {
-                                circulationPolyList.Add(polyAfterSplit[0]);
-                                updatedDeptPolyList.Add(polyAfterSplit[1]);
-                            }
-                            else
-                            {
-                                circulationPolyList.Add(polyAfterSplit[1]);
-                                updatedDeptPolyList.Add(polyAfterSplit[0]);
-                            }
-
-                        }
-
-                    } // end of check inside
-
-
-                }// end of for loop j
-            }// end of for loop i
-
-
-            List<List<Polygon2d>> deptPolyBranchedInList = new List<List<Polygon2d>>();
-
-            List<int> distinctIdList = deptIdList.Distinct().ToList();
-            for (int i = 0; i < distinctIdList.Count; i++)
-            {
-                List<Polygon2d> polyForDeptBranch = new List<Polygon2d>();
-                for (int j = 0; j < deptIdList.Count; j++)
-                {
-                    if (deptIdList[j] == i)
-                    {
-                        if (j < updatedDeptPolyList.Count)
-                        {
-                            polyForDeptBranch.Add(updatedDeptPolyList[j]);
-                        }
-
-                    }
-                }
-                deptPolyBranchedInList.Add(polyForDeptBranch);
-            }
-
-
-
-
-
-            return new Dictionary<string, object>
-            {
-                { "CirculationPolygons", (circulationPolyList) },
-                { "UpdatedDeptPolygons", (deptPolyBranchedInList) }
+                { "ProgTopologyList", (null) },
+                { "ProgNeighborNameList", (networkLine) },
+                { "ProgAllPolygons", (polygonsAllProgList) },
+                { "SharedEdge", (onlyOrthoLineList) }
 
             };
         }

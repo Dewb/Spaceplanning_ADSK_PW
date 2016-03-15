@@ -10,7 +10,7 @@ using Autodesk.DesignScript.Geometry;
 
 namespace SpacePlanning
 {
-    public class SplitObject
+    internal class SplitObject
     {
 
         private static double spacingSet = 1;

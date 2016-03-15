@@ -23,7 +23,7 @@ using System.Diagnostics;
 
 namespace SpacePlanning
 {
-    public class GraphicsUtility
+    internal class GraphicsUtility
     {
         // private variables
 
