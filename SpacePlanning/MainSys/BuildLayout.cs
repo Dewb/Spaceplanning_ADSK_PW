@@ -1215,7 +1215,7 @@ namespace SpacePlanning
             }// end of for loop
 
             Random ran2 = new Random();
-            if (recompute > 3)
+            if (recompute > 2)
             {
                 //there is any left over poly
                 double minArea = 10;
@@ -1261,9 +1261,25 @@ namespace SpacePlanning
 
 
 
+            // adding the left over polys to the 2nd highest dept after inpatient
+            if(leftOverPoly.Count > 0)
+            {
+                Trace.WriteLine("There is still left over poly left :" + leftOverPoly.Count);
+                double areaLeftOver = 0;
+                Trace.WriteLine("No of poly before :  " + AllDeptPolys[1].Count);
+                for (int i = 0; i < leftOverPoly.Count; i++)
+                {
+                    Polygon2d pol = leftOverPoly.Pop();
+                    areaLeftOver += GraphicsUtility.AreaPolygon2d(pol.Points);                   
+                    AllDeptPolys[1].Add(pol);
+                }
+                AllDeptAreaAdded[1] += areaLeftOver;
 
-
-
+                Trace.WriteLine("Area from left over :  " + areaLeftOver);
+                //AllDeptPolys[1].AddRange(leftOverPoly.ToList());
+                Trace.WriteLine("No of poly after :  " + AllDeptPolys[1].Count);
+            }
+            
 
             List<DeptData> UpdatedDeptData = new List<DeptData>();
             //make the new deptdata to output
@@ -1283,8 +1299,9 @@ namespace SpacePlanning
             List<Polygon2d> AllLeftOverPolys = new List<Polygon2d>();
             AllLeftOverPolys.AddRange(leftOverPoly);
 
-            //Trace.WriteLine("Dept Splitting Done ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+            Trace.WriteLine("Dept Splitting Done ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
             //return polyList;
+            
             return new Dictionary<string, object>
             {
                 { "DeptPolys", (AllDeptPolys) },
@@ -1969,6 +1986,94 @@ namespace SpacePlanning
             }
             
             return spanList;
+        }
+
+
+        // USING NOW 
+        //SPLITS A POLYGON2D INTO TWO POLYS, by a Given Line
+        [MultiReturn(new[] { "PolyAfterSplit", "SplitLine" })]
+        public static Dictionary<string, object> SplitByLineMake(Polygon2d polyOutline, Line2d inputLine, double distance = 5)
+        {
+            if (polyOutline == null || polyOutline.Points == null || polyOutline.Points.Count == 0)
+            {
+                return null;
+            }
+
+
+            double spacing = spacingSet;
+
+            List<Point2d> polyOrig = polyOutline.Points;
+
+            List<Point2d> poly = Polygon2d.SmoothPolygon(polyOrig, spacing);
+            Line2d splitLine = new Line2d(inputLine);
+            Point2d centerPoly = GraphicsUtility.CentroidInPointLists(poly);
+            bool checkSide = GraphicsUtility.CheckPointSide(splitLine, centerPoly);
+            int orient = GraphicsUtility.CheckLineOrient(splitLine);
+            if (orient == 0)
+            {
+                if (!checkSide)
+                {
+                    splitLine.move(0, -1 * distance);
+                }
+                else
+                {
+                    splitLine.move(0, 1 * distance);
+                }
+            }
+            else
+            {
+                if (checkSide)
+                {
+                    splitLine.move(-1 * distance, 0);
+                }
+                else
+                {
+                    splitLine.move(1 * distance, 0);
+                }
+
+            }
+
+            //splitLine.move(poly, distance);
+            List<Point2d> intersectedPoints = GraphicsUtility.LinePolygonIntersection(poly, splitLine);
+
+            // find all points on poly which are to the left or to the right of the line
+            Polygon2d polyA, polyB;
+
+            List<int> pIndexA = new List<int>();
+            List<int> pIndexB = new List<int>();
+            for (int i = 0; i < poly.Count; i++)
+            {
+                bool check = GraphicsUtility.CheckPointSide(splitLine, poly[i]);
+                if (check)
+                {
+                    pIndexA.Add(i);
+                }
+                else
+                {
+                    pIndexB.Add(i);
+                }
+            }
+
+            //organize the points to make closed poly
+            List<List<Point2d>> twoSets = new List<List<Point2d>>();
+            List<Point2d> sortedA = DoSortClockwise(poly, intersectedPoints, pIndexA);
+            List<Point2d> sortedB = DoSortClockwise(poly, intersectedPoints, pIndexB);
+            twoSets.Add(sortedA);
+            twoSets.Add(sortedB);
+            polyA = new Polygon2d(twoSets[0], 0);
+            polyB = new Polygon2d(twoSets[1], 0);
+
+
+            List<Polygon2d> splittedPoly = new List<Polygon2d>();
+
+            splittedPoly.Add(polyA);
+            splittedPoly.Add(polyB);
+            return new Dictionary<string, object>
+            {
+                { "PolyAfterSplit", (splittedPoly) },
+                { "SplitLine", (splitLine) }
+            };
+
         }
 
 
@@ -2659,7 +2764,7 @@ namespace SpacePlanning
         internal static List<Point2d> makePolyPointsStraight(List<Point2d> poly, List<Point2d> intersectedPoints, List<int> pIndex)
         {
 
-            if (intersectedPoints.Count < 1)
+            if (intersectedPoints.Count < 2)
             {
                 return null;
             }

@@ -10,3 +10,5 @@ C:\Users\t_dassu\Documents\Visual Studio 2015\Projects\SpacePlanning\SpacePlanni
 C:\Users\t_dassu\Documents\Visual Studio 2015\Projects\SpacePlanning\SpacePlanning\bin\Release\ProtoGeometry.customization.dll
 C:\Users\t_dassu\Documents\Visual Studio 2015\Projects\SpacePlanning\SpacePlanning\bin\Release\ProtoImperative.dll
 C:\Users\t_dassu\Documents\Visual Studio 2015\Projects\SpacePlanning\SpacePlanning\bin\Release\ProtoScript.dll
+C:\Users\t_dassu\Documents\Visual Studio 2015\Projects\SpacePlanning\SpacePlanning\obj\Release\SpacePlanning.Properties.Resources.resources
+C:\Users\t_dassu\Documents\Visual Studio 2015\Projects\SpacePlanning\SpacePlanning\obj\Release\SpacePlanning.csproj.GenerateResource.Cache
