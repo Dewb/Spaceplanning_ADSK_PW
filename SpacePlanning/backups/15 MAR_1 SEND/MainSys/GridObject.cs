@@ -145,56 +145,6 @@ namespace SpacePlanning
 
         }
 
-        // 0         /////////////////////////
-        //MAKE POINT2D LIST OF POINTS INSIDE THE BOUNDING BOX - points are stored clockwise
-        public static Dictionary<string, object> GridPointsInsideOutlineSingleOut(List<Point2d> bbox, List<Point2d> outlinePoints, double dimXX, double dimYY)
-        {
-            // index 0 stores min point 2 stores the max point
-            List<Point2d> pointsGrid = new List<Point2d>();
-            List<Cell> cells = new List<Cell>();
-            Range2d xyRange = ReadData.FromPoint2dGetRange2D(bbox);
-
-            double xDistance = xyRange.Xrange.Span;
-            double yDistance = xyRange.Yrange.Span;
-
-            int numPtsX = Convert.ToInt16(Math.Floor(xDistance / dimXX));
-            int numPtsY = Convert.ToInt16(Math.Floor(yDistance / dimYY));
-
-            double diffX = xDistance - (dimXX * numPtsX);
-            double diffY = yDistance - (dimYY * numPtsY);
-
-            double posX = bbox[0].X + diffX;
-            double posY = bbox[0].Y + diffY;
-            for (int i = 0; i < numPtsX; i++)
-            {
-
-                for (int j = 0; j < numPtsY; j++)
-                {
-
-                    bool inside = GraphicsUtility.PointInsidePolygonTest(outlinePoints, Point2d.ByCoordinates(posX, posY));
-                    if (inside)
-                    {
-                        pointsGrid.Add(new Point2d(posX, posY));
-                        cells.Add(new Cell(new Point2d(posX, posY), dimXX, dimYY, true));
-                    }
-
-                    posY += dimYY;
-                }
-
-                posX += dimXX;
-                posY = bbox[0].Y + diffY;
-            }
-
-
-            //return pointsGrid;
-            return new Dictionary<string, object>
-            {
-                { "PointsInsideOutline", (pointsGrid) },
-                { "CellsFromPoints", (cells) }
-            };
-
-        }
-
 
         // 1     could be deleted       //////////////////////////////
         internal static List<Point> PointInsidePolygon(List<Point> pointGrid, List<Point> pointOnPoly)
