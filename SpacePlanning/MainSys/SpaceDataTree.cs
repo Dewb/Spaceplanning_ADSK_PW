@@ -132,6 +132,45 @@ namespace SpacePlanning
             return cen;
         }
 
+        // add the following entries into the space data tree
+        private void insertNodeData(Node parent, Node item, bool container)
+        {
+            double rad = parent.RadiusNode;
+            double proportion;
+            double addOn;
+            if (container)
+            {
+                proportion = parent.Proportion;
+                addOn = rad / proportion;
+                parent.RightNode = item;
+                item.ParentNode = parent;
+                _numNodes += 1;
+                Point cen = PointForNode(parent.CenterPoint, 1);
+                item.CenterPoint = cen;
+                item.RadiusNode = rad;
+                item.RadiusNodeExtra = rad + addOn;
+                _radiusNodeList.Add(rad + addOn);
+                _centerPtsNodeList.Add(cen);
+                _nodeTypeString.Add(NodeType.Container.ToString());
+            }
+            else
+            {
+                addOn = 0;
+                parent.LeftNode = item;
+                item.ParentNode = parent;
+                _numNodes += 1;
+                Point cen = PointForNode(parent.CenterPoint, -1);
+                item.CenterPoint = cen;
+                item.RadiusNode = rad;
+                item.RadiusNodeExtra = rad + addOn;
+                _radiusNodeList.Add(rad + addOn);
+                _centerPtsNodeList.Add(cen);
+                _nodeTypeString.Add(NodeType.Space.ToString());
+            }
+           
+        }
+
+
 
         // adds a new node to the tree
         internal Node addNewNodeSide(Node parent, Node item)
@@ -156,19 +195,7 @@ namespace SpacePlanning
                 }
                 else
                 {
-                    parent.RightNode = item;
-                    item.ParentNode = parent;
-                    _numNodes += 1;
-                    Point cen = PointForNode(parent.CenterPoint,1);
-                    item.CenterPoint = cen;
-                    double rad = parent.RadiusNode;
-                    double proportion = parent.Proportion;
-                    double addOn = rad / proportion;
-                    item.RadiusNode = rad;
-                    item.RadiusNodeExtra = rad + addOn;
-                    _radiusNodeList.Add(rad + addOn);
-                    _centerPtsNodeList.Add(cen);
-                    _nodeTypeString.Add(NodeType.Container.ToString());
+                    insertNodeData(parent, item, true);
                 }
                 
             }
@@ -181,16 +208,7 @@ namespace SpacePlanning
                 }
                 else
                 {
-                    parent.LeftNode = item;
-                    item.ParentNode = parent;
-                    _numNodes += 1;
-                    Point cen = PointForNode(parent.CenterPoint, -1);
-                    item.CenterPoint = cen;
-                    _centerPtsNodeList.Add(cen);
-                    double rad = parent.RadiusNode;
-                    item.RadiusNode = rad;
-                    _radiusNodeList.Add(rad);
-                    _nodeTypeString.Add(NodeType.Space.ToString());
+                    insertNodeData(parent, item, false);
                 }
             }
 
