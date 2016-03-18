@@ -13,9 +13,9 @@ namespace SpacePlanning
         private Node _root;
         private int _numNodes;
 
-        public SpaceDataTree(Node rootNode)
+        public SpaceDataTree(Node root)
         {
-            _root = rootNode;
+            _root = root;
             _numNodes = 1;
         }
 
@@ -37,28 +37,35 @@ namespace SpacePlanning
             }
             set
             {
+                _numNodes = 1;
                 _root = value;
             }
         }
 
         // adds a new node to the tree
-        internal void addNewNode(Node parent, Node item)
+        internal bool addNewNode(Node parent, Node item)
         {
             if(parent.LeftNode != null && parent.RightNode != null)
             {
                 Trace.WriteLine("No Space, cant add new node");
-                return;
+                return false;
             }
+
            if(item.NodeType == NodeType.Container)
             {
+                
                 parent.RightNode = item;
+                item.ParentNode = parent;
                 _numNodes += 1;
             }
             else
             {
                 parent.LeftNode = item;
+                item.ParentNode = parent;
                 _numNodes += 1;
             }
+
+            return true;
         }
 
 

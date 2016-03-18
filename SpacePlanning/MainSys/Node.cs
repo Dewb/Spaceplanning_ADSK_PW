@@ -19,17 +19,22 @@ namespace SpacePlanning
         private NodeType _nodeType;
         private Polygon2d _poly;
         private DeptData _deptAssigned;
+        private bool _check;
+        private bool _isRoot = false;
 
 
         // for root node
-        public Node(int id, NodeType type, Polygon2d poly)
+        public Node(int id, NodeType type, bool flag)
         {
 
             _id = id;
-            _poly = poly;
+            _poly = null;
             _nodeType = type;
             _parentNode = null;
             _deptAssigned = null;
+            _check = false;
+            _isRoot = flag;
+            
 
         }
 
@@ -39,9 +44,11 @@ namespace SpacePlanning
 
             _id = id;            
             _nodeType = type;
+            _check = false;
             _poly = null;
             _parentNode = null;
             _deptAssigned = null;
+
 
         }
 
@@ -58,9 +65,39 @@ namespace SpacePlanning
             _deptAssigned = dept;
             _poly = poly;
             _splitLine = splitLine;
+
+            _check = false;
         }
 
 
+        public bool IsRoot
+        {
+
+            get
+            {
+                return _isRoot;
+            }
+
+            set
+            {
+                _isRoot = value;
+            }
+
+        }
+        public bool Check
+        {
+
+            get
+            {
+                return _check;
+            }
+
+            set
+            {
+                _check = value;
+            }
+
+        }
 
         public Node ParentNode{
 

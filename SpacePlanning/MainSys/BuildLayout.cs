@@ -1120,10 +1120,11 @@ namespace SpacePlanning
         //make a tree to test
         public static SpaceDataTree CreateSpaceTree(int numNodes = 5)
         {
-            Node root = new Node(0, NodeType.Container);            
+            // make root node
+            Node root = new Node(0, NodeType.Container, true);            
             List<Node> nodeList = new List<Node>();
-            nodeList.Add(root);
-            for (int i = 0; i < numNodes - 1; i++)
+            //nodeList.Add(root);
+            for (int i = 0; i < numNodes-1; i++)
             {
                 Node N;
                 if (i%2 == 0)
@@ -1137,13 +1138,31 @@ namespace SpacePlanning
                 
                 nodeList.Add(N);
             }
-
+            //////////////////////////////////////////////////////////////////
             SpaceDataTree tree = new SpaceDataTree(root);
             Node current = root;
+
+            bool nodeAddition = false;
             for (int i = 0; i < nodeList.Count; i++)
             {
-                                
-                tree.addNewNode(current, nodeList[i]);
+              
+                if (current.NodeType == NodeType.Space)
+                {
+                    Trace.WriteLine("Make Sure Space Nodes are childless");
+                    //current = current.RightNode;
+                }
+
+
+                nodeAddition = tree.addNewNode(current, nodeList[i]);
+
+
+                while (!nodeAddition)
+                {
+                    Trace.WriteLine("Trying to add");                   
+                    current = current.RightNode;
+                    nodeAddition = tree.addNewNode(current, nodeList[i]);
+
+                }
                 /*
                 if(i%2 == 0)
                 {
@@ -1160,9 +1179,9 @@ namespace SpacePlanning
 
                 current = nodeList[i];
             }
-           
 
 
+            Trace.WriteLine("Tree Constructed" + tree);
             return tree;
 
         }
@@ -1236,7 +1255,7 @@ namespace SpacePlanning
 
         public void codeToMakeTree(Polygon2d polyOutline)
         {
-            Node root = new Node(0, NodeType.Container, polyOutline);
+            Node root = new Node(0, NodeType.Container, false);
             SpaceDataTree deptTree = new SpaceDataTree(root);
             Node newEntry1 = new Node(1, NodeType.Container);
             Node newEntry2 = new Node(1, NodeType.Container);
