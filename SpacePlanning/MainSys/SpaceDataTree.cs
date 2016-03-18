@@ -68,6 +68,33 @@ namespace SpacePlanning
             return true;
         }
 
+        // adds a new node to the tree
+        internal bool addNewNodeSide(Node parent, Node item)
+        {
+            if (parent.LeftNode != null && parent.RightNode != null)
+            {
+                Trace.WriteLine("No Space, cant add new node");
+                return false;
+            }
+
+            if (item.NodeType == NodeType.Container)
+            {
+
+                parent.RightNode = item;
+                item.ParentNode = parent;
+                _numNodes += 1;
+            }
+            else
+            {
+                parent.LeftNode = item;
+                item.ParentNode = parent;
+                _numNodes += 1;
+            }
+
+            return true;
+        }
+
+
 
 
         //add a node to a filled spot in the tree

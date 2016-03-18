@@ -27,7 +27,18 @@ namespace SpacePlanning
             return idx;
         }
 
-
+        // returns random nodetype result
+        internal static NodeType GenerateNodeType(double k)
+        {
+            if(k < 0.5)
+            {
+                return NodeType.Container;
+            }
+            else
+            {
+                return NodeType.Space;
+            }
+        }
 
         //random double numbers between two decimals
         internal static double RandomBetweenNumbers(Random rn, double max, double min)

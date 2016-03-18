@@ -1118,22 +1118,27 @@ namespace SpacePlanning
 
 
         //make a tree to test
-        public static SpaceDataTree CreateSpaceTree(int numNodes = 5)
+        public static SpaceDataTree CreateSpaceTree(int numNodes = 5, double recompute = 5)
         {
             // make root node
             Node root = new Node(0, NodeType.Container, true);            
             List<Node> nodeList = new List<Node>();
             //nodeList.Add(root);
+            Random ran = new Random();
             for (int i = 0; i < numNodes-1; i++)
             {
                 Node N;
+                double val = ran.NextDouble();
+                NodeType ndType = BasicUtility.GenerateNodeType(val);
+                N = new Node(i + 1, ndType);
                 if (i%2 == 0)
                 {
-                   N  = new Node(i + 1, NodeType.Space);
+                  
+                   //N  = new Node(i + 1, ndType);
                 }
                 else
                 {
-                   N = new Node(i + 1, NodeType.Container);
+                   //N = new Node(i + 1, NodeType.Container);
                 }
                 
                 nodeList.Add(N);
