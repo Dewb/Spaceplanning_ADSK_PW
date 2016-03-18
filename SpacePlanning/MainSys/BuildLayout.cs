@@ -1146,8 +1146,8 @@ namespace SpacePlanning
             //////////////////////////////////////////////////////////////////
             SpaceDataTree tree = new SpaceDataTree(root);
             Node current = root;
-
-            bool nodeAddition = false;
+            string foo = "";
+            Node nodeAddition = null;
             for (int i = 0; i < nodeList.Count; i++)
             {
               
@@ -1158,31 +1158,51 @@ namespace SpacePlanning
                 }
 
 
-                nodeAddition = tree.addNewNode(current, nodeList[i]);
-
-
-                while (!nodeAddition)
+                nodeAddition = tree.addNewNodeSide(current, nodeList[i]);
+                //nodeAddition = null , means node properly added
+                //nodeAddition = current, means, parent node of current is null
+                //nodeAddition = some other node means, current should be that other node to add new node
+                if(nodeAddition == current)
                 {
-                    Trace.WriteLine("Trying to add");                   
-                    current = current.RightNode;
-                    nodeAddition = tree.addNewNode(current, nodeList[i]);
+                    break;
 
-                }
-                /*
-                if(i%2 == 0)
+                }else if (nodeAddition != current && nodeAddition != null)
                 {
-                    Trace.WriteLine("left node constructed");
-                    current.LeftNode = nodeList[i];
-                    tree.addNewNode(current, nodeList[i]);
+                    current = nodeAddition;
                 }
                 else
                 {
-                    Trace.WriteLine("right node constructed");
-                    current.RightNode = nodeList[i];
+                    current = nodeList[i];
                 }
-                */
+                string foo1 = "";
+               /* if(nodeAddition == false)
+                {
+                    if (current.LeftNode == null)
+                    {
 
-                current = nodeList[i];
+                    }
+                    else if (current.RightNode == null)
+                    {
+
+                    }
+                    else
+                    {
+                        current = nodeList[i];
+                    }
+
+                }
+
+                while (!nodeAddition)
+                {
+                    //Trace.WriteLine("Adding node returned False ");                   
+                    //current = current.RightNode;
+                    //nodeAddition = tree.addNewNode(current, nodeList[i]);
+                }
+              */
+
+              
+
+                
             }
 
 

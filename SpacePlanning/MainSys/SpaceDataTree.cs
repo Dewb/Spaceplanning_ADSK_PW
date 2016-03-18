@@ -12,14 +12,25 @@ namespace SpacePlanning
 
         private Node _root;
         private int _numNodes;
+        private List<string> _nodeTypeString;
 
         public SpaceDataTree(Node root)
         {
             _root = root;
             _numNodes = 1;
+            _nodeTypeString = new List<string>();
+            string str = NodeType.Container.ToString();
+            _nodeTypeString.Add(str);
         }
 
 
+        public List<string> NodeTypeList
+        {
+            get
+            {
+                return _nodeTypeString;
+            }
+        }
 
         public int NumberOfNodes
         {
@@ -57,41 +68,78 @@ namespace SpacePlanning
                 parent.RightNode = item;
                 item.ParentNode = parent;
                 _numNodes += 1;
+                _nodeTypeString.Add(NodeType.Container.ToString());
             }
             else
             {
                 parent.LeftNode = item;
                 item.ParentNode = parent;
                 _numNodes += 1;
+                _nodeTypeString.Add(NodeType.Space.ToString());
             }
 
             return true;
         }
 
-        // adds a new node to the tree
-        internal bool addNewNodeSide(Node parent, Node item)
+        private static Node checkParentValid(Node node)
         {
-            if (parent.LeftNode != null && parent.RightNode != null)
+            if(node.ParentNode == null)
             {
-                Trace.WriteLine("No Space, cant add new node");
-                return false;
-            }
-
-            if (item.NodeType == NodeType.Container)
-            {
-
-                parent.RightNode = item;
-                item.ParentNode = parent;
-                _numNodes += 1;
+                return node;
             }
             else
             {
-                parent.LeftNode = item;
-                item.ParentNode = parent;
-                _numNodes += 1;
+                return node.ParentNode;
+            }
+        }
+
+        // adds a new node to the tree
+        internal Node addNewNodeSide(Node parent, Node item)
+        {
+
+            // case1
+            if (parent.LeftNode != null && parent.RightNode != null)
+            {
+                Trace.WriteLine("No Space, cant add new node");
+                return checkParentValid(parent);
             }
 
-            return true;
+
+            // case2
+            if (item.NodeType == NodeType.Container)
+            {
+
+                if(parent.RightNode != null)
+                {
+                    Trace.WriteLine("Right Node not empty");
+                    return checkParentValid(parent);
+                }
+                else
+                {
+                    parent.RightNode = item;
+                    item.ParentNode = parent;
+                    _numNodes += 1;
+                    _nodeTypeString.Add(NodeType.Container.ToString());
+                }
+                
+            }
+            else
+            {
+                if (parent.LeftNode != null)
+                {
+                    Trace.WriteLine("Left Node not empty");
+                    return checkParentValid(parent); 
+                }
+                else
+                {
+                    parent.LeftNode = item;
+                    item.ParentNode = parent;
+                    _numNodes += 1;
+                    _nodeTypeString.Add(NodeType.Space.ToString());
+                }
+            }
+
+            return null;
         }
 
 
