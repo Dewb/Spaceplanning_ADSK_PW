@@ -145,7 +145,7 @@ namespace SpacePlanning
                 parent.RightNode = item;
                 item.ParentNode = parent;
                 _numNodes += 1;
-                Point cen = PointForNode(parent.CenterPoint, 1);
+                Point cen = PointForNode(parent.CenterPoint, -1);
                 item.CenterPoint = cen;
                 item.RadiusNode = rad;
                 item.RadiusNodeExtra = rad + addOn;
@@ -159,7 +159,7 @@ namespace SpacePlanning
                 parent.LeftNode = item;
                 item.ParentNode = parent;
                 _numNodes += 1;
-                Point cen = PointForNode(parent.CenterPoint, -1);
+                Point cen = PointForNode(parent.CenterPoint, 1);
                 item.CenterPoint = cen;
                 item.RadiusNode = rad;
                 item.RadiusNodeExtra = rad + addOn;
@@ -168,6 +168,50 @@ namespace SpacePlanning
                 _nodeTypeString.Add(NodeType.Space.ToString());
             }
            
+        }
+
+        // adds a new node to the tree
+        internal Node addNewNodeSideOld(Node parent, Node item)
+        {
+
+            // case1
+            if (parent.LeftNode != null && parent.RightNode != null)
+            {
+                Trace.WriteLine("No Space, cant add new node");
+                return checkParentValid(parent);
+            }
+
+
+            // case2
+            if (item.NodeType == NodeType.Container)
+            {
+
+                if (parent.RightNode != null)
+                {
+                    Trace.WriteLine("Right Node not empty");
+                    return checkParentValid(parent);
+                }
+                else
+                {
+                    insertNodeData(parent, item, true);
+                }
+
+            }
+            else
+            {
+                if (parent.LeftNode != null)
+                {
+                    Trace.WriteLine("Left Node not empty");
+                    return checkParentValid(parent);
+                }
+                else
+                {
+                    Trace.WriteLine("Inserting Node Data Now");
+                    insertNodeData(parent, item, false);
+                }
+            }
+
+            return null;
         }
 
 
@@ -208,6 +252,7 @@ namespace SpacePlanning
                 }
                 else
                 {
+                    Trace.WriteLine("Inserting Node Data Now");
                     insertNodeData(parent, item, false);
                 }
             }

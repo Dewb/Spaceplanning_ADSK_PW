@@ -40,6 +40,18 @@ namespace SpacePlanning
             }
         }
 
+        // returns random nodetype result
+        internal static NodeType GenerateBalancedNodeType(bool tag)
+        {
+            if (tag)
+            {
+                return NodeType.Container;
+            }
+            else
+            {
+                return NodeType.Space;
+            }
+        }
         //random double numbers between two decimals
         internal static double RandomBetweenNumbers(Random rn, double max, double min)
         {

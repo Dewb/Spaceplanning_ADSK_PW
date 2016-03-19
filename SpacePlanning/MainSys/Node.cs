@@ -26,7 +26,7 @@ namespace SpacePlanning
         private double _radiusNode;
         private double _radiusAddContainer;
         private double _extraRadius;
-        private int _prop = 3;
+        private double _prop = 1.2;
 
 
         // for root node

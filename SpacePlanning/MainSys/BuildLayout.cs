@@ -1114,43 +1114,40 @@ namespace SpacePlanning
             return movedLine;
         }
 
-
-
-
         //make a tree to test
-        public static SpaceDataTree CreateSpaceTree(int numNodes, Point origin, double spaceX, double spaceY,double radius, double recompute = 5)
+        public static SpaceDataTree CreateSpaceTreeOld(int numNodes, Point origin, double spaceX, double spaceY, double radius, double recompute = 5)
         {
             // make root node
-            Node root = new Node(0, NodeType.Container, true, origin,radius);            
+            Node root = new Node(0, NodeType.Container, true, origin, radius);
             List<Node> nodeList = new List<Node>();
             //nodeList.Add(root);
             Random ran = new Random();
-            for (int i = 0; i < numNodes-1; i++)
+            for (int i = 0; i < numNodes - 1; i++)
             {
                 Node N;
                 double val = ran.NextDouble();
                 NodeType ndType = BasicUtility.GenerateNodeType(val);
                 N = new Node(i + 1, ndType);
-                if (i%2 == 0)
+                if (i % 2 == 0)
                 {
-                  
-                   //N  = new Node(i + 1, ndType);
+
+                    //N  = new Node(i + 1, ndType);
                 }
                 else
                 {
-                   //N = new Node(i + 1, NodeType.Container);
+                    //N = new Node(i + 1, NodeType.Container);
                 }
-                
+
                 nodeList.Add(N);
             }
             //////////////////////////////////////////////////////////////////
-            SpaceDataTree tree = new SpaceDataTree(root,origin,spaceX,spaceY);
+            SpaceDataTree tree = new SpaceDataTree(root, origin, spaceX, spaceY);
             Node current = root;
             string foo = "";
             Node nodeAdditionResult = null;
             for (int i = 0; i < nodeList.Count; i++)
             {
-              
+
                 if (current.NodeType == NodeType.Space)
                 {
                     Trace.WriteLine("Make Sure Space Nodes are childless");
@@ -1162,18 +1159,123 @@ namespace SpacePlanning
                 //nodeAdditionResult = null , means node properly added
                 //nodeAdditionResult = current, means, parent node of current is null
                 //nodeAdditionResult = some other node means, current should be that other node to add new node
-                if(nodeAdditionResult == current)
+                if (nodeAdditionResult == current)
                 {
+                    Trace.WriteLine("Parent Node is found Null");
                     break;
 
-                }else if (nodeAdditionResult != current && nodeAdditionResult != null)
+                }
+                else if (nodeAdditionResult != current && nodeAdditionResult != null)
                 {
+                    Trace.WriteLine("Current Should be that other Node");
                     current = nodeAdditionResult;
                 }
                 else
                 {
+                    Trace.WriteLine("Node is added properly Yay");
                     current = nodeList[i];
                 }
+                Trace.WriteLine("+++++++++++++++++++++++++++++++++++++ \\");
+                string foo1 = "";
+                /* if(nodeAdditionResult == false)
+                 {
+                     if (current.LeftNode == null)
+                     {
+
+                     }
+                     else if (current.RightNode == null)
+                     {
+
+                     }
+                     else
+                     {
+                         current = nodeList[i];
+                     }
+
+                 }
+
+                 while (!nodeAdditionResult)
+                 {
+                     //Trace.WriteLine("Adding node returned False ");                   
+                     //current = current.RightNode;
+                     //nodeAdditionResult = tree.addNewNode(current, nodeList[i]);
+                 }
+               */
+
+            }
+            Trace.WriteLine("Tree Constructed=====================");
+            return tree;
+
+        }
+
+
+
+
+
+        //make a tree to test
+        public static SpaceDataTree CreateSpaceTree(int numNodes, Point origin, double spaceX, double spaceY,double radius, double recompute = 5)
+        {
+            // make root node
+            Node root = new Node(0, NodeType.Container, true, origin,radius);            
+            List<Node> nodeList = new List<Node>();
+            //nodeList.Add(root);
+            Random ran = new Random();
+            bool tag = true;
+            for (int i = 0; i < numNodes-1; i++)
+            {
+                Node N;
+                double val = ran.NextDouble();
+                //NodeType ndType = BasicUtility.GenerateNodeType(val);
+                NodeType ndType = BasicUtility.GenerateBalancedNodeType(tag);
+                tag = !tag;
+                N = new Node(i + 1, ndType);                        
+                nodeList.Add(N);
+            }
+            //////////////////////////////////////////////////////////////////
+            SpaceDataTree tree = new SpaceDataTree(root,origin,spaceX,spaceY);
+            Node current = root;
+            
+            Node nodeAdditionResult = null;
+            for (int i = 0; i < nodeList.Count; i++)
+            {
+              
+                if (current.NodeType == NodeType.Space)
+                {
+                    Trace.WriteLine("Make Sure Space Nodes are childless");
+                    //current = current.ParentNode.RightNode;
+                    //current = current.RightNode;
+                }
+
+
+                nodeAdditionResult = tree.addNewNodeSide(current, nodeList[i]);
+                string foo = "";
+                //nodeAdditionResult = null , means node properly added
+                //nodeAdditionResult = current, means, parent node of current is null
+                //nodeAdditionResult = some other node means, current should be that other node to add new node
+                if (nodeAdditionResult == current)
+                {
+                    Trace.WriteLine("Parent Node is found Null");
+                    break;
+
+                }else if (nodeAdditionResult != current && nodeAdditionResult != null)
+                {
+                    Trace.WriteLine("Current Should be that other Node");
+                    current = nodeAdditionResult;
+                }
+                else
+                {
+                    Trace.WriteLine("Node is added properly Yay");
+                    
+                    if(current.NodeType == NodeType.Space)
+                    {
+                        current = current.ParentNode;
+                    }
+                    else
+                    {
+                        current = nodeList[i];
+                    }
+                }
+                Trace.WriteLine("+++++++++++++++++++++++++++++++++++++ \\");
                 string foo1 = "";
                /* if(nodeAdditionResult == false)
                 {
@@ -1201,7 +1303,7 @@ namespace SpacePlanning
               */
     
             }
-            Trace.WriteLine("Tree Constructed" + tree);
+            Trace.WriteLine("Tree Constructed=====================");
             return tree;
 
         }
