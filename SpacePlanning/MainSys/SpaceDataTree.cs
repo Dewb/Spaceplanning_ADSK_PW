@@ -128,8 +128,8 @@ namespace SpacePlanning
         {
             double x = parentPt.X + mul * _spaceX;
             double y = parentPt.Y +  _spaceY;
-            Point cen = Point.ByCoordinates(x, y);
-            return cen;
+            Point cen1 = Point.ByCoordinates(x, y);
+            return cen1;
         }
 
         // add the following entries into the space data tree
