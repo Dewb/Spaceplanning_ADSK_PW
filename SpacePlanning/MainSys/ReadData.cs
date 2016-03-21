@@ -313,7 +313,8 @@ namespace SpacePlanning
         {
 
 
-            Stream res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.Asset.OUTLINESCALEDDK.sat");
+            //Stream res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.Asset.OUTLINESCALEDDK.sat");
+            Stream res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.Asset.ATORIGINDK.sat");
             string saveTo = Path.GetTempFileName();
 
             // create a write stream
