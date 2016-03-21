@@ -1213,7 +1213,8 @@ namespace SpacePlanning
 
 
         //make a tree to test
-        public static SpaceDataTree CreateSpaceTree(int numNodes, Point origin, double spaceX, double spaceY,double radius, double recompute = 5)
+        [MultiReturn(new[] { "SpaceTree", "NodeList" })]
+        public static Dictionary<string,object> CreateSpaceTree(int numNodes, Point origin, double spaceX, double spaceY,double radius, double recompute = 5)
         {
             // make root node
             Node root = new Node(0, NodeType.Container, true, origin,radius);            
@@ -1244,6 +1245,8 @@ namespace SpacePlanning
                     Trace.WriteLine("Make Sure Space Nodes are childless");
                     //current = current.ParentNode.RightNode;
                     //current = current.RightNode;
+                    current = current.ParentNode;
+                  
                 }
 
 
@@ -1265,15 +1268,8 @@ namespace SpacePlanning
                 else
                 {
                     Trace.WriteLine("Node is added properly Yay");
-                    
-                    if(current.NodeType == NodeType.Space)
-                    {
-                        current = current.ParentNode;
-                    }
-                    else
-                    {
-                        current = nodeList[i];
-                    }
+                    current = nodeList[i];
+                  
                 }
                 Trace.WriteLine("+++++++++++++++++++++++++++++++++++++ \\");
                 string foo1 = "";
@@ -1304,7 +1300,13 @@ namespace SpacePlanning
     
             }
             Trace.WriteLine("Tree Constructed=====================");
-            return tree;
+            //return tree;
+
+            return new Dictionary<string, object>
+            {
+                { "SpaceTree", (tree) },
+                { "NodeList", (nodeList) }
+            };
 
         }
 
