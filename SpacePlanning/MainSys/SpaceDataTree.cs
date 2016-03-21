@@ -170,51 +170,7 @@ namespace SpacePlanning
            
         }
 
-        // adds a new node to the tree
-        internal Node addNewNodeSideOld(Node parent, Node item)
-        {
-
-            // case1
-            if (parent.LeftNode != null && parent.RightNode != null)
-            {
-                Trace.WriteLine("No Space, cant add new node");
-                return checkParentValid(parent);
-            }
-
-
-            // case2
-            if (item.NodeType == NodeType.Container)
-            {
-
-                if (parent.RightNode != null)
-                {
-                    Trace.WriteLine("Right Node not empty");
-                    return checkParentValid(parent);
-                }
-                else
-                {
-                    insertNodeData(parent, item, true);
-                }
-
-            }
-            else
-            {
-                if (parent.LeftNode != null)
-                {
-                    Trace.WriteLine("Left Node not empty");
-                    return checkParentValid(parent);
-                }
-                else
-                {
-                    Trace.WriteLine("Inserting Node Data Now");
-                    insertNodeData(parent, item, false);
-                }
-            }
-
-            return null;
-        }
-
-
+       
 
         // adds a new node to the tree
         internal Node addNewNodeSide(Node parent, Node item)
