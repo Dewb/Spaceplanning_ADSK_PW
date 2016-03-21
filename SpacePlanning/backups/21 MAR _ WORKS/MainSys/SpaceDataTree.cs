@@ -255,21 +255,21 @@ namespace SpacePlanning
 
         }
 
-        internal void removeLeftNode(Node Parent)
+
+        //to remove node and their children both
+        internal void removeNodeAll(Node parent, bool left)
         {
-            if (Parent.LeftNode != null)
+            if (left)
             {
-                Parent.LeftNode = null;
+                parent.LeftNode = null;
             }
+            else
+            {
+                parent.RightNode = null;
+            }           
+
         }
 
-        internal void removeRightNode(Node Parent)
-        {
-            if (Parent.RightNode != null)
-            {
-                Parent.RightNode = null;
-            }
-        }
 
         //to remove only the node but keep their children
         internal void removeOnlyNode(Node parent,Node item)

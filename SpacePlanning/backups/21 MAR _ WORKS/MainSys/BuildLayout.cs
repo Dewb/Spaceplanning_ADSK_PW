@@ -1322,7 +1322,7 @@ namespace SpacePlanning
 
 
         //RECURSIVE SPLITS A POLY
-        [MultiReturn(new[] { "DeptPolys", "LeftOverPolys", "DepartmentNames", "UpdatedDeptData","SpaceDataTree" })]
+        [MultiReturn(new[] { "DeptPolys", "LeftOverPolys", "DepartmentNames", "UpdatedDeptData" })]
         internal static Dictionary<string, object> DeptSplitRefined(Polygon2d poly, List<DeptData> deptData, List<Cell> cellInside, double offset, int recompute = 1)
         {
 
@@ -1340,7 +1340,7 @@ namespace SpacePlanning
             List<string> AllDepartmentNames = new List<string>();
             List<double> AllDeptAreaAdded = new List<double>();
             Stack<Polygon2d> leftOverPoly = new Stack<Polygon2d>();
-            List<Node> AllNodesList = new List<Node>();
+
 
             SortedDictionary<double, DeptData> sortedD = new SortedDictionary<double, DeptData>();
             for (int i = 0; i < deptData.Count; i++)
@@ -1390,7 +1390,6 @@ namespace SpacePlanning
                 //areaCurrentPoly = Polygon2d.AreaCheckPolygon(currentPolyObj);
 
                 Random ran = new Random();
-                Node spaceNode, containerNode;
                 // when inpatient--------------------------------------------------------------------------
                 if (i == 0)
                 {
@@ -1441,11 +1440,6 @@ namespace SpacePlanning
                         }
                         count1 += 0;
                     }
-
-                    spaceNode = new Node(i, NodeType.Space);
-                    containerNode = new Node(i, NodeType.Container);
-                    AllNodesList.Add(spaceNode);
-                    AllNodesList.Add(containerNode);
                 }
                 //when other depts------------------------------------------------------------------------
                 else
@@ -1496,10 +1490,7 @@ namespace SpacePlanning
                                 leftOverPoly.Push(polyS[0]);
                             }
 
-                            spaceNode = new Node(i, NodeType.Space);
-                            containerNode = new Node(i, NodeType.Container);
-                            AllNodesList.Add(spaceNode);
-                            AllNodesList.Add(containerNode);
+
                         }
 
                         //Trace.WriteLine("Poly After Splitting Length is : " + polyAfterSplitting.Count);
@@ -1600,14 +1591,6 @@ namespace SpacePlanning
             List<Polygon2d> AllLeftOverPolys = new List<Polygon2d>();
             AllLeftOverPolys.AddRange(leftOverPoly);
 
-            double spaceX = 22;
-            double spaceY = 13;
-            double nodeRadius = 4;
-            Point origin = Point.ByCoordinates(-2000, -2000);
-            Node root = new Node(0, NodeType.Container, true, origin, nodeRadius);
-            Dictionary<string, object> SpaceTreeData = CreateSpaceTreeFromDeptData(root, AllNodesList, origin, spaceX, spaceY, nodeRadius, true);
-          
-
             Trace.WriteLine("Dept Splitting Done ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
             //return polyList;
             
@@ -1616,8 +1599,7 @@ namespace SpacePlanning
                 { "DeptPolys", (AllDeptPolys) },
                 { "LeftOverPolys", (AllLeftOverPolys) },
                 { "DepartmentNames", (AllDepartmentNames) },
-                { "UpdatedDeptData", (UpdatedDeptData) },
-                { "SpaceDataTree", (SpaceTreeData) }
+                { "UpdatedDeptData", (UpdatedDeptData) }
             };
 
 
@@ -1626,7 +1608,7 @@ namespace SpacePlanning
 
 
         //RECURSIVE SPLITS A POLY - USES EdgeSplitWrapper (spltbydistance) & BasicSplitPolyIntoTwo
-        [MultiReturn(new[] { "DeptPolys", "LeftOverPolys", "DepartmentNames", "UpdatedDeptData","SpaceDataTree" })]
+        [MultiReturn(new[] { "DeptPolys", "LeftOverPolys", "DepartmentNames", "UpdatedDeptData" })]
         public static Dictionary<string, object> DeptArrangeOnSite(Polygon2d poly, List<DeptData> deptData, List<Cell> cellInside, double offset, int recompute = 1)
         {
             Dictionary<string, object> deptArrangement = DeptSplitRefined(poly, deptData, cellInside, offset, 1);
