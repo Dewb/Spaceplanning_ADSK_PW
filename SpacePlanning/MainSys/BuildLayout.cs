@@ -18,7 +18,8 @@ namespace SpacePlanning
     {
         
 
-        private static double spacingSet = 8; // 0.5 worked great
+        private static double spacingSet = 5; // 0.5 worked great
+        internal static double recurse = 0;
         internal static Point2d reference = new Point2d(0,0);
 
         //RECURSIVE SPLITS A POLY
@@ -2112,24 +2113,124 @@ namespace SpacePlanning
             };
         }
 
-        //RECURSIVE SPLITS A POLY
-        [MultiReturn(new[] { "PolyAfterSplit", "AreaEachPoly", "EachPolyPoint", "UpdatedProgramData" })]
-        public static Dictionary<string, object> RecursivePlaceProgramsSeries(List<Polygon2d> polyInputList, List<ProgramData> progData, double distance, int recompute = 1)
+
+        internal static void MakePolysOfProportion(Polygon2d poly, List<Polygon2d> polyOrganizedList, double acceptableWidth)
         {
 
-           
-            List<Polygon2d> polyList = new List<Polygon2d>();
-            List<double> areaList = new List<double>();
-            List<Point2d> pointsList = new List<Point2d>();
-            Stack<ProgramData> programDataRetrieved = new Stack<ProgramData>();
+           // Trace.WriteLine("Recurse doing : " + recurse);
+            List<double> spanListXY = Polygon2d.GetSpansXYFromPolygon2d(poly.Points);
+            double spanX = spanListXY[0];
+            double spanY = spanListXY[1];
+            double aspRatio = spanX / spanY;
+            double lowRange = 0.3;
+            double highRange = 2;
+            double threshDistanceX = acceptableWidth;
+            double threshDistanceY = acceptableWidth;
+            bool   square = true;
 
-            List<Polygon2d> polyOrganizedList = new List<Polygon2d>();
-            double minWidth = 10;
-            for (int j = 0; j < progData.Count; j++)
+            //double acceptableWidth = 30;
+            Random ran = new Random();
+
+            double val = ran.NextDouble();
+
+
+
+            if (spanX > threshDistanceX && spanY > threshDistanceY)
             {
-                programDataRetrieved.Push(progData[j]);
+                square = false;
+            }
+            else {
+                if (aspRatio > lowRange && aspRatio < highRange)
+                {
+
+                    square = true;
+                }
+                else
+                {
+                    square = false;
+
+                }
             }
 
+            if (square)
+            {
+                //poly can be considered as squrish
+                Trace.WriteLine("Normal Rect found");
+                polyOrganizedList.Add(poly);
+            }
+            else
+            {
+                Dictionary<string, object> splitResult;
+                //poly is rectangle so split it into two and add
+                if (spanX > spanY)
+                {
+                    double dis = spanY / 2;
+                    int dir = 0;
+                    if(val > 0.5)
+                    {
+                        //dir = BasicUtility.toggleInputInt(dir);
+                        Trace.WriteLine("Long Rect found and Toggled Dir : " + val);
+                    }
+                    dir = BasicUtility.toggleInputInt(dir);
+                    SplitByDistanceFromPoint(poly, dis, dir);
+                    splitResult = SplitByDistanceFromPoint(poly, dis, dir);
+                }
+                else
+                {
+                    double dis = spanX / 2;
+                    int dir = 1;
+                    if (val > 0.5)
+                    {
+                        //dir = BasicUtility.toggleInputInt(dir);
+                        Trace.WriteLine("Long Rect found and Toggled Dir Again : " + val);
+                    }
+                    dir = BasicUtility.toggleInputInt(dir);
+                    splitResult = SplitByDistanceFromPoint(poly, dis, dir);
+                }
+
+                List<Polygon2d> polyAfterSplit = (List<Polygon2d>)splitResult["PolyAfterSplit"];
+                //polyOrganizedList.Remove(poly);
+                polyOrganizedList.Add(polyAfterSplit[0]);
+                polyOrganizedList.Add(polyAfterSplit[1]);
+
+                List<double> spanA = Polygon2d.GetSpansXYFromPolygon2d(polyAfterSplit[0].Points);
+                List<double> spanB = Polygon2d.GetSpansXYFromPolygon2d(polyAfterSplit[1].Points);
+             
+                
+
+                if ((spanA[0] > 0 && spanA[1] > 0 ) || (spanB[0] > 0 && spanB[1]> 0))
+                {
+                    Trace.WriteLine("Recurse is  : " + recurse);
+                    if (spanA[0] > acceptableWidth && spanA[1] > acceptableWidth)
+                    {
+                        Trace.WriteLine("SpanA Dimension : " + spanA[0]);
+                        MakePolysOfProportion(polyAfterSplit[0], polyOrganizedList, acceptableWidth);
+                    }
+
+                    if (spanB[0] > acceptableWidth && spanB[1] > acceptableWidth)
+                    {
+                        Trace.WriteLine("SpanB Dimension : " + spanB[0]);
+                        MakePolysOfProportion(polyAfterSplit[1], polyOrganizedList, acceptableWidth);
+                    }
+
+
+
+                    
+                }
+               
+
+            }
+            Trace.WriteLine("End of function +++++++++++++++++++++++++++++++++++++++++++++++++++++ ");
+        }// end of function
+
+
+
+
+        public static List<Polygon2d> SplitBigPolys(List<Polygon2d> polyInputList, double acceptableWidth, int recompute = 1)
+        {
+            List<Polygon2d> polyList = new List<Polygon2d>();
+
+            List<Polygon2d> polyOrganizedList = new List<Polygon2d>();
 
             for (int i = 0; i < polyInputList.Count; i++)
             {
@@ -2139,72 +2240,59 @@ namespace SpacePlanning
                 {
                     polyOrganizedList.Add(poly);
                 }
-                List<double> spanListXY = Polygon2d.GetSpansXYFromPolygon2d(poly.Points);
-                double spanX = spanListXY[0];
-                double spanY = spanListXY[1];
-                double aspRatio = spanX / spanY;
-                double lowRange = 0.3;
-                double highRange = 2;
-                double threshDistanceX = 30;
-                double threshDistanceY = 30;
-                bool square = true;
-               
-
-                if(spanX > threshDistanceX && spanY > threshDistanceY)
+                if(recurse < 100000)
                 {
-                    square = false;
-                }
-                else { 
-                    if(aspRatio > lowRange && aspRatio < highRange)
-                    {
-                     
-                        square = true;
-                    }
-                    else
-                    {
-                        square = false;
-                       
-                    }
-                }
-
-
-
-
-                if (square)
-                {
-                    //poly can be considered as squrish
-                    Trace.WriteLine("Normal Rect found");
-                    polyOrganizedList.Add(poly);
-                }
-                else
-                {
-                    Dictionary<string, object> splitResult;
-                    //poly is rectangle so split it into two and add
-                    if (spanX > spanY)
-                    {
-                        double dis = spanY / 2;
-                        int dir = 0;
-                        Trace.WriteLine("Long Rect found");
-                        SplitByDistanceFromPoint(poly, dis, dir);
-                        splitResult = SplitByDistanceFromPoint(poly, dis, dir);
-                    }
-                    else
-                    {
-                        Trace.WriteLine("Long Rect found");
-                        double dis = spanX / 2;
-                        int dir = 1;
-                        splitResult = SplitByDistanceFromPoint(poly, dis, dir);
-                    }
-
-                    List<Polygon2d> polyAfterSplit = (List<Polygon2d>)splitResult["PolyAfterSplit"];
-                    polyOrganizedList.Add(polyAfterSplit[0]);
-                    polyOrganizedList.Add(polyAfterSplit[1]);
-                }
-
-
-
+                    MakePolysOfProportion(poly, polyOrganizedList, acceptableWidth);
+                }                
+                recurse += 1;
 
             }
+
+            recurse = 0;
+            return polyOrganizedList;
+        }
+
+      
+
+        //RECURSIVE SPLITS A POLY
+        [MultiReturn(new[] { "PolyAfterSplit", "AreaEachPoly", "EachPolyPoint", "UpdatedProgramData" })]
+        public static Dictionary<string, object> RecursivePlaceProgramsSeries(List<Polygon2d> polyInputList, List<ProgramData> progData, double distance, double acceptableWidth, int recompute = 1)
+        {
+
+           
+            List<Polygon2d> polyList = new List<Polygon2d>();
+            List<double> areaList = new List<double>();
+            List<Point2d> pointsList = new List<Point2d>();
+            Stack<ProgramData> programDataRetrieved = new Stack<ProgramData>();
+
+           
+            double minWidth = 10;
+            for (int j = 0; j < progData.Count; j++)
+            {
+                programDataRetrieved.Push(progData[j]);
+            }
+
+            /*
+            for (int i = 0; i < polyInputList.Count; i++)
+            {
+
+                Polygon2d poly = polyInputList[i];
+                if (poly == null || poly.Points == null || poly.Points.Count == 0)
+                {
+                    polyOrganizedList.Add(poly);
+                }
+                
+                MakePolysOfProportion(poly,polyOrganizedList);   
+
+            }
+
+            */
+
+            List<Polygon2d> polyOrganizedList = new List<Polygon2d>();
+            polyOrganizedList = SplitBigPolys(polyInputList, acceptableWidth, 5);
+
+            ///////////////////////////////////////////////////////////////////////
+
 
             for (int i = 0; i < polyOrganizedList.Count; i++)
             {
@@ -2248,23 +2336,23 @@ namespace SpacePlanning
 
                     double areaProg = progItem.AreaNeeded;
                     double dist = areaProg / lowSpan;
-                    Trace.WriteLine("HighSpan is : " + highSpan + " | Dist is : " + dist);
+                    //Trace.WriteLine("HighSpan is : " + highSpan + " | Dist is : " + dist);
                     if (highSpan < dist)
                     {
-                        Trace.WriteLine("Dist Reduced");
+                        //Trace.WriteLine("Dist Reduced");
                         dist = highSpan;
                     }
                     
                     if ((highSpan - dist) < minWidth)
                     {
                         dist += (highSpan - dist);
-                        Trace.WriteLine("Dist Increased");
+                        //Trace.WriteLine("Dist Increased");
                     }
 
                     if (dist < minWidth)
                     {
                         dist += minWidth;
-                        Trace.WriteLine("Dist Increased");
+                        //Trace.WriteLine("Dist Increased");
                     }
 
 
