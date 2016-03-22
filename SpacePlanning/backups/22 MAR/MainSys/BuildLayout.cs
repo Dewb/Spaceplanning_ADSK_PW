@@ -18,7 +18,7 @@ namespace SpacePlanning
     {
         
 
-        private static double spacingSet = 10; // 0.5 worked great
+        private static double spacingSet = 5; // 0.5 worked great
         internal static double recurse = 0;
         internal static Point2d reference = new Point2d(0,0);
 
@@ -1922,14 +1922,21 @@ namespace SpacePlanning
                 }
             }
 
-            //organize the points to make closed poly            
+            //organize the points to make closed poly
+            List<List<Point2d>> twoSets = new List<List<Point2d>>();
             List<Point2d> sortedA = DoSortClockwise(poly, intersectedPoints, pIndexA);
             List<Point2d> sortedB = DoSortClockwise(poly, intersectedPoints, pIndexB);
-            List<List<Point2d>> twoSets = new List<List<Point2d>>();
             twoSets.Add(sortedA);
-            twoSets.Add(sortedB);           
+            twoSets.Add(sortedB);
+            polyA = new Polygon2d(twoSets[0], 0);
+            polyB = new Polygon2d(twoSets[1], 0);
 
-            List<Polygon2d>  splittedPoly =  OptimizePolyPoints(sortedA, sortedB);
+
+            List<Polygon2d> splittedPoly = new List<Polygon2d>();
+
+            splittedPoly.Add(polyA);
+            splittedPoly.Add(polyB);
+            
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (splittedPoly) },
@@ -1942,32 +1949,8 @@ namespace SpacePlanning
         }
 
 
-        internal static List<Polygon2d> OptimizePolyPoints(List<Point2d> sortedA, List<Point2d> sortedB, bool tag = true)
-        {
-            Polygon2d polyA, polyB;
 
-            if (tag)
-            {           
-                //added to make sure poly has uniform points
-                polyA = new Polygon2d(sortedA);
-                polyB = new Polygon2d(sortedB);
 
-                List<Point2d> ptsPolyA = Polygon2d.SmoothPolygon(polyA.Points,spacingSet);
-                List<Point2d> ptsPolyB = Polygon2d.SmoothPolygon(polyB.Points);
-                polyA = new Polygon2d(ptsPolyA, 0);
-                polyB = new Polygon2d(ptsPolyB, 0);               
-            }
-            else
-            {
-                //return the polys as obtained - no smoothing
-                polyA = new Polygon2d(sortedA, 0);
-                polyB = new Polygon2d(sortedB, 0);
-            }
-            List<Polygon2d> splittedPoly = new List<Polygon2d>();
-            splittedPoly.Add(polyA);
-            splittedPoly.Add(polyB);
-            return splittedPoly;
-        }
 
 
 
@@ -3265,14 +3248,29 @@ namespace SpacePlanning
             }
 
             //organize the points to make closed poly
+            List<List<Point2d>> twoSets = new List<List<Point2d>>();
             List<Point2d> sortedA = DoSortClockwise(poly, intersectedPoints, pIndexA);
             List<Point2d> sortedB = DoSortClockwise(poly, intersectedPoints, pIndexB);
-
-            List<List<Point2d>> twoSets = new List<List<Point2d>>();
             twoSets.Add(sortedA);
-            twoSets.Add(sortedB);          
+            twoSets.Add(sortedB);
+            //polyA = new Polygon2d(twoSets[0], 0);
+            //polyB = new Polygon2d(twoSets[1], 0);
 
-            List<Polygon2d> splittedPoly = OptimizePolyPoints(sortedA, sortedB);
+
+            //added to make sure poly has uniform points
+            polyA = new Polygon2d(twoSets[0]);
+            polyB = new Polygon2d(twoSets[1]);
+
+            List<Point2d> ptsPolyA = Polygon2d.SmoothPolygon(polyA.Points);
+            List<Point2d> ptsPolyB = Polygon2d.SmoothPolygon(polyB.Points);
+            polyA = new Polygon2d(ptsPolyA);
+            polyB = new Polygon2d(ptsPolyB);
+            List<Polygon2d> splittedPoly = new List<Polygon2d>();
+
+            splittedPoly.Add(polyA);
+            splittedPoly.Add(polyB);
+
+
 
             return new Dictionary<string, object>
             {
@@ -3359,15 +3357,13 @@ namespace SpacePlanning
             List<Point2d> sortedB = DoSortClockwise(poly, intersectedPoints, pIndexB);
             twoSets.Add(sortedA);
             twoSets.Add(sortedB);
-            /*
             polyA = new Polygon2d(twoSets[0], 0);
             polyB = new Polygon2d(twoSets[1], 0);
             List<Polygon2d> splittedPoly = new List<Polygon2d>();
             
             splittedPoly.Add(polyA);
             splittedPoly.Add(polyB);
-            */
-            List<Polygon2d> splittedPoly = OptimizePolyPoints(sortedA, sortedB);
+
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (splittedPoly) },
@@ -3526,11 +3522,22 @@ namespace SpacePlanning
 
             //organize the points to make closed poly
             List<List<Point2d>> twoSets = new List<List<Point2d>>();
+            //List<Point2d> sortedA = makePolyPointsStraight(poly, intersectedPoints, pIndexA);
+            //List<Point2d> sortedB = makePolyPointsStraight(poly, intersectedPoints, pIndexB);
             List<Point2d> sortedA = DoSortClockwise(poly, intersectedPoints, pIndexA);
             List<Point2d> sortedB = DoSortClockwise(poly, intersectedPoints, pIndexB);
             twoSets.Add(sortedA);
-            twoSets.Add(sortedB);        
-            List<Polygon2d> splittedPoly = OptimizePolyPoints(sortedA, sortedB);
+            twoSets.Add(sortedB);
+            polyA = new Polygon2d(twoSets[0], 0);
+            polyB = new Polygon2d(twoSets[1], 0);
+
+
+            List<Polygon2d> splittedPoly = new List<Polygon2d>();
+
+            splittedPoly.Add(polyA);
+            splittedPoly.Add(polyB);
+
+
 
             return new Dictionary<string, object>
             {
