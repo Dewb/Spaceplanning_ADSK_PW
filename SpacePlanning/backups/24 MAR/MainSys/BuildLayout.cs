@@ -2102,11 +2102,12 @@ namespace SpacePlanning
 
       
 
-        //used to split Depts into Program Spaces
+        //RECURSIVE SPLITS A POLY
         [MultiReturn(new[] { "PolyAfterSplit", "BigPolysAfterSplit", "EachPolyPoint", "UpdatedProgramData" })]
         public static Dictionary<string, object> RecursivePlaceProgramsSeries(List<Polygon2d> polyInputList, 
             List<ProgramData> progData, double acceptableWidth, int minWidthAllowed = 8)
         {
+
            
             List<Polygon2d> polyList = new List<Polygon2d>();
             List<double> areaList = new List<double>();
@@ -2120,10 +2121,11 @@ namespace SpacePlanning
                 programDataRetrieved.Push(progData[j]);
                 Trace.WriteLine("Itering to push progdata" + j);
             }
+
           
             List<Polygon2d> polyOrganizedList = new List<Polygon2d>();
             polyOrganizedList = SplitBigPolys(polyInputList, acceptableWidth, 5);
-            polyOrganizedList = Polygon2d.PolyReducePoints(polyOrganizedList);
+
             Trace.WriteLine("Early return");
             return new Dictionary<string, object>
             {
@@ -2134,39 +2136,14 @@ namespace SpacePlanning
             };
 
 
-        }
 
-
-        //used to split Depts into Program Spaces
-        [MultiReturn(new[] { "PolyAfterSplit", "BigPolysAfterSplit", "EachPolyPoint", "UpdatedProgramData" })]
-        public static Dictionary<string, object> RecursivePlaceProgramsSeriesTest(List<Polygon2d> polyInputList,
-            List<ProgramData> progData, double acceptableWidth, int minWidthAllowed = 8)
-        {
-
-
-            List<Polygon2d> polyList = new List<Polygon2d>();
-            List<double> areaList = new List<double>();
-            List<Point2d> pointsList = new List<Point2d>();
-            Stack<ProgramData> programDataRetrieved = new Stack<ProgramData>();
-
-
-            double minWidth = minWidthAllowed;
-            for (int j = 0; j < progData.Count; j++)
-            {
-                programDataRetrieved.Push(progData[j]);
-                Trace.WriteLine("Itering to push progdata" + j);
-            }
-
-
-            List<Polygon2d> polyOrganizedList = new List<Polygon2d>();
-            polyOrganizedList = SplitBigPolys(polyInputList, acceptableWidth, 5);
-            polyOrganizedList = Polygon2d.PolyReducePoints(polyOrganizedList);
+            ///////////////////////////////////////////////////////////////////////
 
             Trace.WriteLine("No of Programs which needs Addition : " + programDataRetrieved.Count);
             for (int i = 0; i < polyOrganizedList.Count; i++)
             {
-
-                Trace.WriteLine("Starting Poly Object : " + i + " | Out of : + " + polyOrganizedList.Count + " +++++++++++++");
+                
+                Trace.WriteLine("Starting Poly Object : " + i + " | Out of : + " + polyOrganizedList.Count + " +++++++++++++" );
                 Trace.WriteLine("Programs left to add: " + programDataRetrieved.Count);
                 Polygon2d poly = polyOrganizedList[i];
 
@@ -2206,7 +2183,7 @@ namespace SpacePlanning
                 while (highSpan > 0 && programDataRetrieved.Count > 0)
                 {
                     ProgramData progItem = programDataRetrieved.Pop();
-
+                   
 
                     double areaProg = progItem.AreaNeeded;
                     double dist = areaProg / lowSpan;
@@ -2216,7 +2193,7 @@ namespace SpacePlanning
                         //Trace.WriteLine("Dist Reduced");
                         dist = highSpan;
                     }
-
+                    
                     //add extra material left in the dist to consume all space
                     if ((highSpan - dist) < minWidth)
                     {
@@ -2236,18 +2213,19 @@ namespace SpacePlanning
                     Trace.WriteLine("Dist computed is : " + dist);
                     //List<Polygon2d> polyAfterSplitting = EdgeSplitWrapper(currentPoly, ran2, dist, dir);
 
-                    Dictionary<string, object> splitReturn = SplitByDistancePoly(currentPoly, dist, dir);
+                    Dictionary<string, object> splitReturn = SplitByDistancePoly(currentPoly, dist, dir);                      
                     List<Polygon2d> polyAfterSplitting = (List<Polygon2d>)splitReturn["PolyAfterSplit"];
+                    //Dictionary<string,object> splitReturn = SplitByDistanceFromPoint(currentPoly, dist, dir);
+                    //List<Polygon2d> polyAfterSplitting = (List<Polygon2d>)splitReturn["PolyAfterSplit"];
 
-                    if (polyAfterSplitting[0] == null || polyAfterSplitting[0].Points == null ||
-                        polyAfterSplitting[0].Points.Count == 0)
-                    {
+                    if (polyAfterSplitting[0] == null || polyAfterSplitting[0].Points == null || 
+                        polyAfterSplitting[0].Points.Count == 0){
                         Trace.WriteLine("Null Poly : " + i);
                         programDataRetrieved.Push(progItem);
                         //dir = BasicUtility.toggleInputInt(dir);
                         break;
                     }
-                    if (polyAfterSplitting[1] == null || polyAfterSplitting[1].Points == null ||
+                    if (polyAfterSplitting[1] == null || polyAfterSplitting[1].Points == null || 
                         polyAfterSplitting[1].Points.Count == 0)
                     {
                         Trace.WriteLine("Null Poly : " + i);
@@ -2261,11 +2239,12 @@ namespace SpacePlanning
                     double area2 = GraphicsUtility.AreaPolygon2d(polyAfterSplitting[1].Points);
                     if (area1 > area2)
                     {
-                        currentPoly = polyAfterSplitting[0];
+                        currentPoly = polyAfterSplitting[0];                       
                         polyList.Add(polyAfterSplitting[1]);
                         progItem.AreaProvided = area1;
                         areaList.Add(area2);
                         selectedArea = area2;
+
                         Trace.WriteLine("Poly Added : " + i);
 
 
@@ -2290,7 +2269,7 @@ namespace SpacePlanning
 
 
             }// end of for loop
-
+            
 
 
             List<ProgramData> UpdatedProgramDataList = new List<ProgramData>();
@@ -2319,6 +2298,7 @@ namespace SpacePlanning
                 { "UpdatedProgramData",(UpdatedProgramDataList) }
             };
         }
+
 
         //RECURSIVE SPLITS A POLY
         [MultiReturn(new[] { "PolyAfterSplit", "AreaEachPoly", "EachPolyPoint","UpdatedProgramData" })]
