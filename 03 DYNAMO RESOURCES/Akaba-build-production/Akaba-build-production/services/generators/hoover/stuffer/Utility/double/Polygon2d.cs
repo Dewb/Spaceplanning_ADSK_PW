@@ -44,7 +44,13 @@ namespace stuffer
 
 
     internal Polygon2d(List<Point2d> points)
-    {
+    {  
+      if(points == null || points.Count == 0)
+            {
+                m_bbox = null;
+                m_points = points;
+                return;
+            }
       m_points = new List<Point2d>();
       foreach (Point2d point in points)
       {
@@ -262,6 +268,31 @@ namespace stuffer
             return pointCoordList;
         }
 
+
+        public static List<double> GetSpansXYFromPolygon2d(List<Point2d> poly)
+        {
+
+            if(poly == null || poly.Count ==0)
+            {
+                List<double> zeroList = new List<double>();
+                zeroList.Add(0);
+                zeroList.Add(0);
+                return zeroList ;
+            }
+            // compute bounding box ( set of four points ) for the poly
+            // find x Range, find y Range
+            List<Point2d> polyBBox = Polygon2d.FromPointsGetBoundingPoly(poly);
+            Range2d polyRange = Polygon2d.GetRang2DFromBBox(poly);
+
+            Point2d span = polyRange.Span;
+            double horizontalSpan = span.X;
+            double verticalSpan = span.Y;
+            List<double> spans = new List<double>();
+            spans.Add(horizontalSpan);
+            spans.Add(verticalSpan);
+
+            return spans;
+        }
         
         public static Range2d GetRang2DFromBBox(List<Point2d> pointList)
         {    
@@ -292,14 +323,32 @@ namespace stuffer
         }
 
 
-        internal static List<Point2d> SmoothPolygon(List<Point2d> pointList, double spacing = 3.0)
+        internal static List<Point2d> SmoothPolygon(List<Point2d> pointList, double spacingProvided = 5)
         {
             if(pointList == null || pointList.Count == 0)
             {
                 return null;
             }
-           //return pointList;
 
+              
+             //added to make sure spacing is set based on poly dimensions-------------------
+             List<double> spans = GetSpansXYFromPolygon2d(pointList);
+             double spanX = spans[0];
+             double spanY = spans[1];
+
+             double distanceConsidered = 0;
+
+             if(spanX > spanY)
+             {
+                 distanceConsidered = spanY;
+             }
+             else
+             {
+                 distanceConsidered = spanX;
+             }
+
+             double spacing = distanceConsidered / spacingProvided;
+            
             List<Point2d> ptList = new List<Point2d>();
 
             for (int i = 0; i < pointList.Count; i++)
@@ -319,7 +368,8 @@ namespace stuffer
                 Vector2d vec = new Vector2d(ptA, ptB);
                 double dist = vec.Length;
                 //Trace.WriteLine("Distance is : " + dist);
-                int numPointsNeeded = (int)(dist / spacing);
+                int numPointsNeeded = (int)(dist / spacingProvided);
+                //int numPointsNeeded = (int)spacingProvided;
                 double increment = dist / numPointsNeeded;
                 ptList.Add(pointList[i]);
 

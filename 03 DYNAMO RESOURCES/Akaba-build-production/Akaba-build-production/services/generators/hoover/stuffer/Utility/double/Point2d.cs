@@ -29,12 +29,14 @@ namespace stuffer
     public double X
     {
       get { return m_x; }
+      set { m_x = value; }
     }
 
     public double Y
     {
       get { return m_y; }
-    }
+      set { m_y = value; }
+   }
 
 
     public double DistanceTo(Point2d other)

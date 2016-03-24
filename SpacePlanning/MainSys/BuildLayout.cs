@@ -18,7 +18,7 @@ namespace SpacePlanning
     {
         
 
-        private static double spacingSet = 3; //higher value makes code faster but less precise
+        private static double spacingSet = 0.5; //higher value makes code faster but less precise
         internal static double recurse = 0;
         internal static Point2d reference = new Point2d(0,0);
 
@@ -1925,7 +1925,7 @@ namespace SpacePlanning
         }
 
 
-        internal static List<Polygon2d> OptimizePolyPoints(List<Point2d> sortedA, List<Point2d> sortedB, bool tag = true)
+        internal static List<Polygon2d> OptimizePolyPoints(List<Point2d> sortedA, List<Point2d> sortedB, bool tag = false)
         {
             Polygon2d polyA, polyB;
 
@@ -1958,28 +1958,7 @@ namespace SpacePlanning
         internal static double DistanceEditBasedOnRatio(double distance, double areaPoly, double areaFound, double area, double setSpan,double areaDifference)
         {
             double distanceNew = 0;
-            /*
-            if (areaDifference < 0)
-            {
-                // need to split less - decrease distance
-                double ratio = Math.Abs(areaDifference) / areaPoly;
-                distance -= ratio * setSpan;
-                Trace.WriteLine("Reducing Distance by : " + ratio * setSpan);
-                //double ratio = areaFound / area;
-                //distance -= distance*Math.Sqrt(ratio);
-
-
-            }
-            else
-            {
-                //need to split more -  increase distance
-                double ratio = Math.Abs(areaDifference) / areaPoly;
-                distance += ratio * setSpan;
-                Trace.WriteLine("Increading Distance by : " + ratio * setSpan);
-                //double ratio = areaFound / area;
-                //distance += distance * Math.Sqrt(ratio);
-            }
-            */
+      
 
             distanceNew = distance * (area / areaFound);
             //Trace.WriteLine("Ratio multiplied to distance is : " + (area / areaFound));
@@ -2114,8 +2093,8 @@ namespace SpacePlanning
 
         internal static void MakePolysOfProportion(Polygon2d poly, List<Polygon2d> polyOrganizedList, double acceptableWidth)
         {
-
-           // Trace.WriteLine("Recurse doing : " + recurse);
+            recurse += 1;
+            // Trace.WriteLine("Recurse doing : " + recurse);
             List<double> spanListXY = Polygon2d.GetSpansXYFromPolygon2d(poly.Points);
             double spanX = spanListXY[0];
             double spanY = spanListXY[1];
@@ -2135,16 +2114,18 @@ namespace SpacePlanning
 
             if (spanX > threshDistanceX && spanY > threshDistanceY)
             {
+                Trace.WriteLine("Square is false 1");
                 square = false;
             }
             else {
                 if (aspRatio > lowRange && aspRatio < highRange)
                 {
-
+                    Trace.WriteLine("Square is false 2");
                     square = false;
                 }
                 else
                 {
+                    Trace.WriteLine("Square is true");
                     square = true;
 
                 }
@@ -2170,8 +2151,9 @@ namespace SpacePlanning
                         //Trace.WriteLine("Long Rect found and Toggled Dir : " + val);
                     }
                     dir = BasicUtility.toggleInputInt(dir);
-                    SplitByDistanceFromPoint(poly, dis, dir);
+                    //SplitByDistanceFromPoint(poly, dis, dir);
                     splitResult = SplitByDistanceFromPoint(poly, dis, dir);
+                    Trace.WriteLine("Splitted because it was not square 1");
                 }
                 else
                 {
@@ -2184,49 +2166,57 @@ namespace SpacePlanning
                     }
                     dir = BasicUtility.toggleInputInt(dir);
                     splitResult = SplitByDistanceFromPoint(poly, dis, dir);
+                    Trace.WriteLine("Splitted because it was not square 2");
                 }
 
                 List<Polygon2d> polyAfterSplit = (List<Polygon2d>)splitResult["PolyAfterSplit"];
-                //polyOrganizedList.Remove(poly);
-                //polyOrganizedList.Add(polyAfterSplit[0]);
-                //polyOrganizedList.Add(polyAfterSplit[1]);
+                
 
                 List<double> spanA = Polygon2d.GetSpansXYFromPolygon2d(polyAfterSplit[0].Points);
                 List<double> spanB = Polygon2d.GetSpansXYFromPolygon2d(polyAfterSplit[1].Points);
-             
-                
 
-                if ((spanA[0] > 0 && spanA[1] > 0 ) || (spanB[0] > 0 && spanB[1]> 0))
+                Trace.WriteLine("Recurse is : " + recurse);
+
+                if(recurse < 3000)
                 {
-                    //Trace.WriteLine("Recurse is  : " + recurse);
-                    if (spanA[0] > acceptableWidth && spanA[1] > acceptableWidth)
+                
+                    if ((spanA[0] > 0 && spanA[1] > 0 ) || (spanB[0] > 0 && spanB[1]> 0))
                     {
-                        //Trace.WriteLine("SpanA Dimension : " + spanA[0]);
-                        MakePolysOfProportion(polyAfterSplit[0], polyOrganizedList, acceptableWidth);
+                        //Trace.WriteLine("Recurse is  : " + recurse);
+                        if (spanA[0] > acceptableWidth && spanA[1] > acceptableWidth)
+                        {
+                            //Trace.WriteLine("SpanA Dimension : " + spanA[0]);
+                            MakePolysOfProportion(polyAfterSplit[0], polyOrganizedList, acceptableWidth);
+                        }
+                        else
+                        {
+                            polyOrganizedList.Add(polyAfterSplit[0]);
+                            Trace.WriteLine("No Need to recurse again 1");
+                        }
+                        //end of 1st if
+                        if (spanB[0] > acceptableWidth && spanB[1] > acceptableWidth)
+                        {
+                            //Trace.WriteLine("SpanB Dimension : " + spanB[0]);
+                            MakePolysOfProportion(polyAfterSplit[1], polyOrganizedList, acceptableWidth);
+                            
+                        }
+                        else
+                        {
+                            polyOrganizedList.Add(polyAfterSplit[1]);
+                            Trace.WriteLine("No Need to recurse again 2");
+                        }
+                        //end of 2nd if
+
+
+
                     }
                     else
                     {
                         polyOrganizedList.Add(polyAfterSplit[0]);
-                    }
-                    //end of 1st if
-                    if (spanB[0] > acceptableWidth && spanB[1] > acceptableWidth)
-                    {
-                        //Trace.WriteLine("SpanB Dimension : " + spanB[0]);
-                        MakePolysOfProportion(polyAfterSplit[1], polyOrganizedList, acceptableWidth);
-                    }
-                    else
-                    {
                         polyOrganizedList.Add(polyAfterSplit[1]);
+                        Trace.WriteLine("No Need to recurse again 3");
                     }
-                    //end of 2nd if
-
-
-
-                }
-                else
-                {
-                    polyOrganizedList.Add(polyAfterSplit[0]);
-                    polyOrganizedList.Add(polyAfterSplit[1]);
+                    
                 }
 
 
@@ -2239,21 +2229,26 @@ namespace SpacePlanning
 
         public static List<Polygon2d> SplitBigPolys(List<Polygon2d> polyInputList, double acceptableWidth, int recompute = 1)
         {
+            Trace.WriteLine("Split Big Poly recurse is : " + recurse);
+            Trace.WriteLine("polyInputList count is : " + polyInputList.Count);
             List<Polygon2d> polyOrganizedList = new List<Polygon2d>();
+            int count = 0;
             for (int i = 0; i < polyInputList.Count; i++)
             {
 
                 Polygon2d poly = polyInputList[i];
                 if (poly == null || poly.Points == null || poly.Points.Count == 0)
                 {
+                    Trace.WriteLine("null found : " + count);
+                    count += 1;
                     continue;
                     //polyOrganizedList.Add(poly);
                 }
-                if(recurse < 100000)
-                {
-                    MakePolysOfProportion(poly, polyOrganizedList, acceptableWidth);
-                }                
-                recurse += 1;
+               
+                MakePolysOfProportion(poly, polyOrganizedList, acceptableWidth);
+               
+                             
+                
 
             }
 
@@ -2280,18 +2275,30 @@ namespace SpacePlanning
             for (int j = 0; j < progData.Count; j++)
             {
                 programDataRetrieved.Push(progData[j]);
+                Trace.WriteLine("Itering to push progdata" + j);
             }
 
           
             List<Polygon2d> polyOrganizedList = new List<Polygon2d>();
             polyOrganizedList = SplitBigPolys(polyInputList, acceptableWidth, 5);
- 
+
+            Trace.WriteLine("Early return");
+            return new Dictionary<string, object>
+            {
+                { "PolyAfterSplit", (polyList) },
+                { "BigPolysAfterSplit", (polyOrganizedList) },
+                { "EachPolyPoint", (pointsList) },
+                { "UpdatedProgramData",(null) }
+            };
+
+
 
             ///////////////////////////////////////////////////////////////////////
 
             Trace.WriteLine("No of Programs which needs Addition : " + programDataRetrieved.Count);
             for (int i = 0; i < polyOrganizedList.Count; i++)
             {
+                
                 Trace.WriteLine("Starting Poly Object : " + i + " | Out of : + " + polyOrganizedList.Count + " +++++++++++++" );
                 Trace.WriteLine("Programs left to add: " + programDataRetrieved.Count);
                 Polygon2d poly = polyOrganizedList[i];
@@ -2299,27 +2306,29 @@ namespace SpacePlanning
 
                 if (poly == null || poly.Points == null || poly.Points.Count == 0)
                 {
+                    Trace.WriteLine("Found Null Poly as input");
                     continue;
                     //return null;
                 }
 
                 List<double> spans = Polygon2d.GetSpansXYFromPolygon2d(poly.Points);
-               
+                Trace.WriteLine("Current Poly horizontal span is : " + spans[0]);
+                Trace.WriteLine("Current Poly vertical span is : " + spans[1]);
                 double highSpan = 1000000000000;
                 double lowSpan = 0;
                 int dir = 0;
                 if (spans[0] > spans[1])
                 {
                     dir = 1;
-                    highSpan = spans[0];
-                    lowSpan = spans[1];
+                    highSpan = spans[0]; // horizontal span
+                    lowSpan = spans[1]; // vertical span
 
                 }
                 else
                 {
                     dir = 0;
-                    highSpan = spans[1];
-                    lowSpan = spans[0];
+                    highSpan = spans[1]; // vertical span
+                    lowSpan = spans[0]; // horizontal span
                 }
 
                 Polygon2d currentPoly = poly;
@@ -2341,6 +2350,7 @@ namespace SpacePlanning
                         dist = highSpan;
                     }
                     
+                    //add extra material left in the dist to consume all space
                     if ((highSpan - dist) < minWidth)
                     {
                         dist += (highSpan - dist);
@@ -2354,7 +2364,9 @@ namespace SpacePlanning
                     }
 
 
+                    dist = lowSpan;
 
+                    Trace.WriteLine("Dist computed is : " + dist);
                     //List<Polygon2d> polyAfterSplitting = EdgeSplitWrapper(currentPoly, ran2, dist, dir);
 
                     Dictionary<string, object> splitReturn = SplitByDistancePoly(currentPoly, dist, dir);                      
@@ -2365,12 +2377,16 @@ namespace SpacePlanning
                     if (polyAfterSplitting[0] == null || polyAfterSplitting[0].Points == null || 
                         polyAfterSplitting[0].Points.Count == 0){
                         Trace.WriteLine("Null Poly : " + i);
+                        programDataRetrieved.Push(progItem);
+                        //dir = BasicUtility.toggleInputInt(dir);
                         break;
                     }
                     if (polyAfterSplitting[1] == null || polyAfterSplitting[1].Points == null || 
                         polyAfterSplitting[1].Points.Count == 0)
                     {
                         Trace.WriteLine("Null Poly : " + i);
+                        programDataRetrieved.Push(progItem);
+                        //dir = BasicUtility.toggleInputInt(dir);
                         break;
                     }
 
@@ -3213,7 +3229,8 @@ namespace SpacePlanning
                 splitLine.move(orient * distance, 0);
             }
 
-            List<Point2d> intersectedPoints = GraphicsUtility.LinePolygonIntersectionInd(poly, splitLine);
+            //List<Point2d> intersectedPoints = GraphicsUtility.LinePolygonIntersectionInd(poly, splitLine);
+            List<Point2d> intersectedPoints = GraphicsUtility.LinePolygonIntersection(poly, splitLine);
 
             List<int> pIndexA = new List<int>();
             List<int> pIndexB = new List<int>();
@@ -3397,7 +3414,7 @@ namespace SpacePlanning
             {
                 splitLine.move(1 * distance, 0);
             }
-
+            //List<Point2d> intersectedPoints = GraphicsUtility.LinePolygonIntersectionInd(poly, splitLine);
             List<Point2d> intersectedPoints = GraphicsUtility.LinePolygonIntersection(poly, splitLine);
 
 
@@ -3426,15 +3443,8 @@ namespace SpacePlanning
             List<Point2d> sortedB = DoSortClockwise(poly, intersectedPoints, pIndexB);
             twoSets.Add(sortedA);
             twoSets.Add(sortedB);
-            /*
-            polyA = new Polygon2d(twoSets[0], 0);
-            polyB = new Polygon2d(twoSets[1], 0);
-            List<Polygon2d> splittedPoly = new List<Polygon2d>();
-            
-            splittedPoly.Add(polyA);
-            splittedPoly.Add(polyB);
-            */
-            List<Polygon2d> splittedPoly = OptimizePolyPoints(sortedA, sortedB);
+         
+            List<Polygon2d> splittedPoly = OptimizePolyPoints(sortedA, sortedB, true);
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (splittedPoly) },
