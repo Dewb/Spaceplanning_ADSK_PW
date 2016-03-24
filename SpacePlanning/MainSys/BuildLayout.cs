@@ -2311,6 +2311,9 @@ namespace SpacePlanning
 
             pointsList = null;
             //return polyList;
+
+            polyList = Polygon2d.PolyReducePoints(polyList);
+            polyOrganizedList = Polygon2d.PolyReducePoints(polyOrganizedList);
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (polyList) },
