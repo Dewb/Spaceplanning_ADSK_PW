@@ -18,7 +18,7 @@ namespace SpacePlanning
     {
         
 
-        private static double spacingSet = 3; //higher value makes code faster but less precise
+        private static double spacingSet = 5; //higher value makes code faster but less precise
         internal static double recurse = 0;
         internal static Point2d reference = new Point2d(0,0);
 
@@ -2355,10 +2355,7 @@ namespace SpacePlanning
 
 
 
-                    //List<Polygon2d> polyAfterSplitting = EdgeSplitWrapper(currentPoly, ran2, dist, dir);
-
-                    Dictionary<string, object> splitReturn = SplitByDistancePoly(currentPoly, dist, dir);                      
-                    List<Polygon2d> polyAfterSplitting = (List<Polygon2d>)splitReturn["PolyAfterSplit"];
+                    List<Polygon2d> polyAfterSplitting = EdgeSplitWrapper(currentPoly, ran2, dist, dir);
                     //Dictionary<string,object> splitReturn = SplitByDistanceFromPoint(currentPoly, dist, dir);
                     //List<Polygon2d> polyAfterSplitting = (List<Polygon2d>)splitReturn["PolyAfterSplit"];
 
@@ -3166,7 +3163,7 @@ namespace SpacePlanning
         }
 
         [MultiReturn(new[] { "PolyAfterSplit", "SplitLine", "IntersectedPoints", "SpansBBox", "EachPolyPoint" })]
-        public static Dictionary<string, object> SplitByDistancePoly(Polygon2d polyOutline, double distance = 10, int dir = 0, double dummy = 0)
+        public static Dictionary<string, object> SplitByDistanceTRY(Polygon2d polyOutline, double distance = 10, int dir = 0, double dummy = 0)
         {
             if (polyOutline == null || polyOutline.Points == null || polyOutline.Points.Count == 0)
             {
@@ -3187,22 +3184,7 @@ namespace SpacePlanning
             Point2d pt = poly[ind];
             Line2d splitLine = new Line2d(pt, extents, dir);
 
-            if (dir == 1)
-            {
-                if (distance > spans[0])
-                {
-                    distance = 0.999 * spans[0];
-                }
 
-            }
-            else
-            {
-                if (distance > spans[1])
-                {
-                    distance = 0.999* spans[1];
-                }
-
-            }
             // push this line right or left or up or down based on ratio
             if (dir == 0)
             {
