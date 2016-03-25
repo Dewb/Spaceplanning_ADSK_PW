@@ -18,7 +18,8 @@ namespace SpacePlanning
     {
         
 
-        private static double spacingSet = 0.5; //higher value makes code faster but less precise
+        private static double spacingSet = 0.2; //higher value makes code faster but less precise
+        private static double spacingSet2 = 15; // used for SplitByDistancePoly
         internal static double recurse = 0;
         internal static Point2d reference = new Point2d(0,0);
 
@@ -1769,7 +1770,7 @@ namespace SpacePlanning
         }
 
 
-        internal static List<Polygon2d> OptimizePolyPoints(List<Point2d> sortedA, List<Point2d> sortedB, bool tag = false)
+        internal static List<Polygon2d> OptimizePolyPoints(List<Point2d> sortedA, List<Point2d> sortedB, bool tag = true)
         {
             Polygon2d polyA, polyB;
 
@@ -1780,7 +1781,7 @@ namespace SpacePlanning
                 polyB = new Polygon2d(sortedB);
 
                 List<Point2d> ptsPolyA = Polygon2d.SmoothPolygon(polyA.Points,spacingSet);
-                List<Point2d> ptsPolyB = Polygon2d.SmoothPolygon(polyB.Points);
+                List<Point2d> ptsPolyB = Polygon2d.SmoothPolygon(polyB.Points,spacingSet);
                 polyA = new Polygon2d(ptsPolyA, 0);
                 polyB = new Polygon2d(ptsPolyB, 0);               
             }
@@ -2138,7 +2139,8 @@ namespace SpacePlanning
 
 
         //used to split Depts into Program Spaces
-        [MultiReturn(new[] { "PolyAfterSplit", "BigPolysAfterSplit", "EachPolyPoint", "UpdatedProgramData" })]
+        [MultiReturn(new[] { "PolyAfterSplit", "BigPolysAfterSplit", "EachPolyPoint", "UpdatedProgramData",
+            "SplitLines","LowestPoint","CurrentPolygons", "IntersectionPoints" })]
         public static Dictionary<string, object> RecursivePlaceProgramsSeriesTest(List<Polygon2d> polyInputList,
             List<ProgramData> progData, double acceptableWidth, int minWidthAllowed = 8)
         {
@@ -2147,6 +2149,10 @@ namespace SpacePlanning
             List<Polygon2d> polyList = new List<Polygon2d>();
             List<double> areaList = new List<double>();
             List<Point2d> pointsList = new List<Point2d>();
+            List<Line2d> splitLineList = new List<Line2d>();
+            List<Point2d> lowPtList = new List<Point2d>();
+            List<Polygon2d> currentPolyList = new List<Polygon2d>();
+            List<List<Point2d>> intersectPtList = new List<List<Point2d>>();
             Stack<ProgramData> programDataRetrieved = new Stack<ProgramData>();
 
 
@@ -2160,7 +2166,9 @@ namespace SpacePlanning
 
             List<Polygon2d> polyOrganizedList = new List<Polygon2d>();
             polyOrganizedList = SplitBigPolys(polyInputList, acceptableWidth, 5);
-            polyOrganizedList = Polygon2d.PolyReducePoints(polyOrganizedList);
+            
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
             Trace.WriteLine("No of Programs which needs Addition : " + programDataRetrieved.Count);
             for (int i = 0; i < polyOrganizedList.Count; i++)
@@ -2175,7 +2183,6 @@ namespace SpacePlanning
                 {
                     Trace.WriteLine("Found Null Poly as input");
                     continue;
-                    //return null;
                 }
 
                 List<double> spans = Polygon2d.GetSpansXYFromPolygon2d(poly.Points);
@@ -2208,36 +2215,55 @@ namespace SpacePlanning
                     ProgramData progItem = programDataRetrieved.Pop();
 
 
-                    double areaProg = progItem.AreaNeeded;
+                    double areaProg = progItem.AreaNeeded - progItem.AreaProvided;
                     double dist = areaProg / lowSpan;
                     //Trace.WriteLine("HighSpan is : " + highSpan + " | Dist is : " + dist);
                     if (highSpan < dist)
                     {
                         //Trace.WriteLine("Dist Reduced");
                         dist = highSpan;
-                    }
-
-                    //add extra material left in the dist to consume all space
-                    if ((highSpan - dist) < minWidth)
+                    }else if ((highSpan - dist) < minWidth)       
                     {
+                        //add extra material left in the dist to consume all space
                         dist += (highSpan - dist);
                         //Trace.WriteLine("Dist Increased");
                     }
 
                     if (dist < minWidth)
                     {
-                        dist = minWidth;
-                        Trace.WriteLine("Dist Increased : " + dist);
+                        //dist = minWidth;
+                        //Trace.WriteLine("Dist Increased : " + dist);
                     }
 
+                    if (dist >= highSpan*0.9)
+                    {
+                        polyList.Add(poly);
+                        splitLineList.Add(null);
+                        lowPtList.Add(null);
+                        currentPolyList.Add(null);
+                        intersectPtList.Add(null);
 
-                    dist = lowSpan;
+                        progItem.AreaProvided = dist * lowSpan;
+                        programDataRetrieved.Push(progItem);
+                        break;
+                        
+                    }
+
+                    //dist = highSpan / 2;
+
+
+                    //dist = lowSpan;
 
                     Trace.WriteLine("Dist computed is : " + dist);
                     //List<Polygon2d> polyAfterSplitting = EdgeSplitWrapper(currentPoly, ran2, dist, dir);
 
                     Dictionary<string, object> splitReturn = SplitByDistancePoly(currentPoly, dist, dir);
                     List<Polygon2d> polyAfterSplitting = (List<Polygon2d>)splitReturn["PolyAfterSplit"];
+                    Line2d splitLine = (Line2d)splitReturn["SplitLine"];
+                    Point2d lowPoint = (Point2d)splitReturn["LowestPoint"];
+                    List < Point2d > intersectedPts = (List<Point2d>)splitReturn["IntersectedPoints"];
+
+
 
                     if (polyAfterSplitting[0] == null || polyAfterSplitting[0].Points == null ||
                         polyAfterSplitting[0].Points.Count == 0)
@@ -2255,7 +2281,10 @@ namespace SpacePlanning
                         //dir = BasicUtility.toggleInputInt(dir);
                         break;
                     }
-
+                    splitLineList.Add(splitLine);
+                    lowPtList.Add(lowPoint);
+                    currentPolyList.Add(currentPoly);
+                    intersectPtList.Add(intersectedPts);
                     double selectedArea = 0;
                     double area1 = GraphicsUtility.AreaPolygon2d(polyAfterSplitting[0].Points);
                     double area2 = GraphicsUtility.AreaPolygon2d(polyAfterSplitting[1].Points);
@@ -2319,10 +2348,14 @@ namespace SpacePlanning
                 { "PolyAfterSplit", (polyList) },
                 { "BigPolysAfterSplit", (polyOrganizedList) },
                 { "EachPolyPoint", (pointsList) },
-                { "UpdatedProgramData",(UpdatedProgramDataList) }
+                { "UpdatedProgramData",(UpdatedProgramDataList) },
+                { "SplitLines",(splitLineList) },
+                { "LowestPoint", (lowPtList) },
+                { "CurrentPolygons",(currentPolyList) },
+                { "IntersectionPoints", (intersectPtList) }
             };
         }
-
+        
         //RECURSIVE SPLITS A POLY
         [MultiReturn(new[] { "PolyAfterSplit", "AreaEachPoly", "EachPolyPoint","UpdatedProgramData" })]
     public static Dictionary<string, object> RecursiveSplitProgramsOneDirByDistance(List<Polygon2d> polyInputList, List<ProgramData> progData, double distance, int recompute = 1)
@@ -2912,16 +2945,16 @@ namespace SpacePlanning
 
         }
 
-        [MultiReturn(new[] { "PolyAfterSplit", "SplitLine", "IntersectedPoints", "SpansBBox", "EachPolyPoint" })]
+        [MultiReturn(new[] { "PolyAfterSplit", "SplitLine", "IntersectedPoints", "LowestPoint", "EachPolyPoint" })]
         public static Dictionary<string, object> SplitByDistancePoly(Polygon2d polyOutline, double distance = 10, int dir = 0, double dummy = 0)
         {
             if (polyOutline == null || polyOutline.Points == null || polyOutline.Points.Count == 0)
             {
                 return null;
             }
-
+            double fac = 0.999; // 0.999 default
             double extents = 5000;
-            double spacing = spacingSet;
+            double spacing = spacingSet2;
             List<Point2d> polyOrig = polyOutline.Points;
             List<Point2d> poly = Polygon2d.SmoothPolygon(polyOrig, spacing);
             if (poly == null || poly.Count == 0)
@@ -2930,7 +2963,8 @@ namespace SpacePlanning
             }
             List<double> spans = Polygon2d.GetSpansXYFromPolygon2d(poly);
             int orient = 1;
-            int ind = GraphicsUtility.ReturnLowestPointFromListNew(poly);
+            //int ind = GraphicsUtility.ReturnLowestPointFromListNew(poly);
+            int ind = GraphicsUtility.ReturnLowestPointFromList(poly);
             Point2d pt = poly[ind];
             Line2d splitLine = new Line2d(pt, extents, dir);
 
@@ -2938,7 +2972,7 @@ namespace SpacePlanning
             {
                 if (distance > spans[0])
                 {
-                    distance = 0.999 * spans[0];
+                    distance = fac * spans[0];
                 }
 
             }
@@ -2946,7 +2980,7 @@ namespace SpacePlanning
             {
                 if (distance > spans[1])
                 {
-                    distance = 0.999* spans[1];
+                    distance = fac* spans[1];
                 }
 
             }
@@ -2986,14 +3020,14 @@ namespace SpacePlanning
             twoSets.Add(sortedA);
             twoSets.Add(sortedB);
 
-            List<Polygon2d> splittedPoly = OptimizePolyPoints(sortedA, sortedB);
+            List<Polygon2d> splittedPoly = OptimizePolyPoints(sortedA, sortedB,true);
 
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (splittedPoly) },
                 { "SplitLine", (splitLine) },
                 { "IntersectedPoints", (intersectedPoints) },
-                { "SpansBBox", (pt) },
+                { "LowestPoint", (pt) },
                 { "EachPolyPoint", (twoSets) }
             };
 

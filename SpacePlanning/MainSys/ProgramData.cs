@@ -154,6 +154,7 @@ namespace SpacePlanning
         public double AreaNeeded
         {
             get { return _progUnitArea; }
+            
         }
 
         public double AreaProvided
