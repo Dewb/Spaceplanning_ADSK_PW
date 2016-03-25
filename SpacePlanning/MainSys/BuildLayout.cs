@@ -736,7 +736,7 @@ namespace SpacePlanning
         }
 
 
-        internal static List<Polygon2d> OptimizePolyPoints(List<Point2d> sortedA, List<Point2d> sortedB, bool tag = true)
+        internal static List<Polygon2d> OptimizePolyPoints(List<Point2d> sortedA, List<Point2d> sortedB, bool tag = false)
         {
             Polygon2d polyA, polyB;
 
