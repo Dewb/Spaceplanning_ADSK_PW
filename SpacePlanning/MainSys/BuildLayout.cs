@@ -125,691 +125,6 @@ namespace SpacePlanning
         }
 
 
-        //changes the center of one or both polys to ensure correct intersection line is found
-        [MultiReturn(new[] { "CenterPolyA", "CenterPolyB", "PolyA", "PolyB" })]
-        internal static Dictionary<string, object> ComputePolyCentersAlign(Polygon2d polyA, Polygon2d polyB)
-        {
-            double extents = 10000;
-            //compute orig centers
-            Point2d centerPolyA = GraphicsUtility.CentroidInPointLists(polyA.Points);
-            Point2d centerPolyB = GraphicsUtility.CentroidInPointLists(polyB.Points);
-            
-            Point2d staticPoint;
-            Polygon2d staticPoly;
-            Point2d movingPoint;
-            Polygon2d movingPoly;
-
-            double areaPolyA = GraphicsUtility.AreaPolygon2d(polyA.Points);
-            double areaPolyB = GraphicsUtility.AreaPolygon2d(polyB.Points);
-
-            if (areaPolyA > areaPolyB)
-            {
-                staticPoint = centerPolyB;
-                staticPoly = polyB;
-                movingPoint = centerPolyA;
-                movingPoly = polyA;
-            }
-            else
-            {
-                staticPoint = centerPolyA;
-                staticPoly = polyA;
-                movingPoint = centerPolyB;
-                movingPoly = polyB;
-            }
-
-            //shift the other points
-
-            Point2d movingPoint1 = new Point2d(staticPoint.X, movingPoint.Y);
-            Point2d movingPoint2 = new Point2d(movingPoint.X, staticPoint.Y);
-
-            bool IsMovingPoint1 = GraphicsUtility.PointInsidePolygonTest(movingPoly.Points, movingPoint1);
-            bool IsMovingPoint2 = GraphicsUtility.PointInsidePolygonTest(movingPoly.Points, movingPoint2);
-
-            if (IsMovingPoint1)
-            {
-                movingPoint = movingPoint1;
-
-            }
-            else if (IsMovingPoint2)
-            {
-                movingPoint = movingPoint2;
-            }
-            else
-            {
-                staticPoint = centerPolyA;
-                staticPoly = polyA;
-                movingPoint = movingPoint1;
-                movingPoly = polyB;
-            }
-
-         
-
-            return new Dictionary<string, object>
-                {
-                { "CenterPolyA", (staticPoint) },
-                { "CenterPolyB", (movingPoint) },
-                { "PolyA", (staticPoly) },
-                { "PolyB", (movingPoly) }
-                };
-        }
-
-
-
-
-        //changes the center of one or both polys to ensure correct intersection line is found
-        [MultiReturn(new[] { "CenterPolyA", "CenterPolyB", "PolyA", "PolyA" })]
-        internal static Dictionary<string, object> ComputePolyCenters(Polygon2d polyA, Polygon2d polyB)
-        {
-            double extents = 10000;
-            //compute orig centers
-            Point2d centerPolyA = GraphicsUtility.CentroidInPointLists(polyA.Points);
-            Point2d centerPolyB = GraphicsUtility.CentroidInPointLists(polyB.Points);
-
-            //make infinite lines via both centers 0 - horizontal line, 1 - vertical line
-            Line2d lineAX = new Line2d(centerPolyA, extents, 0);
-            Line2d lineAY = new Line2d(centerPolyA, extents, 1);
-
-            Line2d lineBX = new Line2d(centerPolyB, extents, 0);
-            Line2d lineBY = new Line2d(centerPolyB, extents, 1);
-
-        
-            //get line line intersection for these lines
-            //AX-BY and BX-AY
-            Point2d pAXBY = GraphicsUtility.LineLineIntersection(lineAX, lineBY);
-            Point2d pBXAY = GraphicsUtility.LineLineIntersection(lineBX, lineAY);
-
-            //check for point containment test for these two
-            bool checkA_AXBY = GraphicsUtility.PointInsidePolygonTest(polyA.Points, pAXBY);
-            bool checkA_BXAY = GraphicsUtility.PointInsidePolygonTest(polyA.Points, pBXAY);
-            bool checkB_AXBY = GraphicsUtility.PointInsidePolygonTest(polyB.Points, pAXBY);            
-            bool checkB_BXAY = GraphicsUtility.PointInsidePolygonTest(polyB.Points, pBXAY);
-            ////////////////////////////////////////////////////
-            if(checkA_BXAY ==true && checkB_AXBY ==true)
-            {
-                return new Dictionary<string, object>
-                {
-                { "CenterPolyA", (centerPolyA) },
-                { "CenterPolyB", (centerPolyB) },
-                { "PolyA", (polyA) },
-                { "PolyB", (polyB) }
-                };
-            }
-
-            if (checkA_AXBY == true && checkB_BXAY == true)
-            {
-                return new Dictionary<string, object>
-                {
-                { "CenterPolyA", (centerPolyA) },
-                { "CenterPolyB", (centerPolyB) },
-                { "PolyA", (polyA) },
-                { "PolyB", (polyB) }
-                };
-            }
-            ////////////////////////////////////////////////////
-
-
-            if(checkA_AXBY == true)
-            {
-                
-                //centerPolyB.X = centerPolyA.X;
-
-            }else if(checkA_BXAY == true)
-            {
-                //centerPolyB.Y = centerPolyA.Y;
-
-            }
-            else if(checkB_AXBY== true)
-            {
-
-            }else if(checkB_BXAY == true)
-            {
-
-            }
-            else
-            {
-                return new Dictionary<string, object>
-                {
-                { "CenterPolyA", (centerPolyA) },
-                { "CenterPolyB", (centerPolyB) },
-                { "PolyA", (polyA) },
-                { "PolyB", (polyB) }
-                };
-            }
-
-
-
-
-
-                return new Dictionary<string, object>
-                {
-                { "CenterPolyA", (centerPolyA) },
-                { "CenterPolyB", (centerPolyB) },
-                { "PolyA", (polyA) },
-                { "PolyB", (polyB) }
-                };
-        }
-
-
-
-
-
-        [MultiReturn(new[] { "Neighbour", "SharedEdgeA", "SharedEdgeB", "LineMoved", "CenterToCenterLine","CenterPolyPoint","CenterPolyOtherPoint" })]
-        internal static Dictionary<string, object> PolygonPolygonCommonEdgeDict(Polygon2d poly, Polygon2d other)
-        {
-            /*
-            first reduce number of pts in both polys
-            find their centers
-            make a vec between their center
-            get horizontal comp of vec
-            get vertical comp of vec
-            which length is long will be our vector
-
-            then for both polys
-                check line line intersection between line between two centers and each line of the poly
-                    if no intersect, no edge
-                    find the line intersects 
-                    find the perpendicular projection of centers on these linese
-
-            */
-
-            bool check = false;
-            if (poly == null || other == null)
-            {
-                return null;
-            }
-
-            double eps = 200;
-            //Polygon2d polyReg = poly;
-            //Polygon2d otherReg = other;
-            //reduce number of points
-            Polygon2d polyReg = new Polygon2d(poly.Points);
-            Polygon2d otherReg = new Polygon2d(other.Points);
-            //reassign centers to each poly
-            //Dictionary<string,object> UpdatedCenters  = ComputePolyCentersAlign(polyReg, otherReg);
-            Dictionary<string, object> UpdatedCenters = ComputePolyCentersAlign(polyReg, otherReg);
-
-            /*
-            return new Dictionary<string, object>
-                {
-                { "CenterPolyA", (staticPoint) },
-                { "CenterPolyB", (movingPoint) },
-                { "PolyA", (staticPoly) },
-                { "PolyB", (movingPoly) }
-                };
-
-            */
-            Point2d centerPoly = (Point2d)UpdatedCenters["CenterPolyA"];
-            Point2d centerOther = (Point2d)UpdatedCenters["CenterPolyB"];
-
-            polyReg = (Polygon2d)UpdatedCenters["PolyA"];
-            otherReg = (Polygon2d)UpdatedCenters["PolyB"];
-
-
-
-
-
-
-            //find centers
-            //Point2d centerPoly = GraphicsUtility.CentroidInPointLists(polyReg.Points);
-            //Point2d centerOther = GraphicsUtility.CentroidInPointLists(otherReg.Points);
-
-
-
-
-            //make vectors
-            Vector2d centerToCen = new Vector2d(centerPoly, centerOther);
-            Vector2d centerToCenX = new Vector2d(centerToCen.X, 0);
-            Vector2d centerToCenY = new Vector2d(0, centerToCen.Y);
-
-
-
-
-
-            //make centerLine
-            Line2d centerLine = new Line2d(centerPoly, centerOther);
-            Vector2d keyVec;
-            if (centerToCenX.Length > centerToCenY.Length)
-            {
-                keyVec = new Vector2d(centerToCenX.X, centerToCenX.Y);
-            }
-            else
-            {
-                keyVec = new Vector2d(centerToCenY.X, centerToCenY.Y);
-            }
-
-            //check line poly intersection between centertocen vector and each polys            
-            Line2d lineInPolyReg = GraphicsUtility.LinePolygonIntersectionReturnLine(polyReg.Points, centerLine,centerOther);
-            Line2d lineInOtherReg = GraphicsUtility.LinePolygonIntersectionReturnLine(otherReg.Points, centerLine, centerPoly);
-
-            //extend the line
-            //lineInPolyReg.extend();
-            //lineInOtherReg.extend();
-
-            //check = GraphicsUtility.AreLinesCollinear(lineInPolyReg, lineInOtherReg);
-            //check = GraphicsUtility.CheckLineCollinear(lineInPolyReg, lineInOtherReg);
-
-            //find distance d1 and d2 from two centers to linepolyintersection line
-            Point2d projectedPtOnPolyReg = GraphicsUtility.ProjectedPointOnLine(lineInPolyReg, centerPoly);
-            Point2d projectedPtOnOtherReg = GraphicsUtility.ProjectedPointOnLine(lineInOtherReg, centerOther);
-
-            double dist1 = GraphicsUtility.DistanceBetweenPoints(centerPoly, projectedPtOnPolyReg);
-            double dist2 = GraphicsUtility.DistanceBetweenPoints(centerOther, projectedPtOnOtherReg);
-
-            double totalDistance = 2 * (dist1 + dist2);
-            //Line2d lineMoved = new Line2d(lineInPolyReg);
-            Line2d lineMoved = new Line2d(lineInPolyReg.StartPoint,lineInPolyReg.EndPoint);
-            lineMoved.move(centerPoly);
-            Point2d projectedPt = GraphicsUtility.ProjectedPointOnLine(lineMoved, centerOther);
-            double distance = GraphicsUtility.DistanceBetweenPoints(projectedPt, centerOther);
-
-            bool isNeighbour = false;
-            if (totalDistance - eps < distance && distance < totalDistance + eps)
-            {
-                isNeighbour = true;
-            }
-            else
-            {
-                isNeighbour = false;
-            }
-
-            //"Neighbour", "SharedEdgeA", "SharedEdgeB" 
-
-            return new Dictionary<string, object>
-            {
-                { "Neighbour", (isNeighbour) },
-                { "SharedEdgeA", (lineInPolyReg) },
-                { "SharedEdgeB", (lineInOtherReg) },
-                { "LineMoved", (lineMoved) },
-                { "CenterToCenterLine", (centerLine) },
-                { "CenterPolyPoint", (centerPoly) },
-                { "CenterPolyOtherPoint", (centerOther) },
-            };
-
-        }
-
-        //Make Dept Topology Matrix
-        [MultiReturn(new[] { "DeptTopologyList", "DeptNeighborNameList", "DeptNamesFlatten", "SharedEdgeSetA", "SharedEdgeSetB" })]
-        internal static Dictionary<string, object> MakeDeptTopologyChart(List<DeptData> deptData)
-        {
-            List<Polygon2d> polygonsAllDeptList = new List<Polygon2d>();
-            List<DeptData> deptDataAllDeptList = new List<DeptData>();
-            List<List<string>> deptNamesNeighbors = new List<List<string>>();
-            List<List<Line2d>> lineCollection1 = new List<List<Line2d>>();
-            List<List<Line2d>> lineCollection2 = new List<List<Line2d>>();
-            for (int i = 0; i < deptData.Count; i++)
-            {
-                List<string> neighbors = new List<string>();
-                List<Line2d> networkLine1 = new List<Line2d>();
-                List<Line2d> networkLine2 = new List<Line2d>();
-                List<Polygon2d> polyListA = deptData[i].PolyDeptAssigned;                
-                for(int j = 0; j < polyListA.Count; j++)
-                {
-                    Polygon2d polyA = polyListA[j];
-                    for (int k = i+1; k < deptData.Count; k++)
-                    {
-                        List<Polygon2d> polyListB = deptData[k].PolyDeptAssigned;
-                        for (int l = 0; l < polyListB.Count; l++)
-                        {
-                            Polygon2d polyB = polyListB[l];
-                            Dictionary<string, object> checkNeighbor = PolygonPolygonCommonEdgeDict(polyA, polyB);
-                            if ((bool)checkNeighbor["Neighbour"] == true)
-                            {
-                                neighbors.Add(deptData[k].DepartmentName);
-                                networkLine1.Add((Line2d)checkNeighbor["SharedEdgeA"]);
-                                networkLine2.Add((Line2d)checkNeighbor["SharedEdgeB"]);
-                            }
-                            
-                        }// 4th for loop done
-                    } // 3rd for loop done
-                } // 2nd for loop done
-                deptNamesNeighbors.Add(neighbors);
-                lineCollection1.Add(networkLine1);
-                lineCollection2.Add(networkLine2);
-            } // 1st for loop done
-
-            /*
-            return new Dictionary<string, object>
-            {
-                { "Neighbour", (isNeighbour) },
-                { "SharedEdgeA", (lineInPolyReg) },
-                { "SharedEdgeB", (lineInOtherReg) },
-                { "LineMoved", (lineMoved) },
-                { "CenterToCenterLine", (centerLine) },
-                { "CenterPolyPoint", (centerPoly) },
-                { "CenterPolyOtherPoint", (centerOther) },
-            };
-            */
-
-
-
-
-            List<List<string>> deptNeighborNames = new List<List<string>>();
-         
-            return new Dictionary<string, object>
-            {
-                { "DeptTopologyList", (deptNamesNeighbors) },
-                { "DeptNeighborNameList", (deptNamesNeighbors) },
-                { "DeptNamesFlatten", (deptNamesNeighbors) },
-                { "SharedEdgeSetA", (lineCollection1) },
-                { "SharedEdgeSetB", (lineCollection2) }
-
-            };
-        }
-
-
-
-
-
-
-        //Make Dept Topology Matrix can be discarded
-        [MultiReturn(new[] { "IsDuplicate", "CleanLineList", "OrigLinesFlattenList","CirculationPolygons" })]
-        internal static Dictionary<string, object> CirculationMake(List<DeptData> deptData,List<List<Line2d>> lineListA, List<List<Line2d>> lineListB, double distance = 8, bool tag = true)
-        {
-
-            //flatten the list
-            List<Line2d> flatLineList = new List<Line2d>();
-            List<bool> IsDuplicateList = new List<bool>();
-            List<Line2d> flatListA = GraphicsUtility.FlattenLine2dList(lineListA);
-            List<Line2d> flatListB = GraphicsUtility.FlattenLine2dList(lineListB);
-
-            if (flatListA.Count > 0)
-                flatLineList.AddRange(flatListA);
-            if (flatListB.Count > 0)
-                flatLineList.AddRange(flatListB);
-          
-            // get clean lines - remove duplicates
-            List<double> slopeInterceptList = GraphicsUtility.LineSlopeIntercept(flatLineList);
-            List<double> cleanIndexes = BasicUtility.DuplicateIndexes(slopeInterceptList);
-            List<Line2d> cleanLineList = GraphicsUtility.RemoveDuplicateLines(slopeInterceptList, flatLineList);
-            string foo = "";
-
-
-
-
-            //flatten all the polys in each depts to make it one list
-            List<Polygon2d> allDeptPolyList = new List<Polygon2d>();
-            List<Polygon2d> circulationPolyList = new List<Polygon2d>();
-            List<Polygon2d> reforemedDeptPolyList = new List<Polygon2d>();
-            for(int i=0; i < deptData.Count; i++)
-            {
-                List<Polygon2d> deptPolyList = deptData[i].PolyDeptAssigned;
-                if (deptPolyList.Count > 0)
-                {
-                    allDeptPolyList.AddRange(deptPolyList);
-                }
-            }
-
-            for (int i = 0; i < cleanLineList.Count; i++)
-            {
-                Line2d splitter = cleanLineList[i];
-                for (int j = 0; j < allDeptPolyList.Count; j++)
-                {
-                    Polygon2d deptPoly = allDeptPolyList[j];
-                    Point2d midPt = splitter.midPt();
-                    bool checkInside = GraphicsUtility.PointInsidePolygonTest(deptPoly, midPt);
-                    if (!tag)
-                    {
-                        Dictionary<string, object> splitResult = SplitByLine(deptPoly, splitter, distance);
-                        List<Polygon2d> polyAfterSplit = (List<Polygon2d>)(splitResult["PolyAfterSplit"]);
-                        if (polyAfterSplit != null)
-                        {
-                            double areaA = GraphicsUtility.AreaPolygon2d(polyAfterSplit[0].Points);
-                            double areaB = GraphicsUtility.AreaPolygon2d(polyAfterSplit[1].Points);
-                            if (areaA < areaB)
-                            {
-                                circulationPolyList.Add(polyAfterSplit[0]);
-                            }
-                            else
-                            {
-                                circulationPolyList.Add(polyAfterSplit[1]);
-                            }
-
-                        }
-                    }
-                    else
-                    {
-                        if (checkInside)
-                        {
-                            Dictionary<string, object> splitResult = SplitByLine(deptPoly, splitter, distance);
-                            List<Polygon2d> polyAfterSplit = (List<Polygon2d>)(splitResult["PolyAfterSplit"]);
-                            if (polyAfterSplit != null)
-                            {
-                                double areaA = GraphicsUtility.AreaPolygon2d(polyAfterSplit[0].Points);
-                                double areaB = GraphicsUtility.AreaPolygon2d(polyAfterSplit[1].Points);
-                                if (areaA < areaB)
-                                {
-                                    circulationPolyList.Add(polyAfterSplit[0]);
-                                }
-                                else
-                                {
-                                    circulationPolyList.Add(polyAfterSplit[1]);
-                                }
-
-                            }
-
-                        } // end of check inside
-                    }
-                 
-                  
-                }// end of for loop j
-            }// end of for loop i
-
-
-            return new Dictionary<string, object>
-            {
-                { "IsDuplicate", (cleanLineList) },
-                { "CleanLineList", (slopeInterceptList) },
-                { "OrigLinesFlattenList", (flatLineList) },
-                { "CirculationPolygons", (circulationPolyList) }
-
-            };
-        }
-
-        
-
-
-        //Make Dept Topology Matrix
-        [MultiReturn(new[] { "DeptTopologyList","DeptNeighborNameList", "DeptNamesFlatten", "SharedEdgeSetA", "SharedEdgeSetB" })]
-        public static Dictionary<string,object> MakeDeptTopology(List<DeptData> deptData)
-        {
-
-            //List<Dictionary<int, Polygon2d>> polygonsAllDeptList = new List<Dictionary<int, Polygon2d>>();
-            //List<Dictionary<int, DeptData>> deptDataAllDeptList = new List<Dictionary<int, DeptData>>();
-            List<Polygon2d> polygonsAllDeptList = new List<Polygon2d>();
-            List<DeptData> deptDataAllDeptList = new List<DeptData>();
-
-            for (int i = 0; i < deptData.Count; i++)
-            {
-                List<Polygon2d> polyList = deptData[i].PolyDeptAssigned;               
-                for (int j = 0; j < polyList.Count; j++)
-                {
-                    polygonsAllDeptList.Add(polyList[j]);
-                    deptDataAllDeptList.Add(deptData[i]);
-                }
-            }
-
-
-
-
-
-
-            List<List<string>> deptNeighborNames = new List<List<string>>();
-            List<Line2d> sharedEdgeAList = new List<Line2d>();
-            List<Line2d> sharedEdgeBList = new List<Line2d>();
-            string nameDeptCurrent = "";
-            string nameDeptPrev = "";
-            bool changed = true;
-            int iter = -1;
-            for (int i = 0; i < polygonsAllDeptList.Count; i++)
-            {
-                nameDeptCurrent = deptDataAllDeptList[i].DepartmentName; ;
-                if (nameDeptCurrent != nameDeptPrev)
-                {
-                    string nameDept = deptDataAllDeptList[i].DepartmentName;
-                    iter += 1;
-                }
-
-               
-               
-                List<string> neighbors = new List<string>();
-                Polygon2d polyA = polygonsAllDeptList[i];
-
-                //for loop begins======================================================
-                for (int j = i; j < polygonsAllDeptList.Count; j++)
-                {
-                    if (j == i)
-                    {
-                        continue;
-                    }
-                    Polygon2d polyB = polygonsAllDeptList[j];
-                    Dictionary<string, object> checkNeighbor = PolygonPolygonCommonEdgeDict(polyA, polyB);
-                    if ((bool)checkNeighbor["Neighbour"] == true)
-                    {
-                        neighbors.Add(deptDataAllDeptList[i].DepartmentName);
-                    }
-                }
-
-                // end of for loop 2nd=================================================
-                if(iter == 0)
-                {
-                    deptNeighborNames.Add(neighbors);
-                }
-                else
-                {
-                    if (neighbors.Count > 0)
-                    {
-                        deptNeighborNames[iter].AddRange(neighbors);
-                      
-                    }
-                    else
-                    {
-
-                        //deptNeighborNames[iter].Add(null);
-                    }
-                   
-                }
-                
-                nameDeptPrev = deptDataAllDeptList[i].DepartmentName;
-            }// end of for loop 1st
-
-
-
-
-
-
-
-            sharedEdgeAList = null;
-            sharedEdgeBList = null;
-            return new Dictionary<string, object>
-            {
-                { "DeptTopologyList", (deptNeighborNames) },
-                { "DeptNeighborNameList", (deptNeighborNames) },
-                { "DeptNamesFlatten", (deptDataAllDeptList) },
-                { "SharedEdgeSetA", (sharedEdgeAList) },
-                { "SharedEdgeSetB", (sharedEdgeBList) }
-
-            };
-        }
-
-
-        internal static Line2d PolygonPolygonCommonEdge(Polygon2d poly, Polygon2d other)
-        {
-            /*
-            first reduce number of pts in both polys
-            find their centers
-            make a vec between their center
-            get horizontal comp of vec
-            get vertical comp of vec
-            which length is long will be our vector
-
-            then for both polys
-                check line line intersection between line between two centers and each line of the poly
-                    if no intersect, no edge
-                    find the line intersects 
-                    find the perpendicular projection of centers on these linese
-
-            */
-
-            bool check = false;
-            if (poly == null || other == null)
-            {
-                return null;
-            }
-            double eps = 100;
-            //reduce number of points
-            Polygon2d polyReg = new Polygon2d(poly.Points);
-            Polygon2d otherReg = new Polygon2d(other.Points);
-
-            //find centers
-            Point2d centerPoly = GraphicsUtility.CentroidInPointLists(polyReg.Points);
-            Point2d centerOther = GraphicsUtility.CentroidInPointLists(otherReg.Points);
-
-            //make vectors
-            Vector2d centerToCen = new Vector2d(centerPoly, centerOther);
-            Vector2d centerToCenX = new Vector2d(centerToCen.X, 0);
-            Vector2d centerToCenY = new Vector2d(0, centerToCen.Y);
-
-            //make centerLine
-            Line2d centerLine = new Line2d(centerPoly, centerOther);
-            Vector2d keyVec;
-            if(centerToCenX.Length > centerToCenY.Length)
-            {
-                keyVec = new Vector2d(centerToCenX.X, centerToCenX.Y);
-            }
-            else
-            {
-                keyVec = new Vector2d(centerToCenY.X, centerToCenY.Y);
-            }
-
-            //check line poly intersection between centertocen vector and each polys            
-            Line2d lineInPolyReg = GraphicsUtility.LinePolygonIntersectionReturnLine(polyReg.Points, centerLine,centerOther);
-            Line2d lineInOtherReg = GraphicsUtility.LinePolygonIntersectionReturnLine(otherReg.Points, centerLine,centerPoly);
-
-            //extend the line
-            //lineInPolyReg.extend();
-            //lineInOtherReg.extend();
-
-            //check = GraphicsUtility.AreLinesCollinear(lineInPolyReg, lineInOtherReg);
-            //check = GraphicsUtility.CheckLineCollinear(lineInPolyReg, lineInOtherReg);
-
-            //find distance d1 and d2 from two centers to linepolyintersection line
-            Point2d projectedPtOnPolyReg = GraphicsUtility.ProjectedPointOnLine(lineInPolyReg, centerPoly);
-            Point2d projectedPtOnOtherReg = GraphicsUtility.ProjectedPointOnLine(lineInOtherReg, centerOther);
-
-            double dist1 = GraphicsUtility.DistanceBetweenPoints(centerPoly, projectedPtOnPolyReg);
-            double dist2 = GraphicsUtility.DistanceBetweenPoints(centerOther, projectedPtOnOtherReg);
-
-            double totalDistance = 2*(dist1 + dist2);
-            lineInPolyReg.move(centerPoly);
-            Point2d projectedPt = GraphicsUtility.ProjectedPointOnLine(lineInPolyReg, centerOther);
-            double distance = GraphicsUtility.DistanceBetweenPoints(projectedPt, centerOther);
-
-
-            if (totalDistance - eps < distance && distance < totalDistance + eps)
-            {
-                return lineInOtherReg;
-            }
-            else
-            {
-                return null;
-            }
-            
-        }
-
-
-
-        internal static Line CheckLineMove(Line testLine, Point2d movePt)
-        {
-            Point2d pt1 = new Point2d(testLine.StartPoint.X, testLine.StartPoint.Y);
-            Point2d pt2 = new Point2d(testLine.EndPoint.X, testLine.EndPoint.Y);
-            Line2d line = new Line2d(pt1, pt2);
-            line.move(movePt);
-            Point ptA = Point.ByCoordinates(line.StartPoint.X, line.StartPoint.Y);
-            Point ptB = Point.ByCoordinates(line.EndPoint.X, line.EndPoint.Y);
-            Line movedLine = Line.ByStartPointEndPoint(ptA, ptB);
-            return movedLine;
-        }
-
        
 
         //make a tree to test
@@ -3366,9 +2681,377 @@ namespace SpacePlanning
         }
 
 
-     
+
+        ////////////////
+
+        //changes the center of one or both polys to ensure correct intersection line is found
+        [MultiReturn(new[] { "CenterPolyA", "CenterPolyB", "PolyA", "PolyB" })]
+        internal static Dictionary<string, object> ComputePolyCentersAlign(Polygon2d polyA, Polygon2d polyB)
+        {
+            double extents = 10000;
+            //compute orig centers
+            Point2d centerPolyA = GraphicsUtility.CentroidInPointLists(polyA.Points);
+            Point2d centerPolyB = GraphicsUtility.CentroidInPointLists(polyB.Points);
+
+            Point2d staticPoint;
+            Polygon2d staticPoly;
+            Point2d movingPoint;
+            Polygon2d movingPoly;
+
+            double areaPolyA = GraphicsUtility.AreaPolygon2d(polyA.Points);
+            double areaPolyB = GraphicsUtility.AreaPolygon2d(polyB.Points);
+
+            if (areaPolyA > areaPolyB)
+            {
+                staticPoint = centerPolyB;
+                staticPoly = polyB;
+                movingPoint = centerPolyA;
+                movingPoly = polyA;
+            }
+            else
+            {
+                staticPoint = centerPolyA;
+                staticPoly = polyA;
+                movingPoint = centerPolyB;
+                movingPoly = polyB;
+            }
+
+            //shift the other points
+
+            Point2d movingPoint1 = new Point2d(staticPoint.X, movingPoint.Y);
+            Point2d movingPoint2 = new Point2d(movingPoint.X, staticPoint.Y);
+
+            bool IsMovingPoint1 = GraphicsUtility.PointInsidePolygonTest(movingPoly.Points, movingPoint1);
+            bool IsMovingPoint2 = GraphicsUtility.PointInsidePolygonTest(movingPoly.Points, movingPoint2);
+
+            if (IsMovingPoint1)
+            {
+                movingPoint = movingPoint1;
+
+            }
+            else if (IsMovingPoint2)
+            {
+                movingPoint = movingPoint2;
+            }
+            else
+            {
+                staticPoint = centerPolyA;
+                staticPoly = polyA;
+                movingPoint = movingPoint1;
+                movingPoly = polyB;
+            }
 
 
+
+            return new Dictionary<string, object>
+                {
+                { "CenterPolyA", (staticPoint) },
+                { "CenterPolyB", (movingPoint) },
+                { "PolyA", (staticPoly) },
+                { "PolyB", (movingPoly) }
+                };
+        }
+
+
+
+
+        //changes the center of one or both polys to ensure correct intersection line is found
+        [MultiReturn(new[] { "CenterPolyA", "CenterPolyB", "PolyA", "PolyA" })]
+        internal static Dictionary<string, object> ComputePolyCenters(Polygon2d polyA, Polygon2d polyB)
+        {
+            double extents = 10000;
+            //compute orig centers
+            Point2d centerPolyA = GraphicsUtility.CentroidInPointLists(polyA.Points);
+            Point2d centerPolyB = GraphicsUtility.CentroidInPointLists(polyB.Points);
+
+            //make infinite lines via both centers 0 - horizontal line, 1 - vertical line
+            Line2d lineAX = new Line2d(centerPolyA, extents, 0);
+            Line2d lineAY = new Line2d(centerPolyA, extents, 1);
+
+            Line2d lineBX = new Line2d(centerPolyB, extents, 0);
+            Line2d lineBY = new Line2d(centerPolyB, extents, 1);
+
+
+            //get line line intersection for these lines
+            //AX-BY and BX-AY
+            Point2d pAXBY = GraphicsUtility.LineLineIntersection(lineAX, lineBY);
+            Point2d pBXAY = GraphicsUtility.LineLineIntersection(lineBX, lineAY);
+
+            //check for point containment test for these two
+            bool checkA_AXBY = GraphicsUtility.PointInsidePolygonTest(polyA.Points, pAXBY);
+            bool checkA_BXAY = GraphicsUtility.PointInsidePolygonTest(polyA.Points, pBXAY);
+            bool checkB_AXBY = GraphicsUtility.PointInsidePolygonTest(polyB.Points, pAXBY);
+            bool checkB_BXAY = GraphicsUtility.PointInsidePolygonTest(polyB.Points, pBXAY);
+            ////////////////////////////////////////////////////
+            if (checkA_BXAY == true && checkB_AXBY == true)
+            {
+                return new Dictionary<string, object>
+                {
+                { "CenterPolyA", (centerPolyA) },
+                { "CenterPolyB", (centerPolyB) },
+                { "PolyA", (polyA) },
+                { "PolyB", (polyB) }
+                };
+            }
+
+            if (checkA_AXBY == true && checkB_BXAY == true)
+            {
+                return new Dictionary<string, object>
+                {
+                { "CenterPolyA", (centerPolyA) },
+                { "CenterPolyB", (centerPolyB) },
+                { "PolyA", (polyA) },
+                { "PolyB", (polyB) }
+                };
+            }
+            ////////////////////////////////////////////////////
+
+
+            if (checkA_AXBY == true)
+            {
+
+                //centerPolyB.X = centerPolyA.X;
+
+            }
+            else if (checkA_BXAY == true)
+            {
+                //centerPolyB.Y = centerPolyA.Y;
+
+            }
+            else if (checkB_AXBY == true)
+            {
+
+            }
+            else if (checkB_BXAY == true)
+            {
+
+            }
+            else
+            {
+                return new Dictionary<string, object>
+                {
+                { "CenterPolyA", (centerPolyA) },
+                { "CenterPolyB", (centerPolyB) },
+                { "PolyA", (polyA) },
+                { "PolyB", (polyB) }
+                };
+            }
+
+
+
+
+
+            return new Dictionary<string, object>
+                {
+                { "CenterPolyA", (centerPolyA) },
+                { "CenterPolyB", (centerPolyB) },
+                { "PolyA", (polyA) },
+                { "PolyB", (polyB) }
+                };
+        }
+
+
+
+
+
+        [MultiReturn(new[] { "Neighbour", "SharedEdgeA", "SharedEdgeB", "LineMoved", "CenterToCenterLine", "CenterPolyPoint", "CenterPolyOtherPoint" })]
+        internal static Dictionary<string, object> PolygonPolygonCommonEdgeDict(Polygon2d poly, Polygon2d other)
+        {
+            /*
+            first reduce number of pts in both polys
+            find their centers
+            make a vec between their center
+            get horizontal comp of vec
+            get vertical comp of vec
+            which length is long will be our vector
+
+            then for both polys
+                check line line intersection between line between two centers and each line of the poly
+                    if no intersect, no edge
+                    find the line intersects 
+                    find the perpendicular projection of centers on these linese
+
+            */
+
+            bool check = false;
+            if (poly == null || other == null)
+            {
+                return null;
+            }
+
+            double eps = 200;
+            //Polygon2d polyReg = poly;
+            //Polygon2d otherReg = other;
+            //reduce number of points
+            Polygon2d polyReg = new Polygon2d(poly.Points);
+            Polygon2d otherReg = new Polygon2d(other.Points);
+            //reassign centers to each poly
+            //Dictionary<string,object> UpdatedCenters  = ComputePolyCentersAlign(polyReg, otherReg);
+            Dictionary<string, object> UpdatedCenters = ComputePolyCentersAlign(polyReg, otherReg);
+
+            Point2d centerPoly = (Point2d)UpdatedCenters["CenterPolyA"];
+            Point2d centerOther = (Point2d)UpdatedCenters["CenterPolyB"];
+
+            polyReg = (Polygon2d)UpdatedCenters["PolyA"];
+            otherReg = (Polygon2d)UpdatedCenters["PolyB"];
+
+            //make vectors
+            Vector2d centerToCen = new Vector2d(centerPoly, centerOther);
+            Vector2d centerToCenX = new Vector2d(centerToCen.X, 0);
+            Vector2d centerToCenY = new Vector2d(0, centerToCen.Y);
+
+
+
+
+
+            //make centerLine
+            Line2d centerLine = new Line2d(centerPoly, centerOther);
+            Vector2d keyVec;
+            if (centerToCenX.Length > centerToCenY.Length)
+            {
+                keyVec = new Vector2d(centerToCenX.X, centerToCenX.Y);
+            }
+            else
+            {
+                keyVec = new Vector2d(centerToCenY.X, centerToCenY.Y);
+            }
+
+            //check line poly intersection between centertocen vector and each polys            
+            Line2d lineInPolyReg = GraphicsUtility.LinePolygonIntersectionReturnLine(polyReg.Points, centerLine, centerOther);
+            Line2d lineInOtherReg = GraphicsUtility.LinePolygonIntersectionReturnLine(otherReg.Points, centerLine, centerPoly);
+
+
+            //find distance d1 and d2 from two centers to linepolyintersection line
+            Point2d projectedPtOnPolyReg = GraphicsUtility.ProjectedPointOnLine(lineInPolyReg, centerPoly);
+            Point2d projectedPtOnOtherReg = GraphicsUtility.ProjectedPointOnLine(lineInOtherReg, centerOther);
+
+            double dist1 = GraphicsUtility.DistanceBetweenPoints(centerPoly, projectedPtOnPolyReg);
+            double dist2 = GraphicsUtility.DistanceBetweenPoints(centerOther, projectedPtOnOtherReg);
+
+            double totalDistance = 2 * (dist1 + dist2);
+            //Line2d lineMoved = new Line2d(lineInPolyReg);
+            Line2d lineMoved = new Line2d(lineInPolyReg.StartPoint, lineInPolyReg.EndPoint);
+            lineMoved.move(centerPoly);
+            Point2d projectedPt = GraphicsUtility.ProjectedPointOnLine(lineMoved, centerOther);
+            double distance = GraphicsUtility.DistanceBetweenPoints(projectedPt, centerOther);
+
+            bool isNeighbour = false;
+            if (totalDistance - eps < distance && distance < totalDistance + eps)
+            {
+                isNeighbour = true;
+            }
+            else
+            {
+                isNeighbour = false;
+            }
+
+            //"Neighbour", "SharedEdgeA", "SharedEdgeB" 
+
+            return new Dictionary<string, object>
+            {
+                { "Neighbour", (isNeighbour) },
+                { "SharedEdgeA", (lineInPolyReg) },
+                { "SharedEdgeB", (lineInOtherReg) },
+                { "LineMoved", (lineMoved) },
+                { "CenterToCenterLine", (centerLine) },
+                { "CenterPolyPoint", (centerPoly) },
+                { "CenterPolyOtherPoint", (centerOther) },
+            };
+
+        }
+
+
+
+
+        internal static Line2d PolygonPolygonCommonEdge(Polygon2d poly, Polygon2d other)
+        {
+            /*
+            first reduce number of pts in both polys
+            find their centers
+            make a vec between their center
+            get horizontal comp of vec
+            get vertical comp of vec
+            which length is long will be our vector
+
+            then for both polys
+                check line line intersection between line between two centers and each line of the poly
+                    if no intersect, no edge
+                    find the line intersects 
+                    find the perpendicular projection of centers on these linese
+
+            */
+
+            bool check = false;
+            if (poly == null || other == null)
+            {
+                return null;
+            }
+            double eps = 100;
+            //reduce number of points
+            Polygon2d polyReg = new Polygon2d(poly.Points);
+            Polygon2d otherReg = new Polygon2d(other.Points);
+
+            //find centers
+            Point2d centerPoly = GraphicsUtility.CentroidInPointLists(polyReg.Points);
+            Point2d centerOther = GraphicsUtility.CentroidInPointLists(otherReg.Points);
+
+            //make vectors
+            Vector2d centerToCen = new Vector2d(centerPoly, centerOther);
+            Vector2d centerToCenX = new Vector2d(centerToCen.X, 0);
+            Vector2d centerToCenY = new Vector2d(0, centerToCen.Y);
+
+            //make centerLine
+            Line2d centerLine = new Line2d(centerPoly, centerOther);
+            Vector2d keyVec;
+            if (centerToCenX.Length > centerToCenY.Length)
+            {
+                keyVec = new Vector2d(centerToCenX.X, centerToCenX.Y);
+            }
+            else
+            {
+                keyVec = new Vector2d(centerToCenY.X, centerToCenY.Y);
+            }
+
+            //check line poly intersection between centertocen vector and each polys            
+            Line2d lineInPolyReg = GraphicsUtility.LinePolygonIntersectionReturnLine(polyReg.Points, centerLine, centerOther);
+            Line2d lineInOtherReg = GraphicsUtility.LinePolygonIntersectionReturnLine(otherReg.Points, centerLine, centerPoly);
+
+            Point2d projectedPtOnPolyReg = GraphicsUtility.ProjectedPointOnLine(lineInPolyReg, centerPoly);
+            Point2d projectedPtOnOtherReg = GraphicsUtility.ProjectedPointOnLine(lineInOtherReg, centerOther);
+
+            double dist1 = GraphicsUtility.DistanceBetweenPoints(centerPoly, projectedPtOnPolyReg);
+            double dist2 = GraphicsUtility.DistanceBetweenPoints(centerOther, projectedPtOnOtherReg);
+
+            double totalDistance = 2 * (dist1 + dist2);
+            lineInPolyReg.move(centerPoly);
+            Point2d projectedPt = GraphicsUtility.ProjectedPointOnLine(lineInPolyReg, centerOther);
+            double distance = GraphicsUtility.DistanceBetweenPoints(projectedPt, centerOther);
+
+
+            if (totalDistance - eps < distance && distance < totalDistance + eps)
+            {
+                return lineInOtherReg;
+            }
+            else
+            {
+                return null;
+            }
+
+        }
+
+
+
+        internal static Line CheckLineMove(Line testLine, Point2d movePt)
+        {
+            Point2d pt1 = new Point2d(testLine.StartPoint.X, testLine.StartPoint.Y);
+            Point2d pt2 = new Point2d(testLine.EndPoint.X, testLine.EndPoint.Y);
+            Line2d line = new Line2d(pt1, pt2);
+            line.move(movePt);
+            Point ptA = Point.ByCoordinates(line.StartPoint.X, line.StartPoint.Y);
+            Point ptB = Point.ByCoordinates(line.EndPoint.X, line.EndPoint.Y);
+            Line movedLine = Line.ByStartPointEndPoint(ptA, ptB);
+            return movedLine;
+        }
 
     }
 }
