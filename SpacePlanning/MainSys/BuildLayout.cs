@@ -18,8 +18,8 @@ namespace SpacePlanning
     {
         
 
-        private static double spacingSet = 0.2; //higher value makes code faster but less precise
-        private static double spacingSet2 = 2; // used for SplitByDistancePoly
+        private static double spacingSet = 5; //higher value makes code faster but less precise 0.2 was good
+        private static double spacingSet2 = 5; // used for SplitByDistancePoly
         internal static double recurse = 0;
         internal static Point2d reference = new Point2d(0,0);
 
@@ -1621,143 +1621,52 @@ namespace SpacePlanning
         [MultiReturn(new[] { "PolyAfterSplit", "SplitLine", "IntersectedPoints", "SpansBBox", "EachPolyPoint" })]
         internal static Dictionary<string, object> BasicSplitPolyIntoTwo(Polygon2d polyOutline, double ratio = 0.5, int dir = 0)
         {
-            if(polyOutline == null)
-            {
-                //Trace.WriteLine("-----Basic Poly is Null found");
-                return null;
-            }
-            if(polyOutline != null && polyOutline.Points == null)
-            {
-                //Trace.WriteLine("-----Basic Poly Points are Null found");
-                return null;
-            }
+            if(polyOutline == null) return null;
+            if(polyOutline != null && polyOutline.Points == null) return null;
 
             double extents = 5000;
-            double spacing = spacingSet;
-            double minimumLength = 2;
-            double minWidth = 10;
-            // dir = 0 : horizontal split line
-            // dir = 1 : vertical split line
+            double minimumLength = 2, minWidth = 10, aspectRatio = 0, eps = 0.1;
 
-            List<Point2d> polyOrig = polyOutline.Points;
-            double eps = 0.1;
-            //CHECKS
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            //List<Point2d> poly = GraphicsUtility.AddPointsInBetween(polyOrig, 5);
-            List<Point2d> poly = Polygon2d.SmoothPolygon(polyOrig, spacing);
-            // compute bounding box ( set of four points ) for the poly
-            // find x Range, find y Range
-            List<Point2d> polyBBox = Polygon2d.FromPointsGetBoundingPoly(poly);
-            Range2d polyRange = Polygon2d.GetRang2DFromBBox(poly);
-
-            Point2d span = polyRange.Span;
-            double horizontalSpan = span.X;
-            double verticalSpan = span.Y;
-            List<double> spans = new List<double>();
-            spans.Add(horizontalSpan);
-            spans.Add(verticalSpan);
-            //compute centroid
+            List<Point2d> polyOrig = polyOutline.Points;          
+            List<Point2d> poly = Polygon2d.SmoothPolygon(polyOrig, spacingSet);
+            List<double> spans = Polygon2d.GetSpansXYFromPolygon2d(poly);
+            double horizontalSpan = spans[0], verticalSpan = spans[1];
             Point2d polyCenter = Polygon2d.CentroidFromPoly(poly);
-            //check aspect ratio
-            double aspectRatio = 0;
+            if (horizontalSpan < minimumLength || verticalSpan < minimumLength) return null;
 
-
-
-            // check if width or length is enough to make split
-            if (horizontalSpan < minimumLength || verticalSpan < minimumLength)
-            {
-                return null;
-            }
-
-
-            //should check direction of split ( flip dir value )
-            if (horizontalSpan > verticalSpan)
-            {
-                dir = 1;
-                aspectRatio = horizontalSpan / verticalSpan;
-            }
-            else
-            {
-                dir = 0;
-                aspectRatio = verticalSpan / horizontalSpan;
-            }
-
-            if (aspectRatio < 2)
-            {
-                //dir = BasicUtility.toggleInputInt(dir);
-                //return null;
-            }
-
-
+            if (horizontalSpan > verticalSpan) { dir = 1; aspectRatio = horizontalSpan / verticalSpan; }
+            else { dir = 0; aspectRatio = verticalSpan / horizontalSpan; }
+          
 
             // adjust ratio
-            if (ratio < 0.15)
-            {
-                ratio = ratio + eps;
-            }
-            if (ratio > 0.85)
-            {
-                ratio = ratio - eps;
-            }
+            if (ratio < 0.15) ratio = ratio + eps;
+            if (ratio > 0.85) ratio = ratio - eps;
 
-            if(horizontalSpan < minWidth || verticalSpan < minWidth)
-            {
-                ratio = 0.5;
-            }
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+            if(horizontalSpan < minWidth || verticalSpan < minWidth) ratio = 0.5;
             Line2d splitLine = new Line2d(polyCenter, extents, dir);
-
-
-            //compute vertical or horizontal line via centroid
             double basic = 0.5;
             double shift = ratio - basic;
 
             // push this line right or left or up or down based on ratio
-            if (dir == 0)
-            {
-                splitLine.move(0, shift * verticalSpan);
-            }
-            else
-            {
-                splitLine.move(shift * horizontalSpan, 0);
-            }
-
-
+            if (dir == 0) splitLine.move(0, shift * verticalSpan);
+            else splitLine.move(shift * horizontalSpan, 0);
             List<Point2d> intersectedPoints = GraphicsUtility.LinePolygonIntersection(poly, splitLine);
 
-            ////////////////////////////////////////////////////////////////////////////////////////////
-            
-            
-
-            // find all points on poly which are to the left or to the right of the line
-            Polygon2d polyA, polyB;
-
-            List<int> pIndexA = new List<int>();
-            List<int> pIndexB = new List<int>();
+            List<int> pIndexA = new List<int>(), pIndexB = new List<int>();
             for (int i = 0; i < poly.Count; i++)
             {
                 bool check = GraphicsUtility.CheckPointSide(splitLine, poly[i]);
-                if (check)
-                {
-                    pIndexA.Add(i);
-                    //ptA.Add(poly[i]);
-                }
-                else
-                {
-                    pIndexB.Add(i);
-                    //ptB.Add(poly[i]);
-                }
+                if (check) pIndexA.Add(i);
+                else pIndexB.Add(i);
             }
 
             //organize the points to make closed poly            
-            List<Point2d> sortedA = DoSortClockwise(poly, intersectedPoints, pIndexA);
-            List<Point2d> sortedB = DoSortClockwise(poly, intersectedPoints, pIndexB);
+            List<Point2d> sortedA = DoSortClockwise(poly, intersectedPoints, pIndexA), 
+                sortedB = DoSortClockwise(poly, intersectedPoints, pIndexB);
             List<List<Point2d>> twoSets = new List<List<Point2d>>();
-            twoSets.Add(sortedA);
-            twoSets.Add(sortedB);           
-
+            twoSets.Add(sortedA); twoSets.Add(sortedB);        
             List<Polygon2d>  splittedPoly =  OptimizePolyPoints(sortedA, sortedB);
+
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (splittedPoly) },
@@ -1980,7 +1889,7 @@ namespace SpacePlanning
         //used to split Depts into Program Spaces
         [MultiReturn(new[] { "PolyAfterSplit", "UpdatedProgramData" })]
         public static Dictionary<string, object> RecursivePlaceProgramsSeriesNew(List<Polygon2d> polyInputList,
-            List<ProgramData> progData,int recompute = 5)
+            List<ProgramData> progData,double minWidth = 5)
         {
 
             if (polyInputList == null || polyInputList.Count == 0) return null;
@@ -2012,20 +1921,26 @@ namespace SpacePlanning
                         {
                             double dist = 0; int dir = 1;
                             double ratio = areaPoly / areaProg;
-                            //ratio = 10;
+                            
                        
                             List<double> spans = Polygon2d.GetSpansXYFromPolygon2d(currentPoly.Points);
                             double spanX = spans[0], spanY = spans[1];
                             if (spanX > spanY)
                             {
+                                if(spanY < minWidth)
+                                {
+                                    continue;
+                                }
                                 dist = spanX / ratio; dir = 1;
-                                //dir = BasicUtility.toggleInputInt(dir);
                                 splitResult = SplitByDistanceFromPoint(currentPoly, dist, dir);
                             }
                             else
                             {
+                                if (spanX < minWidth)
+                                {
+                                    continue;
+                                }
                                 dist = spanY / ratio; dir = 0;
-                                //dir = BasicUtility.toggleInputInt(dir);
                                 splitResult = SplitByDistanceFromPoint(currentPoly, dist, dir);
                             }
 
@@ -3728,10 +3643,6 @@ namespace SpacePlanning
                 }
 
                 dummyList.Add(count);
-                if (!duplicate)
-                {
-                    //cleanList.Add(ptListUnclean[i]);
-                }
 
 
               
@@ -3745,34 +3656,6 @@ namespace SpacePlanning
                 }
 
             }
-            /*
-            List<double> itemX = new List<double>();
-            List<double> itemY = new List<double>();
-            for (int i = 0; i < ptListUnclean.Count; i++)
-            {
-                itemX.Add(ptListUnclean[i].X);
-                itemX.Add(ptListUnclean[i].Y);
-            }
-
-            var duplicateIndexesX = itemX.Select((item, index) => new { item, index })
-                        .GroupBy(g => g.item)
-                        .Where(g => g.Count() > 1)
-                        .SelectMany(g => g.Skip(1), (g, item) => item.index);
-
-            var duplicateIndexesY = itemY.Select((item, index) => new { item, index })
-                        .GroupBy(g => g.item)
-                        .Where(g => g.Count() > 1)
-                        .SelectMany(g => g.Skip(1), (g, item) => item.index);
-
-
-            itemX = (List<double>)itemX.Where((item, index) => (!duplicateIndexesX.Contains(index) && !duplicateIndexesY.Contains(index)));
-            itemY = (List<double>)itemY.Where((item, index) => (!duplicateIndexesX.Contains(index) && !duplicateIndexesY.Contains(index)));
-
-            for (int i = 0; i < itemX.Count; i++)
-            {
-                cleanList.Add(new Point2d(itemX[i], itemY[i]));
-            }
-            */
             return cleanList;
         }
 
