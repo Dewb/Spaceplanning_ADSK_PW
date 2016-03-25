@@ -2137,7 +2137,7 @@ namespace SpacePlanning
 
         }
 
-        // need to get back to this later, needs some bugs to be fixed
+
         //used to split Depts into Program Spaces
         [MultiReturn(new[] { "PolyAfterSplit", "BigPolysAfterSplit", "EachPolyPoint", "UpdatedProgramData",
             "SplitLines","LowestPoint","CurrentPolygons", "IntersectionPoints" })]
