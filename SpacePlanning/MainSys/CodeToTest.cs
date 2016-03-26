@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 using stuffer;
 using Autodesk.DesignScript.Geometry;
 using Autodesk.DesignScript.Runtime;
+using System.Diagnostics;
 
-namespace SpacePlanning.MainSys
+namespace SpacePlanning
 {
-    class Utility
+    class CodeToTest
     {
 
         //changes the center of one or both polys to ensure correct intersection line is found
@@ -593,6 +594,103 @@ namespace SpacePlanning.MainSys
 
         }
 
+
+
+        [MultiReturn(new[] { "PolyAfterSplit", "SplitLine", "IntersectedPoints", "SpansBBox", "EachPolyPoint" })]
+        public static Dictionary<string, object> SplitByDistanceTest(Polygon2d polyOutline, double distance = 10, int dir = 0, double dummy = 0)
+        {
+            if (polyOutline == null || polyOutline.Points == null || polyOutline.Points.Count == 0)
+            {
+                return null;
+            }
+
+            double extents = 5000;
+            double spacing = BuildLayout.spacingSet;
+            List<Point2d> polyOrig = polyOutline.Points;
+            List<Point2d> poly = Polygon2d.SmoothPolygon(polyOrig, spacing);
+            if (poly == null || poly.Count == 0)
+            {
+                return null;
+            }
+            Random ran = new Random();
+            List<double> spans = Polygon2d.GetSpansXYFromPolygon2d(poly);
+            Dictionary<int, object> obj = PolygonUtility.pointSelector(ran, poly);
+            Point2d pt = (Point2d)obj[0];
+            int orient = (int)obj[1];
+
+
+            int ind = GraphicsUtility.ReturnLowestPointFromList(poly);
+            pt = poly[ind];
+
+            Line2d splitLine = new Line2d(pt, extents, dir);
+            // add check such that distanche provided does not exceed the shorter span
+            if (dir == 1)
+            {
+                if (distance > spans[0])
+                {
+                    //distance = 0.95 * spans[0];
+                }
+
+            }
+            else
+            {
+                if (distance > spans[1])
+                {
+                    //distance = 0.95* spans[1];
+                }
+
+            }
+            orient = 1;
+            // push this line right or left or up or down based on ratio
+            if (dir == 1)
+            {
+                Trace.WriteLine("moved point horizontally : " + orient * distance);
+                splitLine.move(0, orient * distance);
+            }
+            else
+            {
+                Trace.WriteLine("moved point vertically : " + orient * distance);
+                splitLine.move(orient * distance, 0);
+            }
+
+            //List<Point2d> intersectedPoints = GraphicsUtility.LinePolygonIntersection(poly, splitLine);
+            List<Point2d> intersectedPoints = GraphicsUtility.LinePolygonIntersectionInd(poly, splitLine);
+
+            List<int> pIndexA = new List<int>();
+            List<int> pIndexB = new List<int>();
+            for (int i = 0; i < poly.Count; i++)
+            {
+                bool check = GraphicsUtility.CheckPointSide(splitLine, poly[i]);
+                if (check)
+                {
+                    pIndexA.Add(i);
+                }
+                else
+                {
+                    pIndexB.Add(i);
+                }
+            }
+
+            //organize the points to make closed poly
+            List<Point2d> sortedA = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexA);
+            List<Point2d> sortedB = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexB);
+
+            List<List<Point2d>> twoSets = new List<List<Point2d>>();
+            twoSets.Add(sortedA);
+            twoSets.Add(sortedB);
+
+            List<Polygon2d> splittedPoly = PolygonUtility.OptimizePolyPoints(sortedA, sortedB);
+
+            return new Dictionary<string, object>
+            {
+                { "PolyAfterSplit", (splittedPoly) },
+                { "SplitLine", (splitLine) },
+                { "IntersectedPoints", (intersectedPoints) },
+                { "SpansBBox", (spans) },
+                { "EachPolyPoint", (pt) }
+            };
+
+        }
 
 
     }

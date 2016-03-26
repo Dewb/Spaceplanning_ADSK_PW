@@ -270,5 +270,87 @@ namespace SpacePlanning
 
 
 
+        internal static Dictionary<int, object> pointSelector(Random ran, List<Point2d> poly)
+        {
+            Dictionary<int, object> output = new Dictionary<int, object>();
+
+            double num = ran.NextDouble();
+            //Trace.WriteLine("Point Selector Random Found is : " + num);
+            int highInd = GraphicsUtility.ReturnHighestPointFromListNew(poly);
+            Point2d hiPt = poly[highInd];
+            int lowInd = GraphicsUtility.ReturnLowestPointFromListNew(poly);
+            Point2d lowPt = poly[lowInd];
+
+
+            if (num < 0.5)
+            {
+                output[0] = lowPt;
+                output[1] = 1;
+            }
+            else
+            {
+                output[0] = hiPt; //hiPt
+                output[1] = -1; //lowPt
+            }
+
+
+            return output;
+        }
+
+
+        internal static List<Polygon2d> OptimizePolyPoints(List<Point2d> sortedA, List<Point2d> sortedB,
+        bool tag = false)
+        {
+            Polygon2d polyA, polyB;
+
+            if (tag)
+            {
+                //added to make sure poly has uniform points
+                polyA = new Polygon2d(sortedA);
+                polyB = new Polygon2d(sortedB);
+
+                List<Point2d> ptsPolyA = Polygon2d.SmoothPolygon(polyA.Points, BuildLayout.spacingSet);
+                List<Point2d> ptsPolyB = Polygon2d.SmoothPolygon(polyB.Points, BuildLayout.spacingSet);
+                polyA = new Polygon2d(ptsPolyA, 0);
+                polyB = new Polygon2d(ptsPolyB, 0);
+            }
+            else
+            {
+                //return the polys as obtained - no smoothing
+                polyA = new Polygon2d(sortedA, 0);
+                polyB = new Polygon2d(sortedB, 0);
+            }
+            List<Polygon2d> splittedPoly = new List<Polygon2d>();
+            splittedPoly.Add(polyA);
+            splittedPoly.Add(polyB);
+            return splittedPoly;
+        }
+
+
+
+        internal static List<double> PolySpanCheck(Polygon2d poly)
+        {
+            List<double> spanList = new List<double>();
+            Range2d polyRange = Polygon2d.GetRang2DFromBBox(poly.Points);
+
+            Point2d span = polyRange.Span;
+            double horizontalSpan = span.X;
+            double verticalSpan = span.Y;
+
+            //place longer span first
+            if (horizontalSpan > verticalSpan)
+            {
+                spanList.Add(horizontalSpan);
+                spanList.Add(verticalSpan);
+            }
+            else
+            {
+                spanList.Add(verticalSpan);
+                spanList.Add(horizontalSpan);
+            }
+
+            return spanList;
+        }
+
     }
 }

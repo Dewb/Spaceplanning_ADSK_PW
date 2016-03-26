@@ -180,7 +180,7 @@
     <Compile Include="MainSys\Cell.cs" />
     <Compile Include="MainSys\Circulation.cs" />
     <Compile Include="MainSys\PolygonUtility.cs" />
-    <Compile Include="MainSys\Utility.cs" />
+    <Compile Include="MainSys\CodeToTest.cs" />
     <Compile Include="MainSys\CustomVariables.cs" />
     <Compile Include="MainSys\DeptData.cs" />
     <Compile Include="MainSys\Dump.cs" />

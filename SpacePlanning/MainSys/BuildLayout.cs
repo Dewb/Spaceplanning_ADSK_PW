@@ -961,7 +961,7 @@ namespace SpacePlanning
                 sortedB = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexB);
             List<List<Point2d>> twoSets = new List<List<Point2d>>();
             twoSets.Add(sortedA); twoSets.Add(sortedB);        
-            List<Polygon2d>  splittedPoly =  OptimizePolyPoints(sortedA, sortedB);
+            List<Polygon2d>  splittedPoly =  PolygonUtility.OptimizePolyPoints(sortedA, sortedB);
 
             return new Dictionary<string, object>
             {
@@ -977,36 +977,7 @@ namespace SpacePlanning
         
         //****DEF - USING THIS TO SPLIT PROGRAMS-------------------------------
 
-        internal static List<Polygon2d> OptimizePolyPoints(List<Point2d> sortedA, List<Point2d> sortedB, 
-            bool tag = false)
-        {
-            Polygon2d polyA, polyB;
-
-            if (tag)
-            {           
-                //added to make sure poly has uniform points
-                polyA = new Polygon2d(sortedA);
-                polyB = new Polygon2d(sortedB);
-
-                List<Point2d> ptsPolyA = Polygon2d.SmoothPolygon(polyA.Points,spacingSet);
-                List<Point2d> ptsPolyB = Polygon2d.SmoothPolygon(polyB.Points,spacingSet);
-                polyA = new Polygon2d(ptsPolyA, 0);
-                polyB = new Polygon2d(ptsPolyB, 0);               
-            }
-            else
-            {
-                //return the polys as obtained - no smoothing
-                polyA = new Polygon2d(sortedA, 0);
-                polyB = new Polygon2d(sortedB, 0);
-            }
-            List<Polygon2d> splittedPoly = new List<Polygon2d>();
-            splittedPoly.Add(polyA);
-            splittedPoly.Add(polyB);
-            return splittedPoly;
-        }
-
-
-
+    
        
       ////////////////////////////////////////////////////////////////////////////////////////////////////////// TEST CODE BELOW /////////////////
 
@@ -1530,59 +1501,6 @@ namespace SpacePlanning
     
 
 
-        internal static Dictionary<int, object> pointSelector(Random ran,List<Point2d> poly)
-        {
-            Dictionary<int, object> output = new Dictionary<int, object>();
- 
-            double num = ran.NextDouble();
-            //Trace.WriteLine("Point Selector Random Found is : " + num);
-            int highInd = GraphicsUtility.ReturnHighestPointFromListNew(poly);
-            Point2d hiPt = poly[highInd];
-            int lowInd = GraphicsUtility.ReturnLowestPointFromListNew(poly);
-            Point2d lowPt = poly[lowInd];
-
-
-            if (num < 0.5)
-            {
-                output[0] = lowPt;
-                output[1] = 1;
-            }
-            else
-            {
-                output[0] = hiPt; //hiPt
-                output[1] = -1; //lowPt
-            }
-
-
-            return output;
-        }
-
-
-
-        internal static List<double> PolySpanCheck(Polygon2d poly)
-        {
-            List<double> spanList = new List<double>();
-            Range2d polyRange = Polygon2d.GetRang2DFromBBox(poly.Points);
-
-            Point2d span = polyRange.Span;
-            double horizontalSpan = span.X;
-            double verticalSpan = span.Y;
-
-            //place longer span first
-            if (horizontalSpan > verticalSpan)
-            {
-                spanList.Add(horizontalSpan);
-                spanList.Add(verticalSpan);
-            }
-            else
-            {
-                spanList.Add(verticalSpan);
-                spanList.Add(horizontalSpan);                
-            }
-            
-            return spanList;
-        }
-
 
         // USING NOW 
         //SPLITS A POLYGON2D INTO TWO POLYS, BASED ON A DIRECTION AND DISTANCE
@@ -1613,7 +1531,7 @@ namespace SpacePlanning
                 return null; 
             }
             List<double> spans = Polygon2d.GetSpansXYFromPolygon2d(poly);
-            Dictionary<int, object> obj = pointSelector(ran,poly);
+            Dictionary<int, object> obj = PolygonUtility.pointSelector(ran,poly);
             Point2d pt = (Point2d)obj[0];
             int orient = (int)obj[1];
 
@@ -1657,7 +1575,7 @@ namespace SpacePlanning
             twoSets.Add(sortedA);
             twoSets.Add(sortedB);          
 
-            List<Polygon2d> splittedPoly = OptimizePolyPoints(sortedA, sortedB);
+            List<Polygon2d> splittedPoly = PolygonUtility.OptimizePolyPoints(sortedA, sortedB);
 
             return new Dictionary<string, object>
             {
@@ -1745,7 +1663,7 @@ namespace SpacePlanning
             twoSets.Add(sortedA);
             twoSets.Add(sortedB);
 
-            List<Polygon2d> splittedPoly = OptimizePolyPoints(sortedA, sortedB,true);
+            List<Polygon2d> splittedPoly = PolygonUtility.OptimizePolyPoints(sortedA, sortedB,true);
 
             return new Dictionary<string, object>
             {
@@ -1758,103 +1676,6 @@ namespace SpacePlanning
 
         }
 
-
-
-        [MultiReturn(new[] { "PolyAfterSplit", "SplitLine", "IntersectedPoints", "SpansBBox", "EachPolyPoint" })]
-        public static Dictionary<string, object> SplitByDistanceTest(Polygon2d polyOutline, double distance = 10, int dir = 0, double dummy = 0)
-        {
-            if (polyOutline == null || polyOutline.Points == null || polyOutline.Points.Count == 0)
-            {
-                return null;
-            }
-
-            double extents = 5000;
-            double spacing = spacingSet;
-            List<Point2d> polyOrig = polyOutline.Points;
-            List<Point2d> poly = Polygon2d.SmoothPolygon(polyOrig, spacing);
-            if (poly == null || poly.Count == 0)
-            {
-                return null;
-            }
-            Random ran = new Random();
-            List<double> spans = Polygon2d.GetSpansXYFromPolygon2d(poly);
-            Dictionary<int, object> obj = pointSelector(ran, poly);
-            Point2d pt = (Point2d)obj[0];
-            int orient = (int)obj[1];
-
-
-            int ind = GraphicsUtility.ReturnLowestPointFromList(poly);
-            pt = poly[ind];
-
-            Line2d splitLine = new Line2d(pt, extents, dir);
-            // add check such that distanche provided does not exceed the shorter span
-            if (dir == 1)
-            {
-                if(distance > spans[0])
-                {
-                    //distance = 0.95 * spans[0];
-                }
-                
-            }
-            else
-            {
-                if (distance > spans[1])
-                {
-                    //distance = 0.95* spans[1];
-                }
-                
-            }
-            orient = 1;
-            // push this line right or left or up or down based on ratio
-            if (dir == 1)
-            {
-                Trace.WriteLine("moved point horizontally : " + orient * distance);
-                splitLine.move(0, orient * distance);
-            }
-            else
-            {
-                Trace.WriteLine("moved point vertically : " + orient * distance);
-                splitLine.move(orient * distance, 0);
-            }
-
-            //List<Point2d> intersectedPoints = GraphicsUtility.LinePolygonIntersection(poly, splitLine);
-            List<Point2d> intersectedPoints = GraphicsUtility.LinePolygonIntersectionInd(poly, splitLine);
-
-            List<int> pIndexA = new List<int>();
-            List<int> pIndexB = new List<int>();
-            for (int i = 0; i < poly.Count; i++)
-            {
-                bool check = GraphicsUtility.CheckPointSide(splitLine, poly[i]);
-                if (check)
-                {
-                    pIndexA.Add(i);
-                }
-                else
-                {
-                    pIndexB.Add(i);
-                }
-            }
-
-            //organize the points to make closed poly
-            List<Point2d> sortedA = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexA);
-            List<Point2d> sortedB = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexB);
-
-            List<List<Point2d>> twoSets = new List<List<Point2d>>();
-            twoSets.Add(sortedA);
-            twoSets.Add(sortedB);
-
-            List<Polygon2d> splittedPoly = OptimizePolyPoints(sortedA, sortedB);
-
-            return new Dictionary<string, object>
-            {
-                { "PolyAfterSplit", (splittedPoly) },
-                { "SplitLine", (splitLine) },
-                { "IntersectedPoints", (intersectedPoints) },
-                { "SpansBBox", (spans) },
-                { "EachPolyPoint", (pt) }
-            };
-
-        }
 
 
 
@@ -1985,7 +1806,7 @@ namespace SpacePlanning
             List<Point2d> sortedB = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexB);
             List<List<Point2d>> twoSets = new List<List<Point2d>>();
             twoSets.Add(sortedA); twoSets.Add(sortedB);
-            List<Polygon2d> splittedPoly = OptimizePolyPoints(sortedA, sortedB, true);
+            List<Polygon2d> splittedPoly = PolygonUtility.OptimizePolyPoints(sortedA, sortedB, true);
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (splittedPoly) },
@@ -2148,7 +1969,7 @@ namespace SpacePlanning
             List<Point2d> sortedB = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexB);
             twoSets.Add(sortedA);
             twoSets.Add(sortedB);        
-            List<Polygon2d> splittedPoly = OptimizePolyPoints(sortedA, sortedB);
+            List<Polygon2d> splittedPoly = PolygonUtility.OptimizePolyPoints(sortedA, sortedB);
 
             return new Dictionary<string, object>
             {
