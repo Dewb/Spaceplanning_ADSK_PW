@@ -157,6 +157,15 @@ namespace SpacePlanning
             
         }
 
+
+        public double CurrentAreaNeeds
+        {
+            get { return _progUnitArea - _areaGiven; }
+
+        }
+
+
+
         public double AreaProvided
         {
             get { return _gridX*_gridY*_numCellAdded; }
@@ -183,7 +192,6 @@ namespace SpacePlanning
         public bool IsAreaSatisfied
         {
             get {
-
                 double areaNeeded = _progQuanity * _progUnitArea;
                 if (_areaGiven >= areaNeeded){
                     return true;
@@ -250,6 +258,11 @@ namespace SpacePlanning
             double cellArea = _gridX * _gridY;
             num = (int)(_progUnitArea / cellArea);
             return num;
+        }
+
+        internal void AddAreaToProg(double area)
+        {
+            _areaGiven += area;
         }
 
         public ProgramData Clone()

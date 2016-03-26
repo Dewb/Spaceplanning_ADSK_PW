@@ -290,7 +290,7 @@ namespace SpacePlanning.MainSys
 
 
 
-
+        //find common edge between two polygons, - works with bugs
         internal static Line2d PolygonPolygonCommonEdge(Polygon2d poly, Polygon2d other)
         {
             /*

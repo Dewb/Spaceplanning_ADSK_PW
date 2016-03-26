@@ -22,10 +22,9 @@ namespace SpacePlanning
         private static double spacingSet2 = 5; // used for SplitByDistancePoly
         internal static double recurse = 0;
         internal static Point2d reference = new Point2d(0,0);
+             
 
-     
-
-      
+        //****DEF - USING THIS TO SPLIT PROGRAMS--------------------------------
         //RECURSIVE SPLITS A POLY
         [MultiReturn(new[] { "PolyAfterSplit", "AreaEachPoly", "EachPolyPoint", "UpdatedProgramData" })]
         public static Dictionary<string, object> RecursiveSplitPolyPrograms(List<Polygon2d> polyInputList,List<ProgramData> progData, double ratioA = 0.5, int recompute = 1)
@@ -102,7 +101,7 @@ namespace SpacePlanning
                 else progNew.PolyProgAssigned = null;              
                 AllProgramDataList.Add(progNew);
             }
-            polyList = Polygon2d.PolyReducePoints(polyList);
+            //polyList = Polygon2d.PolyReducePoints(polyList);
             //Trace.WriteLine("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
             
             return new Dictionary<string, object>
@@ -125,7 +124,7 @@ namespace SpacePlanning
         }
 
 
-       
+        //****DEF - USING THIS TO SPLIT PROGRAMS-------------------------------
 
         //make a tree to test
         [MultiReturn(new[] { "SpaceTree", "NodeList" })]
@@ -315,25 +314,15 @@ namespace SpacePlanning
             return polyAfterSplitting;
         }
 
-        
-     
 
 
 
-        //RECURSIVE SPLITS A POLY
+
+        //****DEF - USING THIS TO SPLIT DEPTS-------------------------------
+        // SPLITS A POLY TO MAKE DEPTS
         [MultiReturn(new[] { "DeptPolys", "LeftOverPolys", "DepartmentNames", "UpdatedDeptData","SpaceDataTree" })]
         internal static Dictionary<string, object> DeptSplitRefined(Polygon2d poly, List<DeptData> deptData, List<Cell> cellInside, double offset, int recompute = 1)
         {
-
-            /*
-            get the poly
-            get the poly area
-            maintain a leftoverstack
-            if dept is inpatients
-                split by distance from edge ( distance = 32 )
-            else
-                split by basicsplitwrapper
-            */
 
             List<List<Polygon2d>> AllDeptPolys = new List<List<Polygon2d>>();
             List<string> AllDepartmentNames = new List<string>();
@@ -384,10 +373,6 @@ namespace SpacePlanning
                 double count2 = 0;
                 double areaCheck = 0;
 
-
-
-                //areaCurrentPoly = Polygon2d.AreaCheckPolygon(currentPolyObj);
-
                 Random ran = new Random();
                 Node spaceNode, containerNode;
                 // when inpatient--------------------------------------------------------------------------
@@ -414,9 +399,6 @@ namespace SpacePlanning
                                 double offsetNew = offset * percentage;
 
                                 edgeSplitted = EdgeSplitWrapper(currentPolyObj, ran, offsetNew, dir, percentage);
-                                //Trace.WriteLine("Trying to Split By Edge for :  " + countTry);
-                                //Trace.WriteLine("Direction is :  " + dir + " | Offset is : " + offsetNew +
-                                    //" | Outer While Iteration is : " + count1);
                                 countTry += 1;
                             }
 
@@ -666,7 +648,7 @@ namespace SpacePlanning
 
         }
 
-
+        //****DEF - USING THIS TO SPLIT PROGRAMS-------------------------------
 
 
 
@@ -736,7 +718,8 @@ namespace SpacePlanning
         }
 
 
-        internal static List<Polygon2d> OptimizePolyPoints(List<Point2d> sortedA, List<Point2d> sortedB, bool tag = false)
+        internal static List<Polygon2d> OptimizePolyPoints(List<Point2d> sortedA, List<Point2d> sortedB, 
+            bool tag = false)
         {
             Polygon2d polyA, polyB;
 
@@ -912,7 +895,7 @@ namespace SpacePlanning
             List<ProgramData> progData, double acceptableWidth, int minWidthAllowed = 8)
         {
            
-            List<Polygon2d> polyList = new List<Polygon2d>();
+            List<List<Polygon2d>> polyList = new List<List<Polygon2d>>();
             List<double> areaList = new List<double>();
             List<Point2d> pointsList = new List<Point2d>();
             Stack<ProgramData> programDataRetrieved = new Stack<ProgramData>();
@@ -921,6 +904,8 @@ namespace SpacePlanning
             List<Polygon2d> polyOrganizedList = new List<Polygon2d>();
             polyOrganizedList = SplitBigPolys(polyInputList, acceptableWidth, 5);
             //polyOrganizedList = Polygon2d.PolyReducePoints(polyOrganizedList);
+
+            polyList = AssignPolysToProgramData(progData, polyOrganizedList);
         
             return new Dictionary<string, object>
             {
@@ -931,6 +916,29 @@ namespace SpacePlanning
             };
 
 
+        }
+
+        // from a list of given polys  it assigns each program a list of polys till its area is satisfied
+        internal static List<List<Polygon2d>> AssignPolysToProgramData(List<ProgramData> progData, List<Polygon2d> polygonLists)
+        {
+            List<List<Polygon2d>> polyEachProgramList = new List<List<Polygon2d>>();
+            Stack <Polygon2d> polyStack = new Stack<Polygon2d>();
+            for (int i = 0; i < polygonLists.Count; i++) { polyStack.Push(polygonLists[i]); }
+         
+            for (int i =0; i < progData.Count; i++)
+            {
+                //double areaProgram = progData[i].CurrentAreaNeeds;
+                List<Polygon2d> polysForProg = new List<Polygon2d>();
+                while (progData[i].IsAreaSatisfied == false && polyStack.Count>0)
+                {
+                    Polygon2d currentPoly = polyStack.Pop();
+                    double currentArea = Polygon2d.AreaCheckPolygon(currentPoly);
+                    progData[i].AddAreaToProg(currentArea);
+                    polysForProg.Add(currentPoly);
+                }
+                polyEachProgramList.Add(polysForProg);
+            }
+            return polyEachProgramList;
         }
 
 
@@ -1033,11 +1041,7 @@ namespace SpacePlanning
         }
 
 
-
-
-
-
-
+        
 
 
 
@@ -1434,17 +1438,6 @@ namespace SpacePlanning
     public static Dictionary<string, object> RecursiveSplitProgramsOneDirByDistance(List<Polygon2d> polyInputList, List<ProgramData> progData, double distance, int recompute = 1)
     {
 
-            /*PSUEDO CODE:
-            get poly's vertical and horizontal span
-            based on that get the direction of split
-            bigpoly 
-                split that into two
-                push the smaller one in a list
-                take the bigger one 
-                make it big poly
-                repeat
-
-            */
         List<Polygon2d> polyList = new List<Polygon2d>();
         List<double> areaList = new List<double>();
         List<Point2d> pointsList = new List<Point2d>();
@@ -1565,7 +1558,7 @@ namespace SpacePlanning
         }
 
             pointsList = null;
-            polyList = Polygon2d.PolyReducePoints(polyList);
+            //polyList = Polygon2d.PolyReducePoints(polyList);
         //return polyList;
         return new Dictionary<string, object>
             {
