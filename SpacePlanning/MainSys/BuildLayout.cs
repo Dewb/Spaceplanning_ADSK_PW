@@ -18,8 +18,8 @@ namespace SpacePlanning
     {
         
 
-        private static double spacingSet = 1; //higher value makes code faster but less precise 0.2 was good
-        private static double spacingSet2 = 5; // used for SplitByDistancePoly
+        internal static double spacingSet = 1; //higher value makes code faster but less precise 0.2 was good
+        internal static double spacingSet2 = 5; // used for SplitByDistancePoly
         internal static double recurse = 0;
         internal static Point2d reference = new Point2d(0,0);
              
@@ -648,12 +648,269 @@ namespace SpacePlanning
 
         }
 
-        //****DEF - USING THIS TO SPLIT PROGRAMS-------------------------------
+
+        //RECURSIVE SPLITS A POLY
+        [MultiReturn(new[] { "PolyAfterSplit", "AreaEachPoly", "EachPolyPoint", "UpdatedProgramData" })]
+        public static Dictionary<string, object> RecursiveSplitProgramsOneDirByDistance(List<Polygon2d> polyInputList, List<ProgramData> progData, double distance, int recompute = 1)
+        {
+
+            List<Polygon2d> polyList = new List<Polygon2d>();
+            List<double> areaList = new List<double>();
+            List<Point2d> pointsList = new List<Point2d>();
+            Stack<ProgramData> programDataRetrieved = new Stack<ProgramData>();
+
+            for (int j = 0; j < progData.Count; j++)
+            {
+                programDataRetrieved.Push(progData[j]);
+            }
+
+            ////////////////////////////////////////////////////////////////////////////
+            for (int i = 0; i < polyInputList.Count; i++)
+            {
+
+                Polygon2d poly = polyInputList[i];
+
+
+                if (poly == null || poly.Points == null || poly.Points.Count == 0)
+                {
+                    continue;
+                }
+
+
+                List<Point2d> polyBBox = Polygon2d.FromPointsGetBoundingPoly(poly.Points);
+                Range2d polyRange = Polygon2d.GetRang2DFromBBox(poly.Points);
+                double minimumLength = 200;
+
+                Point2d span = polyRange.Span;
+                double horizontalSpan = span.X;
+                double verticalSpan = span.Y;
+                List<double> spans = new List<double>();
+                spans.Add(horizontalSpan);
+                spans.Add(verticalSpan);
+                double setSpan = 1000000000000;
+                int dir = 0;
+                if (horizontalSpan > verticalSpan)
+                {
+                    dir = 1;
+                    setSpan = horizontalSpan;
+
+                }
+                else
+                {
+                    dir = 0;
+                    setSpan = verticalSpan;
+
+                }
+
+
+                Polygon2d currentPoly = poly;
+                int count = 0;
+
+
+                Random ran2 = new Random();
+                while (setSpan > 0 && programDataRetrieved.Count > 0)
+                {
+                    ProgramData progItem = programDataRetrieved.Pop();
+                    List<Polygon2d> polyAfterSplitting = EdgeSplitWrapper(currentPoly, ran2, distance, dir);
+                    double selectedArea = 0;
+                    double area1 = GraphicsUtility.AreaPolygon2d(polyAfterSplitting[0].Points);
+                    double area2 = GraphicsUtility.AreaPolygon2d(polyAfterSplitting[1].Points);
+                    if (area1 > area2)
+                    {
+                        currentPoly = polyAfterSplitting[0];
+                        if (polyAfterSplitting[1] == null)
+                        {
+                            break;
+                        }
+                        polyList.Add(polyAfterSplitting[1]);
+                        progItem.AreaProvided = area1;
+                        areaList.Add(area2);
+                        selectedArea = area2;
+
+
+                    }
+                    else
+                    {
+                        currentPoly = polyAfterSplitting[1];
+                        polyList.Add(polyAfterSplitting[0]);
+                        progItem.AreaProvided = area2;
+                        areaList.Add(area1);
+                        selectedArea = area1;
+
+                    }
+
+
+                    if (currentPoly.Points == null)
+                    {
+                        //Trace.WriteLine("Breaking This");
+                        break;
+                    }
+
+
+
+                    //reduce number of points
+                    //currentPoly = new Polygon2d(currentPoly.Points);
+
+                    setSpan -= distance;
+                    count += 1;
+                }// end of while loop
+
+
+            }// end of for loop
+            List<ProgramData> UpdatedProgramDataList = new List<ProgramData>();
+            for (int i = 0; i < progData.Count; i++)
+            {
+                ProgramData progItem = progData[i];
+                ProgramData progNew = new ProgramData(progItem);
+                if (i < polyList.Count)
+                {
+                    progNew.PolyProgAssigned = polyList[i];
+                }
+                else
+                {
+                    progNew.PolyProgAssigned = null;
+                }
+                UpdatedProgramDataList.Add(progNew);
+            }
+
+            pointsList = null;
+            //polyList = Polygon2d.PolyReducePoints(polyList);
+            //return polyList;
+            return new Dictionary<string, object>
+            {
+                { "PolyAfterSplit", (polyList) },
+                { "AreaEachPoly", (areaList) },
+                { "EachPolyPoint", (pointsList) },
+                { "UpdatedProgramData",(UpdatedProgramDataList) }
+            };
+        }
+
+        //RECURSIVE SPLITS A POLY
+        public static Dictionary<string, object> RecursiveSplitProgramsOneDirByDistanceSingleOut(List<Polygon2d> polyInputList,
+            List<ProgramData> progData, double distance, int recompute = 1)
+        {
+            return RecursiveSplitProgramsOneDirByDistance(polyInputList, progData, distance, recompute);
+
+        }
 
 
 
 
 
+        //RECURSIVE SPLITS A POLY
+        [MultiReturn(new[] { "PolyAfterSplit", "AreaEachPoly", "EachPolyPoint" })]
+        public static Dictionary<string, object> RecursiveSplitOneDirByDistance(Polygon2d poly, double distance, int recompute = 1)
+        {
+
+            /*PSUEDO CODE:
+            get poly's vertical and horizontal span
+            based on that get the direction of split
+            bigpoly 
+                split that into two
+                push the smaller one in a list
+                take the bigger one 
+                make it big poly
+                repeat
+                
+            */
+
+            if (poly == null || poly.Points == null || poly.Points.Count == 0)
+            {
+                return null;
+            }
+
+
+            List<Polygon2d> polyList = new List<Polygon2d>();
+            List<double> areaList = new List<double>();
+            List<Point2d> pointsList = new List<Point2d>();
+            List<Point2d> polyBBox = Polygon2d.FromPointsGetBoundingPoly(poly.Points);
+            Range2d polyRange = Polygon2d.GetRang2DFromBBox(poly.Points);
+            double minimumLength = 200;
+
+            Point2d span = polyRange.Span;
+            double horizontalSpan = span.X;
+            double verticalSpan = span.Y;
+            List<double> spans = new List<double>();
+            spans.Add(horizontalSpan);
+            spans.Add(verticalSpan);
+            double setSpan = 1000000000000;
+            int dir = 0;
+            if (horizontalSpan > verticalSpan)
+            {
+                dir = 1;
+                setSpan = horizontalSpan;
+
+            }
+            else
+            {
+                dir = 0;
+                setSpan = verticalSpan;
+
+            }
+
+
+            Polygon2d currentPoly = poly;
+            int count = 0;
+
+
+            Random ran2 = new Random();
+            while (setSpan > 0)
+            {
+
+                List<Polygon2d> polyAfterSplitting = EdgeSplitWrapper(currentPoly, ran2, distance, dir);
+                double selectedArea = 0;
+                double area1 = GraphicsUtility.AreaPolygon2d(polyAfterSplitting[0].Points);
+                double area2 = GraphicsUtility.AreaPolygon2d(polyAfterSplitting[1].Points);
+                if (area1 > area2)
+                {
+                    currentPoly = polyAfterSplitting[0];
+                    if (polyAfterSplitting[1] == null)
+                    {
+                        break;
+                    }
+                    polyList.Add(polyAfterSplitting[1]);
+                    areaList.Add(area2);
+                    selectedArea = area2;
+
+
+                }
+                else
+                {
+                    currentPoly = polyAfterSplitting[1];
+                    polyList.Add(polyAfterSplitting[0]);
+                    areaList.Add(area1);
+                    selectedArea = area1;
+
+                }
+
+
+                if (currentPoly.Points == null)
+                {
+                    Trace.WriteLine("Breaking This");
+                    break;
+                }
+
+
+
+                //reduce number of points
+                //currentPoly = new Polygon2d(currentPoly.Points);
+
+                setSpan -= distance;
+                count += 1;
+            }
+
+            pointsList = null;
+            //return polyList;
+            return new Dictionary<string, object>
+            {
+                { "PolyAfterSplit", (polyList) },
+                { "AreaEachPoly", (areaList) },
+                { "EachPolyPoint", (pointsList) }
+            };
+        }
+
+
+        
 
         // USING NOW 
         //SPLITS A POLYGON2D INTO TWO POLYS, BASED ON A DIRECTION AND RATIO
@@ -700,8 +957,8 @@ namespace SpacePlanning
             }
 
             //organize the points to make closed poly            
-            List<Point2d> sortedA = DoSortClockwise(poly, intersectedPoints, pIndexA), 
-                sortedB = DoSortClockwise(poly, intersectedPoints, pIndexB);
+            List<Point2d> sortedA = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexA), 
+                sortedB = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexB);
             List<List<Point2d>> twoSets = new List<List<Point2d>>();
             twoSets.Add(sortedA); twoSets.Add(sortedB);        
             List<Polygon2d>  splittedPoly =  OptimizePolyPoints(sortedA, sortedB);
@@ -716,7 +973,9 @@ namespace SpacePlanning
             };
 
         }
-
+       
+        
+        //****DEF - USING THIS TO SPLIT PROGRAMS-------------------------------
 
         internal static List<Polygon2d> OptimizePolyPoints(List<Point2d> sortedA, List<Point2d> sortedB, 
             bool tag = false)
@@ -748,146 +1007,8 @@ namespace SpacePlanning
 
 
 
-        //internal function for Recursive Split By Area to work
-        internal static double DistanceEditBasedOnRatio(double distance, double areaPoly, double areaFound, double area, double setSpan,double areaDifference)
-        {
-            double distanceNew = 0;
-      
-
-            distanceNew = distance * (area / areaFound);
-            //Trace.WriteLine("Ratio multiplied to distance is : " + (area / areaFound));
-            //distanceNew = distance;
-            return distanceNew;
-        }
-
-        //RECURSIVE SPLITS A POLY
-        [MultiReturn(new[] { "PolyAfterSplit", "AreaEachPoly", "EachPolyPoint" })]
-        public static Dictionary<string, object> RecursiveSplitByArea(Polygon2d poly, double area, int dir, int recompute = 1)
-        {
-
-            /*PSUEDO CODE:
-            get poly's vertical and horizontal span
-            based on that get the direction of split
-            get polys area and compare with given area ( if area bigger than polyarea then return null )
-            based on the proportion calc distance
-            bigpoly 
-                split that into two
-                save distance
-                check area of both
-                get the smaller poly and compare with asked area
-                if area more increase distance by that much
-                if area less decrease distance by that much
-                split the bigger poly again
-                repeat                
-            */
-
-
-
-            List<Polygon2d> polyList = new List<Polygon2d>();
-            List<double> areaList = new List<double>();
-            List<Point2d> pointsList = new List<Point2d>();
-            List<Point2d> polyBBox = Polygon2d.FromPointsGetBoundingPoly(poly.Points);
-            Range2d polyRange = Polygon2d.GetRang2DFromBBox(poly.Points);
-            double minimumLength = 200;
-            double perc = 0.2;
-            //set limit of 10%
-            double limit = area*perc;
-
-            // increase required area by 10%
-            //area += area * perc/4;
-
-            Point2d span = polyRange.Span;
-            double horizontalSpan = span.X; 
-            double verticalSpan = span.Y;
-            List<double> spans = new List<double>();
-            spans.Add(horizontalSpan);
-            spans.Add(verticalSpan);
-            double setSpan = 1000000000000;
-            //int dir = 0;
-            if (horizontalSpan > verticalSpan)
-            {
-                //dir = 1;
-                setSpan = horizontalSpan;
-
-            }
-            else
-            {
-                //dir = 0;
-                setSpan = verticalSpan;
-
-            }
-            double prop = 0;
-            double areaPoly = GraphicsUtility.AreaPolygon2d(poly.Points);
-            double areaDifference = 200000;
-            if (areaPoly < area)
-            {
-                return null;
-            }
-            else
-            {
-                prop = area / areaPoly;
-            }
-
-            List<Polygon2d> polyAfterSplitting = new List<Polygon2d>();
-            double distance = prop * setSpan;
-            Polygon2d currentPoly = poly;
-            int count = 0;
-            //Trace.WriteLine("Initial Distance set is : " + distance);
-            //Trace.WriteLine("Set Span found is : " + setSpan);
-            //Trace.WriteLine("Limit accepted is : " + limit);
-            Random ran2 = new Random();
-            while (Math.Abs(areaDifference) > limit && count < 300)
-            {
-                if (currentPoly.Points == null || distance > setSpan)
-                {
-                    //Trace.WriteLine("Breaking This---------------------------------");
-                    break;
-                }
-
-                polyAfterSplitting = EdgeSplitWrapper(currentPoly,ran2, distance, dir);
-                double area1 = GraphicsUtility.AreaPolygon2d(polyAfterSplitting[0].Points);
-                
-
-                areaDifference = area - area1;
-                distance = DistanceEditBasedOnRatio(distance, areaPoly, area1,area, setSpan, areaDifference);
-                //Trace.WriteLine("Updated Distance for 1 is : " + distance);
-                //Trace.WriteLine("Area Difference found for 1 is : " + areaDifference);
-                
-
-                if (areaDifference < 0)
-                {
-                    //Trace.WriteLine("Reducing Distance");
-                }
-
-
-
-
-
-
-                //reduce number of points
-                //currentPoly = new Polygon2d(currentPoly.Points);
-                areaList.Add(distance);
-                //Trace.WriteLine("Distance Now is : " + distance);
-                //Trace.WriteLine("Iteration is : " + count);
-                //Trace.WriteLine("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-                count += 1;
-            }
-
-            polyList.AddRange(polyAfterSplitting);
-            pointsList = null;
-            //return polyList;
-            return new Dictionary<string, object>
-            {
-                { "PolyAfterSplit", (polyList) },
-                { "AreaEachPoly", (areaList) },
-                { "EachPolyPoint", (pointsList) }
-            };
-        }
-
-
-     
-
-      
+       
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////// TEST CODE BELOW /////////////////
 
         //used to split Depts into Program Spaces
         [MultiReturn(new[] { "PolyAfterSplit", "BigPolysAfterSplit", "EachPolyPoint", "UpdatedProgramData" })]
@@ -1044,7 +1165,7 @@ namespace SpacePlanning
         
 
 
-
+        //gets a poly and recursively splits it till acceptablewidth is met and makes a polyorganized list
         internal static void MakePolysOfProportion(Polygon2d poly, List<Polygon2d> polyOrganizedList, double acceptableWidth)
         {
             recurse += 1;
@@ -1181,7 +1302,7 @@ namespace SpacePlanning
 
 
 
-
+        //uses makepolysofproportion function to split one big poly into sub components
         public static List<Polygon2d> SplitBigPolys(List<Polygon2d> polyInputList, double acceptableWidth, int recompute = 1)
         {
             Trace.WriteLine("Split Big Poly recurse is : " + recurse);
@@ -1363,33 +1484,6 @@ namespace SpacePlanning
                     selectedArea = area2;
                     Trace.WriteLine("Poly Added : " + i);
 
-
-                    /*if (area1 > area2)
-                    {
-                        currentPoly = polyAfterSplitting[0];
-                        polyList.Add(polyAfterSplitting[1]);
-                        progItem.AreaProvided = area1;
-                        areaList.Add(area2);
-                        selectedArea = area2;
-                        Trace.WriteLine("Poly Added : " + i);
-
-
-                    }
-                    else
-                    {
-                        currentPoly = polyAfterSplitting[1];
-                        polyList.Add(polyAfterSplitting[0]);
-                        progItem.AreaProvided = area2;
-                        areaList.Add(area1);
-                        selectedArea = area1;
-
-                        Trace.WriteLine("Poly Added : " + i);
-
-                    }
-                    */
-                    //reduce number of points
-                    //currentPoly = new Polygon2d(currentPoly.Points);
-
                     highSpan -= dist;
                     count += 1;
                 }// end of while loop
@@ -1433,267 +1527,7 @@ namespace SpacePlanning
             };
         }
         
-        //RECURSIVE SPLITS A POLY
-        [MultiReturn(new[] { "PolyAfterSplit", "AreaEachPoly", "EachPolyPoint","UpdatedProgramData" })]
-    public static Dictionary<string, object> RecursiveSplitProgramsOneDirByDistance(List<Polygon2d> polyInputList, List<ProgramData> progData, double distance, int recompute = 1)
-    {
-
-        List<Polygon2d> polyList = new List<Polygon2d>();
-        List<double> areaList = new List<double>();
-        List<Point2d> pointsList = new List<Point2d>();
-        Stack<ProgramData> programDataRetrieved = new Stack<ProgramData>();
-
-        for (int j = 0; j < progData.Count; j++)
-        {
-            programDataRetrieved.Push(progData[j]);
-        }
-
-        ////////////////////////////////////////////////////////////////////////////
-        for (int i = 0; i < polyInputList.Count; i++)
-        {
-
-        Polygon2d poly = polyInputList[i]; 
-
-
-        if (poly == null || poly.Points == null || poly.Points.Count == 0)
-        {
-            continue;
-        }
-        
-        
-        List<Point2d> polyBBox = Polygon2d.FromPointsGetBoundingPoly(poly.Points);
-        Range2d polyRange = Polygon2d.GetRang2DFromBBox(poly.Points);
-        double minimumLength = 200;
-
-        Point2d span = polyRange.Span;
-        double horizontalSpan = span.X;
-        double verticalSpan = span.Y;
-        List<double> spans = new List<double>();
-        spans.Add(horizontalSpan);
-        spans.Add(verticalSpan);
-        double setSpan = 1000000000000;
-        int dir = 0;
-        if (horizontalSpan > verticalSpan)
-        {
-            dir = 1;
-            setSpan = horizontalSpan;
-
-        }
-        else
-        {
-            dir = 0;
-            setSpan = verticalSpan;
-
-        }
-
-
-        Polygon2d currentPoly = poly;
-        int count = 0;
-
-
-        Random ran2 = new Random();
-        while (setSpan > 0 && programDataRetrieved.Count>0)
-        {
-            ProgramData progItem = programDataRetrieved.Pop();
-            List<Polygon2d> polyAfterSplitting = EdgeSplitWrapper(currentPoly, ran2, distance, dir);
-            double selectedArea = 0;
-            double area1 = GraphicsUtility.AreaPolygon2d(polyAfterSplitting[0].Points);
-            double area2 = GraphicsUtility.AreaPolygon2d(polyAfterSplitting[1].Points);
-            if (area1 > area2)
-            {
-                currentPoly = polyAfterSplitting[0];
-                if (polyAfterSplitting[1] == null)
-                {
-                    break;
-                }
-                polyList.Add(polyAfterSplitting[1]);
-                progItem.AreaProvided = area1;
-                areaList.Add(area2);
-                selectedArea = area2;
-
-
-            }
-            else
-            {
-                currentPoly = polyAfterSplitting[1];
-                polyList.Add(polyAfterSplitting[0]);
-                progItem.AreaProvided = area2;
-                areaList.Add(area1);
-                selectedArea = area1;
-
-            }
-
-
-            if (currentPoly.Points == null)
-            {
-                //Trace.WriteLine("Breaking This");
-                break;
-            }
-
-
-
-            //reduce number of points
-            //currentPoly = new Polygon2d(currentPoly.Points);
-
-            setSpan -= distance;
-            count += 1;
-        }// end of while loop
-
-
-            }// end of for loop
-        List<ProgramData> UpdatedProgramDataList = new List<ProgramData>();
-        for (int i = 0; i < progData.Count; i++)
-        {
-            ProgramData progItem = progData[i];
-            ProgramData progNew = new ProgramData(progItem);
-                if (i < polyList.Count)
-                {
-                    progNew.PolyProgAssigned = polyList[i];
-                }
-                else
-                {
-                    progNew.PolyProgAssigned = null;
-                }
-                UpdatedProgramDataList.Add(progNew);
-        }
-
-            pointsList = null;
-            //polyList = Polygon2d.PolyReducePoints(polyList);
-        //return polyList;
-        return new Dictionary<string, object>
-            {
-                { "PolyAfterSplit", (polyList) },
-                { "AreaEachPoly", (areaList) },
-                { "EachPolyPoint", (pointsList) },
-                { "UpdatedProgramData",(UpdatedProgramDataList) }
-            };
-    }
-
-        //RECURSIVE SPLITS A POLY
-        public static Dictionary<string, object> RecursiveSplitProgramsOneDirByDistanceSingleOut(List<Polygon2d> polyInputList, 
-            List<ProgramData> progData, double distance, int recompute = 1)
-        {
-            return RecursiveSplitProgramsOneDirByDistance(polyInputList, progData, distance, recompute); 
-           
-        }
-
-
-
-
-
-        //RECURSIVE SPLITS A POLY
-        [MultiReturn(new[] { "PolyAfterSplit", "AreaEachPoly", "EachPolyPoint" })]
-        public static Dictionary<string, object> RecursiveSplitOneDirByDistance(Polygon2d poly, double distance, int recompute = 1)
-        {
-
-            /*PSUEDO CODE:
-            get poly's vertical and horizontal span
-            based on that get the direction of split
-            bigpoly 
-                split that into two
-                push the smaller one in a list
-                take the bigger one 
-                make it big poly
-                repeat
-                
-            */
-
-            if(poly == null || poly.Points ==null || poly.Points.Count ==0)
-            {
-                return null;
-            }
-
-
-            List<Polygon2d> polyList = new List<Polygon2d>();
-            List<double> areaList = new List<double>();
-            List<Point2d> pointsList = new List<Point2d>();
-            List<Point2d> polyBBox = Polygon2d.FromPointsGetBoundingPoly(poly.Points);
-            Range2d polyRange = Polygon2d.GetRang2DFromBBox(poly.Points);
-            double minimumLength = 200;
-
-            Point2d span = polyRange.Span;
-            double horizontalSpan = span.X;
-            double verticalSpan = span.Y;
-            List<double> spans = new List<double>();
-            spans.Add(horizontalSpan);
-            spans.Add(verticalSpan);
-            double setSpan = 1000000000000;
-            int dir = 0;
-            if (horizontalSpan > verticalSpan)
-            {
-                dir = 1;
-                setSpan = horizontalSpan;
-        
-            }
-            else
-            {
-                dir = 0;
-                setSpan = verticalSpan;
-             
-            }
-
-
-            Polygon2d currentPoly = poly;
-            int count = 0;
-
-
-            Random ran2 = new Random();
-            while (setSpan > 0)
-            {
-                
-                List<Polygon2d> polyAfterSplitting = EdgeSplitWrapper(currentPoly,ran2, distance, dir);
-                double selectedArea = 0;
-                double area1 = GraphicsUtility.AreaPolygon2d(polyAfterSplitting[0].Points);
-                double area2 = GraphicsUtility.AreaPolygon2d(polyAfterSplitting[1].Points);
-                if (area1 > area2)
-                {
-                    currentPoly = polyAfterSplitting[0];
-                    if (polyAfterSplitting[1] == null)
-                    {
-                       break;
-                    }
-                    polyList.Add(polyAfterSplitting[1]);
-                    areaList.Add(area2);
-                    selectedArea = area2;
-                    
-
-                }
-                else
-                {
-                    currentPoly = polyAfterSplitting[1];
-                    polyList.Add(polyAfterSplitting[0]);
-                    areaList.Add(area1);
-                    selectedArea = area1;
-                   
-                }
-
-
-                if (currentPoly.Points == null)
-                {
-                    Trace.WriteLine("Breaking This");
-                    break;
-                }
-
-
-               
-                //reduce number of points
-                //currentPoly = new Polygon2d(currentPoly.Points);
-               
-                setSpan -= distance;
-                count += 1;
-            }
-
-            pointsList = null;
-            //return polyList;
-            return new Dictionary<string, object>
-            {
-                { "PolyAfterSplit", (polyList) },
-                { "AreaEachPoly", (areaList) },
-                { "EachPolyPoint", (pointsList) }
-            };
-        }
-
-
+    
 
 
         internal static Dictionary<int, object> pointSelector(Random ran,List<Point2d> poly)
@@ -1747,181 +1581,6 @@ namespace SpacePlanning
             }
             
             return spanList;
-        }
-
-
-        // USING NOW 
-        //SPLITS A POLYGON2D INTO TWO POLYS, by a Given Line
-        [MultiReturn(new[] { "PolyAfterSplit", "SplitLine" })]
-        internal static Dictionary<string, object> SplitByLineMake(Polygon2d polyOutline, Line2d inputLine, double distance = 5)
-        {
-            if (polyOutline == null || polyOutline.Points == null || polyOutline.Points.Count == 0)
-            {
-                return null;
-            }
-
-
-            double spacing = spacingSet;
-
-            List<Point2d> polyOrig = polyOutline.Points;
-
-            List<Point2d> poly = Polygon2d.SmoothPolygon(polyOrig, spacing);
-            Line2d splitLine = new Line2d(inputLine);
-            Point2d centerPoly = GraphicsUtility.CentroidInPointLists(poly);
-            bool checkSide = GraphicsUtility.CheckPointSide(splitLine, centerPoly);
-            int orient = GraphicsUtility.CheckLineOrient(splitLine);
-            if (orient == 0)
-            {
-                if (!checkSide)
-                {
-                    splitLine.move(0, -1 * distance);
-                }
-                else
-                {
-                    splitLine.move(0, 1 * distance);
-                }
-            }
-            else
-            {
-                if (checkSide)
-                {
-                    splitLine.move(-1 * distance, 0);
-                }
-                else
-                {
-                    splitLine.move(1 * distance, 0);
-                }
-
-            }
-
-            //splitLine.move(poly, distance);
-            List<Point2d> intersectedPoints = GraphicsUtility.LinePolygonIntersection(poly, splitLine);
-
-            // find all points on poly which are to the left or to the right of the line
-            Polygon2d polyA, polyB;
-
-            List<int> pIndexA = new List<int>();
-            List<int> pIndexB = new List<int>();
-            for (int i = 0; i < poly.Count; i++)
-            {
-                bool check = GraphicsUtility.CheckPointSide(splitLine, poly[i]);
-                if (check)
-                {
-                    pIndexA.Add(i);
-                }
-                else
-                {
-                    pIndexB.Add(i);
-                }
-            }
-
-            //organize the points to make closed poly
-            List<List<Point2d>> twoSets = new List<List<Point2d>>();
-            List<Point2d> sortedA = DoSortClockwise(poly, intersectedPoints, pIndexA);
-            List<Point2d> sortedB = DoSortClockwise(poly, intersectedPoints, pIndexB);
-            twoSets.Add(sortedA);
-            twoSets.Add(sortedB);
-            polyA = new Polygon2d(twoSets[0], 0);
-            polyB = new Polygon2d(twoSets[1], 0);
-
-
-            List<Polygon2d> splittedPoly = new List<Polygon2d>();
-
-            splittedPoly.Add(polyA);
-            splittedPoly.Add(polyB);
-            return new Dictionary<string, object>
-            {
-                { "PolyAfterSplit", (splittedPoly) },
-                { "SplitLine", (splitLine) }
-            };
-
-        }
-
-
-        // USING NOW 
-        //SPLITS A POLYGON2D INTO TWO POLYS, by a Given Line
-        [MultiReturn(new[] { "PolyAfterSplit", "SplitLine"})]
-        internal static Dictionary<string, object> SplitByLine(Polygon2d polyOutline, Line2d inputLine, double distance = 5)
-        {
-            if (polyOutline == null || polyOutline.Points == null || polyOutline.Points.Count == 0)
-            {
-                return null;
-            }
-
-
-            double spacing = spacingSet;
-            
-            List<Point2d> polyOrig = polyOutline.Points;
-       
-            List<Point2d> poly = Polygon2d.SmoothPolygon(polyOrig, spacing);
-            Line2d splitLine = new Line2d(inputLine);
-            Point2d centerPoly = GraphicsUtility.CentroidInPointLists(poly);
-            bool checkSide = GraphicsUtility.CheckPointSide(splitLine, centerPoly);
-            int orient = GraphicsUtility.CheckLineOrient(splitLine);
-            if (orient == 0)
-            {
-                if (checkSide)
-                {
-                    splitLine.move(0, -1 * distance);
-                }
-                else
-                {
-                    splitLine.move(0, 1 * distance);
-                }
-            }else
-            {
-                if (checkSide)
-                {
-                    splitLine.move(-1 * distance,0);
-                }
-                else
-                {
-                    splitLine.move(1 * distance, 0);
-                }
-
-            }
-           
-            //splitLine.move(poly, distance);
-            List<Point2d> intersectedPoints = GraphicsUtility.LinePolygonIntersection(poly, splitLine);
-
-            // find all points on poly which are to the left or to the right of the line
-            Polygon2d polyA, polyB;
-
-            List<int> pIndexA = new List<int>();
-            List<int> pIndexB = new List<int>();
-            for (int i = 0; i < poly.Count; i++)
-            {
-                bool check = GraphicsUtility.CheckPointSide(splitLine, poly[i]);
-                if (check)
-                {
-                    pIndexA.Add(i);
-                }
-                else
-                {
-                    pIndexB.Add(i);
-                }
-            }
-
-            //organize the points to make closed poly
-            List<List<Point2d>> twoSets = new List<List<Point2d>>();
-            List<Point2d> sortedA = DoSortClockwise(poly, intersectedPoints, pIndexA);
-            List<Point2d> sortedB = DoSortClockwise(poly, intersectedPoints, pIndexB);
-            twoSets.Add(sortedA);
-            twoSets.Add(sortedB);
-            polyA = new Polygon2d(twoSets[0], 0);
-            polyB = new Polygon2d(twoSets[1], 0);
-
-
-            List<Polygon2d> splittedPoly = new List<Polygon2d>();
-
-            splittedPoly.Add(polyA);
-            splittedPoly.Add(polyB);
-            return new Dictionary<string, object>
-            {
-                { "PolyAfterSplit", (splittedPoly) },
-                { "SplitLine", (splitLine) }
-            };
-
         }
 
 
@@ -1991,8 +1650,8 @@ namespace SpacePlanning
             }
 
             //organize the points to make closed poly
-            List<Point2d> sortedA = DoSortClockwise(poly, intersectedPoints, pIndexA);
-            List<Point2d> sortedB = DoSortClockwise(poly, intersectedPoints, pIndexB);
+            List<Point2d> sortedA = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexA);
+            List<Point2d> sortedB = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexB);
 
             List<List<Point2d>> twoSets = new List<List<Point2d>>();
             twoSets.Add(sortedA);
@@ -2079,8 +1738,8 @@ namespace SpacePlanning
             }
 
             //organize the points to make closed poly
-            List<Point2d> sortedA = DoSortClockwise(poly, intersectedPoints, pIndexA);
-            List<Point2d> sortedB = DoSortClockwise(poly, intersectedPoints, pIndexB);
+            List<Point2d> sortedA = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexA);
+            List<Point2d> sortedB = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexB);
 
             List<List<Point2d>> twoSets = new List<List<Point2d>>();
             twoSets.Add(sortedA);
@@ -2177,8 +1836,8 @@ namespace SpacePlanning
             }
 
             //organize the points to make closed poly
-            List<Point2d> sortedA = DoSortClockwise(poly, intersectedPoints, pIndexA);
-            List<Point2d> sortedB = DoSortClockwise(poly, intersectedPoints, pIndexB);
+            List<Point2d> sortedA = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexA);
+            List<Point2d> sortedB = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexB);
 
             List<List<Point2d>> twoSets = new List<List<Point2d>>();
             twoSets.Add(sortedA);
@@ -2198,6 +1857,93 @@ namespace SpacePlanning
         }
 
 
+
+        // USING NOW 
+        //SPLITS A POLYGON2D INTO TWO POLYS, by a Given Line
+        [MultiReturn(new[] { "PolyAfterSplit", "SplitLine" })]
+        internal static Dictionary<string, object> SplitByLineMake(Polygon2d polyOutline, Line2d inputLine, double distance = 5)
+        {
+            if (polyOutline == null || polyOutline.Points == null || polyOutline.Points.Count == 0)
+            {
+                return null;
+            }
+
+
+            double spacing = spacingSet;
+
+            List<Point2d> polyOrig = polyOutline.Points;
+
+            List<Point2d> poly = Polygon2d.SmoothPolygon(polyOrig, spacing);
+            Line2d splitLine = new Line2d(inputLine);
+            Point2d centerPoly = GraphicsUtility.CentroidInPointLists(poly);
+            bool checkSide = GraphicsUtility.CheckPointSide(splitLine, centerPoly);
+            int orient = GraphicsUtility.CheckLineOrient(splitLine);
+            if (orient == 0)
+            {
+                if (!checkSide)
+                {
+                    splitLine.move(0, -1 * distance);
+                }
+                else
+                {
+                    splitLine.move(0, 1 * distance);
+                }
+            }
+            else
+            {
+                if (checkSide)
+                {
+                    splitLine.move(-1 * distance, 0);
+                }
+                else
+                {
+                    splitLine.move(1 * distance, 0);
+                }
+
+            }
+
+            //splitLine.move(poly, distance);
+            List<Point2d> intersectedPoints = GraphicsUtility.LinePolygonIntersection(poly, splitLine);
+
+            // find all points on poly which are to the left or to the right of the line
+            Polygon2d polyA, polyB;
+
+            List<int> pIndexA = new List<int>();
+            List<int> pIndexB = new List<int>();
+            for (int i = 0; i < poly.Count; i++)
+            {
+                bool check = GraphicsUtility.CheckPointSide(splitLine, poly[i]);
+                if (check)
+                {
+                    pIndexA.Add(i);
+                }
+                else
+                {
+                    pIndexB.Add(i);
+                }
+            }
+
+            //organize the points to make closed poly
+            List<List<Point2d>> twoSets = new List<List<Point2d>>();
+            List<Point2d> sortedA = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexA);
+            List<Point2d> sortedB = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexB);
+            twoSets.Add(sortedA);
+            twoSets.Add(sortedB);
+            polyA = new Polygon2d(twoSets[0], 0);
+            polyB = new Polygon2d(twoSets[1], 0);
+
+
+            List<Polygon2d> splittedPoly = new List<Polygon2d>();
+
+            splittedPoly.Add(polyA);
+            splittedPoly.Add(polyB);
+            return new Dictionary<string, object>
+            {
+                { "PolyAfterSplit", (splittedPoly) },
+                { "SplitLine", (splitLine) }
+            };
+
+        }
 
 
 
@@ -2235,8 +1981,8 @@ namespace SpacePlanning
                 else pIndexB.Add(i);               
             }
             //organize the points to make closed poly
-            List<Point2d> sortedA = DoSortClockwise(poly, intersectedPoints, pIndexA);
-            List<Point2d> sortedB = DoSortClockwise(poly, intersectedPoints, pIndexB);
+            List<Point2d> sortedA = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexA);
+            List<Point2d> sortedB = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexB);
             List<List<Point2d>> twoSets = new List<List<Point2d>>();
             twoSets.Add(sortedA); twoSets.Add(sortedB);
             List<Polygon2d> splittedPoly = OptimizePolyPoints(sortedA, sortedB, true);
@@ -2398,8 +2144,8 @@ namespace SpacePlanning
 
             //organize the points to make closed poly
             List<List<Point2d>> twoSets = new List<List<Point2d>>();
-            List<Point2d> sortedA = DoSortClockwise(poly, intersectedPoints, pIndexA);
-            List<Point2d> sortedB = DoSortClockwise(poly, intersectedPoints, pIndexB);
+            List<Point2d> sortedA = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexA);
+            List<Point2d> sortedB = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexB);
             twoSets.Add(sortedA);
             twoSets.Add(sortedB);        
             List<Polygon2d> splittedPoly = OptimizePolyPoints(sortedA, sortedB);
@@ -2415,263 +2161,6 @@ namespace SpacePlanning
 
         }
 
-
-
-        //checker function - can be discarded later
-        internal static List<Point2d> CheckLowest_HighestPoint(Polygon2d poly)
-        {
-            List<Point2d> returnPts = new List<Point2d>();
-            List<Point2d> ptList = poly.Points;
-            int highPtInd = GraphicsUtility.ReturnHighestPointFromListNew(ptList);
-            int  lowPtInd = GraphicsUtility.ReturnLowestPointFromListNew(ptList);
-            returnPts.Add(ptList[lowPtInd]);
-            returnPts.Add(ptList[highPtInd]);
-
-            return returnPts;
-
-        }
-
-
-        // not using now can be discarded
-        internal static List<Point2d> organizePointToMakePoly(List<Point2d> poly, List<Point2d> intersectedPoints, List<int> pIndex)
-        {
-            List<Point2d> sortedPoint = new List<Point2d>();
-            List<Point2d> unsortedPt = new List<Point2d>();
-            // make two unsorted point lists
-            for (int i = 0; i < pIndex.Count; i++)
-            {
-                unsortedPt.Add(poly[pIndex[i]]);
-            }
-            unsortedPt.AddRange(intersectedPoints);
-            //compute lowest and highest pts
-            Point2d lowPt = unsortedPt[GraphicsUtility.ReturnLowestPointFromListNew(unsortedPt)];
-            Point2d hiPt = unsortedPt[GraphicsUtility.ReturnHighestPointFromListNew(unsortedPt)];
-            //form a line2d between them
-            Line2d lineHiLo = new Line2d(lowPt, hiPt);
-
-            //make left and right points based on the line
-            List<Point2d> ptOnA = new List<Point2d>();
-            List<Point2d> ptOnB = new List<Point2d>();
-            for (int i = 0; i < unsortedPt.Count; i++)
-            {
-                bool check = GraphicsUtility.CheckPointSide(lineHiLo, unsortedPt[i]);
-                if (check)
-                {
-                    //pIndexA.Add(i);
-                    ptOnA.Add(unsortedPt[i]);
-                }
-                else
-                {
-                    //pIndexB.Add(i);
-                    ptOnB.Add(unsortedPt[i]);
-                }
-            }
-
-            //sort ptOnA and ptOnB individually
-            List<Point2d> SortedPtA = GraphicsUtility.SortPointsByDistanceFromPoint(ptOnA,
-                         lowPt);
-            List<Point2d> SortedPtB = GraphicsUtility.SortPointsByDistanceFromPoint(ptOnB,
-                         lowPt);
-            SortedPtB.Reverse();
-            //add the sorted ptOnA and ptOnB
-            sortedPoint.AddRange(SortedPtA);
-            sortedPoint.AddRange(SortedPtB);
-            return sortedPoint;
-        }
-
-        //can be discarded cleans duplicate points and returns updated list
-        internal static List<Point2d> CleanDuplicatePoint2d(List<Point2d> ptListUnclean)
-        {
-            List<Point2d> cleanList = new List<Point2d>();
-            List<double> dummyList = new List<double>();
-            List<bool> isDuplicate = new List<bool>();
-            double eps = 1;
-            bool duplicate = false;
-           
-
-
-            for (int i = 0; i < ptListUnclean.Count; i++)
-            {
-                duplicate = false;
-                double count = 0;
-                for (int j = 0; j < ptListUnclean.Count; j++)
-                {
-                    
-                    if (j == i)
-                    {
-                        continue;
-                    }
-
-                    if(ptListUnclean[i].X - eps < ptListUnclean[j].X  && ptListUnclean[j].X < ptListUnclean[i].X + eps)
-                    {
-                        if (ptListUnclean[i].Y - eps < ptListUnclean[j].Y  && ptListUnclean[j].Y < ptListUnclean[i].Y + eps)
-                        {
-                            count += 1;
-                        }
-                    }
-
-                    if(count > 1)
-                    {
-                        duplicate = true;
-                        
-                        //continue;
-                    }
-
-
-                }
-
-                dummyList.Add(count);
-
-
-              
-            }
-            for (int i = 0; i < ptListUnclean.Count; i++)
-            {
-                //Trace.WriteLine("count here is : " + dummyList[i]);
-                if (dummyList[i] < 2)
-                {
-                    cleanList.Add(ptListUnclean[i]);
-                }
-
-            }
-            return cleanList;
-        }
-
-
-        //cleans duplicate points and returns updated list
-        internal static List<Point2d> CleanDuplicatePoint2dNew(List<Point2d> ptListUnclean)
-        {
-            List<Point2d> cleanList = new List<Point2d>();
-            List<double> exprList = new List<double>();
-            double a = 45, b = 65;
-            for(int i = 0; i < ptListUnclean.Count; i++)
-            {
-                double expr = a * ptListUnclean[i].X + b * ptListUnclean[i].Y;
-                exprList.Add(expr);
-            }
-
-            var dups = exprList.GroupBy(x => x)
-            .Where(x => x.Count() > 1)
-            .Select(x => x.Key)
-            .ToList();
-
-            List<double> distinct = exprList.Distinct().ToList();
-            for(int i = 0; i < distinct.Count; i++)
-            {
-                double dis = distinct[i];
-                for(int j = 0; j < exprList.Count; j++)
-                {
-                    if(dis == exprList[j])
-                    {
-                        cleanList.Add(ptListUnclean[j]);
-                        break;
-                    }
-                }
-            }
-            return cleanList;
-
-        }
-        //trying new way to sort points clockwise
-        internal static List<Point2d> DoSortClockwise(List<Point2d> poly, List<Point2d> intersectedPoints, List<int> pIndex)
-        {
-            if (intersectedPoints == null || intersectedPoints.Count == 0){
-                return null;
-
-            }
-            if (intersectedPoints.Count > 2)
-            {
-                
-                //Trace.WriteLine("Wow found  " + intersectedPoints.Count + " intersection points!!!!!!!!!!!!!!!");
-                List<Point2d> cleanedPtList = CleanDuplicatePoint2dNew(intersectedPoints);
-                //Trace.WriteLine("After Cleaning found  " + cleanedPtList.Count + " intersection points!!!!!!!!!!!!!!!");
-                //intersectedPoints = GraphicsUtility.CleanDuplicatePoint2d(intersectedPoints);
-                //return null;
-                
-            }
-            /*
-
-            if (intersectedPoints.Count < 2)
-            {
-                Trace.WriteLine("Returning null as less than 1 points");
-                //return null;
-            }
-            List<Point2d> pointList = new List<Point2d>();
-            List<Point2d> mergedPoints = new List<Point2d>();
-            
-            for (int i = 0; i < pIndex.Count; i++)
-            {
-                mergedPoints.Add(poly[pIndex[i]]);
-            }
-            reference = GraphicsUtility.CentroidInPointLists(mergedPoints);
-            mergedPoints.AddRange(intersectedPoints);
-
-            //mergedPoints.Sort((a, b) => GraphicsUtility.Angle(a, reference).CompareTo(GraphicsUtility.Angle(b, reference)));
-            //mergedPoints.Sort(new Comparison<Point2d>(GraphicsUtility.SortCornersClockwise));
-            //return mergedPoints;
-            */
-            return makePolyPointsStraight(poly, intersectedPoints, pIndex);
-        }
-
-        internal static List<Point2d> makePolyPointsStraight(List<Point2d> poly, List<Point2d> intersectedPoints, List<int> pIndex)
-        {
-
-            if (intersectedPoints.Count < 2)
-            {
-                return null;
-            }
-
-            //List<Point2d> intersectedPoints = GraphicsUtility.PointUniqueChecker(intersectedPointsUnclean);
-            //Trace.WriteLine("Intersected Points Length are : " + intersectedPoints.Count);
-            //bool isUnique = intersectedPoints.Distinct().Count() == intersectedPoints.Count();
-            //Trace.WriteLine("Intersected Point List is unique ?   " + isUnique);
-            List<Point2d> pt = new List<Point2d>();
-            bool added = false;
-
-            int a = 0;
-            int b = 1;
-            if (intersectedPoints.Count > 2)
-            {
-                //Trace.WriteLine("Intersected pnts are more than one " + intersectedPoints.Count);
-                //a = 0;
-                //b = intersectedPoints.Count - 1;
-            }
-
-            //Trace.WriteLine("Intersected Points Length are : " + intersectedPoints.Count);
-            //Trace.WriteLine("a and b are : " + a + "  ,  " + b );
-            //Trace.WriteLine("Index Point length is :  " + pIndex.Count);
-            for (int i = 0; i < pIndex.Count - 1; i++)
-            {
-                pt.Add(poly[pIndex[i]]);
-                //enter only when indices difference are more than one and intersected points are not added yet
-                if (Math.Abs(pIndex[i] - pIndex[i + 1]) > 1 && added == false)
-                {
-                    List<Point2d> intersNewList = GraphicsUtility.SortPointsByDistanceFromPoint(intersectedPoints,
-                        poly[pIndex[i]]);
-                    pt.Add(intersNewList[a]);
-                    pt.Add(intersNewList[b]);
-                    //Trace.WriteLine("Added Intersect Before for PtA");
-                    added = true;
-                }
-
-                if (i == (pIndex.Count - 2) && added == false)
-                {
-                    pt.Add(poly[pIndex[i + 1]]);
-                    List<Point2d> intersNewList = GraphicsUtility.SortPointsByDistanceFromPoint(intersectedPoints,
-                             poly[pIndex[i + 1]]);
-                    pt.Add(intersNewList[a]);
-                    pt.Add(intersNewList[b]);
-                    added = true;
-                }
-
-                else if (i == (pIndex.Count - 2) && added == true)
-                {
-                    pt.Add(poly[pIndex[i + 1]]);
-                }
-            }
-            //Trace.WriteLine("Point Returned Length : " + pt.Count);
-            //Trace.WriteLine("I++++++++++++++++++++++++++++++++++++++++++");
-            return pt;
-        }
 
 
 
