@@ -1065,7 +1065,7 @@ namespace SpacePlanning
 
                     Trace.WriteLine("Dist computed is : " + dist);
                     //List<Polygon2d> polyAfterSplitting = EdgeSplitWrapper(currentPoly, ran2, dist, dir);
-                    Dictionary<string, object> splitReturn = BuildLayout.SplitByDistancePoly(currentPoly, dist, dir);
+                    Dictionary<string, object> splitReturn = SplitByDistancePoly(currentPoly, dist, dir);
                     List<Polygon2d> polyAfterSplitting = (List<Polygon2d>)splitReturn["PolyAfterSplit"];
                     Line2d splitLine = (Line2d)splitReturn["SplitLine"];
                     Point2d lowPoint = (Point2d)splitReturn["LowestPoint"];
@@ -1145,6 +1145,96 @@ namespace SpacePlanning
                 { "IntersectionPoints", (intersectPtList) }
             };
         }
+
+
+        [MultiReturn(new[] { "PolyAfterSplit", "SplitLine", "IntersectedPoints", "LowestPoint", "EachPolyPoint" })]
+        public static Dictionary<string, object> SplitByDistancePoly(Polygon2d polyOutline, double distance = 10, int dir = 0, double dummy = 0)
+        {
+            if (polyOutline == null || polyOutline.Points == null || polyOutline.Points.Count == 0)
+            {
+                return null;
+            }
+            double fac = 0.999; // 0.999 default
+            double extents = 5000;
+            double spacing = BuildLayout.spacingSet;
+            List<Point2d> polyOrig = polyOutline.Points;
+            List<Point2d> poly = PolygonUtility.SmoothPolygon(polyOrig, spacing);
+            if (poly == null || poly.Count == 0)
+            {
+                return null;
+            }
+            List<double> spans = PolygonUtility.GetSpansXYFromPolygon2d(poly);
+            int orient = 1;
+            //int ind = GraphicsUtility.ReturnLowestPointFromListNew(poly);
+            int ind = GraphicsUtility.ReturnLowestPointFromList(poly);
+            Point2d pt = poly[ind];
+            Line2d splitLine = new Line2d(pt, extents, dir);
+
+            if (dir == 1)
+            {
+                if (distance > spans[0])
+                {
+                    distance = fac * spans[0];
+                }
+
+            }
+            else
+            {
+                if (distance > spans[1])
+                {
+                    distance = fac * spans[1];
+                }
+
+            }
+            // push this line right or left or up or down based on ratio
+            if (dir == 0)
+            {
+                splitLine.move(0, orient * distance);
+            }
+            else
+            {
+                splitLine.move(orient * distance, 0);
+            }
+
+            //List<Point2d> intersectedPoints = GraphicsUtility.LinePolygonIntersectionInd(poly, splitLine);
+            List<Point2d> intersectedPoints = GraphicsUtility.LinePolygonIntersection(poly, splitLine);
+
+            List<int> pIndexA = new List<int>();
+            List<int> pIndexB = new List<int>();
+            for (int i = 0; i < poly.Count; i++)
+            {
+                bool check = GraphicsUtility.CheckPointSide(splitLine, poly[i]);
+                if (check)
+                {
+                    pIndexA.Add(i);
+                }
+                else
+                {
+                    pIndexB.Add(i);
+                }
+            }
+
+            //organize the points to make closed poly
+            List<Point2d> sortedA = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexA);
+            List<Point2d> sortedB = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexB);
+
+            List<List<Point2d>> twoSets = new List<List<Point2d>>();
+            twoSets.Add(sortedA);
+            twoSets.Add(sortedB);
+
+            List<Polygon2d> splittedPoly = PolygonUtility.OptimizePolyPoints(sortedA, sortedB, true);
+
+            return new Dictionary<string, object>
+            {
+                { "PolyAfterSplit", (splittedPoly) },
+                { "SplitLine", (splitLine) },
+                { "IntersectedPoints", (intersectedPoints) },
+                { "LowestPoint", (pt) },
+                { "EachPolyPoint", (twoSets) }
+            };
+
+        }
+
 
 
 

@@ -906,14 +906,14 @@ namespace SpacePlanning
         {
             if(givenLine == null || q == null) return false; 
             Point2d p = givenLine.StartPoint, r = givenLine.EndPoint;
-            if (q.X <= Math.Max(p.X, r.X) && q.X >= Math.Min(p.X, r.X) &&
-                q.Y <= Math.Max(p.Y, r.Y) && q.Y >= Math.Min(p.Y, r.Y)) return true;
+            if (q.X <= (Math.Max(p.X, r.X) + eps) && q.X >= (Math.Min(p.X, r.X) - eps) &&
+                q.Y <= (Math.Max(p.Y, r.Y) + eps) && q.Y >= (Math.Min(p.Y, r.Y))- eps) return true;
             return false;
         }
 
 
         //checks if two lines are collinear or not , works good
-        public static bool LineAdjacencyCheck(Line2d lineA, Line2d lineB)
+        public static bool LineAdjacencyCheck(Line2d lineA, Line2d lineB, double eps = 0)
         {
             Point2d pA = lineA.StartPoint, qA = lineA.EndPoint;
             Point2d pB = lineB.StartPoint, qB = lineB.EndPoint;
@@ -922,8 +922,8 @@ namespace SpacePlanning
             double crossMag = vecA.Cross(vecB);
             if (crossMag != 0) return false;
 
-            bool checkA1 = onSegment(lineB, pA), checkA2 = onSegment(lineB, qA);
-            bool checkB1 = onSegment(lineA, pB), checkB2 = onSegment(lineA, qB);
+            bool checkA1 = onSegment(lineB, pA, eps), checkA2 = onSegment(lineB, qA, eps);
+            bool checkB1 = onSegment(lineA, pB, eps), checkB2 = onSegment(lineA, qB, eps);
 
             if (checkA1 || checkA2) return true;
             if (checkB1 || checkB2) return true;
