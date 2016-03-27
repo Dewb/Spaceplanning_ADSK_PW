@@ -611,13 +611,46 @@ namespace SpacePlanning
         {
             Dictionary<string, object> deptArrangement = DeptSplitRefined(poly, deptData, cellInside, offset, 1);
             double count = 0;
-            int maxCount = 10;
+            int maxCount = 50;
             Random rand = new Random();
-            while(deptArrangement == null && count < maxCount)
+            bool deptPlaced = false;
+            while(deptPlaced == false && count < maxCount)
             {
                 Trace.WriteLine("Lets Go Again for : " + count);
                 int reco = rand.Next();
                 deptArrangement = DeptSplitRefined(poly, deptData, cellInside, offset, reco);
+                if(deptArrangement != null)
+                {
+                    List<List<Polygon2d>> deptAllPolys =(List<List<Polygon2d>>) deptArrangement["DeptPolys"];
+                    for(int i = 0; i < deptAllPolys.Count; i++)
+                    {
+                        List<Polygon2d> eachDeptPoly = deptAllPolys[i];
+                        if(eachDeptPoly != null)
+                        {                        
+                        for(int j = 0; j < eachDeptPoly.Count; j++)
+                        {
+                            Polygon2d polyItem = eachDeptPoly[j];
+                            if(polyItem.Points == null || polyItem.Points.Count == 0)
+                            {
+                                deptPlaced = false;
+                                break;
+                            }
+                            else
+                            {
+                                deptPlaced = true;
+                            }
+                           
+
+                        }
+                        }
+                        else
+                        {
+                            deptPlaced = false;
+                            break;
+                        }
+                    }
+                }
+
                 count += 1;
             }
 
