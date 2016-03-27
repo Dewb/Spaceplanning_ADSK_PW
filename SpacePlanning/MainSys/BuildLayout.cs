@@ -997,46 +997,65 @@ namespace SpacePlanning
             polyOrganizedList = SplitBigPolys(polyInputList, acceptableWidth, 5);
             //polyOrganizedList = Polygon2d.PolyReducePoints(polyOrganizedList);
 
-            polyList = AssignPolysToProgramData(progData, polyOrganizedList);
-        
+            List<ProgramData> newProgDataList = new List<ProgramData>();
+            for (int i = 0; i < progData.Count; i++)
+            {
+                ProgramData newProgData = new ProgramData(progData[i]);
+                newProgDataList.Add(newProgData);
+            }
+
+            polyList = AssignPolysToProgramData(newProgDataList, polyOrganizedList);
+            
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (polyList) },
                 { "BigPolysAfterSplit", (polyOrganizedList) },
                 { "EachPolyPoint", (pointsList) },
-                { "UpdatedProgramData",(null) }
+                { "UpdatedProgramData",(newProgDataList) }
             };
 
 
         }
 
         // from a list of given polys  it assigns each program a list of polys till its area is satisfied
-        internal static List<List<Polygon2d>> AssignPolysToProgramData(List<ProgramData> progData, List<Polygon2d> polygonLists)
+        public static List<List<Polygon2d>> AssignPolysToProgramData(List<ProgramData> newProgDataList, List<Polygon2d> polygonLists)
         {
+
+            /*List<ProgramData> newProgDataList = new List<ProgramData>();
+            for(int i = 0; i < progData.Count; i++) {
+                ProgramData newProgData = new ProgramData(progData[i]);
+                newProgDataList.Add(newProgData);
+            }
+            */
             List<List<Polygon2d>> polyEachProgramList = new List<List<Polygon2d>>();
             Stack <Polygon2d> polyStack = new Stack<Polygon2d>();
             for (int i = 0; i < polygonLists.Count; i++) { polyStack.Push(polygonLists[i]); }
          
-            for (int i =0; i < progData.Count; i++)
+            for (int i =0; i < newProgDataList.Count; i++)
             {
-                Trace.WriteLine("Starting Porg Data : " + i);
+                ProgramData progItem = newProgDataList[i];
+                Trace.WriteLine("Starting Porg Data : " + i + "///////////");
                 bool added = false;
                 //double areaProgram = progData[i].CurrentAreaNeeds;
                 List<Polygon2d> polysForProg = new List<Polygon2d>();
-                while (progData[i].IsAreaSatisfied == false && polyStack.Count>0)
+                while (progItem.CurrentAreaNeeds>0 && polyStack.Count>0)
                 {
+                    Trace.WriteLine("  = = now in while = = ");
                     Polygon2d currentPoly = polyStack.Pop();
                     double currentArea = PolygonUtility.AreaCheckPolygon(currentPoly);
-                    progData[i].AddAreaToProg(currentArea);
+                    progItem.AddAreaToProg(currentArea);
                     polysForProg.Add(currentPoly);
-                    Trace.WriteLine("Area Given Now is : " + progData[i].AreaAllocatedValue);
-                    Trace.WriteLine("Area Left over to Add :" + progData[i].CurrentAreaNeeds);
+                    Trace.WriteLine("Area Given Now is : " + progItem.AreaAllocatedValue);
+                    Trace.WriteLine("Area Left over to Add :" + progItem.CurrentAreaNeeds);
                     added = true;
                 }
-                
+
+                //dummy is just to make sure the function re reuns when slider is hit
                 if(added) polyEachProgramList.Add(polysForProg);
+                if (!added) Trace.WriteLine("Did not add.  PolyStack Left : " + polyStack.Count + " | Current area needs were : " + progItem.CurrentAreaNeeds);
                 Trace.WriteLine("++++++++++++++++++++++++++++++");
             }
+            
             return polyEachProgramList;
         }
 
@@ -1230,7 +1249,7 @@ namespace SpacePlanning
 
                 Trace.WriteLine("Recurse is : " + recurse);
 
-                if (recurse < 3000)
+                if (recurse < 1500)
                 {
 
                     if ((spanA[0] > 0 && spanA[1] > 0) || (spanB[0] > 0 && spanB[1] > 0))
