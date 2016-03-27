@@ -273,6 +273,46 @@ namespace SpacePlanning
             return cellsPolyList;
         }
 
+
+
+        // 2        //////////////////////////
+        //MAKE CELLS ON THE GRIDS from point2d
+        public static List<Polygon2d> MakeCellsFromGridPoints2d(List<Point2d> point2dgrid, double dimX, double dimY)
+        {
+            List<Polygon2d> cellsPolyList = new List<Polygon2d>();
+            List<Cell> cellList = new List<Cell>();
+            for (int i = 0; i < point2dgrid.Count; i++)
+            {
+                List<Point2d> ptList = new List<Point2d>();
+
+                double a = point2dgrid[i].X - (dimX / 2);
+                double b = point2dgrid[i].Y - (dimY / 2);
+                Point2d pt = Point2d.ByCoordinates(a,b);
+                ptList.Add(pt);
+
+                a = point2dgrid[i].X - (dimX / 2);
+                b = point2dgrid[i].Y + (dimY / 2);
+                pt = Point2d.ByCoordinates(a, b);
+                ptList.Add(pt);
+
+                a = point2dgrid[i].X + (dimX / 2);
+                b = point2dgrid[i].Y + (dimY / 2);
+                pt = Point2d.ByCoordinates(a, b);
+                ptList.Add(pt);
+
+                a = point2dgrid[i].X + (dimX / 2);
+                b = point2dgrid[i].Y - (dimY / 2);
+                pt = Point2d.ByCoordinates(a, b);
+                ptList.Add(pt);
+
+                Polygon2d pol = Polygon2d.ByPoints(ptList);
+                cellsPolyList.Add(pol);
+            }
+
+
+            return cellsPolyList;
+        }
+
         // 2a        //////////////////////////
         //MAKE CELLS ON THE GRIDS
         public static List<Polygon> MakeCellsFromIndicesPoint2d(List<Point2d> pointsgrid, double dimX, double dimY, List<int> indexList)
