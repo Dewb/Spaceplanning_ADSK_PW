@@ -1021,12 +1021,12 @@ namespace SpacePlanning
         public static List<List<Polygon2d>> AssignPolysToProgramData(List<ProgramData> newProgDataList, List<Polygon2d> polygonLists)
         {
 
-            /*List<ProgramData> newProgDataList = new List<ProgramData>();
-            for(int i = 0; i < progData.Count; i++) {
-                ProgramData newProgData = new ProgramData(progData[i]);
-                newProgDataList.Add(newProgData);
+          
+            //reset the area provided to the input progdata
+            for (int i = 0; i < newProgDataList.Count; i++)
+            {
+                newProgDataList[i].AreaProvided = 0;
             }
-            */
             List<List<Polygon2d>> polyEachProgramList = new List<List<Polygon2d>>();
             Stack <Polygon2d> polyStack = new Stack<Polygon2d>();
             for (int i = 0; i < polygonLists.Count; i++) { polyStack.Push(polygonLists[i]); }
