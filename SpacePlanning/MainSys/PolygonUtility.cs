@@ -8,7 +8,7 @@ using stuffer;
 
 namespace SpacePlanning
 {
-    class PolygonUtility
+    public class PolygonUtility
     {
 
         //checker function - can be discarded later
@@ -309,8 +309,8 @@ namespace SpacePlanning
                 polyA = new Polygon2d(sortedA);
                 polyB = new Polygon2d(sortedB);
 
-                List<Point2d> ptsPolyA = Polygon2d.SmoothPolygon(polyA.Points, BuildLayout.spacingSet);
-                List<Point2d> ptsPolyB = Polygon2d.SmoothPolygon(polyB.Points, BuildLayout.spacingSet);
+                List<Point2d> ptsPolyA = PolygonUtility.SmoothPolygon(polyA.Points, BuildLayout.spacingSet);
+                List<Point2d> ptsPolyB = PolygonUtility.SmoothPolygon(polyB.Points, BuildLayout.spacingSet);
                 polyA = new Polygon2d(ptsPolyA, 0);
                 polyB = new Polygon2d(ptsPolyB, 0);
             }
@@ -331,7 +331,7 @@ namespace SpacePlanning
         internal static List<double> PolySpanCheck(Polygon2d poly)
         {
             List<double> spanList = new List<double>();
-            Range2d polyRange = Polygon2d.GetRang2DFromBBox(poly.Points);
+            Range2d polyRange = PolygonUtility.GetRang2DFromBBox(poly.Points);
 
             Point2d span = polyRange.Span;
             double horizontalSpan = span.X;
@@ -351,6 +351,251 @@ namespace SpacePlanning
 
             return spanList;
         }
+
+
+
+        //COMPUTE CENTROID OF A CLOSED POLYGON
+        public static Point2d CentroidFromPoly(Polygon2d poly)
+        {
+            List<Point2d> ptList = poly.Points;
+            double x = 0, y = 0;
+            for (int i = 0; i < ptList.Count; i++)
+            {
+                x += ptList[i].X;
+                y += ptList[i].Y;
+            }
+            x = x / ptList.Count;
+            y = y / ptList.Count;
+            Point2d cen = new Point2d(x, y);
+            poly = null;
+            return cen;
+
+        }
+
+
+        //COMPUTE CENTROID OF A CLOSED POLYGON
+        public static Point2d CentroidFromPoly(List<Point2d> ptList)
+        {
+
+            double x = 0, y = 0;
+            for (int i = 0; i < ptList.Count; i++)
+            {
+                x += ptList[i].X;
+                y += ptList[i].Y;
+            }
+            x = x / ptList.Count;
+            y = y / ptList.Count;
+            Point2d cen = new Point2d(x, y);
+            ptList = null;
+            return cen;
+
+        }
+
+
+
+        public static List<Point2d> FromPointsGetBoundingPoly(List<Point2d> pointList)
+        {
+            if (pointList == null)
+            {
+                return null;
+            }
+
+            if (pointList.Count == 0)
+            {
+                return null;
+            }
+
+            List<Point2d> pointCoordList = new List<Point2d>();
+            List<double> xCordList = new List<double>();
+            List<double> yCordList = new List<double>();
+            double xMax = 0, xMin = 0, yMax = 0, yMin = 0;
+            for (int i = 0; i < pointList.Count; i++)
+            {
+                xCordList.Add(pointList[i].X);
+                yCordList.Add(pointList[i].Y);
+            }
+
+            xMax = xCordList.Max();
+            yMax = yCordList.Max();
+
+            xMin = xCordList.Min();
+            yMin = yCordList.Min();
+
+            pointCoordList.Add(Point2d.ByCoordinates(xMin, yMin));
+            pointCoordList.Add(Point2d.ByCoordinates(xMin, yMax));
+            pointCoordList.Add(Point2d.ByCoordinates(xMax, yMax));
+            pointCoordList.Add(Point2d.ByCoordinates(xMax, yMin));
+
+            return pointCoordList;
+        }
+
+
+        public static List<double> GetSpansXYFromPolygon2d(List<Point2d> poly)
+        {
+
+            if (poly == null || poly.Count == 0)
+            {
+                List<double> zeroList = new List<double>();
+                zeroList.Add(0);
+                zeroList.Add(0);
+                return zeroList;
+            }
+            // compute bounding box ( set of four points ) for the poly
+            // find x Range, find y Range
+            List<Point2d> polyBBox = FromPointsGetBoundingPoly(poly);
+            Range2d polyRange = GetRang2DFromBBox(poly);
+
+            Point2d span = polyRange.Span;
+            double horizontalSpan = span.X;
+            double verticalSpan = span.Y;
+            List<double> spans = new List<double>();
+            spans.Add(horizontalSpan);
+            spans.Add(verticalSpan);
+
+            return spans;
+        }
+
+        public static Range2d GetRang2DFromBBox(List<Point2d> pointList)
+        {
+            if (pointList == null || pointList.Count == 0)
+            {
+                return null;
+            }
+            List<double> xCordList = new List<double>();
+            List<double> yCordList = new List<double>();
+            double xMax = 0, xMin = 0, yMax = 0, yMin = 0;
+            for (int i = 0; i < pointList.Count; i++)
+            {
+                xCordList.Add(pointList[i].X);
+                yCordList.Add(pointList[i].Y);
+            }
+
+            xMax = xCordList.Max();
+            yMax = yCordList.Max();
+
+            xMin = xCordList.Min();
+            yMin = yCordList.Min();
+
+            Range1d ran1X = new Range1d(xMin, xMax);
+            Range1d ran1Y = new Range1d(yMin, yMax);
+            Range2d ran2D = new Range2d(ran1X, ran1Y);
+
+            return ran2D;
+        }
+
+        // reduces points in polygon2d list
+        internal static List<Polygon2d> PolyReducePoints(List<Polygon2d> polyList)
+        {
+            if (polyList == null || polyList.Count == 0)
+            {
+                return null;
+            }
+            List<Polygon2d> reducedPolyList = new List<Polygon2d>();
+            for (int i = 0; i < polyList.Count; i++)
+            {
+                if (polyList[i] == null || polyList[i].Points == null || polyList[i].Points.Count == 0)
+                {
+                    continue;
+                }
+                Polygon2d redPoly = new Polygon2d(polyList[i].Points);
+                reducedPolyList.Add(redPoly);
+            }
+
+
+            return reducedPolyList;
+        }
+
+        internal static List<Point2d> SmoothPolygon(List<Point2d> pointList, double spacingProvided = 1)
+        {
+            if (pointList == null || pointList.Count == 0)
+            {
+                return null;
+            }
+
+
+            //added to make sure spacing is set based on poly dimensions-------------------
+            List<double> spans = GetSpansXYFromPolygon2d(pointList);
+            double spanX = spans[0];
+            double spanY = spans[1];
+            /*
+             double distanceConsidered = 0;
+
+             if(spanX > spanY)
+             {
+                 distanceConsidered = spanY;
+             }
+             else
+             {
+                 distanceConsidered = spanX;
+             }
+
+             double spacing = distanceConsidered / spacingProvided;
+            */
+            List<Point2d> ptList = new List<Point2d>();
+
+            for (int i = 0; i < pointList.Count; i++)
+            {
+
+                Point2d ptA = pointList[i];
+                Point2d ptB = null;
+                if (i == pointList.Count - 1)
+                {
+                    ptB = pointList[0];
+                }
+                else
+                {
+                    ptB = pointList[i + 1];
+                }
+
+                Vector2d vec = new Vector2d(ptA, ptB);
+                double dist = vec.Length;
+                //Trace.WriteLine("Distance is : " + dist);
+                int numPointsNeeded = (int)(dist / spacingProvided);
+                //int numPointsNeeded = (int)spacingProvided;
+                double increment = dist / numPointsNeeded;
+                ptList.Add(pointList[i]);
+
+                for (int j = 0; j < numPointsNeeded - 1; j++)
+                {
+                    double value = (j + 1) * increment / dist;
+                    //Trace.WriteLine("Value is : " + value);
+
+                    //p = (1 - t) * p1 + t * p2
+                    double x = ((1 - value) * ptA.X) + (value * ptB.X);
+                    double y = ((1 - value) * ptA.Y) + (value * ptB.Y);
+                    //Point2d ptAdd = Point2d.AddVector(ptA, vec, value);
+                    Point2d ptAdd = new Point2d(x, y);
+                    ptList.Add(ptAdd);
+                }
+
+
+            }
+            return ptList;
+        }
+
+
+        //can be discarded
+        //CHECK IF THE AREA POLYGON WORKS FINE
+        public static double AreaCheckPolygon(Polygon2d poly)
+        {
+            if (poly == null)
+            {
+                return 0;
+            }
+            double area = GraphicsUtility.AreaPolygon2d(poly.Points);
+            return area;
+        }
+
+
+        //just for checking can be discarded
+        public static List<Point2d> SmoothCheckerForPoly(Polygon2d poly, int spacing)
+        {
+            List<Point2d> smoothedPoints = SmoothPolygon(poly.Points, spacing);
+            //Polygon2d polyNew = new Polygon2d(smoothedPoints);
+            return smoothedPoints;
+        }
+
+
 
     }
 }

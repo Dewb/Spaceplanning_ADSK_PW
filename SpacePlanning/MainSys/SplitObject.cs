@@ -242,7 +242,7 @@ namespace SpacePlanning
                 List<Polygon2d> polyAfterSplitting = new List<Polygon2d>();
                 
                
-                areaCurrentPoly = Polygon2d.AreaCheckPolygon(currentPolyObj);
+                areaCurrentPoly = PolygonUtility.AreaCheckPolygon(currentPolyObj);
                
 
 
@@ -252,7 +252,7 @@ namespace SpacePlanning
                 {
 
                     currentPolyObj = leftOverPoly.Pop();
-                    areaCurrentPoly = Polygon2d.AreaCheckPolygon(currentPolyObj);
+                    areaCurrentPoly = PolygonUtility.AreaCheckPolygon(currentPolyObj);
                     dir = BasicUtility.toggleInputInt(dir);
                     //dir = BasicUtility.RandomToggleInputInt();
                     //Trace.WriteLine("Area left over is : " + areaLeftOverToAdd);
@@ -269,7 +269,7 @@ namespace SpacePlanning
                         Dictionary<string, object> splitReturn = RecursiveSplitByAreaUse(currentPolyObj, areaLeftOverToAdd,dir);
                         polyAfterSplitting = (List<Polygon2d>)splitReturn["PolyAfterSplit"];
                         everyDeptPoly.Add(polyAfterSplitting[0]);
-                        double areaFound = Polygon2d.AreaCheckPolygon(polyAfterSplitting[0]);
+                        double areaFound = PolygonUtility.AreaCheckPolygon(polyAfterSplitting[0]);
                         areaLeftOverToAdd = areaLeftOverToAdd - areaFound;
                         leftOverPoly.Push(polyAfterSplitting[1]);
                         //Trace.WriteLine("Area left over after assigning when area is lesser than current : " + areaLeftOverToAdd);
@@ -386,7 +386,7 @@ namespace SpacePlanning
                     {
                         dir = BasicUtility.toggleInputInt(dir);
                         currentPolyObj = leftOverPoly.Pop();
-                        areaCurrentPoly = Polygon2d.AreaCheckPolygon(currentPolyObj);
+                        areaCurrentPoly = PolygonUtility.AreaCheckPolygon(currentPolyObj);
                         List<Polygon2d> edgeSplitted = EdgeSplitWrapper(currentPolyObj, offset, dir); //////////////////////
                         if(edgeSplitted == null)
                         {
@@ -394,8 +394,8 @@ namespace SpacePlanning
                             edgeSplitted = EdgeSplitWrapper(currentPolyObj, offset*0.75, dir);
                             //continue;
                         }
-                        double areaA = Polygon2d.AreaCheckPolygon(edgeSplitted[0]);
-                        double areaB = Polygon2d.AreaCheckPolygon(edgeSplitted[1]);
+                        double areaA = PolygonUtility.AreaCheckPolygon(edgeSplitted[0]);
+                        double areaB = PolygonUtility.AreaCheckPolygon(edgeSplitted[1]);
                         if (areaA < areaB)
                         {
                             everyDeptPoly.Add(edgeSplitted[0]);
@@ -422,7 +422,7 @@ namespace SpacePlanning
                         dir = BasicUtility.toggleInputInt(dir);
                         double ratio = rn.NextDouble() * (0.85 - 0.15) + 0.15;
                         currentPolyObj = leftOverPoly.Pop();
-                        areaCurrentPoly = Polygon2d.AreaCheckPolygon(currentPolyObj);
+                        areaCurrentPoly = PolygonUtility.AreaCheckPolygon(currentPolyObj);
                         dir = BasicUtility.toggleInputInt(dir);
                         //dir = BasicUtility.RandomToggleInputInt();
                         //Trace.WriteLine("Area left over is : " + areaLeftOverToAdd);
@@ -439,8 +439,8 @@ namespace SpacePlanning
 
                             Dictionary<string,object> basicSplit = BasicSplitPolyIntoTwo(currentPolyObj, ratio, dir); ///////////////////////////////
                             List<Polygon2d> polyS = (List<Polygon2d>)basicSplit["PolyAfterSplit"];
-                            double areaA = Polygon2d.AreaCheckPolygon(polyS[0]);
-                            double areaB = Polygon2d.AreaCheckPolygon(polyS[1]);
+                            double areaA = PolygonUtility.AreaCheckPolygon(polyS[0]);
+                            double areaB = PolygonUtility.AreaCheckPolygon(polyS[1]);
 
                             if (areaA < areaB)
                             {
@@ -484,10 +484,10 @@ namespace SpacePlanning
                     {
                         dir = BasicUtility.toggleInputInt(dir);
                         Polygon2d currentPolyObj = leftOverPoly.Pop();
-                        double areaCurrentPoly = Polygon2d.AreaCheckPolygon(currentPolyObj);
+                        double areaCurrentPoly = PolygonUtility.AreaCheckPolygon(currentPolyObj);
                         List<Polygon2d> edgeSplitted = EdgeSplitWrapper(currentPolyObj, offset, dir);
-                        double areaA = Polygon2d.AreaCheckPolygon(edgeSplitted[0]);
-                        double areaB = Polygon2d.AreaCheckPolygon(edgeSplitted[1]);
+                        double areaA = PolygonUtility.AreaCheckPolygon(edgeSplitted[0]);
+                        double areaB = PolygonUtility.AreaCheckPolygon(edgeSplitted[1]);
                         if (areaA < areaB)
                         {
                             AllDeptPolys[0].Add(edgeSplitted[0]);
@@ -707,11 +707,11 @@ namespace SpacePlanning
             //CHECKS
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //List<Point2d> poly = GraphicsUtility.AddPointsInBetween(polyOrig, 5);
-            List<Point2d> poly = Polygon2d.SmoothPolygon(polyOrig, spacing);
+            List<Point2d> poly = PolygonUtility.SmoothPolygon(polyOrig, spacing);
             // compute bounding box ( set of four points ) for the poly
             // find x Range, find y Range
-            List<Point2d> polyBBox = Polygon2d.FromPointsGetBoundingPoly(poly);
-            Range2d polyRange = Polygon2d.GetRang2DFromBBox(poly);
+            List<Point2d> polyBBox = PolygonUtility.FromPointsGetBoundingPoly(poly);
+            Range2d polyRange = PolygonUtility.GetRang2DFromBBox(poly);
 
             Point2d span = polyRange.Span;
             double horizontalSpan = span.X;
@@ -720,7 +720,7 @@ namespace SpacePlanning
             spans.Add(horizontalSpan);
             spans.Add(verticalSpan);
             //compute centroid
-            Point2d polyCenter = Polygon2d.CentroidFromPoly(poly);
+            Point2d polyCenter = PolygonUtility.CentroidFromPoly(poly);
             //check aspect ratio
             double aspectRatio = 0;
 
@@ -864,11 +864,11 @@ namespace SpacePlanning
             //CHECKS
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //List<Point2d> poly = GraphicsUtility.AddPointsInBetween(polyOrig, 5);
-            List<Point2d> poly = Polygon2d.SmoothPolygon(polyOrig, spacing);
+            List<Point2d> poly = PolygonUtility.SmoothPolygon(polyOrig, spacing);
             // compute bounding box ( set of four points ) for the poly
             // find x Range, find y Range
-            List<Point2d> polyBBox = Polygon2d.FromPointsGetBoundingPoly(poly);
-            Range2d polyRange = Polygon2d.GetRang2DFromBBox(poly);
+            List<Point2d> polyBBox = PolygonUtility.FromPointsGetBoundingPoly(poly);
+            Range2d polyRange = PolygonUtility.GetRang2DFromBBox(poly);
 
             Point2d span = polyRange.Span;
             double horizontalSpan = span.X;
@@ -877,7 +877,7 @@ namespace SpacePlanning
             spans.Add(horizontalSpan);
             spans.Add(verticalSpan);
             //compute centroid
-            Point2d polyCenter = Polygon2d.CentroidFromPoly(poly);
+            Point2d polyCenter = PolygonUtility.CentroidFromPoly(poly);
             //check aspect ratio
             double aspectRatio = 0;
 
@@ -1057,8 +1057,8 @@ namespace SpacePlanning
             List<Polygon2d> polyList = new List<Polygon2d>();
             List<double> areaList = new List<double>();
             List<Point2d> pointsList = new List<Point2d>();
-            List<Point2d> polyBBox = Polygon2d.FromPointsGetBoundingPoly(poly.Points);
-            Range2d polyRange = Polygon2d.GetRang2DFromBBox(poly.Points);
+            List<Point2d> polyBBox = PolygonUtility.FromPointsGetBoundingPoly(poly.Points);
+            Range2d polyRange = PolygonUtility.GetRang2DFromBBox(poly.Points);
             double minimumLength = 200;
             double perc = 0.2;
             //set limit of 10%
@@ -1185,8 +1185,8 @@ namespace SpacePlanning
             List<Polygon2d> polyList = new List<Polygon2d>();
             List<double> areaList = new List<double>();
             List<Point2d> pointsList = new List<Point2d>();
-            List<Point2d> polyBBox = Polygon2d.FromPointsGetBoundingPoly(poly.Points);
-            Range2d polyRange = Polygon2d.GetRang2DFromBBox(poly.Points);
+            List<Point2d> polyBBox = PolygonUtility.FromPointsGetBoundingPoly(poly.Points);
+            Range2d polyRange = PolygonUtility.GetRang2DFromBBox(poly.Points);
             double perc = 0.1;
             double limit = area*0.1;
 
@@ -1295,8 +1295,8 @@ namespace SpacePlanning
             List<Polygon2d> polyList = new List<Polygon2d>();
             List<double> areaList = new List<double>();
             List<Point2d> pointsList = new List<Point2d>();
-            List<Point2d> polyBBox = Polygon2d.FromPointsGetBoundingPoly(poly.Points);
-            Range2d polyRange = Polygon2d.GetRang2DFromBBox(poly.Points);
+            List<Point2d> polyBBox = PolygonUtility.FromPointsGetBoundingPoly(poly.Points);
+            Range2d polyRange = PolygonUtility.GetRang2DFromBBox(poly.Points);
             double minimumLength = 200;
 
             Point2d span = polyRange.Span;
@@ -1415,7 +1415,7 @@ namespace SpacePlanning
         internal static List<double> PolySpanCheck(Polygon2d poly)
         {
             List<double> spanList = new List<double>();
-            Range2d polyRange = Polygon2d.GetRang2DFromBBox(poly.Points);
+            Range2d polyRange = PolygonUtility.GetRang2DFromBBox(poly.Points);
 
             Point2d span = polyRange.Span;
             double horizontalSpan = span.X;
@@ -1462,15 +1462,15 @@ namespace SpacePlanning
             //CHECKS
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //List<Point2d> poly = GraphicsUtility.AddPointsInBetween(polyOrig, 5);
-            List<Point2d> poly = Polygon2d.SmoothPolygon(polyOrig, spacing);
+            List<Point2d> poly = PolygonUtility.SmoothPolygon(polyOrig, spacing);
             if (poly == null || poly.Count == 0)
             {
                 return null;
             }
             // compute bounding box ( set of four points ) for the poly
             // find x Range, find y Range
-            List<Point2d> polyBBox = Polygon2d.FromPointsGetBoundingPoly(poly);
-            Range2d polyRange = Polygon2d.GetRang2DFromBBox(poly);
+            List<Point2d> polyBBox = PolygonUtility.FromPointsGetBoundingPoly(poly);
+            Range2d polyRange = PolygonUtility.GetRang2DFromBBox(poly);
 
             Point2d span = polyRange.Span;
             double horizontalSpan = span.X;
@@ -1646,11 +1646,11 @@ namespace SpacePlanning
             //CHECKS
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //List<Point2d> poly = GraphicsUtility.AddPointsInBetween(polyOrig, 5);
-            List<Point2d> poly = Polygon2d.SmoothPolygon(polyOrig, spacing);
+            List<Point2d> poly = PolygonUtility.SmoothPolygon(polyOrig, spacing);
             // compute bounding box ( set of four points ) for the poly
             // find x Range, find y Range
-            List<Point2d> polyBBox = Polygon2d.FromPointsGetBoundingPoly(poly);
-            Range2d polyRange = Polygon2d.GetRang2DFromBBox(poly);
+            List<Point2d> polyBBox = PolygonUtility.FromPointsGetBoundingPoly(poly);
+            Range2d polyRange = PolygonUtility.GetRang2DFromBBox(poly);
 
             Point2d span = polyRange.Span;
             double horizontalSpan = span.X;

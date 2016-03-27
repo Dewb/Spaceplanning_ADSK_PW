@@ -406,8 +406,8 @@ namespace SpacePlanning
             List<Polygon2d> polyList = new List<Polygon2d>();
             List<double> areaList = new List<double>();
             List<Point2d> pointsList = new List<Point2d>();
-            List<Point2d> polyBBox = Polygon2d.FromPointsGetBoundingPoly(poly.Points);
-            Range2d polyRange = Polygon2d.GetRang2DFromBBox(poly.Points);
+            List<Point2d> polyBBox = PolygonUtility.FromPointsGetBoundingPoly(poly.Points);
+            Range2d polyRange = PolygonUtility.GetRang2DFromBBox(poly.Points);
             double minimumLength = 200;
             double perc = 0.2;
             //set limit of 10%
@@ -522,7 +522,7 @@ namespace SpacePlanning
 
             List<Point2d> polyOrig = polyOutline.Points;
 
-            List<Point2d> poly = Polygon2d.SmoothPolygon(polyOrig, spacing);
+            List<Point2d> poly = PolygonUtility.SmoothPolygon(polyOrig, spacing);
             Line2d splitLine = new Line2d(inputLine);
             Point2d centerPoly = GraphicsUtility.CentroidInPointLists(poly);
             bool checkSide = GraphicsUtility.CheckPointSide(splitLine, centerPoly);
@@ -607,13 +607,13 @@ namespace SpacePlanning
             double extents = 5000;
             double spacing = BuildLayout.spacingSet;
             List<Point2d> polyOrig = polyOutline.Points;
-            List<Point2d> poly = Polygon2d.SmoothPolygon(polyOrig, spacing);
+            List<Point2d> poly = PolygonUtility.SmoothPolygon(polyOrig, spacing);
             if (poly == null || poly.Count == 0)
             {
                 return null;
             }
             Random ran = new Random();
-            List<double> spans = Polygon2d.GetSpansXYFromPolygon2d(poly);
+            List<double> spans = PolygonUtility.GetSpansXYFromPolygon2d(poly);
             Dictionary<int, object> obj = PolygonUtility.pointSelector(ran, poly);
             Point2d pt = (Point2d)obj[0];
             int orient = (int)obj[1];
@@ -688,6 +688,171 @@ namespace SpacePlanning
                 { "IntersectedPoints", (intersectedPoints) },
                 { "SpansBBox", (spans) },
                 { "EachPolyPoint", (pt) }
+            };
+
+        }
+
+        // USING NOW 
+        //SPLITS A POLYGON2D INTO TWO POLYS, BASED ON A DIRECTION AND RATIO
+        [MultiReturn(new[] { "PolyAfterSplit", "SplitLine", "IntersectedPoints", "SpansBBox", "EachPolyPoint" })]
+        internal static Dictionary<string, object> SplitFromEdgePolyIntoTwo(Polygon2d polyOutline, double distance = 10, int dir = 0)
+        {
+            double extents = 5000;
+            double spacing = BuildLayout.spacingSet;
+            double minimumLength = 10;
+            double minValue = 10;
+            bool horizontalSplit = false;
+            bool verticalSplit = true;
+            // dir = 0 : horizontal split line
+            // dir = 1 : vertical split line
+
+            List<Point2d> polyOrig = polyOutline.Points;
+            double eps = 0.1;
+            //CHECKS
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //List<Point2d> poly = GraphicsUtility.AddPointsInBetween(polyOrig, 5);
+            List<Point2d> poly = PolygonUtility.SmoothPolygon(polyOrig, spacing);
+            // compute bounding box ( set of four points ) for the poly
+            // find x Range, find y Range
+            List<Point2d> polyBBox = PolygonUtility.FromPointsGetBoundingPoly(poly);
+            Range2d polyRange = PolygonUtility.GetRang2DFromBBox(poly);
+
+            Point2d span = polyRange.Span;
+            double horizontalSpan = span.X;
+            double verticalSpan = span.Y;
+            List<double> spans = new List<double>();
+            spans.Add(horizontalSpan);
+            spans.Add(verticalSpan);
+            //compute centroid
+            //Point2d polyCenter = Polygon2d.CentroidFromPoly(poly);
+
+            //compute lowest point
+            int lowInd = GraphicsUtility.ReturnLowestPointFromListNew(poly);
+            Point2d lowPt = poly[lowInd];
+            //check aspect ratio
+            double aspectRatio = 0;
+
+
+
+            // check if width or length is enough to make split
+            if (horizontalSpan < minimumLength || verticalSpan < minimumLength)
+            {
+                return null;
+            }
+
+
+            //should check direction of split ( flip dir value )
+            if (horizontalSpan > verticalSpan)
+            {
+                //dir = 1;
+                aspectRatio = horizontalSpan / verticalSpan;
+            }
+            else
+            {
+                //dir = 0;
+                aspectRatio = verticalSpan / horizontalSpan;
+            }
+
+            if (aspectRatio > 2)
+            {
+                //return null;
+            }
+
+            //set split style
+            if (dir == 0)
+            {
+                horizontalSplit = true;
+            }
+            else
+            {
+                verticalSplit = true;
+            }
+
+
+
+            // adjust distance if less than some value
+            if (distance < minValue)
+            {
+                distance = minValue;
+            }
+            // adjust distance if more than total length of split possible
+            if (verticalSplit)
+            {
+                if (distance > verticalSpan)
+                {
+                    distance = verticalSpan - minValue;
+                }
+            }
+
+            if (horizontalSplit)
+            {
+                if (distance > horizontalSpan)
+                {
+                    distance = horizontalSpan - minValue;
+                }
+            }
+
+
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+            Line2d splitLine = new Line2d(lowPt, extents, dir);
+            //compute vertical or horizontal line via centroid
+
+
+
+            // push this line right or left or up or down based on ratio
+            if (dir == 0)
+            {
+                splitLine.move(0, distance);
+            }
+            else
+            {
+                splitLine.move(distance, 0);
+            }
+
+
+
+            List<Point2d> intersectedPoints = GraphicsUtility.LinePolygonIntersection(poly, splitLine);
+
+            ////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+            // find all points on poly which are to the left or to the right of the line
+            Polygon2d polyA, polyB;
+
+            List<int> pIndexA = new List<int>();
+            List<int> pIndexB = new List<int>();
+            for (int i = 0; i < poly.Count; i++)
+            {
+                bool check = GraphicsUtility.CheckPointSide(splitLine, poly[i]);
+                if (check)
+                {
+                    pIndexA.Add(i);
+                    //ptA.Add(poly[i]);
+                }
+                else
+                {
+                    pIndexB.Add(i);
+                    //ptB.Add(poly[i]);
+                }
+            }
+
+            //organize the points to make closed poly
+            List<List<Point2d>> twoSets = new List<List<Point2d>>();
+            List<Point2d> sortedA = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexA);
+            List<Point2d> sortedB = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexB);
+            twoSets.Add(sortedA);
+            twoSets.Add(sortedB);
+            List<Polygon2d> splittedPoly = PolygonUtility.OptimizePolyPoints(sortedA, sortedB);
+
+            return new Dictionary<string, object>
+            {
+                { "PolyAfterSplit", (splittedPoly) },
+                { "SplitLine", (splitLine) },
+                { "IntersectedPoints", (intersectedPoints) },
+                { "SpansBBox", (spans) },
+                { "EachPolyPoint", (twoSets) }
             };
 
         }

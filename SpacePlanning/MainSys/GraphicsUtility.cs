@@ -822,7 +822,7 @@ namespace SpacePlanning
         public static List<Point2d> SortPoints(List<Point2d> pointList)
         {
             //center point
-            Point2d cen = Polygon2d.CentroidFromPoly(pointList);
+            Point2d cen = PolygonUtility.CentroidFromPoly(pointList);
             Vector2d vecX = new Vector2d(0, 100);
             //double[] angList = new double[pointList.Count];
             List<double> angList = new List<double>();
