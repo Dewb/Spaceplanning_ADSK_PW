@@ -973,15 +973,19 @@ namespace SpacePlanning
             };
 
         }
-       
-        
+
+
         //****DEF - USING THIS TO SPLIT PROGRAMS-------------------------------
 
-    
-       
-      ////////////////////////////////////////////////////////////////////////////////////////////////////////// TEST CODE BELOW /////////////////
 
-        //used to split Depts into Program Spaces
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////// TEST CODE BELOW /////////////////
+
+   
+
+
+
+        //used to split Depts into Program Spaces based on recursive poly split grid
         [MultiReturn(new[] { "PolyAfterSplit", "BigPolysAfterSplit", "EachPolyPoint", "UpdatedProgramData" })]
         public static Dictionary<string, object> RecursivePlaceProgramsSeries(List<Polygon2d> polyInputList, 
             List<ProgramData> progData, double acceptableWidth, int minWidthAllowed = 8)
@@ -994,7 +998,7 @@ namespace SpacePlanning
             double minWidth = minWidthAllowed;
             for (int j = 0; j < progData.Count; j++) { programDataRetrieved.Push(progData[j]); }
             List<Polygon2d> polyOrganizedList = new List<Polygon2d>();
-            polyOrganizedList = SplitBigPolys(polyInputList, acceptableWidth, 5);
+            polyOrganizedList = SplitBigPolys(polyInputList, acceptableWidth);
             //polyOrganizedList = Polygon2d.PolyReducePoints(polyOrganizedList);
 
             List<ProgramData> newProgDataList = new List<ProgramData>();
@@ -1060,106 +1064,45 @@ namespace SpacePlanning
         }
 
 
-
-
-        //used to split Depts into Program Spaces
-        [MultiReturn(new[] { "PolyAfterSplit", "UpdatedProgramData" })]
-        public static Dictionary<string, object> RecursivePlaceProgramsSeriesNew(List<Polygon2d> polyInputList,
-            List<ProgramData> progData,double minWidth = 5)
+        //used to split Depts into Program Spaces based on cell grids
+        [MultiReturn(new[] { "PolyAfterSplit", "BigPolysAfterSplit", "UpdatedProgramData" })]
+        public static Dictionary<string, object> RecursivePlaceProgramsGridCells(List<Polygon2d> polyInputList,
+            List<ProgramData> progData, double dimX = 3, double dimY = 3)
         {
 
-            if (polyInputList == null || polyInputList.Count == 0) return null;
-            Stack<Polygon2d> polyContainerList = new Stack<Polygon2d>();
-            List<Polygon2d> polyList = new List<Polygon2d>();
-            for (int i = 0; i < polyInputList.Count; i++)
-            {
-                if (polyInputList[i] == null || polyInputList[i].Points == null || polyInputList[i].Points.Count == 0) continue;
-                polyContainerList.Push(polyInputList[i]);
-            }
-
+            List<List<Polygon2d>> polyList = new List<List<Polygon2d>>();
+            List<double> areaList = new List<double>();
+            Stack<ProgramData> programDataRetrieved = new Stack<ProgramData>();
+            List<ProgramData> newProgDataList = new List<ProgramData>();
             for (int i = 0; i < progData.Count; i++)
             {
-                if (polyContainerList.Count > 0)
-                {
-                  while(progData[i].IsAreaSatisfied == false && polyContainerList.Count > 0)
-                    {
-
-                        double areaProg = progData[i].AreaNeeded;
-                        Polygon2d currentPoly = polyContainerList.Pop();
-                        double areaPoly = PolygonUtility.AreaCheckPolygon(currentPoly);
-                        Dictionary<string, object> splitResult;
-                        if (areaPoly < areaProg)
-                        {
-                            polyList.Add(currentPoly);
-                            //currentPoly = polyContainerList.Pop();
-                        }
-                        else
-                        {
-                            double dist = 0; int dir = 1;
-                            double ratio = areaPoly / areaProg;
-                            
-                       
-                            List<double> spans = PolygonUtility.GetSpansXYFromPolygon2d(currentPoly.Points);
-                            double spanX = spans[0], spanY = spans[1];
-                            if (spanX > spanY)
-                            {
-                                if(spanY < minWidth)
-                                {
-                                    continue;
-                                }
-                                dist = spanX / ratio; dir = 1;
-                                splitResult = SplitByDistanceFromPoint(currentPoly, dist, dir);
-                            }
-                            else
-                            {
-                                if (spanX < minWidth)
-                                {
-                                    continue;
-                                }
-                                dist = spanY / ratio; dir = 0;
-                                splitResult = SplitByDistanceFromPoint(currentPoly, dist, dir);
-                            }
-
-                            List<Polygon2d> polyAfterSplit = (List<Polygon2d>)splitResult["PolyAfterSplit"];
-                            double areaA = PolygonUtility.AreaCheckPolygon(polyAfterSplit[0]);
-                            double areaB = PolygonUtility.AreaCheckPolygon(polyAfterSplit[1]);
-                            Polygon2d space, container;
-                            double areaSpace;
-                            if (areaA < areaB)
-                            {
-                                space = polyAfterSplit[0];
-                                container = polyAfterSplit[1];
-                                areaSpace = areaA;                                
-                            }
-                            else
-                            {
-                                space = polyAfterSplit[1];
-                                container = polyAfterSplit[0];
-                                areaSpace = areaB;
-                            }
-                            double areaPolyAfterSplit = PolygonUtility.AreaCheckPolygon(polyAfterSplit[0]);
-                            progData[i].AreaProvided += areaSpace;
-                            polyList.Add(space);
-                            polyContainerList.Push(container);
-
-                        }
-                    }//end of while loop
-
-                }
-            }// end of for loop
+                ProgramData newProgData = new ProgramData(progData[i]);
+                newProgDataList.Add(newProgData);
+            }
+            List<Polygon2d> polyOrganizedList = new List<Polygon2d>();
+            for (int i = 0; i < polyInputList.Count; i++)
+            {
+                Polygon2d pol = polyInputList[i];
+                List<Point2d> bbox = ReadData.FromPointsGetBoundingPoly(pol.Points);
+                Dictionary<string, object> cellObject = GridObject.GridPointsInsideOutline(bbox, pol.Points, dimX, dimY);
+                List<Point2d> point2dList = (List<Point2d>)cellObject["PointsInsideOutline"];
+                List<Polygon2d> polyGridList = GridObject.MakeCellsFromGridPoints2d(point2dList, dimX, dimY);
+                polyOrganizedList.AddRange(polyGridList);
+            }
             
+            polyList = AssignPolysToProgramData(newProgDataList, polyOrganizedList);
 
-                return new Dictionary<string, object>
+            return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (polyList) },
-                { "UpdatedProgramData",(null) }
+                { "BigPolysAfterSplit", (polyOrganizedList) },
+                { "UpdatedProgramData",(newProgDataList) }
             };
 
 
         }
 
-
-        
+     
 
 
         //gets a poly and recursively splits it till acceptablewidth is met and makes a polyorganized list
@@ -1300,7 +1243,7 @@ namespace SpacePlanning
 
 
         //uses makepolysofproportion function to split one big poly into sub components
-        public static List<Polygon2d> SplitBigPolys(List<Polygon2d> polyInputList, double acceptableWidth, int recompute = 1)
+        public static List<Polygon2d> SplitBigPolys(List<Polygon2d> polyInputList, double acceptableWidth)
         {
             Trace.WriteLine("Split Big Poly recurse is : " + recurse);
             Trace.WriteLine("polyInputList count is : " + polyInputList.Count);
@@ -1359,7 +1302,7 @@ namespace SpacePlanning
 
 
             List<Polygon2d> polyOrganizedList = new List<Polygon2d>();
-            polyOrganizedList = SplitBigPolys(polyInputList, acceptableWidth, 5);
+            polyOrganizedList = SplitBigPolys(polyInputList, acceptableWidth);
             
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
