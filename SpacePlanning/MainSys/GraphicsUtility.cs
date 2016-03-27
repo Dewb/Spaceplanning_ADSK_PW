@@ -902,62 +902,36 @@ namespace SpacePlanning
         //GIVEN THREE POINTS CHECKS IF POINT Q IS INSIDE THE LINE PR
         // Given three colinear points p, q, r, the function checks if
         // point q lies on line segment 'pr'
-        public static bool onSegment(Line2d givenLine, Point2d q)
+        public static bool onSegment(Line2d givenLine, Point2d q, double eps = 0)
         {
-            if(givenLine == null || q == null)
-            {
-                return false;
-            }
-
-            Point2d p = givenLine.StartPoint;
-            Point2d r = givenLine.EndPoint;
+            if(givenLine == null || q == null) return false; 
+            Point2d p = givenLine.StartPoint, r = givenLine.EndPoint;
             if (q.X <= Math.Max(p.X, r.X) && q.X >= Math.Min(p.X, r.X) &&
-                q.Y <= Math.Max(p.Y, r.Y) && q.Y >= Math.Min(p.Y, r.Y))
-                return true;
+                q.Y <= Math.Max(p.Y, r.Y) && q.Y >= Math.Min(p.Y, r.Y)) return true;
             return false;
         }
 
 
+        //checks if two lines are collinear or not , works good
         public static bool LineAdjacencyCheck(Line2d lineA, Line2d lineB)
         {
+            Point2d pA = lineA.StartPoint, qA = lineA.EndPoint;
+            Point2d pB = lineB.StartPoint, qB = lineB.EndPoint;
 
-            Point2d pA = lineA.StartPoint;
-            Point2d qA = lineA.EndPoint;
-            Point2d pB = lineB.StartPoint;
-            Point2d qB = lineB.EndPoint;
-
-            
-
-            Vector2d vecA = new Vector2d(pA, qA);
-            Vector2d vecB = new Vector2d(pB, qB);
-
+            Vector2d vecA = new Vector2d(pA, qA), vecB = new Vector2d(pB, qB);
             double crossMag = vecA.Cross(vecB);
+            if (crossMag != 0) return false;
 
-            if(crossMag != 0)
-            {
-                return false;
-            }
-            
+            bool checkA1 = onSegment(lineB, pA), checkA2 = onSegment(lineB, qA);
+            bool checkB1 = onSegment(lineA, pB), checkB2 = onSegment(lineA, qB);
 
-            bool checkA1 = onSegment(lineB, pA);
-            bool checkA2 = onSegment(lineB, qA);
-            bool checkB1 = onSegment(lineA, pB);
-            bool checkB2 = onSegment(lineA, qB);
-
-            if(checkA1 || checkA2)
-            {
-                return true;
-            }
-            if (checkB1 || checkB2)
-            {
-                return true;
-            }
-
+            if (checkA1 || checkA2) return true;
+            if (checkB1 || checkB2) return true;
             return false;
         }
 
 
-        // WORKS SOMEWHAT
+        // WORKS SOMEWHAT - has bugs
         public static bool CheckLineCollinear(Line2d lineA, Line2d lineB)
         {
 

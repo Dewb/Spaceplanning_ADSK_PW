@@ -17,39 +17,24 @@ namespace SpacePlanning
         [MultiReturn(new[] { "Neighbour", "SharedEdge"})]
         public static Dictionary<string, object> FindPolyAdjacentEdge(Polygon2d polyA, Polygon2d polyB)
         {
-            /*
-                check line by line the adjacent line between two polys
-                then join the adjacent line to make one line
-                return the adjacent line
-            */
-
-            bool check = false;
-            if (polyA == null || polyB == null)
-            {
-                return null;
-            }
+            if (polyA == null || polyB == null) return null;
+           
             Line2d joinedLine = null;
             bool isNeighbour = false;
             double eps = 200;
-            Polygon2d polyAReg = new Polygon2d(polyA.Points);
-            Polygon2d polyBReg = new Polygon2d(polyB.Points);
+            Polygon2d polyAReg = new Polygon2d(polyA.Points,0);
+            Polygon2d polyBReg = new Polygon2d(polyB.Points,0);
 
 
             for(int i = 0; i < polyAReg.Points.Count; i++)
             {
                 int a = i+1;
-                if (i == polyAReg.Points.Count - 1)
-                {
-                    a = 0;
-                }
+                if (i == polyAReg.Points.Count - 1) a = 0;               
                 Line2d lineA = new Line2d(polyAReg.Points[i], polyAReg.Points[a]);
                 for(int j = 0; j < polyBReg.Points.Count; j++)
                 {
                     int b = j + 1;
-                    if (j == polyBReg.Points.Count - 1)
-                    {
-                        b = 0;
-                    }
+                    if (j == polyBReg.Points.Count - 1) b = 0;                   
                     Line2d lineB = new Line2d(polyBReg.Points[j], polyBReg.Points[b]);
                     bool checkAdj = GraphicsUtility.LineAdjacencyCheck(lineA, lineB);
                     if (checkAdj)
@@ -58,13 +43,8 @@ namespace SpacePlanning
                         isNeighbour = true;
                         break;
                     }
-
-
                 }
             }
-
-            //"Neighbour", "SharedEdgeA", "SharedEdgeB" 
-
             return new Dictionary<string, object>
             {
                 { "Neighbour", (isNeighbour) },
@@ -74,7 +54,8 @@ namespace SpacePlanning
         }
 
 
-        //Make Dept Topology Matrix - Using Now
+        //Make Dept Topology Matrix , finds all the shared edges between dept polys, and based on that
+        // makes dept neighbors
         [MultiReturn(new[] { "DeptTopologyList", "DeptNeighborNameList", "DeptAllPolygons", "SharedEdge" })]
         public static Dictionary<string, object> MakeDeptTopology(List<DeptData> deptData, Polygon2d poly)
         {
@@ -153,7 +134,6 @@ namespace SpacePlanning
             for (int i = 0; i < deptData.Count; i++)
             {
                 List<Polygon2d> deptPolyList = deptData[i].PolyDeptAssigned;
-
                 for (int j = 0; j < deptPolyList.Count; j++)
                 {
                     deptIdList.Add(i);

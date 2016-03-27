@@ -507,63 +507,34 @@ namespace SpacePlanning
 
         internal static List<Point2d> SmoothPolygon(List<Point2d> pointList, double spacingProvided = 1)
         {
-            if (pointList == null || pointList.Count == 0)
-            {
-                return null;
-            }
-
-
+            int threshValue = 20;
+            if (pointList == null || pointList.Count == 0) return null;
+            if (pointList.Count > threshValue) return pointList;
+           
             //added to make sure spacing is set based on poly dimensions-------------------
             List<double> spans = GetSpansXYFromPolygon2d(pointList);
             double spanX = spans[0];
             double spanY = spans[1];
-            /*
-             double distanceConsidered = 0;
-
-             if(spanX > spanY)
-             {
-                 distanceConsidered = spanY;
-             }
-             else
-             {
-                 distanceConsidered = spanX;
-             }
-
-             double spacing = distanceConsidered / spacingProvided;
-            */
             List<Point2d> ptList = new List<Point2d>();
 
             for (int i = 0; i < pointList.Count; i++)
             {
-
                 Point2d ptA = pointList[i];
                 Point2d ptB = null;
-                if (i == pointList.Count - 1)
-                {
-                    ptB = pointList[0];
-                }
-                else
-                {
-                    ptB = pointList[i + 1];
-                }
-
+                if (i == pointList.Count - 1) ptB = pointList[0];                
+                else ptB = pointList[i + 1];
+              
                 Vector2d vec = new Vector2d(ptA, ptB);
                 double dist = vec.Length;
-                //Trace.WriteLine("Distance is : " + dist);
                 int numPointsNeeded = (int)(dist / spacingProvided);
-                //int numPointsNeeded = (int)spacingProvided;
                 double increment = dist / numPointsNeeded;
                 ptList.Add(pointList[i]);
 
                 for (int j = 0; j < numPointsNeeded - 1; j++)
                 {
                     double value = (j + 1) * increment / dist;
-                    //Trace.WriteLine("Value is : " + value);
-
-                    //p = (1 - t) * p1 + t * p2
                     double x = ((1 - value) * ptA.X) + (value * ptB.X);
                     double y = ((1 - value) * ptA.Y) + (value * ptB.Y);
-                    //Point2d ptAdd = Point2d.AddVector(ptA, vec, value);
                     Point2d ptAdd = new Point2d(x, y);
                     ptList.Add(ptAdd);
                 }
@@ -578,12 +549,8 @@ namespace SpacePlanning
         //CHECK IF THE AREA POLYGON WORKS FINE
         public static double AreaCheckPolygon(Polygon2d poly)
         {
-            if (poly == null)
-            {
-                return 0;
-            }
-            double area = GraphicsUtility.AreaPolygon2d(poly.Points);
-            return area;
+            if (poly == null) return 0;           
+            return GraphicsUtility.AreaPolygon2d(poly.Points);
         }
 
 
