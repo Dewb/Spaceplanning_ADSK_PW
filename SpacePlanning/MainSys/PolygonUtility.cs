@@ -357,6 +357,7 @@ namespace SpacePlanning
         //COMPUTE CENTROID OF A CLOSED POLYGON
         public static Point2d CentroidFromPoly(Polygon2d poly)
         {
+            if (poly == null || poly.Points == null || poly.Points.Count == 0) return null;
             List<Point2d> ptList = poly.Points;
             double x = 0, y = 0;
             for (int i = 0; i < ptList.Count; i++)

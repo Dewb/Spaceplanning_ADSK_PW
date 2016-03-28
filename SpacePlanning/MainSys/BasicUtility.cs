@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SpacePlanning
 {
-    internal class BasicUtility
+    public class BasicUtility
     {
 
         public static Random RandomMaker()
@@ -14,16 +14,19 @@ namespace SpacePlanning
             return new Random();
         }
 
+
+        //sorts input list of double and returns the indices 
         public static List<int> SortIndex(List<double> A)
         {
             var sorted = A
                         .Select((x, i) => new KeyValuePair<double, int>(x, i))
                         .OrderBy(x => x.Key)
                         .ToList();
-
+            //get the keys, in a list
             List<double> B = sorted.Select(x => x.Key).ToList();
+            //get the values in a list
             List<int> idx = sorted.Select(x => x.Value).ToList();
-
+            //return the indices list
             return idx;
         }
 

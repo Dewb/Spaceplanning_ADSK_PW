@@ -514,6 +514,7 @@ namespace SpacePlanning
         //distance between points - correct one
         internal static double DistanceBetweenPoints(Point2d ptA, Point2d ptB)
         {
+            if (ptA == null || ptB == null) return 0;
             double xLen = ptA.X - ptB.X;
             double yLen = ptA.Y - ptB.Y;
 
