@@ -11,6 +11,31 @@ namespace SpacePlanning
     public class PolygonUtility
     {
 
+        //checks a polygon2d to have min Area and min dimensions
+        internal static bool CheckPolyDimension(Polygon2d poly, double minArea = 6, double side = 2)
+        {
+            if (!CheckPoly(poly)) return false;
+            if (AreaCheckPolygon(poly) < minArea) return false;
+            List<double> spans = GetSpansXYFromPolygon2d(poly.Points);
+            if (spans[0] < side) return false;
+            if (spans[1] < side) return false;
+            return true;
+        }
+
+        //check if a polygon is null then return false
+        internal static bool CheckPoly(Polygon2d poly)
+        {
+            if (poly == null || poly.Points == null || poly.Points.Count == 0) return false;
+            else return true;
+        }
+
+        //check if a pointlist is null then return false
+        internal static bool CheckPointList(List<Point2d> ptList)
+        {
+            if (ptList == null || ptList.Count == 0) return false;
+            else return true;
+        }
+
         //checker function - can be discarded later
         internal static List<Point2d> CheckLowest_HighestPoint(Polygon2d poly)
         {
@@ -26,8 +51,42 @@ namespace SpacePlanning
         }
 
 
+        // removes polygons which are null from the list
+        internal static List<Polygon2d> CleanPolygons(List<Polygon2d> polygonsList)
+        {
+            List<Polygon2d> cleanPolyList = new List<Polygon2d>();
+            for (int i = 0; i < polygonsList.Count; i++)
+            {
+                if (polygonsList[i] == null || polygonsList[i].Points == null || polygonsList[i].Points.Count == 0)
+                    continue;
+                cleanPolyList.Add(polygonsList[i]);
+            }
+            return cleanPolyList;
+        }
+
+
+
+
+
+        // sorts a list of polygons from a point and returns the indices 
+        internal static List<int> SortPolygonsFromAPoint(List<Polygon2d> polygonsList, Point2d centerPt)
+        {
+            List<double> distanceList = new List<double>();
+            for (int i = 0; i < polygonsList.Count; i++)
+            {
+                if (polygonsList[i] == null || polygonsList[i].Points == null || polygonsList[i].Points.Count == 0)
+                    continue;
+                Point2d cen = PolygonUtility.CentroidFromPoly(polygonsList[i]);
+                double distance = GraphicsUtility.DistanceBetweenPoints(cen, centerPt);
+                distanceList.Add(distance);
+            }
+            List<int> indices = BasicUtility.SortIndex(distanceList);
+            return indices;
+        }
+
+
         // not using now can be discarded
-        internal static List<Point2d> organizePointToMakePoly(List<Point2d> poly, List<Point2d> intersectedPoints, List<int> pIndex)
+        internal static List<Point2d> OrganizePointToMakePoly(List<Point2d> poly, List<Point2d> intersectedPoints, List<int> pIndex)
         {
             List<Point2d> sortedPoint = new List<Point2d>();
             List<Point2d> unsortedPt = new List<Point2d>();
@@ -132,7 +191,7 @@ namespace SpacePlanning
         }
 
 
-        //cleans duplicate points and returns updated list
+        //cleans duplicate points and returns updated list - using this now
         internal static List<Point2d> CleanDuplicatePoint2dNew(List<Point2d> ptListUnclean)
         {
             List<Point2d> cleanList = new List<Point2d>();

@@ -18,7 +18,7 @@ namespace SpacePlanning
     {
         
 
-        internal static double spacingSet = 5; //higher value makes code faster but less precise 0.2 was good
+        internal static double spacingSet = 3; //higher value makes code faster but less precise 0.2 was good
         internal static double recurse = 0;
         internal static Point2d reference = new Point2d(0,0);
              
@@ -343,13 +343,11 @@ namespace SpacePlanning
                 DeptData deptItem = p.Value;
                 sortedDepartmentData.Add(deptItem);
             }
-
-
             
             //SORT THE DEPT BASED ON THE AREA
             sortedDepartmentData.Reverse();
             leftOverPoly.Push(poly);
-            int dir = 0, maxRound = 1000;
+            int dir = 0, maxRound = 200;
             double count3 = 0;
 
             for (int i = 0; i < sortedD.Count; i++)
@@ -500,40 +498,44 @@ namespace SpacePlanning
                     {
                         dir = BasicUtility.toggleInputInt(dir);
                         Polygon2d currentPolyObj = leftOverPoly.Pop();
+                        if (!PolygonUtility.CheckPolyDimension(currentPolyObj))
+                        {
+                            count3 += 1;
+                            continue;
+                        }
                         double areaCurrentPoly = PolygonUtility.AreaCheckPolygon(currentPolyObj);
                         List<Polygon2d> edgeSplitted = EdgeSplitWrapper(currentPolyObj,ran2, offset, dir);
-                        if (edgeSplitted == null)
+                        if (edgeSplitted == null) return null;
+                        if (!PolygonUtility.CheckPolyDimension(edgeSplitted[0]))
                         {
-                            return null;
+                            count3 += 1;
+                            continue;
                         }
                         double areaA = PolygonUtility.AreaCheckPolygon(edgeSplitted[0]);
                         double areaB = PolygonUtility.AreaCheckPolygon(edgeSplitted[1]);
+
+                       
+
                         if (areaA < areaB)
                         {
                             AllDeptPolys[0].Add(edgeSplitted[0]);
-                            //areaLeftOverToAdd = areaLeftOverToAdd - areaA;
                             areaMoreCheck += areaA;
-                            if (areaB > minArea) { leftOverPoly.Push(edgeSplitted[1]); }
-
+                            if (areaB > minArea) leftOverPoly.Push(edgeSplitted[1]); 
                         }
                         else
                         {
                             AllDeptPolys[0].Add(edgeSplitted[1]);
-                            //areaLeftOverToAdd = areaLeftOverToAdd - areaA;
                             areaMoreCheck += areaB;
                             if (areaA > minArea) { leftOverPoly.Push(edgeSplitted[0]); }
                         }
                         count3 += 1;
                     }// end of while loop
-
-
-
                 }// end of if loop for leftover count
                 AllDeptAreaAdded[0] += areaMoreCheck;
             }// end of if loop
 
 
-
+            
             // adding the left over polys to the 2nd highest dept after inpatient
             if(leftOverPoly.Count > 0)
             {
@@ -547,10 +549,6 @@ namespace SpacePlanning
                     AllDeptPolys[1].Add(pol);
                 }
                 AllDeptAreaAdded[1] += areaLeftOver;
-
-                //Trace.WriteLine("Area from left over :  " + areaLeftOver);
-                //AllDeptPolys[1].AddRange(leftOverPoly.ToList());
-                //Trace.WriteLine("No of poly after :  " + AllDeptPolys[1].Count);
             }
             
 
@@ -575,6 +573,13 @@ namespace SpacePlanning
             AllDeptPolys[0][index] = polyReturned[1];
 
 
+            //clean polygons
+            for(int i = 0; i < AllDeptPolys.Count; i++)
+            {
+                List<Polygon2d> polyEachDept = AllDeptPolys[i];
+                List<Polygon2d> cleanEachDeptPoly = PolygonUtility.CleanPolygons(polyEachDept);
+                AllDeptPolys[i] = cleanEachDeptPoly;               
+            }
             //create space data tree
             double spaceX = 22;
             double spaceY = 13;
@@ -605,15 +610,7 @@ namespace SpacePlanning
             List<Polygon2d> polyReturnedList = new List<Polygon2d>();
             List<double> distanceList = new List<double>();
             double minArea = 200, ratio = 0.5, dis = 0; ; int dir = 0;
-            for(int i = 0; i < polygonsList.Count; i++)
-            {
-                if (polygonsList[i] == null || polygonsList[i].Points == null || polygonsList[i].Points.Count == 0)
-                    continue;
-                Point2d cen = PolygonUtility.CentroidFromPoly(polygonsList[i]);
-                double distance = GraphicsUtility.DistanceBetweenPoints(cen, centerPt);
-                distanceList.Add(distance);
-            }
-            List<int> indices = BasicUtility.SortIndex(distanceList);
+            List<int> indices = PolygonUtility.SortPolygonsFromAPoint(polygonsList, centerPt);
             Polygon2d polyToPlace = polygonsList[indices[0]];
             double area = PolygonUtility.AreaCheckPolygon(polyToPlace);
             if(area > minArea)
@@ -626,10 +623,14 @@ namespace SpacePlanning
                     dir = 0;
                     dis = spans[1] / 2;
                 }
-                //Dictionary<string, object> splittedPoly = BasicSplitPolyIntoTwo(polyToPlace, ratio, dir);
-                Dictionary<string, object> splittedPoly = SplitByDistanceFromPoint(polyToPlace, dis, dir);
-                polyReturnedList = (List<Polygon2d>)splittedPoly["PolyAfterSplit"];               
-
+                Random ran = new Random();
+                Dictionary<string, object> splittedPoly = BasicSplitPolyIntoTwo(polyToPlace, ratio, dir);                
+                //Dictionary<string, object> splittedPoly = SplitByDistanceFromPoint(polyToPlace, dis, dir);
+                //Dictionary<string, object> splittedPoly = SplitByDistance(polyToPlace, ran, dis, dir);
+                polyReturnedList = (List<Polygon2d>)splittedPoly["PolyAfterSplit"];
+                List<int> ind = PolygonUtility.SortPolygonsFromAPoint(polyReturnedList, centerPt);
+                polyReturnedList[0] = polyReturnedList[ind[0]];
+                polyReturnedList[1] = polyReturnedList[ind[1]];
             }
             else
             {
@@ -651,7 +652,7 @@ namespace SpacePlanning
         {
             Dictionary<string, object> deptArrangement = DeptSplitRefined(poly, deptData, cellInside, offset, 1);
             double count = 0;
-            int maxCount = 50;
+            int maxCount = 200;
             Random rand = new Random();
             bool deptPlaced = false;
             while(deptPlaced == false && count < maxCount)
@@ -667,21 +668,19 @@ namespace SpacePlanning
                         List<Polygon2d> eachDeptPoly = deptAllPolys[i];
                         if(eachDeptPoly != null)
                         {                        
-                        for(int j = 0; j < eachDeptPoly.Count; j++)
-                        {
-                            Polygon2d polyItem = eachDeptPoly[j];
-                            if(polyItem.Points == null || polyItem.Points.Count == 0)
+                            for(int j = 0; j < eachDeptPoly.Count; j++)
                             {
-                                deptPlaced = false;
-                                break;
+                                Polygon2d polyItem = eachDeptPoly[j];
+                                if(polyItem.Points == null || polyItem.Points.Count == 0)
+                                {
+                                    deptPlaced = false;
+                                    break;
+                                }
+                                else
+                                {
+                                    deptPlaced = true;
+                                }     
                             }
-                            else
-                            {
-                                deptPlaced = true;
-                            }
-                           
-
-                        }
                         }
                         else
                         {
@@ -692,10 +691,7 @@ namespace SpacePlanning
                 }
                 count += 1;
             }
-
-
             return deptArrangement;
-
         }
 
         ///++++++++++++++++++++++++++++++++
@@ -1020,7 +1016,7 @@ namespace SpacePlanning
                 sortedB = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexB);
             List<List<Point2d>> twoSets = new List<List<Point2d>>();
             twoSets.Add(sortedA); twoSets.Add(sortedB);        
-            List<Polygon2d>  splittedPoly =  PolygonUtility.OptimizePolyPoints(sortedA, sortedB);
+            List<Polygon2d>  splittedPoly =  PolygonUtility.OptimizePolyPoints(sortedA, sortedB, true);
 
             return new Dictionary<string, object>
             {
@@ -1317,7 +1313,7 @@ namespace SpacePlanning
 
 
         // USING NOW 
-        //SPLITS A POLYGON2D INTO TWO POLYS, BASED ON A DIRECTION AND DISTANCE
+        //splits a ploy into two based on dist and dir, selects the starting pt and side randomly
         /// <summary>
         /// This is an example node demonstrating how to use the Zero Touch import mechanism.
         /// It returns the input number multiplied by 2.
@@ -1331,54 +1327,32 @@ namespace SpacePlanning
         [MultiReturn(new[] { "PolyAfterSplit", "SplitLine", "IntersectedPoints", "SpansBBox", "EachPolyPoint" })]
         public static Dictionary<string, object> SplitByDistance(Polygon2d polyOutline, Random ran, double distance = 10, int dir = 0, double dummy =0)
         {
-            if(polyOutline ==null || polyOutline.Points ==null || polyOutline.Points.Count == 0)
-            {
-                return null;
-            }
-           
+            //if(polyOutline ==null || polyOutline.Points ==null || polyOutline.Points.Count == 0) return null;           
+            if (!PolygonUtility.CheckPoly(polyOutline)) return null;
             double extents = 5000;
-            double spacing = spacingSet;
             List<Point2d> polyOrig = polyOutline.Points;
-            List<Point2d> poly = PolygonUtility.SmoothPolygon(polyOrig, spacing);
-            if (poly == null || poly.Count == 0)
-            {
-                return null; 
-            }
+            List<Point2d> poly = PolygonUtility.SmoothPolygon(polyOrig, spacingSet);
+            if (!PolygonUtility.CheckPointList(poly)) return null;
+          
             List<double> spans = PolygonUtility.GetSpansXYFromPolygon2d(poly);
             Dictionary<int, object> obj = PolygonUtility.pointSelector(ran,poly);
             Point2d pt = (Point2d)obj[0];
             int orient = (int)obj[1];
-
-            Line2d splitLine = new Line2d(pt, extents, dir);
-          
+            Line2d splitLine = new Line2d(pt, extents, dir);          
 
             // push this line right or left or up or down based on ratio
-            if (dir == 0)
-            {
-                splitLine.move(0, orient*distance);
-            }
-            else
-            {
-                splitLine.move(orient*distance, 0);
-            }
+            if (dir == 0) splitLine.move(0, orient * distance);
+            else splitLine.move(orient * distance, 0);
 
             List<Point2d> intersectedPoints = GraphicsUtility.LinePolygonIntersection(poly, splitLine);
-
             // find all points on poly which are to the left or to the right of the line
-            Polygon2d polyA, polyB;
             List<int> pIndexA = new List<int>();
             List<int> pIndexB = new List<int>();
             for (int i = 0; i < poly.Count; i++)
             {
                 bool check = GraphicsUtility.CheckPointSide(splitLine, poly[i]);
-                if (check)
-                {
-                    pIndexA.Add(i);
-                }
-                else
-                {
-                    pIndexB.Add(i);
-                }
+                if (check) pIndexA.Add(i);
+                else pIndexB.Add(i);
             }
 
             //organize the points to make closed poly
@@ -1387,9 +1361,8 @@ namespace SpacePlanning
 
             List<List<Point2d>> twoSets = new List<List<Point2d>>();
             twoSets.Add(sortedA);
-            twoSets.Add(sortedB);          
-
-            List<Polygon2d> splittedPoly = PolygonUtility.OptimizePolyPoints(sortedA, sortedB);
+            twoSets.Add(sortedB);      
+            List<Polygon2d> splittedPoly = PolygonUtility.OptimizePolyPoints(sortedA, sortedB,true);
 
             return new Dictionary<string, object>
             {
