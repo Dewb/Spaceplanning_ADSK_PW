@@ -21,7 +21,9 @@ namespace SpacePlanning
         internal static Random ranGenerate = new Random();
         internal static double recurse = 0;
         internal static Point2d reference = new Point2d(0,0);
-             
+        internal static int maxCount = 5;
+        internal static int maxRound = 5;
+
 
 
         internal double spacingSetOrig
@@ -377,7 +379,7 @@ namespace SpacePlanning
             //SORT THE DEPT BASED ON THE AREA
             sortedDepartmentData.Reverse();
             leftOverPoly.Push(poly);
-            int dir = 0, maxRound = 200;
+            int dir = 0;
             double count3 = 0;
 
             for (int i = 0; i < sortedD.Count; i++)
@@ -678,8 +680,7 @@ namespace SpacePlanning
         {
             Dictionary<string, object> deptArrangement = new Dictionary<string, object>();
             //deptArrangement = DeptSplitRefined(poly, deptData, cellInside, offset, 1);
-            double count = 0;
-            int maxCount = 200;
+            double count = 0;            
             Random rand = new Random();
             bool deptPlaced = false;
             while(deptPlaced == false && count < maxCount)
@@ -968,7 +969,7 @@ namespace SpacePlanning
         public static Dictionary<string, object> RecursivePlaceProgramsSeries(List<Polygon2d> polyInputList, 
             List<ProgramData> progData, double acceptableWidth, int factor = 4, int recompute = 0)
         {
-            int fac = 3;
+            int fac = 5;
             Random ran = new Random();
             List<List<Polygon2d>> polyList = new List<List<Polygon2d>>();
             List<double> areaList = new List<double>();
@@ -1096,7 +1097,7 @@ namespace SpacePlanning
             double spanX = spanListXY[0], spanY = spanListXY[1];
             double aspRatio = spanX / spanY;
             double lowRange = 0.3, highRange = 2;
-            double maxValue = 0.75, minValue = 0.25;
+            double maxValue = 0.70, minValue = 0.35;
             double threshDistanceX = acceptableWidth;
             double threshDistanceY = acceptableWidth;
             Random ran = new Random();
@@ -1192,7 +1193,6 @@ namespace SpacePlanning
                     continue;
                 }
                 double targetArea = PolygonUtility.AreaCheckPolygon(poly) / factor;
-                // double targetArea = acceptableWidth * acceptableWidth * 1.5;
                 MakePolysOfProportion(poly, polyOrganizedList, polyCoverList, acceptableWidth,targetArea);
             }
             recurse = 0;
