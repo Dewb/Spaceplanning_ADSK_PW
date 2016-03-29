@@ -62,10 +62,8 @@ namespace SpacePlanning
             List<Polygon2d> polygonsAllDeptList = new List<Polygon2d>();
             List<DeptData> deptDataAllDeptList = new List<DeptData>();
             List<List<string>> deptNamesNeighbors = new List<List<string>>();
-            List<List<Line2d>> lineCollection = new List<List<Line2d>>();
-
-            
-
+            List<List<Line2d>> lineCollection = new List<List<Line2d>>();            
+            //make flattened list of all dept data and dept polys
             for (int i = 0; i < deptData.Count; i++)
             {
                 List<Polygon2d> polyList = deptData[i].PolyDeptAssigned;
@@ -88,23 +86,16 @@ namespace SpacePlanning
                     {
                         if ((bool)checkNeighbor["Neighbour"] == true)
                         {
-                            //neighbors.Add(deptData[k].DepartmentName);
                             networkLine.Add((Line2d)checkNeighbor["SharedEdge"]);
                         }
-                    }
-                    
-
+                    }       
                 }
             }
-
-
-
             //remove duplicate lines from the found common lines
             List<Line2d> cleanNetworkLines = RemoveDuplicateLines(networkLine);
             //remove any lines falling on the border
             cleanNetworkLines = RemoveDuplicateslinesWithPoly(poly, cleanNetworkLines);
             List<List<string>> deptNeighborNames = new List<List<string>>();
-
             return new Dictionary<string, object>
             {
                 { "DeptTopologyList", (deptNamesNeighbors) },
@@ -153,10 +144,9 @@ namespace SpacePlanning
                     Point2d midPt = splitter.midPt();
                     Point2d nudgedMidPt = splitter.NudgeLineMidPt(deptPoly, 0.5);
                     bool checkInside = GraphicsUtility.PointInsidePolygonTest(deptPoly, nudgedMidPt);
-
                     if (checkInside)
                     {
-                        Dictionary<string, object> splitResult = BuildLayout.SplitByLineMake(deptPoly, splitter, width);
+                        Dictionary<string, object> splitResult = BuildLayout.SplitByLine(deptPoly, splitter, width);
                         List<Polygon2d> polyAfterSplit = (List<Polygon2d>)(splitResult["PolyAfterSplit"]);
                         if (polyAfterSplit != null)
                         {
@@ -381,7 +371,7 @@ namespace SpacePlanning
 
                     if (checkInside)
                     {
-                        Dictionary<string, object> splitResult = BuildLayout.SplitByLineMake(progPoly, splitter, width);
+                        Dictionary<string, object> splitResult = BuildLayout.SplitByLine(progPoly, splitter, width);
                         List<Polygon2d> polyAfterSplit = (List<Polygon2d>)(splitResult["PolyAfterSplit"]);
                         if (polyAfterSplit != null)
                         {

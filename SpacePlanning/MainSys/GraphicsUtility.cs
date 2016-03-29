@@ -117,27 +117,14 @@ namespace SpacePlanning
         }
 
 
-        //checks line if horizontal or vertical
+        //checks line if horizontal or vertical 0 for horizontal, 1 for vertical
         internal static int CheckLineOrient(Line2d line)
         {
             double x = line.StartPoint.X - line.EndPoint.X;
-            double y = line.StartPoint.Y - line.EndPoint.Y;
-
-            if (x == 0)
-            {
-                //line is vertical
-                return 1;
-            }
-            else if ( y==0)
-            {
-                //line is horizontal
-                return 0;
-
-            }
-            else
-            {
-                return 0;
-            }
+            double y = line.StartPoint.Y - line.EndPoint.Y;       
+            if (x == 0) return 1;
+            else if ( y==0) return 0;
+            else return 0;
         }
 
       
@@ -637,9 +624,10 @@ namespace SpacePlanning
 
         }
 
-        // find the centroid of group of  cells
+        // find the centroid of list of point2d
         public static Point2d CentroidInPointLists(List<Point2d> ptList)
         {
+            if (ptList == null || ptList.Count == 0) return null;
             double x = 0, y = 0;
             for (int i = 0; i < ptList.Count; i++)
             {
@@ -648,8 +636,7 @@ namespace SpacePlanning
             }
             x = x / ptList.Count;
             y = y / ptList.Count;
-            Point2d centroid = new Point2d(x, y);
-            return centroid;
+            return new Point2d(x, y); 
 
         }
 
