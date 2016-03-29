@@ -569,7 +569,7 @@ namespace SpacePlanning
 
         internal static List<Point2d> SmoothPolygon(List<Point2d> pointList, double spacingProvided = 1)
         {
-            int threshValue = 20;
+            int threshValue = 50;
             if (pointList == null || pointList.Count == 0) return null;
             if (pointList.Count > threshValue) return pointList;
            
@@ -600,8 +600,6 @@ namespace SpacePlanning
                     Point2d ptAdd = new Point2d(x, y);
                     ptList.Add(ptAdd);
                 }
-
-
             }
             return ptList;
         }
