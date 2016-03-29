@@ -148,7 +148,7 @@ namespace SpacePlanning
 
         //public functions
         [MultiReturn(new[] { "PolyCurves", "PointLists" })]
-        public static Dictionary<string, object> MakeProgramPolygons(List<List<int>> cellProgramsList, List<Point2d> ptList)
+        internal static Dictionary<string, object> MakeProgramPolygons(List<List<int>> cellProgramsList, List<Point2d> ptList)
         {
             List<PolyCurve> polyList = new List<PolyCurve>();
             List<List<Point2d>> ptAll = new List<List<Point2d>>();
@@ -447,7 +447,7 @@ namespace SpacePlanning
 
         // 2ND MAIN COMPONTNENT
         [MultiReturn(new[] { "DepartmentDataProgramsAdded", "ProgramDataUpdated" })]
-        public static Dictionary<string,object> AssignProgstoDepts(List<DeptData> deptData,int recompute)
+        internal static Dictionary<string,object> AssignProgstoDepts(List<DeptData> deptData,int recompute)
         {
 
             //Build new dept data list
@@ -943,7 +943,7 @@ namespace SpacePlanning
         // 0B ////////////////////////////
         //TO TEST IF PROGRAM DATA OUTPUTS CORRECT STUFFS
         [MultiReturn(new[] { "ProgrName", "ProgDept" })]
-        public static Dictionary<string, object> ProgramObjectCheck(List<ProgramData> progData)
+        internal static Dictionary<string, object> ProgramObjectCheck(List<ProgramData> progData)
         {
             List<int> progIdList = new List<int>();
             List<string> programList = new List<string>();
@@ -1080,7 +1080,7 @@ namespace SpacePlanning
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-        public static List<DeptData> Do_OrganizeDepartmentsOverSite(List<DeptData> deptData, List<Cell> cells, int recompute =0)
+        internal static List<DeptData> Do_OrganizeDepartmentsOverSite(List<DeptData> deptData, List<Cell> cells, int recompute =0)
         {
             //Build new dept data list
             List<DeptData> newDeptDataList = new List<DeptData>();

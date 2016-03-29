@@ -12,7 +12,7 @@ namespace SpacePlanning
         Space
     }
 
-    public enum LineType
+    internal enum LineType
     {
         Horizontal,
         Vertical
