@@ -17,7 +17,8 @@ namespace SpacePlanning
     public class BuildLayout
     {      
         internal static double spacingSet = 5; //higher value makes code faster but less precise 3 was good
-        internal static double spacingSet2 = 1; 
+        internal static double spacingSet2 = 1;
+        internal static Random ranGenerate = new Random();
         internal static double recurse = 0;
         internal static Point2d reference = new Point2d(0,0);
              
@@ -1034,16 +1035,17 @@ namespace SpacePlanning
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////// TEST CODE BELOW /////////////////
 
-   
 
 
 
-        //used to split Depts into Program Spaces based on recursive poly split grid
+
+        //used to split Depts into Program Spaces based on recursive poly split grid 
         [MultiReturn(new[] { "PolyAfterSplit", "BigPolysAfterSplit", "CirculationPolygons", "EachPolyPoint", "UpdatedProgramData" })]
         public static Dictionary<string, object> RecursivePlaceProgramsSeries(List<Polygon2d> polyInputList, 
             List<ProgramData> progData, double acceptableWidth, int factor = 4, int recompute = 0)
         {
-           
+            int fac = 3;
+            Random ran = new Random();
             List<List<Polygon2d>> polyList = new List<List<Polygon2d>>();
             List<double> areaList = new List<double>();
             List<Point2d> pointsList = new List<Point2d>();
@@ -1051,7 +1053,9 @@ namespace SpacePlanning
             //push programdata into the stack
             for (int j = 0; j < progData.Count; j++) { programDataRetrieved.Push(progData[j]); }
             List<Polygon2d> polyOrganizedList = new List<Polygon2d>(), polyCoverList = new List<Polygon2d>();
-            Dictionary<string,object> polySplit = SplitBigPolys(polyInputList, acceptableWidth, factor);
+            double max = acceptableWidth + acceptableWidth / fac, min = acceptableWidth - acceptableWidth / fac;
+            double acceptWide = BasicUtility.RandomBetweenNumbers(ran, max, min);
+            Dictionary<string,object> polySplit = SplitBigPolys(polyInputList, acceptWide, factor);
             polyOrganizedList = (List<Polygon2d>)polySplit["PolySpaces"];
             polyCoverList = (List<Polygon2d>)polySplit["PolyForCirculation"];
 
@@ -1164,152 +1168,84 @@ namespace SpacePlanning
             List<Polygon2d> polycoverList, double acceptableWidth, double targetArea)
         {
             recurse += 1;
-            // Trace.WriteLine("Recurse doing : " + recurse);
             List<double> spanListXY = PolygonUtility.GetSpansXYFromPolygon2d(poly.Points);
-            double spanX = spanListXY[0];
-            double spanY = spanListXY[1];
+            double spanX = spanListXY[0], spanY = spanListXY[1];
             double aspRatio = spanX / spanY;
-            double lowRange = 0.3;
-            double highRange = 2;
+            double lowRange = 0.3, highRange = 2;
+            double maxValue = 0.75, minValue = 0.25;
             double threshDistanceX = acceptableWidth;
             double threshDistanceY = acceptableWidth;
-
-            bool square = true;
             Random ran = new Random();
-            double val = ran.NextDouble();
-            //double targetArea = acceptableWidth * acceptableWidth;
-            
-
-            if (spanX > threshDistanceX && spanY > threshDistanceY)
-            {
-                //Trace.WriteLine("Square is false 1");
-                square = false;
-            }
+            bool square = true;
+            double div;
+            div = BasicUtility.RandomBetweenNumbers(ranGenerate, maxValue, minValue);
+            if (spanX > threshDistanceX && spanY > threshDistanceY) square = false;
             else {
-                if (aspRatio > lowRange && aspRatio < highRange)
-                {
-                    //Trace.WriteLine("Square is false 2");
-                    square = false;
-                }
-                else
-                {
-                    //Trace.WriteLine("Square is true");
-                    square = true;
-
-                }
+                if (aspRatio > lowRange && aspRatio < highRange) square = false;
+                else square = true;
             }
-
-            if (square)
-            {
-                //poly can be considered as squrish
-                //Trace.WriteLine("Normal Rect found");
-                polyOrganizedList.Add(poly);
-                
-            }
+            if (square) polyOrganizedList.Add(poly);
             else
             {
                 Dictionary<string, object> splitResult;
                 //poly is rectangle so split it into two and add
                 if (spanX > spanY)
                 {
-                    double dis = spanY / 2;
-                    int dir = 0;
-                    dir = BasicUtility.toggleInputInt(dir);
+                    double dis = spanY * div;
+                    int dir = 1;
                     //splitResult = BasicSplitPolyIntoTwo(poly, 0.5, dir);
-                    splitResult = SplitByDistance(poly, ran, dis, dir,1);
+                    splitResult = SplitByDistance(poly, ran, dis, dir,spacingSet2);
                     //splitResult = SplitByDistanceFromPoint(poly, dis, dir);
-                    //Trace.WriteLine("Splitted because it was not square 1");
                 }
                 else
                 {
-                    double dis = spanX / 2;
-                    int dir = 1;
-                    dir = BasicUtility.toggleInputInt(dir);
+                    double dis = spanX * div;
+                    int dir = 0;
                     //splitResult = BasicSplitPolyIntoTwo(poly, 0.5, dir);
-                    splitResult = SplitByDistance(poly,ran, dis, dir,1);
+                    splitResult = SplitByDistance(poly,ran, dis, dir,spacingSet2);
                     //splitResult = SplitByDistanceFromPoint(poly, dis, dir);
-                    //Trace.WriteLine("Splitted because it was not square 2");
                 }
 
                 List<Polygon2d> polyAfterSplit = (List<Polygon2d>)splitResult["PolyAfterSplit"];
-                Polygon2d polA = polyAfterSplit[0];
-                Polygon2d polB = polyAfterSplit[1];
-                double areaPolA = PolygonUtility.AreaCheckPolygon(polA);
-                double areaPolB = PolygonUtility.AreaCheckPolygon(polB);
-                if (areaPolA > targetArea)
-                {
-                    Trace.WriteLine("Added to coverlist2");
-                    Polygon2d polyNew = new Polygon2d(polA.Points, 0);
-                    polycoverList.Add(polyNew);
-                }
-
-                if (areaPolB > targetArea)
-                {
-                    Trace.WriteLine("Added to coverlist2");
-                    Polygon2d polyNew = new Polygon2d(polB.Points, 0);
-                    polycoverList.Add(polyNew);
-                }
-
-
-
-
+                double areaPolA = PolygonUtility.AreaCheckPolygon(polyAfterSplit[0]);
+                double areaPolB = PolygonUtility.AreaCheckPolygon(polyAfterSplit[1]);
+                if (areaPolA > targetArea) polycoverList.Add(polyAfterSplit[0]);
+                if (areaPolB > targetArea) polycoverList.Add(polyAfterSplit[1]);
+               
                 List<double> spanA = PolygonUtility.GetSpansXYFromPolygon2d(polyAfterSplit[0].Points);
                 List<double> spanB = PolygonUtility.GetSpansXYFromPolygon2d(polyAfterSplit[1].Points);
                 Trace.WriteLine("Recurse is : " + recurse);
-
                 if (recurse < 1500)
                 {
-
                     if ((spanA[0] > 0 && spanA[1] > 0) || (spanB[0] > 0 && spanB[1] > 0))
                     {
-                        //Trace.WriteLine("Recurse is  : " + recurse);
                         if (spanA[0] > acceptableWidth && spanA[1] > acceptableWidth)
                         {
-                            //Trace.WriteLine("SpanA Dimension : " + spanA[0]);
                             MakePolysOfProportion(polyAfterSplit[0], polyOrganizedList, polycoverList,acceptableWidth,targetArea);
                         }
                         else
                         {
                             polyOrganizedList.Add(polyAfterSplit[0]);
                             double areaPoly = PolygonUtility.AreaCheckPolygon(polyAfterSplit[0]);
-                            //Trace.WriteLine("No Need to recurse again 1");
                         }
                         //end of 1st if
                         if (spanB[0] > acceptableWidth && spanB[1] > acceptableWidth)
                         {
-                            //Trace.WriteLine("SpanB Dimension : " + spanB[0]);
                             MakePolysOfProportion(polyAfterSplit[1], polyOrganizedList, polycoverList, acceptableWidth,targetArea);
-
                         }
                         else
                         {
                             polyOrganizedList.Add(polyAfterSplit[1]);
-                            double areaPoly = PolygonUtility.AreaCheckPolygon(polyAfterSplit[1]);
-                            if (areaPoly > targetArea)
-                            {
-                                Trace.WriteLine("Added to coverlist2");
-                                Polygon2d polyNew = new Polygon2d(polyAfterSplit[0].Points, 0);
-                                //polycoverList.Add(polyNew);
-                            }
-                            //Trace.WriteLine("No Need to recurse again 2");
                         }
-                        //end of 2nd if
-                        
+                        //end of 2nd if                        
                     }
                     else
                     {
                         polyOrganizedList.Add(polyAfterSplit[0]);
                         polyOrganizedList.Add(polyAfterSplit[1]);
-                        //Trace.WriteLine("No Need to recurse again 3");
                     }
-
                 }
-
-
             }
-
-            
-            //Trace.WriteLine("End of function +++++++++++++++++++++++++++++++++++++++++++++++++++++ ");
         }// end of function
 
 

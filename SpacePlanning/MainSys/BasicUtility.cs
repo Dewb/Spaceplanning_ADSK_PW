@@ -58,7 +58,6 @@ namespace SpacePlanning
         //random double numbers between two decimals
         internal static double RandomBetweenNumbers(Random rn, double max, double min)
         {
-
             double num = rn.NextDouble() * (max - min) + min;
             return num;
         }
