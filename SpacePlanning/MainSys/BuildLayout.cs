@@ -308,7 +308,7 @@ namespace SpacePlanning
 
         internal static List<Polygon2d> EdgeSplitWrapper(Polygon2d currentPoly,Random ran, double distance, int dir, double dummy =0)
         {
-
+            Trace.WriteLine("Wow Split Polys did work");
             Dictionary<string, object> splitReturned = null;
             List<Polygon2d> polyAfterSplitting = new List<Polygon2d>();
             try
@@ -318,25 +318,18 @@ namespace SpacePlanning
             }
             catch (Exception)
             {
-                //toggle dir between 0 and 1
+                Trace.WriteLine("Split Polys did not work1");
                 dir = BasicUtility.toggleInputInt(dir);
                 splitReturned = SplitByDistance(currentPoly, ran, distance, dir,dummy);
                 if (splitReturned == null)
                 {
-                    //Trace.WriteLine("Split Polys did not work");
+                    Trace.WriteLine("Split Polys did not work2");
                     return null;
                 }
                 polyAfterSplitting = (List<Polygon2d>)splitReturned["PolyAfterSplit"];
-
-                if(polyAfterSplitting[0] == null && polyAfterSplitting[1] == null)
-                {
-                    return null;
-                }
-                //throw;
+                if(polyAfterSplitting[0] == null && polyAfterSplitting[1] == null) return null;
+               
             }
-
-            
-
             return polyAfterSplitting;
         }
 
@@ -355,36 +348,22 @@ namespace SpacePlanning
             List<double> AllDeptAreaAdded = new List<double>();
             Stack<Polygon2d> leftOverPoly = new Stack<Polygon2d>();
             List<Node> AllNodesList = new List<Node>();
-
-            SortedDictionary<double, DeptData> sortedD = new SortedDictionary<double, DeptData>();
-            for (int i = 0; i < deptData.Count; i++)
-            {
-                double area = deptData[i].AreaEachDept();
-                DeptData deptD = deptData[i];
-                sortedD.Add(area, deptD);
-            }
-
-            List<DeptData> sortedDepartmentData = new List<DeptData>();
-            foreach (KeyValuePair<double, DeptData> p in sortedD)
-            {
-                DeptData deptItem = p.Value;
-                sortedDepartmentData.Add(deptItem);
-            }
-
-
-            //smooth poly
             List<Point2d> polyPts = PolygonUtility.SmoothPolygon(poly.Points, spacingSet);
             poly = new Polygon2d(polyPts, 0);
 
-            //SORT THE DEPT BASED ON THE AREA
+            SortedDictionary<double, DeptData> sortedD = new SortedDictionary<double, DeptData>();
+            for (int i = 0; i < deptData.Count; i++) sortedD.Add(deptData[i].AreaEachDept(), deptData[i]);
+           
+            List<DeptData> sortedDepartmentData = new List<DeptData>();
+            foreach (KeyValuePair<double, DeptData> p in sortedD) sortedDepartmentData.Add(p.Value);
             sortedDepartmentData.Reverse();
+
             leftOverPoly.Push(poly);
             int dir = 0;
             double count3 = 0;
 
             for (int i = 0; i < sortedD.Count; i++)
             {
-
                 DeptData deptItem = sortedDepartmentData[i];
                 double areaDeptNeeds = deptItem.DeptAreaNeeded;
                 double areaAddedToDept = 0;
@@ -403,7 +382,7 @@ namespace SpacePlanning
                 Random ran = new Random();
                 Node spaceNode, containerNode;
 
-                // when inpatient--------------------------------------------------------------------------
+                // when dept is inpatient unit
                 if (i == 0)
                 {
                     while (areaLeftOverToAdd > limit && leftOverPoly.Count > 0 && count1 < maxRound)
@@ -413,24 +392,7 @@ namespace SpacePlanning
                         areaCurrentPoly = PolygonUtility.AreaCheckPolygon(currentPolyObj);
                         List<Polygon2d> edgeSplitted = EdgeSplitWrapper(currentPolyObj, ran, offset, dir); //////////////////////
 
-                        if (edgeSplitted == null)
-                        {
-                            return null;
-                            //Trace.WriteLine("Found Null");
-                            int countTry = 0;
-                            Random ran1 = new Random();
-                            while (edgeSplitted == null && countTry < 4)
-                            {
-
-                                dir = BasicUtility.toggleInputInt(dir);
-                                double percentage = BasicUtility.RandomBetweenNumbers(ran1, 0.75, 0.25);
-                                double offsetNew = offset * percentage;
-                                edgeSplitted = EdgeSplitWrapper(currentPolyObj, ran, offsetNew, dir);
-                                countTry += 1;
-                            }
-
-                            //continue;
-                        }
+                        if (edgeSplitted == null) return null;
                         double areaA = PolygonUtility.AreaCheckPolygon(edgeSplitted[0]);
                         double areaB = PolygonUtility.AreaCheckPolygon(edgeSplitted[1]);
                         if (areaA < areaB)
@@ -455,7 +417,7 @@ namespace SpacePlanning
                     AllNodesList.Add(spaceNode);
                     AllNodesList.Add(containerNode);
                 }
-                //when other depts------------------------------------------------------------------------
+                //when other depts 
                 else
                 {
                     Random rn = new Random();
@@ -626,7 +588,7 @@ namespace SpacePlanning
                 { "LeftOverPolys", (AllLeftOverPolys) },
                 { "CentralStation", (polyReturned[0]) },
                 { "UpdatedDeptData", (UpdatedDeptData)},
-                { "SpaceDataTree", (SpaceTreeData) }
+                { "SpaceDataTree", (poly) }
             };
 
 
