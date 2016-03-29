@@ -152,10 +152,6 @@ namespace stuffer
 
 
         //ADDED CODE : SD///////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
         public static Line2d ByStartPointEndPoint(Point2d a, Point2d b)
         {
             return new Line2d(a, b);
@@ -178,24 +174,14 @@ namespace stuffer
             }
 
         }
-
-
-
-
-
-
-
-
-
-
+        
         internal void move(double distX, double distY)
         {
             m_start = new Point2d((m_start.X+distX),(m_start.Y+distY));
             m_end = new Point2d((m_end.X + distX), (m_end.Y + distY));
 
         }
-
-
+        
         internal void move(List<Point2d> poly, double distance)
         {
 
@@ -208,8 +194,7 @@ namespace stuffer
             m_start = new Point2d((m_start.X + vectScaled.X), (m_start.Y + vectScaled.Y));
             m_end = new Point2d((m_end.X + vectScaled.X), (m_end.Y + vectScaled.Y));
         }
-
-
+        
         internal Point2d midPt()
         {
             double x = (m_start.X + m_end.X) / 2;
@@ -239,8 +224,7 @@ namespace stuffer
             Point2d point = new Point2d(midPt.X + vecScaled.X, midPt.Y + vecScaled.Y);
             return point;
         }
-
-
+        
         internal void extend()
         {
             double eps = 1000;
