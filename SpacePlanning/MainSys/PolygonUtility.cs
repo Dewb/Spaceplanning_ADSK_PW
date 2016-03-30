@@ -487,14 +487,12 @@ namespace SpacePlanning
             pointCoordList.Add(Point2d.ByCoordinates(xMin, yMax));
             pointCoordList.Add(Point2d.ByCoordinates(xMax, yMax));
             pointCoordList.Add(Point2d.ByCoordinates(xMax, yMin));
-
             return pointCoordList;
         }
 
 
         public static List<double> GetSpansXYFromPolygon2d(List<Point2d> poly)
         {
-
             if (poly == null || poly.Count == 0)
             {
                 List<double> zeroList = new List<double>();
@@ -502,18 +500,14 @@ namespace SpacePlanning
                 zeroList.Add(0);
                 return zeroList;
             }
-            // compute bounding box ( set of four points ) for the poly
-            // find x Range, find y Range
             List<Point2d> polyBBox = FromPointsGetBoundingPoly(poly);
             Range2d polyRange = GetRang2DFromBBox(poly);
-
             Point2d span = polyRange.Span;
             double horizontalSpan = span.X;
             double verticalSpan = span.Y;
             List<double> spans = new List<double>();
             spans.Add(horizontalSpan);
             spans.Add(verticalSpan);
-
             return spans;
         }
 

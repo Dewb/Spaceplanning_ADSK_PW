@@ -557,7 +557,7 @@ namespace SpacePlanning
         [MultiReturn(new[] { "PolyAfterSplit", "AreaEachPoly", "EachPolyPoint", "UpdatedProgramData" })]
         public static Dictionary<string, object> RecursiveSplitProgramsOneDirByDistance(List<Polygon2d> polyInputList, List<ProgramData> progData, double distance, int recompute = 1)
         {
-
+            int dir = 0;
             List<Polygon2d> polyList = new List<Polygon2d>();
             List<double> areaList = new List<double>();
             List<Point2d> pointsList = new List<Point2d>();
@@ -570,38 +570,23 @@ namespace SpacePlanning
 
             for (int i = 0; i < polyInputList.Count; i++)
             {
-
                 Polygon2d poly = polyInputList[i];
-
-                if (!PolygonUtility.CheckPoly(poly))
-                    continue;
-
-                List<Point2d> polyBBox = PolygonUtility.FromPointsGetBoundingPoly(poly.Points);
-                Range2d polyRange = PolygonUtility.GetRang2DFromBBox(poly.Points);
-
-                Point2d span = polyRange.Span;
-                double horizontalSpan = span.X;
-                double verticalSpan = span.Y;
-                List<double> spans = new List<double>();
-                spans.Add(horizontalSpan);
-                spans.Add(verticalSpan);
-                double setSpan = 1000000000000;
-                int dir = 0;
-                if (horizontalSpan > verticalSpan)
+                if (!PolygonUtility.CheckPoly(poly)) continue;
+                List<double> spans = PolygonUtility.GetSpansXYFromPolygon2d(poly.Points);               
+                double setSpan = 1000000000000;                
+                if (spans[0] > spans[1])
                 {
                     dir = 1;
-                    setSpan = horizontalSpan;
+                    setSpan = spans[0];
                 }
                 else
                 {
                     dir = 0;
-                    setSpan = verticalSpan;
+                    setSpan = spans[1];
                 }
 
                 Polygon2d currentPoly = poly;
                 int count = 0;
-
-
                 Random ran2 = new Random();
                 while (setSpan > 0 && programDataRetrieved.Count > 0)
                 {
@@ -644,8 +629,6 @@ namespace SpacePlanning
                 else progNew.PolyProgAssigned = null;
                 UpdatedProgramDataList.Add(progNew);
             }
-
-            pointsList = null;
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (polyList) },
@@ -697,6 +680,7 @@ namespace SpacePlanning
             // push this line right or left or up or down based on ratio
             if (dir == 0) splitLine.move(0, shift * verticalSpan);
             else splitLine.move(shift * horizontalSpan, 0);
+            /*
             List<Point2d> intersectedPoints = GraphicsUtility.LinePolygonIntersection(poly, splitLine);
 
             List<int> pIndexA = new List<int>(), pIndexB = new List<int>();
@@ -713,6 +697,11 @@ namespace SpacePlanning
             List<List<Point2d>> twoSets = new List<List<Point2d>>();
             twoSets.Add(sortedA); twoSets.Add(sortedB);        
             List<Polygon2d>  splittedPoly =  PolygonUtility.OptimizePolyPoints(sortedA, sortedB, true);
+            */
+
+            Dictionary<string, object> intersectionReturn = MakeIntersections(poly, splitLine, spacingSet);
+            List<Point2d> intersectedPoints = (List<Point2d>)intersectionReturn["IntersectedPoints"];
+            List<Polygon2d> splittedPoly = (List<Polygon2d>)intersectionReturn["PolyAfterSplit"];
 
             return new Dictionary<string, object>
             {
@@ -720,7 +709,7 @@ namespace SpacePlanning
                 { "SplitLine", (splitLine) },
                 { "IntersectedPoints", (intersectedPoints) },
                 { "SpansBBox", (spans) },
-                { "EachPolyPoint", (twoSets) }
+                { "EachPolyPoint", (null) }
             };
 
         }
