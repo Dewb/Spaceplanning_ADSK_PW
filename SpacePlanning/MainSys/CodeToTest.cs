@@ -13,6 +13,106 @@ namespace SpacePlanning
     class CodeToTest
     {
 
+        //****DEF - USING THIS TO SPLIT PROGRAMS--------------------------------
+        //RECURSIVE SPLITS A POLY
+        [MultiReturn(new[] { "PolyAfterSplit", "AreaEachPoly", "EachPolyPoint", "UpdatedProgramData" })]
+        public static Dictionary<string, object> RecursiveSplitPolyPrograms(List<Polygon2d> polyInputList, List<ProgramData> progData, double ratioA = 0.5, int recompute = 1)
+        {
+            double ratio = 0.5;
+            List<Polygon2d> polyList = new List<Polygon2d>();
+            List<Point2d> pointsList = new List<Point2d>();
+            List<double> areaList = new List<double>();
+            Stack<Polygon2d> polyRetrieved = new Stack<Polygon2d>();
+            Stack<ProgramData> programDataRetrieved = new Stack<ProgramData>();
+
+            for (int j = 0; j < progData.Count; j++) { programDataRetrieved.Push(progData[j]); }
+
+            for (int i = 0; i < polyInputList.Count; i++)
+            {
+                Polygon2d currentPoly, poly = polyInputList[i];
+                if (poly == null || poly.Points == null || poly.Points.Count == 0) return null;
+
+                polyRetrieved.Push(poly);
+                int count = 0, dir = 1;
+                double areaThreshold = 1000, maximum = 0.9, minimum = 0.3;
+
+                List<Polygon2d> polyAfterSplit = null;
+                Dictionary<string, object> splitReturn = null;
+                Random rand = new Random();
+                while (polyRetrieved.Count > 0 && programDataRetrieved.Count > 0)
+                {
+                    ProgramData progItem = programDataRetrieved.Pop();
+                    ratio = rand.NextDouble() * (maximum - minimum) + minimum;
+                    currentPoly = polyRetrieved.Pop();
+                    try
+                    {
+                        splitReturn = BuildLayout.BasicSplitPolyIntoTwo(currentPoly, ratio, dir);
+                        polyAfterSplit = (List<Polygon2d>)splitReturn["PolyAfterSplit"];
+                    }
+                    catch (Exception)
+                    {
+                        dir = BasicUtility.toggleInputInt(dir);
+                        splitReturn = BuildLayout.BasicSplitPolyIntoTwo(currentPoly, ratio, dir);
+                        if (splitReturn == null) { Trace.WriteLine("Could Not Split"); continue; }
+                        polyAfterSplit = (List<Polygon2d>)splitReturn["PolyAfterSplit"];
+                        //throw;
+                    }
+                    List<List<Point2d>> pointsOnPoly = (List<List<Point2d>>)splitReturn["EachPolyPoint"];
+                    double area1 = GraphicsUtility.AreaPolygon2d(polyAfterSplit[0].Points);
+                    double area2 = GraphicsUtility.AreaPolygon2d(polyAfterSplit[1].Points);
+                    if (area1 > areaThreshold)
+                    {
+                        polyRetrieved.Push(polyAfterSplit[0]);
+                        polyList.Add(polyAfterSplit[0]);
+                        progItem.AreaProvided = area1;
+                        pointsList.AddRange(pointsOnPoly[0]);
+                        areaList.Add(area1);
+                    }
+                    if (area2 > areaThreshold)
+                    {
+                        polyRetrieved.Push(polyAfterSplit[1]);
+                        polyList.Add(polyAfterSplit[1]);
+                        progItem.AreaProvided = area2;
+                        pointsList.AddRange(pointsOnPoly[1]);
+                        areaList.Add(area2);
+                    }
+                    dir = BasicUtility.toggleInputInt(dir);
+                    count += 1;
+                }// end of while loop
+            }//end of for loop
+
+            List<ProgramData> AllProgramDataList = new List<ProgramData>();
+            for (int i = 0; i < progData.Count; i++)
+            {
+                ProgramData progItem = progData[i];
+                ProgramData progNew = new ProgramData(progItem);
+                if (i < polyList.Count) progNew.PolyProgAssigned = polyList[i];
+                else progNew.PolyProgAssigned = null;
+                AllProgramDataList.Add(progNew);
+            }
+            //polyList = Polygon2d.PolyReducePoints(polyList);
+            //Trace.WriteLine("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+
+            return new Dictionary<string, object>
+            {
+                { "PolyAfterSplit", (polyList) },
+                { "AreaEachPoly", (areaList) },
+                { "EachPolyPoint", (pointsList) },
+                { "UpdatedProgramData", (AllProgramDataList) }
+            };
+
+
+        }
+
+
+        //RECURSIVE SPLITS A POLY
+        internal static Dictionary<string, object> RecursiveSplitPolyProgramsSingleOut(List<Polygon2d> polyInputList,
+            List<ProgramData> progData, double ratioA = 0.5, int recompute = 1)
+        {
+            return RecursiveSplitPolyPrograms(polyInputList, progData, ratioA, recompute);
+        }
+
+
         //changes the center of one or both polys to ensure correct intersection line is found
         [MultiReturn(new[] { "CenterPolyA", "CenterPolyB", "PolyA", "PolyB" })]
         internal static Dictionary<string, object> ComputePolyCentersAlign(Polygon2d polyA, Polygon2d polyB)
