@@ -563,8 +563,8 @@ namespace SpacePlanning
                     //Trace.WriteLine("Breaking This---------------------------------");
                     break;
                 }
-
-                polyAfterSplitting = BuildLayout.EdgeSplitWrapper(currentPoly, ran2, distance, dir);
+                Dictionary<string,object> splitReturn =  BuildLayout.SplitByDistance(currentPoly, ran2, distance, dir);
+                polyAfterSplitting = (List<Polygon2d>)splitReturn["PolyAfterSplit"];
                 double area1 = GraphicsUtility.AreaPolygon2d(polyAfterSplitting[0].Points);
 
 

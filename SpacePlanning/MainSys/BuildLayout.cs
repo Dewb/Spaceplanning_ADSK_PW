@@ -128,6 +128,23 @@ namespace SpacePlanning
             };
 
         }
+        
+
+
+        /// <summary>
+        /// Thisnode places the programs in the dept polygon2d's based on the list from the program document
+        /// It returns the input number multiplied by 2.
+        /// </summary>
+        /// <param name="a">Dept Polygon2d where programs should be placed</param>
+        /// <param name="b">Program Data Object containing program information</param>
+        /// <search>
+        /// split, divide , partition space based on distance
+        /// </search>
+        public static int TestCode(int a, int b)
+        {
+            return a + b;
+        }
+
 
 
         //make a tree to test
@@ -179,63 +196,6 @@ namespace SpacePlanning
             };
 
         }
-
-        internal static List<Polygon2d> BasicSplitWrapper(Polygon2d currentPoly, double ratio, int dir)
-        {
-
-            Dictionary<string, object> splitReturned = null;
-            List<Polygon2d> polyAfterSplitting = new List<Polygon2d>();
-            try
-            {
-                splitReturned = BasicSplitPolyIntoTwo(currentPoly, ratio, dir);
-                polyAfterSplitting = (List<Polygon2d>)splitReturned["PolyAfterSplit"];
-            }
-            catch (Exception)
-            {
-                //toggle dir between 0 and 1
-                dir = BasicUtility.toggleInputInt(dir);
-                splitReturned = BasicSplitPolyIntoTwo(currentPoly, ratio, dir);
-                if (splitReturned == null)
-                {
-                    //Trace.WriteLine("Split Polys did not work");
-                    return null;
-                }
-                polyAfterSplitting = (List<Polygon2d>)splitReturned["PolyAfterSplit"];
-                //throw;
-            }
-
-            return polyAfterSplitting;
-        }
-
-
-        internal static List<Polygon2d> EdgeSplitWrapper(Polygon2d currentPoly,Random ran, double distance, int dir, double dummy =0)
-        {
-            Trace.WriteLine("Wow Split Polys did work");
-            Dictionary<string, object> splitReturned = null;
-            List<Polygon2d> polyAfterSplitting = new List<Polygon2d>();
-            try
-            {
-                splitReturned = SplitByDistance(currentPoly, ran, distance, dir, dummy);
-                polyAfterSplitting = (List<Polygon2d>)splitReturned["PolyAfterSplit"];
-            }
-            catch (Exception)
-            {
-                Trace.WriteLine("Split Polys did not work1");
-                dir = BasicUtility.toggleInputInt(dir);
-                splitReturned = SplitByDistance(currentPoly, ran, distance, dir,dummy);
-                if (splitReturned == null)
-                {
-                    Trace.WriteLine("Split Polys did not work2");
-                    return null;
-                }
-                polyAfterSplitting = (List<Polygon2d>)splitReturned["PolyAfterSplit"];
-                if(polyAfterSplitting[0] == null && polyAfterSplitting[1] == null) return null;
-               
-            }
-            return polyAfterSplitting;
-        }
-
-
 
 
 
@@ -608,22 +568,16 @@ namespace SpacePlanning
                 programDataRetrieved.Push(progData[j]);
             }
 
-            ////////////////////////////////////////////////////////////////////////////
             for (int i = 0; i < polyInputList.Count; i++)
             {
 
                 Polygon2d poly = polyInputList[i];
 
-
-                if (poly == null || poly.Points == null || poly.Points.Count == 0)
-                {
+                if (!PolygonUtility.CheckPoly(poly))
                     continue;
-                }
-
 
                 List<Point2d> polyBBox = PolygonUtility.FromPointsGetBoundingPoly(poly.Points);
                 Range2d polyRange = PolygonUtility.GetRang2DFromBBox(poly.Points);
-                double minimumLength = 200;
 
                 Point2d span = polyRange.Span;
                 double horizontalSpan = span.X;
@@ -637,15 +591,12 @@ namespace SpacePlanning
                 {
                     dir = 1;
                     setSpan = horizontalSpan;
-
                 }
                 else
                 {
                     dir = 0;
                     setSpan = verticalSpan;
-
                 }
-
 
                 Polygon2d currentPoly = poly;
                 int count = 0;
@@ -655,23 +606,19 @@ namespace SpacePlanning
                 while (setSpan > 0 && programDataRetrieved.Count > 0)
                 {
                     ProgramData progItem = programDataRetrieved.Pop();
-                    List<Polygon2d> polyAfterSplitting = EdgeSplitWrapper(currentPoly, ran2, distance, dir);
+                    Dictionary<string, object> splitReturn = SplitByDistance(currentPoly, ran2, distance, dir);
+                    List<Polygon2d> polyAfterSplitting = (List<Polygon2d>)splitReturn["PolyAfterSplit"];
                     double selectedArea = 0;
                     double area1 = GraphicsUtility.AreaPolygon2d(polyAfterSplitting[0].Points);
                     double area2 = GraphicsUtility.AreaPolygon2d(polyAfterSplitting[1].Points);
                     if (area1 > area2)
                     {
                         currentPoly = polyAfterSplitting[0];
-                        if (polyAfterSplitting[1] == null)
-                        {
-                            break;
-                        }
+                        if (polyAfterSplitting[1] == null) break;
                         polyList.Add(polyAfterSplitting[1]);
                         progItem.AreaProvided = area1;
                         areaList.Add(area2);
                         selectedArea = area2;
-
-
                     }
                     else
                     {
@@ -680,21 +627,8 @@ namespace SpacePlanning
                         progItem.AreaProvided = area2;
                         areaList.Add(area1);
                         selectedArea = area1;
-
                     }
-
-
-                    if (currentPoly.Points == null)
-                    {
-                        //Trace.WriteLine("Breaking This");
-                        break;
-                    }
-
-
-
-                    //reduce number of points
-                    //currentPoly = new Polygon2d(currentPoly.Points);
-
+                    if (currentPoly.Points == null) break;
                     setSpan -= distance;
                     count += 1;
                 }// end of while loop
@@ -706,25 +640,15 @@ namespace SpacePlanning
             {
                 ProgramData progItem = progData[i];
                 ProgramData progNew = new ProgramData(progItem);
-                if (i < polyList.Count)
-                {
-                    progNew.PolyProgAssigned = polyList[i];
-                }
-                else
-                {
-                    progNew.PolyProgAssigned = null;
-                }
+                if (i < polyList.Count) progNew.PolyProgAssigned = polyList[i];
+                else progNew.PolyProgAssigned = null;
                 UpdatedProgramDataList.Add(progNew);
             }
 
             pointsList = null;
-            //polyList = Polygon2d.PolyReducePoints(polyList);
-            //return polyList;
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (polyList) },
-                { "AreaEachPoly", (areaList) },
-                { "EachPolyPoint", (pointsList) },
                 { "UpdatedProgramData",(UpdatedProgramDataList) }
             };
         }
@@ -811,11 +735,31 @@ namespace SpacePlanning
 
 
 
+        /*
+
+
+
+            */
+
+
+
 
         //used to split Depts into Program Spaces based on recursive poly split grid 
+        // USING NOW 
+        //splits a ploy into two based on dist and dir, selects the starting pt and side randomly
+        /// <summary>
+        /// Thisnode places the programs in the dept polygon2d's based on the list from the program document
+        /// It returns the input number multiplied by 2.
+        /// </summary>
+        /// <param name="PolyInputList">Dept Polygon2d where programs should be placed</param>
+        /// <param name="ProgData">Program Data Object containing program information</param>
+        /// <returns name="AcceptableMinDim">Minimum acceptable dimension of any placed program space</param>
+        /// <search>
+        /// split, divide , partition space based on distance
+        /// </search>
         [MultiReturn(new[] { "PolyAfterSplit", "BigPolysAfterSplit", "CirculationPolygons", "EachPolyPoint", "UpdatedProgramData" })]
-        public static Dictionary<string, object> RecursivePlaceProgramsSeries(List<Polygon2d> polyInputList, 
-            List<ProgramData> progData, double acceptableWidth, int factor = 4, int recompute = 0)
+        public static Dictionary<string, object> RecursivePlaceProgramsSeries(List<Polygon2d> PolyInputList, 
+            List<ProgramData> ProgData, double AcceptableMinDim, int factor = 4, int recompute = 0)
         {
             int fac = 5;
             Random ran = new Random();
@@ -824,20 +768,20 @@ namespace SpacePlanning
             List<Point2d> pointsList = new List<Point2d>();
             Stack<ProgramData> programDataRetrieved = new Stack<ProgramData>();
             //push programdata into the stack
-            for (int j = 0; j < progData.Count; j++) { programDataRetrieved.Push(progData[j]); }
+            for (int j = 0; j < ProgData.Count; j++) { programDataRetrieved.Push(ProgData[j]); }
             List<Polygon2d> polyOrganizedList = new List<Polygon2d>(), polyCoverList = new List<Polygon2d>();
-            double max = acceptableWidth + acceptableWidth / fac, min = acceptableWidth - acceptableWidth / fac;
+            double max = AcceptableMinDim + AcceptableMinDim / fac, min = AcceptableMinDim - AcceptableMinDim / fac;
             double acceptWide = BasicUtility.RandomBetweenNumbers(ran, max, min);
-            Dictionary<string,object> polySplit = SplitBigPolys(polyInputList, acceptWide, factor);
+            Dictionary<string,object> polySplit = SplitBigPolys(PolyInputList, acceptWide, factor);
             polyOrganizedList = (List<Polygon2d>)polySplit["PolySpaces"];
             polyCoverList = (List<Polygon2d>)polySplit["PolyForCirculation"];
 
             //polyOrganizedList = Polygon2d.PolyReducePoints(polyOrganizedList);
 
             List<ProgramData> newProgDataList = new List<ProgramData>();
-            for (int i = 0; i < progData.Count; i++)
+            for (int i = 0; i < ProgData.Count; i++)
             {
-                newProgDataList.Add(new ProgramData(progData[i]));
+                newProgDataList.Add(new ProgramData(ProgData[i]));
             }
             polyList = AssignPolysToProgramData(newProgDataList, polyOrganizedList);            
             return new Dictionary<string, object>
@@ -1058,18 +1002,7 @@ namespace SpacePlanning
 
 
 
-        // USING NOW 
-        //splits a ploy into two based on dist and dir, selects the starting pt and side randomly
-        /// <summary>
-        /// This is an example node demonstrating how to use the Zero Touch import mechanism.
-        /// It returns the input number multiplied by 2.
-        /// </summary>
-        /// <param name="polyOutline">Outline of the Polygon2d to split</param>
-        /// <param name="distance">Distance from the lower left point</param>
-        /// <returns name="Dictionary">An Dictionary containing the polyAfterSplit & SplitLine</param>
-        /// <search>
-        /// split, divide , partition space based on distance
-        /// </search>
+        
         [MultiReturn(new[] { "PolyAfterSplit", "SplitLine", "IntersectedPoints"})]
         internal static Dictionary<string, object> SplitByDistance(Polygon2d polyOutline, Random ran, double distance = 10, int dir = 0, double spacing =0)
         {       
