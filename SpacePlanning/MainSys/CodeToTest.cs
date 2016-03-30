@@ -46,13 +46,13 @@ namespace SpacePlanning
                     currentPoly = polyRetrieved.Pop();
                     try
                     {
-                        splitReturn = BuildLayout.BasicSplitPolyIntoTwo(currentPoly, ratio, dir);
+                        splitReturn = BuildLayout.SplitByRatio(currentPoly, ratio, dir);
                         polyAfterSplit = (List<Polygon2d>)splitReturn["PolyAfterSplit"];
                     }
                     catch (Exception)
                     {
                         dir = BasicUtility.toggleInputInt(dir);
-                        splitReturn = BuildLayout.BasicSplitPolyIntoTwo(currentPoly, ratio, dir);
+                        splitReturn = BuildLayout.SplitByRatio(currentPoly, ratio, dir);
                         if (splitReturn == null) { Trace.WriteLine("Could Not Split"); continue; }
                         polyAfterSplit = (List<Polygon2d>)splitReturn["PolyAfterSplit"];
                         //throw;
