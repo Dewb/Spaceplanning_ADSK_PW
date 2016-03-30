@@ -1170,8 +1170,7 @@ namespace SpacePlanning
         /// </search>
         [MultiReturn(new[] { "PolyAfterSplit", "SplitLine", "IntersectedPoints", "SpansBBox", "EachPolyPoint" })]
         internal static Dictionary<string, object> SplitByDistance(Polygon2d polyOutline, Random ran, double distance = 10, int dir = 0, double spacing =0)
-        {
-            //if(polyOutline ==null || polyOutline.Points ==null || polyOutline.Points.Count == 0) return null;           
+        {       
             if (!PolygonUtility.CheckPoly(polyOutline)) return null;
             double extents = 5000, spacingProvided;
             List<Point2d> polyOrig = polyOutline.Points;
@@ -1190,6 +1189,26 @@ namespace SpacePlanning
             if (dir == 0) splitLine.move(0, orient * distance);
             else splitLine.move(orient * distance, 0);
 
+            Dictionary<string, object> intersectionReturn = MakeIntersections(poly, splitLine,spacingProvided);
+            List<Point2d> intersectedPoints =(List<Point2d>)intersectionReturn["IntersectedPoints"];
+            List<List<Point2d>> twoSets = (List<List<Point2d>>)intersectionReturn["EachPolyPoint"];
+            List<Polygon2d> splittedPoly = (List<Polygon2d>)intersectionReturn["PolyAfterSplit"];
+            
+            return new Dictionary<string, object>
+            {
+                { "PolyAfterSplit", (splittedPoly) },
+                { "SplitLine", (splitLine) },
+                { "IntersectedPoints", (intersectedPoints) },
+                { "SpansBBox", (spans) },
+                { "EachPolyPoint", (twoSets) }
+            };
+
+        }
+
+
+        //makes intersections and returns the two polygon2ds after intersection
+        internal static Dictionary<string,object> MakeIntersections(List<Point2d> poly,Line2d splitLine,double space)
+        {
             List<Point2d> intersectedPoints = GraphicsUtility.LinePolygonIntersection(poly, splitLine);
             // find all points on poly which are to the left or to the right of the line
             List<int> pIndexA = new List<int>();
@@ -1207,20 +1226,17 @@ namespace SpacePlanning
 
             List<List<Point2d>> twoSets = new List<List<Point2d>>();
             twoSets.Add(sortedA);
-            twoSets.Add(sortedB);      
-            List<Polygon2d> splittedPoly = PolygonUtility.OptimizePolyPoints(sortedA, sortedB,true, spacingProvided);
+            twoSets.Add(sortedB);
+            List<Polygon2d> splittedPoly = PolygonUtility.OptimizePolyPoints(sortedA, sortedB, true, space);
 
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (splittedPoly) },
-                { "SplitLine", (splitLine) },
                 { "IntersectedPoints", (intersectedPoints) },
-                { "SpansBBox", (spans) },
                 { "EachPolyPoint", (twoSets) }
             };
 
         }
-
 
         // USING NOW 
         //splits a polygon by a line 
@@ -1245,7 +1261,6 @@ namespace SpacePlanning
                 else splitLine.move(1 * distance, 0);
             }
             List<Point2d> intersectedPoints = GraphicsUtility.LinePolygonIntersection(poly, splitLine);
-            // find all points on poly which are to the left or to the right of the line
             Polygon2d polyA, polyB;
             List<int> pIndexA = new List<int>(), pIndexB = new List<int>();
             for (int i = 0; i < poly.Count; i++)
