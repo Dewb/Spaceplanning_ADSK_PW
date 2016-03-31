@@ -145,7 +145,7 @@ namespace SpacePlanning
         }
 
 
-        //finds and returns the lowest position
+        //finds and returns the lowest position also
         internal static int ReturnLowestPointFromList(List<Point2d> ptList)
         {
             Point2d lowestPoint = ptList[0];
