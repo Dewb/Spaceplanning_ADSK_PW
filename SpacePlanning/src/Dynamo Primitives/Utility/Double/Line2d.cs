@@ -1,5 +1,4 @@
-﻿using SpacePlanning;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -174,102 +173,8 @@ namespace stuffer
             }
 
         }
-        
-        internal void move(double distX, double distY)
-        {
-            m_start = new Point2d((m_start.X+distX),(m_start.Y+distY));
-            m_end = new Point2d((m_end.X + distX), (m_end.Y + distY));
-
-        }
-        
-        internal void move(List<Point2d> poly, double distance)
-        {
-
-            Point2d midPt = this.midPt();
-            Point2d centerPoly = GraphicsUtility.CentroidInPointLists(poly);
-            Vector2d vecToCenter = new Vector2d(midPt, centerPoly);
-            Vector2d vecToCenterN = vecToCenter.Normalize();
-            Vector2d vectScaled = vecToCenter.Scale(distance);
-
-            m_start = new Point2d((m_start.X + vectScaled.X), (m_start.Y + vectScaled.Y));
-            m_end = new Point2d((m_end.X + vectScaled.X), (m_end.Y + vectScaled.Y));
-        }
-        
-        internal Point2d midPt()
-        {
-            double x = (m_start.X + m_end.X) / 2;
-            double y = (m_start.Y + m_end.Y) / 2;
-            return new Point2d(x, y);
-        }
-
-        internal void move(Point2d point)
-        {
-            Point2d midPt = this.midPt();
-
-            double distX = point.X - midPt.X;
-            double distY = point.Y - midPt.Y;
-            m_start = new Point2d((m_start.X + distX), (m_start.Y + distY));
-            m_end = new Point2d((m_end.X + distX), (m_end.Y + distY));
-
-        }
-
-        public Point2d NudgeLineMidPt(Polygon2d poly, double scale = 0.2)
-        {
-            Point2d midPt = this.midPt();
-            Point2d polyCenter = GraphicsUtility.CentroidInPointLists(poly.Points);
-
-            Vector2d vecToCenter = new Vector2d(midPt, polyCenter);
-            Vector2d vecNormalized = vecToCenter.Normalize();
-            Vector2d vecScaled = vecNormalized.Scale(scale);
-            Point2d point = new Point2d(midPt.X + vecScaled.X, midPt.Y + vecScaled.Y);
-            return point;
-        }
-        
-        internal void extend()
-        {
-            double eps = 1000;
-            double extend = 100000;
-            Vector2d vecLine = new Vector2d(m_start, m_end);
-            Vector2d vecX = new Vector2d(m_start, Point2d.ByCoordinates(m_start.X + eps,0));
-            Vector2d vecY = new Vector2d(m_start, Point2d.ByCoordinates(0, m_start.X + eps));
-
-            double dotX = vecLine.Dot(vecX);
-            double dotY = vecLine.Dot(vecY);
-
-            if(dotX == 0)
-            {
-                //line is vertical
-                this.move(0, extend);
-
-            }
-            else if (dotY == 0)
-            {
-                //line is horizontal
-                this.move(extend, 0);
-
-            }
-
-        }
 
 
-         
-
-
-
-
-
-
-
-
-
-
-
-
-
-    /////////////////////////////////////////////////////////////////////////////////////////////
-
-
-    
 
     public override string ToString()
     {

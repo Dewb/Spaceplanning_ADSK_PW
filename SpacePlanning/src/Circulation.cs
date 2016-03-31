@@ -141,8 +141,8 @@ namespace SpacePlanning
                 for (int j = 0; j < allDeptPolyList.Count; j++)
                 {
                     Polygon2d deptPoly = allDeptPolyList[j];
-                    Point2d midPt = splitter.midPt();
-                    Point2d nudgedMidPt = splitter.NudgeLineMidPt(deptPoly, 0.5);
+                    Point2d midPt = LineUtility.LineMidPoint(splitter);
+                    Point2d nudgedMidPt = LineUtility.NudgeLineMidPt(splitter, deptPoly, 0.5);
                     bool checkInside = GraphicsUtility.PointInsidePolygonTest(deptPoly, nudgedMidPt);
                     if (checkInside)
                     {
@@ -356,17 +356,9 @@ namespace SpacePlanning
                 {
                     Polygon2d progPoly = polyProgList[j];
                     double areaPoly = GraphicsUtility.AreaPolygon2d(progPoly.Points);
-                    if (areaPoly < areaThresh)
-                    {
-                        //continue;
-                    }
 
-                    //List<Point2d> progSmoothPolyPts = Polygon2d.SmoothPolygon(progPoly.Points, 3);
-                    //Polygon2d progSmoothPoly = Polygon2d.ByPoints(progSmoothPolyPts);
-                    //progPoly = progSmoothPoly;
-
-                    Point2d midPt = splitter.midPt();
-                    Point2d nudgedMidPt = splitter.NudgeLineMidPt(progPoly, 0.5);
+                    Point2d midPt = LineUtility.LineMidPoint(splitter);
+                    Point2d nudgedMidPt = LineUtility.NudgeLineMidPt(splitter,progPoly, 0.5);
                     bool checkInside = GraphicsUtility.PointInsidePolygonTest(progPoly, nudgedMidPt);
 
                     if (checkInside)

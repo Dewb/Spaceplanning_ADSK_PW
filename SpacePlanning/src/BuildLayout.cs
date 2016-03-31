@@ -702,8 +702,8 @@ namespace SpacePlanning
             if(horizontalSpan < minWidth || verticalSpan < minWidth) ratio = 0.5;
             Line2d splitLine = new Line2d(polyCenter, extents, dir);
             double shift = ratio - 0.5;
-            if (dir == 0) splitLine.move(0, shift * verticalSpan);
-            else splitLine.move(shift * horizontalSpan, 0);
+            if (dir == 0) splitLine = LineUtility.move(splitLine,0, shift * verticalSpan);
+            else splitLine = LineUtility.move(splitLine,shift * horizontalSpan, 0);
 
             Dictionary<string, object> intersectionReturn = MakeIntersections(poly, splitLine, spacingSet);
             List<Point2d> intersectedPoints = (List<Point2d>)intersectionReturn["IntersectedPoints"];
@@ -983,8 +983,8 @@ namespace SpacePlanning
             Line2d splitLine = new Line2d(pt, extents, dir);          
 
             // push this line right or left or up or down based on ratio
-            if (dir == 0) splitLine.move(0, orient * distance);
-            else splitLine.move(orient * distance, 0);
+            if (dir == 0) splitLine = LineUtility.move(splitLine,0, orient * distance);
+            else splitLine = LineUtility.move(splitLine,orient * distance, 0);
 
             Dictionary<string, object> intersectionReturn = MakeIntersections(poly, splitLine,spacingProvided);
             List<Point2d> intersectedPoints =(List<Point2d>)intersectionReturn["IntersectedPoints"];
@@ -1042,12 +1042,12 @@ namespace SpacePlanning
             int orient = GraphicsUtility.CheckLineOrient(splitLine);
             if (orient == 0)
             {
-                if (!checkSide) splitLine.move(0, -1 * distance);
-                else splitLine.move(0, 1 * distance);
+                if (!checkSide) splitLine = LineUtility.move(splitLine, 0, -1 * distance);
+                else splitLine = LineUtility.move(splitLine, 0, 1 * distance);
             } else
             {
-                if (checkSide) splitLine.move(-1 * distance, 0);
-                else splitLine.move(1 * distance, 0);
+                if (checkSide) splitLine = LineUtility.move(splitLine, -1 * distance, 0);
+                else splitLine = LineUtility.move(splitLine, 1 * distance, 0);
             }         
 
             Dictionary<string, object> intersectionReturn = MakeIntersections(poly, splitLine, spacingSet);
@@ -1077,9 +1077,11 @@ namespace SpacePlanning
             int lowInd = GraphicsUtility.ReturnLowestPointFromListNew(poly);// THIS IS BETTER THAN THE OTHER VER
             Point2d lowPt = poly[lowInd];   
             Line2d splitLine = new Line2d(lowPt, extents, dir);
-            if (dir == 0) splitLine.move(0, 1 * distance);
-            else splitLine.move(1 * distance, 0);   
-               
+            if (dir == 0) splitLine = LineUtility.move(splitLine, 0, 1 * distance);
+            else splitLine = LineUtility.move(splitLine, 1 * distance, 0);
+
+
+
             Dictionary<string, object> intersectionReturn = MakeIntersections(poly, splitLine, spacingSet2);
             List<Point2d> intersectedPoints = (List<Point2d>)intersectionReturn["IntersectedPoints"];
             List<Polygon2d> splittedPoly = (List<Polygon2d>)intersectionReturn["PolyAfterSplit"];

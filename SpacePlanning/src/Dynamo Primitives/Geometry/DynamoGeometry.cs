@@ -5,7 +5,6 @@ using Autodesk.DesignScript.Geometry;
 using Autodesk;
 using ProtoScript;
 using System;
-using SpacePlanning;
 using System.Diagnostics;
 
 namespace stuffer
@@ -24,104 +23,6 @@ namespace stuffer
 
 
 
-        [MultiReturn(new[] { "NodeCircles", "ConnectedEdges" })]
-        public static Dictionary<string, object> VisualizeSpaceTree(SpaceDataTree tree, Point origin, double nodeRadius = 5, double spaceX = 15, double spaceY = 15, double recompute = 5)
-        {
-            
-
-            List<Circle> cirList = new List<Circle>();
-            List<Line> linList = new List<Line>();
-            int count = 0;
-            Point ptCen = origin;
-            int mul = 1;
-            int numNodes = tree.NumberOfNodes;
-            double eps = nodeRadius / 5;
-            Node current = tree.Root;
-            while (count <= numNodes)
-            {
-
-                if (current == null || current.Check == true)
-                {
-                    if(current.ParentNode != null)
-                    {
-                        current = current.ParentNode;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                    
-                    Trace.WriteLine("Null Node Found");
-               
-                }
-
-                if (current.NodeType == NodeType.Container)
-                {
-                    //Container nodes = make circles on the positive side
-                    mul *= 1;
-                    double x = ptCen.X + mul * spaceX;
-                    double y = ptCen.Y + spaceY;
-                    ptCen = Point.ByCoordinates(x, y);
-                    Trace.WriteLine("Right Node Selected");
-                    Circle cir = Circle.ByCenterPointRadius(ptCen, nodeRadius);
-                    Circle cir2 = Circle.ByCenterPointRadius(ptCen, nodeRadius+eps);
-                    cirList.Add(cir);
-                    cirList.Add(cir2);
-                    current.Check = true;
-                    count += 1;            
-                    
-                }
-                else
-                {
-                    //Space nodes = make circles on the negative side
-                    mul *= -1;
-                    double x = ptCen.X + mul * spaceX;
-                    double y = ptCen.Y + spaceY;
-                    ptCen = Point.ByCoordinates(x, y);
-                    Trace.WriteLine("Left Node Selected");
-                    Circle cir = Circle.ByCenterPointRadius(ptCen, nodeRadius);
-                    cirList.Add(cir);
-                    current.Check = true;
-                    count += 1;
-                }
-
-                if (current.RightNode != null)
-                {
-                    current = current.RightNode;
-                }
-                else if (current.LeftNode != null)
-                {
-                    current = current.LeftNode;
-                }
-                else
-                {
-                    current = current.ParentNode;
-                }
-                
-                Trace.WriteLine("Iterating : " + count);
-             
-
-            }
-            for (int i = 0; i < cirList.Count - 1; i++)
-            {
-                Circle cirA = cirList[i];
-                Point ptA = cirA.CenterPoint;
-                for (int j = i + 1; j < cirList.Count; j++)
-                {
-                    Circle cirB = cirList[j];
-                    Point ptB = cirB.CenterPoint;
-                    //Line line = Line.ByStartPointEndPoint(ptA, ptB);
-                    //linList.Add(line);
-
-                }
-            }
-
-            return new Dictionary<string, object>
-            {
-                { "NodeCircles", (cirList) },
-                { "ConnectedEdges", (linList) }
-            };
-        }
 
 
 
@@ -131,59 +32,7 @@ namespace stuffer
 
 
 
-
-
-
-
-
-
-        [MultiReturn(new[] { "NodeCircles", "ConnectedEdges" })]
-        public static Dictionary<string, object> MakeSpaceTree(SpaceDataTree tree, Point origin, double nodeRadius = 5, double spaceX = 15, double spaceY = 15)
-        {
-            List<Circle> cirList = new List<Circle>();
-            List<Line> linList = new List<Line>();
-            int count = 0;
-            Point ptCen = origin;
-            int mul = 1;
-            int numNodes = tree.NumberOfNodes;
-            Node current = tree.Root;
-           
-            while (count <= numNodes)
-            {
-                current = count % 2 == 0 ? current.RightNode : current.LeftNode;
-                Circle cir = Circle.ByCenterPointRadius(ptCen, nodeRadius);
-                cirList.Add(cir);
-                
-                mul *= -1;
-                double x = ptCen.X + mul * spaceX;
-                double y = ptCen.Y + spaceY;
-                ptCen = Point.ByCoordinates(x, y);
-                count += 1;
-            }
-
-            for(int i = 0; i < cirList.Count - 1; i++)
-            {
-                Circle cirA = cirList[i];
-                Point ptA = cirA.CenterPoint;
-                for(int j = i + 1; j < cirList.Count; j++)
-                {
-                    Circle cirB = cirList[j];
-                    Point ptB = cirB.CenterPoint;
-                    Line line = Line.ByStartPointEndPoint(ptA, ptB);
-                    linList.Add(line);
-
-                }
-            }
-
-
-            return new Dictionary<string, object>
-            {
-                { "NodeCircles", (cirList) },
-                { "ConnectedEdges", (linList) }
-            };
-        }
-
-
+     
 
         [MultiReturn(new[] { "aVal", "rVal", "gVal", "bVal" })]
         public static Dictionary<string, object> ARGBValues(List<List<Point2d>> ptLists)

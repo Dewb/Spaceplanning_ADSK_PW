@@ -773,11 +773,13 @@ namespace SpacePlanning
             // push this line right or left or up or down based on ratio
             if (dir == 0)
             {
-                splitLine.move(0, shift * verticalSpan);
+                //splitLine.move(0, shift * verticalSpan); /CHANGED
+                splitLine = LineUtility.move(splitLine, 0, shift * verticalSpan);
             }
             else
             {
-                splitLine.move(shift * horizontalSpan, 0);
+                //splitLine.move(shift * horizontalSpan, 0); //CHANGED
+                splitLine = LineUtility.move(splitLine, shift * horizontalSpan, 0); 
             }
 
 
@@ -930,11 +932,13 @@ namespace SpacePlanning
             // push this line right or left or up or down based on ratio
             if (dir == 0)
             {
-                splitLine.move(0, shift * verticalSpan);
+                //splitLine.move(0, shift * verticalSpan);
+                splitLine = LineUtility.move(splitLine,0, shift * verticalSpan);
             }
             else
             {
-                splitLine.move(shift * horizontalSpan, 0);
+                //splitLine.move(shift * horizontalSpan, 0); //CHANGED
+                splitLine = LineUtility.move(splitLine, shift * horizontalSpan, 0);
             }
 
 
@@ -1561,11 +1565,13 @@ namespace SpacePlanning
             // push this line right or left or up or down based on ratio
             if (dir == 0)
             {
-                splitLine.move(0, orient*distance);
+                //splitLine.move(0, orient*distance);
+                splitLine = LineUtility.move(splitLine, 0, orient * distance);
             }
             else
             {
-                splitLine.move(orient*distance, 0);
+                //splitLine.move(orient*distance, 0);
+                splitLine = LineUtility.move(splitLine, orient * distance, 0);
             }
 
 
@@ -1733,16 +1739,18 @@ namespace SpacePlanning
             Line2d splitLine = new Line2d(lowPt, extents, dir);
             //compute vertical or horizontal line via centroid
 
-         
+
 
             // push this line right or left or up or down based on ratio
             if (dir == 0)
             {
-                splitLine.move(0, distance);
+                //splitLine.move(0, distance); //changed
+                splitLine = LineUtility.move(splitLine, 0, distance);
             }
             else
             {
-                splitLine.move(distance, 0);
+                //splitLine.move(distance, 0);
+                splitLine = LineUtility.move(splitLine, distance, 0);
             }
 
 

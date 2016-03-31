@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using SpacePlanning;
 using Autodesk.DesignScript.Runtime;
 using System.Diagnostics;
 using Autodesk.DesignScript.Geometry;

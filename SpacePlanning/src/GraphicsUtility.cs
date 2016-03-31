@@ -252,8 +252,11 @@ namespace SpacePlanning
                     }
                     else
                     {
-                        Point2d midA = lineA.midPt();
-                        Point2d midB = lineB.midPt();
+                        //Point2d midA = lineA.midPt();
+                        //Point2d midB = lineB.midPt(); //CHANGED
+
+                        Point2d midA = LineUtility.LineMidPoint(lineA);
+                        Point2d midB = LineUtility.LineMidPoint(lineB);
                         if (orientA == 0)
                         {
                             //lines are horizontal                           
