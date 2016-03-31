@@ -1,6 +1,0 @@
-flask>=0.10.1
-flask-cors
-flask-api<0.6.3
-graphviz
-pqdict
-#pylab
