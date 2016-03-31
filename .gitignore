@@ -28,6 +28,8 @@
 .builds
 *.dotCover
 
+.vs
+
 # Visual Studio profiler
 *.psess
 *.vsp
