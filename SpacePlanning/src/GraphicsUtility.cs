@@ -177,7 +177,7 @@ namespace SpacePlanning
                     index = i;
                 }
             }
-
+            //return index
             return index;
 
         }
