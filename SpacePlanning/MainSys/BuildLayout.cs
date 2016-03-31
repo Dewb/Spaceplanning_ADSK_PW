@@ -750,8 +750,6 @@ namespace SpacePlanning
             polyOrganizedList = (List<Polygon2d>)polySplit["PolySpaces"];
             polyCoverList = (List<Polygon2d>)polySplit["PolyForCirculation"];
 
-            //polyOrganizedList = Polygon2d.PolyReducePoints(polyOrganizedList);
-
             List<ProgramData> newProgDataList = new List<ProgramData>();
             for (int i = 0; i < ProgData.Count; i++)
             {

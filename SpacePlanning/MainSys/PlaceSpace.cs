@@ -47,8 +47,7 @@ namespace SpacePlanning
         }
 
         internal static int SelectCellToPlaceProgram(ref List<Cell> cells, Random random)
-        {
-          
+        {          
 
             int size = cells.Count;
             int randomIndex = -1;
@@ -59,10 +58,8 @@ namespace SpacePlanning
                 randomIndex = random.Next(0, size);
                 attempt += 1;
             }
-            cells[randomIndex].CellAvailable = false;
-        
+            cells[randomIndex].CellAvailable = false;        
             return randomIndex;
-
             }
 
         //public functions
