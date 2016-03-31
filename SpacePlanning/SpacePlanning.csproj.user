@@ -8,4 +8,7 @@
     <StartAction>Program</StartAction>
     <StartProgram>C:\Program Files\Autodesk\Dynamo Studio 2016\DynamoStudio.exe</StartProgram>
   </PropertyGroup>
+  <PropertyGroup>
+    <ReferencePath>C:\Users\t_dassu\Documents\Visual Studio 2015\Projects\SpacePlanning\SpacePlanning\src\Dynamo Primitives\</ReferencePath>
+  </PropertyGroup>
 </Project>

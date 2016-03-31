@@ -67,135 +67,63 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Geometry\DynamoGeometry.cs">
-      <Link>LinkedGeometry\DynamoGeometry.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\IO\Design.cs">
-      <Link>LinkedIO\Design.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\IO\Mesh.cs">
-      <Link>LinkedIO\Mesh.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\IO\Space.cs">
-      <Link>LinkedIO\Space.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Phenotype\Building.cs">
-      <Link>LinkedPhenotype\Building.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Phenotype\Floor.cs">
-      <Link>LinkedPhenotype\Floor.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Phenotype\Region.cs">
-      <Link>LinkedPhenotype\Region.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Shell\Shell.cs">
-      <Link>LinkedShell\Shell.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Shell\STL.cs">
-      <Link>LinkedShell\STL.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Shell\STLx.cs">
-      <Link>LinkedShell\STLx.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Shell\STLxGrids.cs">
-      <Link>LinkedShell\STLxGrids.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Shell\STLXOutlines.cs">
-      <Link>LinkedShell\STLXOutlines.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Utility\Bag.cs">
-      <Link>LinkedUtility\Bag.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Utility\double\Facet3d.cs">
-      <Link>LinkedUtility\Facet3d.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Utility\double\Grid2d.cs">
-      <Link>LinkedUtility\Grid2d.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Utility\double\Line2d.cs">
-      <Link>LinkedUtility\Line2d.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Utility\double\Line3d.cs">
-      <Link>LinkedUtility\Line3d.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Utility\double\Outline2d.cs">
-      <Link>LinkedUtility\Outline2d.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Utility\double\Plane3d.cs">
-      <Link>LinkedUtility\Plane3d.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Utility\double\Point1d.cs">
-      <Link>LinkedUtility\Point1d.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Utility\double\Point2d.cs">
-      <Link>LinkedUtility\Point2d.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Utility\double\Point3d.cs">
-      <Link>LinkedUtility\Point3d.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Utility\double\PointAxis2d.cs">
-      <Link>LinkedUtility\PointAxis2d.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Utility\double\Polygon2d.cs">
-      <Link>LinkedUtility\Polygon2d.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Utility\double\Range1d.cs">
-      <Link>LinkedUtility\Range1d.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Utility\double\Range2d.cs">
-      <Link>LinkedUtility\Range2d.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Utility\double\Range3d.cs">
-      <Link>LinkedUtility\Range3d.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Utility\double\RangeAxis2d.cs">
-      <Link>LinkedUtility\RangeAxis2d.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Utility\double\Vector2d.cs">
-      <Link>LinkedUtility\Vector2d.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Utility\double\Vector3d.cs">
-      <Link>LinkedUtility\Vector3d.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Utility\GridBasis.cs">
-      <Link>LinkedUtility\GridBasis.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Utility\int\Line2i.cs">
-      <Link>LinkedUtility\Line2i.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Utility\int\Point2i.cs">
-      <Link>LinkedUtility\Point2i.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Utility\int\Range1i.cs">
-      <Link>LinkedUtility\Range1i.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Utility\int\Rect2i.cs">
-      <Link>LinkedUtility\Rect2i.cs</Link>
-    </Compile>
-    <Compile Include="../../03 DYNAMO RESOURCES\Akaba-build-production\Akaba-build-production\services\generators\hoover\stuffer\Utility\StringUtil.cs">
-      <Link>LinkedUtility\StringUtil.cs</Link>
-    </Compile>
-    <Compile Include="MainSys\BasicUtility.cs" />
-    <Compile Include="MainSys\Bubble Chart.cs" />
-    <Compile Include="MainSys\Cell.cs" />
-    <Compile Include="MainSys\Circulation.cs" />
-    <Compile Include="MainSys\SpaceAnalysis.cs" />
-    <Compile Include="MainSys\PolygonUtility.cs" />
-    <Compile Include="MainSys\CodeToTest.cs" />
-    <Compile Include="MainSys\CustomVariables.cs" />
-    <Compile Include="MainSys\DeptData.cs" />
-    <Compile Include="MainSys\Dump.cs" />
-    <Compile Include="MainSys\GridObject.cs" />
-    <Compile Include="MainSys\ICloneable.cs" />
-    <Compile Include="MainSys\Node.cs" />
-    <Compile Include="MainSys\PlaceSpace.cs" />
-    <Compile Include="MainSys\PolyLine.cs" />
-    <Compile Include="MainSys\GraphicsUtility.cs" />
-    <Compile Include="MainSys\ProgramData.cs" />
-    <Compile Include="MainSys\ReadData.cs" />
-    <Compile Include="MainSys\BuildLayout.cs" />
-    <Compile Include="MainSys\SpaceDataTree.cs" />
-    <Compile Include="MainSys\SplitObject.cs" />
+    <Compile Include="src\BasicUtility.cs" />
+    <Compile Include="src\Bubble Chart.cs" />
+    <Compile Include="src\Cell.cs" />
+    <Compile Include="src\Circulation.cs" />
+    <Compile Include="src\Dynamo Primitives\Geometry\DynamoGeometry.cs" />
+    <Compile Include="src\Dynamo Primitives\IO\Design.cs" />
+    <Compile Include="src\Dynamo Primitives\IO\Mesh.cs" />
+    <Compile Include="src\Dynamo Primitives\IO\Space.cs" />
+    <Compile Include="src\Dynamo Primitives\Phenotype\Building.cs" />
+    <Compile Include="src\Dynamo Primitives\Phenotype\Floor.cs" />
+    <Compile Include="src\Dynamo Primitives\Phenotype\Region.cs" />
+    <Compile Include="src\Dynamo Primitives\Shell\Shell.cs" />
+    <Compile Include="src\Dynamo Primitives\Shell\STL.cs" />
+    <Compile Include="src\Dynamo Primitives\Shell\STLx.cs" />
+    <Compile Include="src\Dynamo Primitives\Shell\STLxGrids.cs" />
+    <Compile Include="src\Dynamo Primitives\Shell\STLXOutlines.cs" />
+    <Compile Include="src\Dynamo Primitives\Utility\Bag.cs" />
+    <Compile Include="src\Dynamo Primitives\Utility\Double\Facet3d.cs" />
+    <Compile Include="src\Dynamo Primitives\Utility\Double\Grid2d.cs" />
+    <Compile Include="src\Dynamo Primitives\Utility\Double\Line2d.cs" />
+    <Compile Include="src\Dynamo Primitives\Utility\Double\Line3d.cs" />
+    <Compile Include="src\Dynamo Primitives\Utility\Double\Outline2d.cs" />
+    <Compile Include="src\Dynamo Primitives\Utility\Double\Plane3d.cs" />
+    <Compile Include="src\Dynamo Primitives\Utility\Double\Point1d.cs" />
+    <Compile Include="src\Dynamo Primitives\Utility\Double\Point2d.cs" />
+    <Compile Include="src\Dynamo Primitives\Utility\Double\Point3d.cs" />
+    <Compile Include="src\Dynamo Primitives\Utility\Double\PointAxis2d.cs" />
+    <Compile Include="src\Dynamo Primitives\Utility\Double\Polygon2d.cs" />
+    <Compile Include="src\Dynamo Primitives\Utility\Double\Range1d.cs" />
+    <Compile Include="src\Dynamo Primitives\Utility\Double\Range2d.cs" />
+    <Compile Include="src\Dynamo Primitives\Utility\Double\Range3d.cs" />
+    <Compile Include="src\Dynamo Primitives\Utility\Double\RangeAxis2d.cs" />
+    <Compile Include="src\Dynamo Primitives\Utility\Double\Vector2d.cs" />
+    <Compile Include="src\Dynamo Primitives\Utility\Double\Vector3d.cs" />
+    <Compile Include="src\Dynamo Primitives\Utility\GridBasis.cs" />
+    <Compile Include="src\Dynamo Primitives\Utility\Int\Line2i.cs" />
+    <Compile Include="src\Dynamo Primitives\Utility\Int\Point2i.cs" />
+    <Compile Include="src\Dynamo Primitives\Utility\Int\Range1i.cs" />
+    <Compile Include="src\Dynamo Primitives\Utility\Int\Rect2i.cs" />
+    <Compile Include="src\Dynamo Primitives\Utility\StringUtil.cs" />
+    <Compile Include="src\SpaceAnalysis.cs" />
+    <Compile Include="src\PolygonUtility.cs" />
+    <Compile Include="src\CodeToTest.cs" />
+    <Compile Include="src\CustomVariables.cs" />
+    <Compile Include="src\DeptData.cs" />
+    <Compile Include="src\Dump.cs" />
+    <Compile Include="src\GridObject.cs" />
+    <Compile Include="src\ICloneable.cs" />
+    <Compile Include="src\Node.cs" />
+    <Compile Include="src\PlaceSpace.cs" />
+    <Compile Include="src\PolyLine.cs" />
+    <Compile Include="src\GraphicsUtility.cs" />
+    <Compile Include="src\ProgramData.cs" />
+    <Compile Include="src\ReadData.cs" />
+    <Compile Include="src\BuildLayout.cs" />
+    <Compile Include="src\SpaceDataTree.cs" />
+    <Compile Include="src\SplitObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -216,6 +144,7 @@
     <EmbeddedResource Include="Asset\ATORIGINDK.sat" />
     <None Include="Resources\01 FEB PROGRAM.csv" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
