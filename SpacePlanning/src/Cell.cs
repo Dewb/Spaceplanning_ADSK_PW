@@ -64,16 +64,8 @@ namespace SpacePlanning
         {
             get { return _dimY; }
         }
+        
 
-
-        //--------------------------------------------------------------------------------------------
-        //methods
-
-
-        internal static void CellType()
-        {
-           // _cellType.CORE = 3;
-        }
 
 
     }

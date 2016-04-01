@@ -111,15 +111,12 @@
     <Compile Include="src\LineUtility.cs" />
     <Compile Include="src\SpaceAnalysis.cs" />
     <Compile Include="src\PolygonUtility.cs" />
-    <Compile Include="src\CodeToTest.cs" />
     <Compile Include="src\CustomVariables.cs" />
     <Compile Include="src\DeptData.cs" />
     <Compile Include="src\TestGraphicsUtility.cs" />
     <Compile Include="src\GridObject.cs" />
-    <Compile Include="src\ICloneable.cs" />
     <Compile Include="src\Node.cs" />
     <Compile Include="src\PlaceSpace.cs" />
-    <Compile Include="src\PolyLine.cs" />
     <Compile Include="src\GraphicsUtility.cs" />
     <Compile Include="src\ProgramData.cs" />
     <Compile Include="src\ReadData.cs" />

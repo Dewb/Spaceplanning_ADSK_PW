@@ -20,8 +20,7 @@ using System.Diagnostics;
 namespace SpacePlanning
 {
     internal class GraphicsUtility
-    {
-     
+    {     
 
         //checks if a point is inside a polygon or not
         internal static bool PointInsidePolygonTest(List<Point2d> pointsPolygon, Point2d testPoint)
@@ -54,8 +53,7 @@ namespace SpacePlanning
             else if ( area < 0) return 2;
             return 0;
         }
-
-
+        
         // change two points in the list - used by Grahams Algo
         internal static void ChangePlaces(ref List<Point2d> pointList, int posA, int posB)
         {
@@ -64,9 +62,7 @@ namespace SpacePlanning
             pointList[posB] = a;           
         }
 
-
-
-        // get element position in the Array
+        // get element position in a list
         internal static int ElementPosition(List<Point2d> ptList,int size,Point2d pt)
         {
             for(int i =0; i< size; ++i)
@@ -86,10 +82,8 @@ namespace SpacePlanning
             else if ( y==0) return 0;
             else return 0;
         }
-
       
-
-        //joins two collinear lines to make one line
+        //joins two collinear lines to make one line - using now
         public static Line2d JoinCollinearLines(Line2d lineA, Line2d lineB)
         {
             List<Point2d> allPoints = new List<Point2d>();
@@ -102,27 +96,8 @@ namespace SpacePlanning
             Line2d lineJoined = new Line2d(allPoints[p],allPoints[q]);
             return lineJoined;
         }
-
-
-        //returns the point having lowest x,y value from a list
-        internal static int ReturnLowestPointFromList(List<Point2d> ptList)
-        {
-            Point2d lowestPoint = ptList[0];
-            int size = ptList.Count;
-            int index = 0;
-            for (int i = 0; i < size; i++)
-            {
-                if (lowestPoint.Y > ptList[0].Y || (lowestPoint.Y == ptList[i].Y && lowestPoint.X > ptList[i].X))
-                {
-                    lowestPoint = ptList[i];
-                    index = i;
-                }
-            }
-            return index;           
-
-        }
-
-        //returns the point having lowest x,y value from a list
+             
+        //returns the point having lowest x,y value from a list using now
         internal static int ReturnLowestPointFromListNew(List<Point2d> ptList)
         {
             Point2d lowestPoint = ptList[0];
@@ -140,7 +115,7 @@ namespace SpacePlanning
 
         }
 
-        //returns the point having highest x,y value from a list
+        //returns the point having highest x,y value from a list - using now
         internal static int ReturnHighestPointFromListNew(List<Point2d> ptList)
         {
             Point2d highestPoint = ptList[0];
@@ -156,8 +131,7 @@ namespace SpacePlanning
             }
             return index;
         }
-
-
+        
         //removes duplicates lines from a list of line
         internal static List<Line2d>RemoveDuplicateLines(List<double> exprList, List<Line2d> lineList)
         {
@@ -177,8 +151,7 @@ namespace SpacePlanning
             }
             return cleanLineList;
         }
-
-
+        
         //removes duplicates lines from a list of lines
         public static List<Line2d> CleanLines(List<Line2d> lineList)
         {
@@ -291,8 +264,7 @@ namespace SpacePlanning
             }            
             return cleanList;
         }
-
- 
+         
         //find lowest point from a list ( only used in the Grahams Scan Convex Hull Algo )
         internal static void FindLowestPointFromList(ref List<Point2d> ptList, int size)
         {
@@ -320,8 +292,7 @@ namespace SpacePlanning
             if (returndegrees) rtnval *= 360.0 / (2 * Math.PI);
             return rtnval;
         }
-
-        
+                
 
         //sort point array for Grahams scan algo to find convex hull
         internal static void SortedPoint2dList(ref List<Point2d> ptList, int size)
@@ -395,8 +366,7 @@ namespace SpacePlanning
             double yLen = ptA.Y - ptB.Y;
             return xLen * xLen + yLen * yLen;
         }
-
-       
+               
         // returns area of a closed polygon, if area is positive, poly points are counter clockwise and vice versa
         internal static double AreaPolygon2d(List<Point2d> polyPoints, bool value = true)
         {
@@ -413,8 +383,7 @@ namespace SpacePlanning
             if (value) return Math.Abs(area / 2);
             else return area / 2;
         }
-
-
+        
         //sorts list of points by distance from a given point
         public static List<Point2d> SortPointsByDistanceFromPoint(List<Point2d> ptList, Point2d testPoint)
         {
@@ -461,15 +430,13 @@ namespace SpacePlanning
             return new Point2d(x, y); 
 
         }
-
-    
+            
         //add a point with a vector
         internal static Point2d PointAddVector2D(Point2d pt, Vector2d vec)
         {
             return new Point2d(pt.X + vec.X, pt.Y + vec.Y); 
         }
-
-
+        
         //make polygon2d on grids - notusing now
         public static Polygon2d MakeSquarePolygon2dFromCenterSide(Point2d centerPt, double side)
         {
@@ -513,8 +480,7 @@ namespace SpacePlanning
             Point2d b = lineSegment.EndPoint;
             return ((b.X - a.X) * (c.Y - a.Y) - (b.Y - a.Y) * (c.X - a.X)) > 0;
         }
-
-        
+                
         // finds the angle between two points
         internal static double Angle(Point2d A, Point2d center)
         {
@@ -572,7 +538,6 @@ namespace SpacePlanning
         }
 
       
-        
         // Given three colinear points p, q, r, the function checks if
         // point q lies on line segment 'pr'
         public static bool OnSegment(Line2d givenLine, Point2d q, double eps = 0)
@@ -615,10 +580,7 @@ namespace SpacePlanning
             return false;
         }
 
-
-       
-    
-
+        
         //find perp projection on a line from a point
         public static Point2d PerpProjectionPointOnLine(Line line, Point2d C)
         {
@@ -632,10 +594,7 @@ namespace SpacePlanning
             return new Point2d(A.X + bScaled.X, A.Y + bScaled.Y);
 
         }
-
-
-
-
+        
 
         // find closest point to a line - correct
         public static Point2d ProjectedPointOnLine(Line2d testline, Point2d P)
@@ -667,37 +626,7 @@ namespace SpacePlanning
             return check;
         }
         
-        //finds line and line intersection point - not using now
-        public static Point2d LineLineIntersectionNew(Line2d s1, Line2d s2)
-        {
-            Point2d startS1 = s1.StartPoint;
-            Point2d endS1 = s1.EndPoint;
-            Point2d startS2 = s2.StartPoint;
-            Point2d endS2 = s2.EndPoint;
-
-            double As1, Bs1, Cs1;
-            double As2, Bs2, Cs2;
-            As1 = endS1.Y - startS1.Y;
-            Bs1 = startS1.X - endS1.X;
-            Cs1 = As1 * startS1.X + Bs1 * startS1.Y;
-            As2 = endS2.Y - startS2.Y;
-            Bs2 = startS2.X - endS2.X;
-            Cs2 = As1 * startS2.X + Bs2 * startS2.Y;
-
-            double det = As1 * Bs2 - As2 * Bs1;
-            if (det == 0) return null;
-            else
-            {
-                double x = (Bs2 * Cs1 - Bs1 * Cs2) / det;
-                double y = (As1 * Cs2 - As2 * Cs1) / det;
-                return new Point2d(x, y);
-            }
-
-
-        }
-
-
-
+       
         //finds line and line intersection point - using now
         public static Point2d LineLineIntersection(Line2d s1, Line2d s2)
         {
@@ -792,126 +721,7 @@ namespace SpacePlanning
             }
             return flatLineList;
         }
-
-        //line and polygon intersection - not using now
-        public static Line2d LinePolygonIntersectionReturnLine(List<Point2d> poly, Line2d testLine, Point2d centerPt)
-        {
-            Random ran = new Random();
-            double dist = 10000000000000000;
-            SortedDictionary<double, Line2d> sortedIntersectionLines = new SortedDictionary<double, Line2d>();
-            List<Point2d> ptList = new List<Point2d>();
-            double x = (testLine.StartPoint.X + testLine.EndPoint.X) / 2;
-            double y = (testLine.StartPoint.Y + testLine.EndPoint.Y) / 2;
-            Point2d midPt = new Point2d(x, y);
-            Line2d intersectedLineInPoly = null;
-            int count = 0;
-            for (int i = 0; i < poly.Count - 1; i++)
-            {
-                Point2d pt1 = poly[i];
-                Point2d pt2 = poly[i + 1];
-                Line2d edge = new Line2d(pt1, pt2);
-
-                if (LineLineIntersectionNew(edge, testLine) != null)
-                {
-
-                    double xE = (edge.StartPoint.X + edge.EndPoint.X) / 2;
-                    double yE = (edge.StartPoint.Y + edge.EndPoint.Y) / 2;
-                    Point2d EdgeMidPt = new Point2d(xE, yE);
-                    double checkDist = GraphicsUtility.DistanceBetweenPoints(centerPt, EdgeMidPt);
-                    try
-                    {
-                        sortedIntersectionLines.Add(checkDist, edge);
-                    }
-                    catch (Exception)
-                    {
-                        
-                        double eps = ran.NextDouble() * 2;
-                        double newDist = checkDist - eps;
-                        sortedIntersectionLines.Add(newDist, edge);
-                    }
-                    intersectedLineInPoly = edge;
-                    count += 1;
-                }           
-
-            }
-            if (sortedIntersectionLines.Count > 0)
-            {
-                
-                foreach (KeyValuePair<double, Line2d> p in sortedIntersectionLines)
-                {
-                    intersectedLineInPoly = p.Value;
-                    break;
-                }
-            }
-            else intersectedLineInPoly = null;
-            return intersectedLineInPoly;
-        }
-
-
-
-        //line and polygon intersection - not using now
-        internal static List<Point2d> LinePolygonIntersectionInd(List<Point2d> poly, Line2d testLine)
-        {
-            int n = poly.Count;
-            double eps = 0.00000001;
-            double tE = 0;              // the maximum entering segment parameter
-            double tL = 1;              // the minimum leaving segment parameter
-            double t, N, D;             // intersect parameter t = N / D
-            Vector2d dS = new Vector2d(testLine.StartPoint, testLine.EndPoint);   // the  segment direction vector
-            Vector2d e;                 // edge vector
-            Vector2d ne;               // edge outward normal (not explicit in code)
-            Vector2d ef;
-
-
-                for (int i = 0; i < n-1; i++)   // process polygon edge V[i]V[i+1]
-                {
-                    e = new Vector2d(poly[i+1],poly[i]);
-                    ne = new Vector2d(-e.Y, e.X);
-                    ef = new Vector2d(testLine.StartPoint, poly[i]);
-                    N = ne.Dot(ef); // = -dot(ne, S.P0 - V[i])
-                    D = dS.Dot(ne);       // = dot(ne, dS)
-                
-                    if (Math.Abs(D) < eps)
-                    {  // S is nearly parallel to this edge
-                        if (N < 0)              // P0 is outside this edge, so
-                            return null;      // S is outside the polygon
-                        else                    // S cannot cross this edge, so
-                            continue;          // ignore this edge
-                    }
-
-                    t = N / D;
-                    if (D < 0)
-                    {            // segment S is entering across this edge
-                        if (t > tE)
-                        {       // new max tE
-                            tE = t;
-                            if (tE > tL)   // S enters after leaving polygon
-                                return null;
-                        }
-                    }
-                    else {                  // segment S is leaving across this edge
-                        if (t < tL)
-                        {       // new min tL
-                            tL = t;
-                            if (tL < tE)   // S leaves before entering polygon
-                                return null;
-                        }
-                    }
-                }
-
-                // tE <= tL implies that there is a valid intersection subsegment
-                Point2d p1  = testLine.StartPoint + dS.Scale(tE);   // = P(tE) = point where S enters polygon
-                Point2d p2 = testLine.StartPoint + dS.Scale(tL);   // = P(tL) = point where S leaves polygon
-
-            List<Point2d> ptList = new List<Point2d>();
-            ptList.Add(p1);
-            ptList.Add(p2);
-            return ptList;
-}
-
-
         
-
         //generate points on a circle and then randomize their sequence
         public static List<Point2d> PointGenerator(int tag, int size)
         {

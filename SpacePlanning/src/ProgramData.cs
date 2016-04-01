@@ -12,7 +12,7 @@ using System.Collections.Generic;
 
 namespace SpacePlanning
 {
-    public class ProgramData : ICloneable<ProgramData>
+    public class ProgramData 
     {
 
         // Two private variables for example purposes
@@ -265,13 +265,6 @@ namespace SpacePlanning
             _areaGiven += area;
         }
 
-        public ProgramData Clone()
-        {
-            ProgramData newProgData = new ProgramData(_progrID, _progName, _progDept,
-            _progQuanity, _progUnitArea, _progPrefValue, _progAdjList, _progrCell, _gridX, _gridY);
-
-            newProgData.NumberofCellsAdded = _numCellAdded;
-            return newProgData;
-        }
+     
     }
 }
