@@ -357,7 +357,7 @@ namespace SpacePlanning
 
                 // place square
                 Point2d center = cells[selectedIndices[i]].CenterPoint;
-                Polygon2d squareCentroid = GraphicsUtility.MakeSquarePolygonFromCenterSide(center, side);
+                Polygon2d squareCentroid = GraphicsUtility.MakeSquarePolygon2dFromCenterSide(center, side);
           
 
                 // get number of cell points inside square
@@ -532,7 +532,7 @@ namespace SpacePlanning
 
                 // place square
                 Point2d center = cells[selectedIndices[i]].CenterPoint;
-                Polygon2d squareCentroid = GraphicsUtility.MakeSquarePolygonFromCenterSide(center, side);
+                Polygon2d squareCentroid = GraphicsUtility.MakeSquarePolygon2dFromCenterSide(center, side);
 
                 // get number of cell points inside square
                 for (int j = 0; j < cells.Count; j++)
@@ -661,7 +661,7 @@ namespace SpacePlanning
 
                 // place square
                 Point2d center = cells[selectedIndices[i]].CenterPoint;
-                Polygon2d squareCentroid = GraphicsUtility.MakeSquarePolygonFromCenterSide(center, side);
+                Polygon2d squareCentroid = GraphicsUtility.MakeSquarePolygon2dFromCenterSide(center, side);
                 List<int> cellIndexPrograms = new List<int>();
                 int cellAddedCount = 0;
 
@@ -797,7 +797,7 @@ namespace SpacePlanning
 
                 // place square
                 Point2d center = cells[selectedIndices[i]].CenterPoint;
-                Polygon2d squareCentroid = GraphicsUtility.MakeSquarePolygonFromCenterSide(center, side);
+                Polygon2d squareCentroid = GraphicsUtility.MakeSquarePolygon2dFromCenterSide(center, side);
                 List<int> cellIndexPrograms = new List<int>();
                 int cellAddedCount = 0;
 
