@@ -355,7 +355,47 @@ namespace SpacePlanning
 
         }
 
+        //sort a list with Quicksort algorithm
+        public static void Quicksort2(ref IComparable[] elements, int left, int right)
+        {
+            int i = left, j = right;
+            IComparable pivot = elements[(left + right) / 2];
+            while (i <= j)
+            {
+                while (elements[i].CompareTo(pivot) < 0) i++;
+                while (elements[j].CompareTo(pivot) > 0) j--;
 
+                if (i <= j)
+                {
+                    IComparable tmp = elements[i];
+                    elements[i] = elements[j];
+                    elements[j] = tmp;
+                    i++;
+                    j--;
+                }
+            }
+            if (left < j) Quicksort2(ref elements, left, j);
+            if (i < right) Quicksort2(ref elements, i, right);
+        }
 
+        //removes duplicates lines from a list of line
+        internal static List<Line2d> RemoveDuplicateLinesOld(List<double> exprList, List<Line2d> lineList)
+        {
+            List<Line2d> cleanLineList = new List<Line2d>();
+            List<double> distinct = exprList.Distinct().ToList();
+            for (int i = 0; i < distinct.Count; i++)
+            {
+                double dis = distinct[i];
+                for (int j = 0; j < exprList.Count; j++)
+                {
+                    if (dis == exprList[j])
+                    {
+                        cleanLineList.Add(lineList[j]);
+                        break;
+                    }
+                }
+            }
+            return cleanLineList;
+        }
     }
 }

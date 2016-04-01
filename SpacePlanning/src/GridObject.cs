@@ -356,7 +356,7 @@ namespace SpacePlanning
             List<int> SortedIndicesX = new List<int>();
             List<int> SortedIndicesY = new List<int>();
             List<int> SortedXYEquationIndices = new List<int>();
-            SortedXYEquationIndices = BasicUtility.quicksort(XYEquationList, UnsortedIndices, 0, UnsortedIndices.Length - 1);
+            SortedXYEquationIndices = BasicUtility.Quicksort(XYEquationList, UnsortedIndices, 0, UnsortedIndices.Length - 1);
             double dimX = newCellLists[0].DimX;
             double dimY = newCellLists[0].DimY;
             List<List<Point2d>> cellNeighborPoint2d = new List<List<Point2d>>();
@@ -460,7 +460,7 @@ namespace SpacePlanning
                 newIndex[i] = index[i];
             }
 
-            return BasicUtility.quicksort(main, newIndex, left, right); 
+            return BasicUtility.Quicksort(main, newIndex, left, right); 
         }
 
 

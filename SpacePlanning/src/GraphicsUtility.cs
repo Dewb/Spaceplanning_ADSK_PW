@@ -131,27 +131,93 @@ namespace SpacePlanning
             }
             return index;
         }
-        
-        //removes duplicates lines from a list of line
-        internal static List<Line2d>RemoveDuplicateLines(List<double> exprList, List<Line2d> lineList)
+
+        //removes duplicate lines from the list
+        internal static List<Line2d> RemoveDuplicateLines(List<Line2d> networkLine)
+        {
+            List<Line2d> dummyLineList = new List<Line2d>();
+            List<bool> duplicateList = new List<bool>();
+            for (int i = 0; i < networkLine.Count; i++)
+            {
+                Line2d line = new Line2d(networkLine[i].StartPoint, networkLine[i].EndPoint);
+                dummyLineList.Add(line);
+                duplicateList.Add(false);
+            }
+            List<Line2d> cleanLines = new List<Line2d>();
+            for (int i = 0; i < networkLine.Count; i++)
+            {
+                Line2d lineA = networkLine[i];
+                for (int j = i + 1; j < networkLine.Count; j++)
+                {
+                    Line2d lineB = networkLine[j];
+                    bool checkDuplicacy = GraphicsUtility.LineAdjacencyCheck(lineA, lineB); ;
+                    if (checkDuplicacy)
+                    {
+                        double lenA = lineA.Length;
+                        double lenB = lineB.Length;
+                        if (lenA > lenB) duplicateList[j] = true;
+                        else duplicateList[i] = true;
+                    }
+                }
+            }
+            int count = 0;
+            for (int i = 0; i < duplicateList.Count; i++)
+            {
+                if (duplicateList[i] == true)
+                {
+                    dummyLineList.RemoveAt(i - count);
+                    count += 1;
+                }
+            }
+            return dummyLineList;
+        }
+
+
+        // Removes the lines which are on the poly lines
+        internal static List<Line2d> RemoveDuplicateslinesWithPoly(Polygon2d poly, List<Line2d> lineList)
         {
             List<Line2d> cleanLineList = new List<Line2d>();
-            List<double> distinct = exprList.Distinct().ToList();
-            for (int i = 0; i < distinct.Count; i++)
+            List<bool> duplicateList = new List<bool>();
+            for (int i = 0; i < lineList.Count; i++)
             {
-                double dis = distinct[i];
-                for (int j = 0; j < exprList.Count; j++)
+                Line2d line = new Line2d(lineList[i].StartPoint, lineList[i].EndPoint);
+                cleanLineList.Add(line);
+                duplicateList.Add(false);
+            }
+
+            for (int i = 0; i < poly.Points.Count; i++)
+            {
+                int b = i + 1;
+                if (i == poly.Points.Count - 1) b = 0;
+                Line2d lineA = new Line2d(poly.Points[i], poly.Points[b]);
+                for (int j = 0; j < lineList.Count; j++)
                 {
-                    if (dis == exprList[j])
+                    Line2d lineB = lineList[j];
+                    bool checkAdj = GraphicsUtility.LineAdjacencyCheck(lineA, lineB);
+                    if (checkAdj)
                     {
-                        cleanLineList.Add(lineList[j]);
+                        duplicateList[j] = true;
                         break;
-                    }
+                    }// end of if loop
+                } // end of 2nd for loop
+
+
+            }// end of 1st for loop
+
+            int count = 0;
+            for (int i = 0; i < duplicateList.Count; i++)
+            {
+                if (duplicateList[i] == true)
+                {
+                    cleanLineList.RemoveAt(i - count);
+                    count += 1;
                 }
             }
             return cleanLineList;
         }
-        
+
+
+
         //removes duplicates lines from a list of lines
         public static List<Line2d> CleanLines(List<Line2d> lineList)
         {
@@ -449,29 +515,7 @@ namespace SpacePlanning
             return Polygon2d.ByPoints(pt2dList);
         }
 
-        //sort a list with Quicksort algorithm
-        public static void Quicksort(ref IComparable[] elements, int left, int right)
-        {
-            int i = left, j = right;
-            IComparable pivot = elements[(left + right) / 2];
-            while (i <= j)
-            {
-                while (elements[i].CompareTo(pivot) < 0) i++;                
-                while (elements[j].CompareTo(pivot) > 0) j--;              
-
-                if (i <= j)
-                {
-                    IComparable tmp = elements[i];
-                    elements[i] = elements[j];
-                    elements[j] = tmp;
-                    i++;
-                    j--;
-                }
-            }
-            if (left < j) Quicksort(ref elements, left, j);  
-            if (i < right) Quicksort(ref elements, i, right);            
-        }
-
+      
         //check to see if a test point is towards the left or right of the point
         //if positive then the point is towards the left of the point
         public static bool CheckPointSide(Line2d lineSegment, Point2d c)

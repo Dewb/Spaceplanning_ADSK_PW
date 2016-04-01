@@ -69,7 +69,7 @@ namespace SpacePlanning
                 Node N;
                 double val = ran.NextDouble();
                 //NodeType ndType = BasicUtility.GenerateNodeType(val);
-                NodeType ndType = BasicUtility.GenerateBalancedNodeType(tag);
+                NodeType ndType = SpaceDataTree.GenerateBalancedNodeType(tag);
                 tag = !tag;
                 N = new Node(i + 1, ndType);                        
                 nodeList.Add(N);
@@ -249,7 +249,7 @@ namespace SpacePlanning
                 {
                     while (areaLeftOverToAdd > limit && leftOverPoly.Count > 0 && count1 < maxRound)
                     {
-                        dir = BasicUtility.toggleInputInt(dir);
+                        dir = BasicUtility.ToggleInputInt(dir);
                         currentPolyObj = leftOverPoly.Pop();
                         areaCurrentPoly = PolygonUtility.AreaCheckPolygon(currentPolyObj);
                         Dictionary<string,object> splitReturned = SplitByDistance(currentPolyObj, ran, offset, dir);
@@ -289,7 +289,7 @@ namespace SpacePlanning
                         double ratio = BasicUtility.RandomBetweenNumbers(rn, 0.85, 0.15);
                         currentPolyObj = leftOverPoly.Pop();
                         areaCurrentPoly = PolygonUtility.AreaCheckPolygon(currentPolyObj);
-                        dir = BasicUtility.toggleInputInt(dir);
+                        dir = BasicUtility.ToggleInputInt(dir);
                         if (areaLeftOverToAdd > areaCurrentPoly)
                         {
                             everyDeptPoly.Add(currentPolyObj);
@@ -341,7 +341,7 @@ namespace SpacePlanning
             {
                 while (leftOverPoly.Count > 0 && count3 < maxRound)
                 {
-                    dir = BasicUtility.toggleInputInt(dir);
+                    dir = BasicUtility.ToggleInputInt(dir);
                     Polygon2d currentPolyObj = leftOverPoly.Pop();
                     if (!PolygonUtility.CheckPolyDimension(currentPolyObj))
                     {

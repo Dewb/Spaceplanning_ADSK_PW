@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using stuffer;
+using Autodesk.DesignScript.Runtime;
 
 
 namespace SpacePlanning
@@ -509,7 +510,67 @@ namespace SpacePlanning
             return smoothedPoints;
         }
 
+        //checks the ratio of the dimension of a poly bbox of certain proportion or not
+        internal static bool CheckPolyBBox(Polygon2d poly, double num = 3)
+        {
+            bool check = false;
+            Range2d range = poly.BBox;
+            double X = range.Xrange.Span;
+            double Y = range.Yrange.Span;
+            if (Y < X)
+            {
+                double div1 = X / Y;
+                if (div1 > num) check = true;
+            }
+            else
+            {
+                double div1 = Y / X;
+                if (div1 > num) check = true;
+            }
+            return check;
+        }
 
+
+        //find if two polys are adjacent, and if yes, then returns the common edge between them
+        [MultiReturn(new[] { "Neighbour", "SharedEdge" })]
+        public static Dictionary<string, object> FindPolyAdjacentEdge(Polygon2d polyA, Polygon2d polyB, double eps = 0)
+        {
+            if (polyA == null || polyB == null) return null;
+            if (polyA.Points == null || polyB.Points == null) return null;
+            if (polyA.Points.Count == 0 || polyB.Points.Count == 0) return null;
+
+            Line2d joinedLine = null;
+            bool isNeighbour = false;
+            Polygon2d polyAReg = new Polygon2d(polyA.Points, 0);
+            Polygon2d polyBReg = new Polygon2d(polyB.Points, 0);
+
+            for (int i = 0; i < polyAReg.Points.Count; i++)
+            {
+                int a = i + 1;
+                if (i == polyAReg.Points.Count - 1) a = 0;
+                Line2d lineA = new Line2d(polyAReg.Points[i], polyAReg.Points[a]);
+                for (int j = 0; j < polyBReg.Points.Count; j++)
+                {
+                    int b = j + 1;
+                    if (j == polyBReg.Points.Count - 1) b = 0;
+                    Line2d lineB = new Line2d(polyBReg.Points[j], polyBReg.Points[b]);
+                    bool checkAdj = GraphicsUtility.LineAdjacencyCheck(lineA, lineB, eps);
+                    if (checkAdj)
+                    {
+                        joinedLine = GraphicsUtility.JoinCollinearLines(lineA, lineB);
+                        isNeighbour = true;
+                        break;
+                    }
+                }
+            }
+            return new Dictionary<string, object>
+            {
+                { "Neighbour", (isNeighbour) },
+                { "SharedEdge", (joinedLine) }
+            };
+
+        }
 
     }
+
 }

@@ -287,5 +287,19 @@ namespace SpacePlanning
 
         }
 
+        // returns random nodetype result
+        internal static NodeType GenerateNodeType(double k)
+        {
+            if (k < 0.5) return NodeType.Container;
+            else return NodeType.Space;
+        }
+
+        // returns random nodetype result
+        internal static NodeType GenerateBalancedNodeType(bool tag)
+        {
+            if (tag) return NodeType.Container;
+            else return NodeType.Space;
+        }
+
     }
 }

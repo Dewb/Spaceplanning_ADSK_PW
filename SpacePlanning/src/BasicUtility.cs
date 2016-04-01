@@ -8,13 +8,12 @@ namespace SpacePlanning
 {
     public class BasicUtility
     {
-
+        //returns a random object
         public static Random RandomMaker()
         {
             return new Random();
         }
-
-
+        
         //sorts input list of double and returns the indices 
         public static List<int> SortIndex(List<double> A)
         {
@@ -29,32 +28,7 @@ namespace SpacePlanning
             //return the indices list
             return idx;
         }
-
-        // returns random nodetype result
-        internal static NodeType GenerateNodeType(double k)
-        {
-            if(k < 0.5)
-            {
-                return NodeType.Container;
-            }
-            else
-            {
-                return NodeType.Space;
-            }
-        }
-
-        // returns random nodetype result
-        internal static NodeType GenerateBalancedNodeType(bool tag)
-        {
-            if (tag)
-            {
-                return NodeType.Container;
-            }
-            else
-            {
-                return NodeType.Space;
-            }
-        }
+        
         //random double numbers between two decimals
         internal static double RandomBetweenNumbers(Random rn, double max, double min)
         {
@@ -62,12 +36,13 @@ namespace SpacePlanning
             return num;
         }
         
-        internal static List<int> quicksort(double[] a, int[] index, int left, int right)
+        //quicksort algorithm
+        internal static List<int> Quicksort(double[] a, int[] index, int left, int right)
         {
             if (right <= left) return null;
-            int i = partition(ref a, ref index, left, right);
-            quicksort(a, index, left, i - 1);
-            quicksort(a, index, i + 1, right);
+            int i = Partition(ref a, ref index, left, right);
+            Quicksort(a, index, left, i - 1);
+            Quicksort(a, index, i + 1, right);
             List<int> sortedIndex = new List<int>();
             for(int j = 0; j < index.Length; j++)
             {
@@ -80,22 +55,13 @@ namespace SpacePlanning
         //toggle input value between 0 and 1
         internal static int RandomToggleInputInt()
         {
-            Random rn = new Random();
-            double num = rn.NextDouble();
-
-
-            if (num >0.5)
-            {
-                return 1;
-            }
-            else
-            {
-                return 0;
-            }
+            double num = new Random().NextDouble();
+            if (num >0.5) return 1;
+            else return 0;
         }
 
         //toggle input value between 0 and 1
-        internal static int toggleInputInt(int value = 0)
+        internal static int ToggleInputInt(int value = 0)
         {
             if(value == 0)
             {
@@ -106,33 +72,32 @@ namespace SpacePlanning
             }
         }
 
-        // partition a[left] to a[right], assumes left < right
-        private static int partition(ref double[] a, ref int[] index,
+        // partition a[left] to a[right], assumes left < right for Quicksort
+        internal static int Partition(ref double[] a, ref int[] index,
         int left, int right)
         {
             int i = left - 1;
             int j = right;
             while (true)
             {
-                while (less(a[++i], a[right]))      // find item on left to swap
-                    ;                               // a[right] acts as sentinel
-                while (less(a[right], a[--j]))      // find item on right to swap
-                    if (j == left) break;           // don't go out-of-bounds
-                if (i >= j) break;                  // check if pointers cross
-                exch(a, index, i, j);               // swap two elements into place
+                while (IsLess(a[++i], a[right]));
+                while (IsLess(a[right], a[--j]))    
+                    if (j == left) break;           
+                if (i >= j) break;                
+                Exchange(a, index, i, j);              
             }
-            exch(a, index, i, right);               // swap with partition element
+            Exchange(a, index, i, right);             
             return i;
         }
-
-        // is x < y ?
-        private static bool less(double x, double y)
+        
+        //return lesser of the two values
+        internal static bool IsLess(double x, double y)
         {
             return (x < y);
         }
 
-        // exchange a[i] and a[j]
-        private static void exch(double[] a, int[] index, int i, int j)
+        // exchange two indices in an array
+        private static void Exchange(double[] a, int[] index, int i, int j)
         {
             double swap = a[i];
             a[i] = a[j];
@@ -143,7 +108,7 @@ namespace SpacePlanning
         }
 
 
-        //////BINARY SEARCH
+        //binary search algorithm
         internal static int  BinarySearch(List<int> inputArray, int key)
         {
             int min = 0;
@@ -151,24 +116,15 @@ namespace SpacePlanning
             while (min <= max)
             {
                 int mid = (min + max) / 2;
-                if (key == inputArray[mid])
-                {
-                    return ++mid-1;
-                }
-                else if (key < inputArray[mid])
-                {
-                    max = mid - 1;
-                }
-                else
-                {
-                    min = mid + 1;
-                }
+                if (key == inputArray[mid]) return ++mid - 1;
+                else if (key < inputArray[mid]) max = mid - 1;
+                else min = mid + 1;
             }
             return -1;
         }
 
 
-        //////BINARY SEARCH with Double
+        //binary search algo with double
         internal static int BinarySearchDouble(List<double> inputArray, double key)
         {
             int min = 0;
@@ -176,27 +132,16 @@ namespace SpacePlanning
             while (min <= max)
             {
                 int mid = (min + max) / 2;
-                if (key == inputArray[mid])
-                {
-                    return ++mid - 1;
-                }
-                else if (key < inputArray[mid])
-                {
-                    max = mid - 1;
-                }
-                else
-                {
-                    min = mid + 1;
-                }
+                if (key == inputArray[mid]) return ++mid - 1;
+                else if (key < inputArray[mid]) max = mid - 1;
+                else min = mid + 1;
             }
             return -1;
         }
 
-        //CLEANS A LIST BASED ON DUPLICATE INDEXES
-        public static List<double> DuplicateIndexes(List<double> exprList)
+        //cleans duplicate indices from a list
+        internal static List<double> DuplicateIndexes(List<double> exprList)
         {
-           
-
             var dups = exprList.GroupBy(x => x)
             .Where(x => x.Count() > 1)
             .Select(x => x.Key)
@@ -210,7 +155,6 @@ namespace SpacePlanning
                 {
                     if (dis == exprList[j])
                     {
-                        //cleanList.Add(ptListUnclean[j]);
                         break;
                     }
                 }
