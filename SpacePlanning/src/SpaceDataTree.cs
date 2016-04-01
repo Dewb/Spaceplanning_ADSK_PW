@@ -21,6 +21,7 @@ namespace SpacePlanning
         private double _spaceX;
         private double _spaceY;
 
+        //constructor
         public SpaceDataTree(Node root, Point origin, double X, double Y)
         {
             _root = root;
@@ -37,64 +38,48 @@ namespace SpacePlanning
             _spaceY = Y;            
         }
 
+        //returns the list containting radius for each node in the tree
         public List<double> RadiusNodeList
         {
-            get
-            {
-                return _radiusNodeList;
-            }
+            get { return _radiusNodeList;  }            
         }
 
+        //returns the Origin Point for each node in the tree
         public List<Point> CenterPtNodeList
         {
-            get
-            {
-                return _centerPtsNodeList;
-            }
+            get { return _centerPtsNodeList; }           
         }
 
-
+        //returns the NodeType for each node in the form of a list of strings
         public List<string> NodeTypeList
         {
-            get
-            {
-                return _nodeTypeString;
-            }
+            get { return _nodeTypeString; }           
         }
 
+        //returns number of nodes in the tree
         public int NumberOfNodes
         {
-            get
-            {
-                return _numNodes;
-            }
+            get { return _numNodes; }           
         }
 
+        //returns the Root Node of the tree
+        //sets the root node of a tree and rebuilds the tree
         public Node Root
         {
-            get
-            {
-                return _root;
-            }
+            get { return _root; }
             set
-            {
-                _numNodes = 1;
+            {                
                 _root = value;
+                if(_root != null )_numNodes = 1;
             }
         }
 
         // adds a new node to the tree
-        internal bool addNewNode(Node parent, Node item)
+        internal bool AddNewNode(Node parent, Node item)
         {
-            if(parent.LeftNode != null && parent.RightNode != null)
-            {
-                Trace.WriteLine("No Space, cant add new node");
-                return false;
-            }
-
+           if(parent.LeftNode != null && parent.RightNode != null) return false;
            if(item.NodeType == NodeType.Container)
-            {
-                
+            {                
                 parent.RightNode = item;
                 item.ParentNode = parent;
                 _numNodes += 1;
@@ -107,20 +92,14 @@ namespace SpacePlanning
                 _numNodes += 1;
                 _nodeTypeString.Add(NodeType.Space.ToString());
             }
-
             return true;
         }
 
-        private static Node checkParentValid(Node node)
+        // checks of the given node has a parent
+        private static Node CheckParentValid(Node node)
         {
-            if(node.ParentNode == null)
-            {
-                return node;
-            }
-            else
-            {
-                return node.ParentNode;
-            }
+            if(node.ParentNode == null) return node;
+            else return node.ParentNode;
         }
 
         // makes origin point for the node
@@ -128,16 +107,14 @@ namespace SpacePlanning
         {
             double x = parentPt.X + mul * _spaceX;
             double y = parentPt.Y +  _spaceY;
-            Point cen1 = Point.ByCoordinates(x, y);
-            return cen1;
+            return Point.ByCoordinates(x, y); ;
         }
 
         // add the following entries into the space data tree
-        private void insertNodeData(Node parent, Node item, bool container)
+        private void InsertNodeData(Node parent, Node item, bool container)
         {
             double rad = parent.RadiusNode;
-            double proportion;
-            double addOn;
+            double proportion, addOn;
             if (container)
             {
                 proportion = parent.Proportion;
@@ -170,109 +147,56 @@ namespace SpacePlanning
            
         }
 
-       
-
         // adds a new node to the tree
-        internal Node addNewNodeSide(Node parent, Node item)
+        internal Node AddNewNodeSide(Node parent, Node item)
         {
-
-            // case1
-            if (parent.LeftNode != null && parent.RightNode != null)
-            {
-                //Trace.WriteLine("No Space, cant add new node");
-                return checkParentValid(parent);
-            }
-
-
-            // case2
+            if (parent.LeftNode != null && parent.RightNode != null) return CheckParentValid(parent);
             if (item.NodeType == NodeType.Container)
             {
-
-                if(parent.RightNode != null)
-                {
-                    //Trace.WriteLine("Right Node not empty");
-                    return checkParentValid(parent);
-                }
-                else
-                {
-                    insertNodeData(parent, item, true);
-                }
-                
+                if(parent.RightNode != null) return CheckParentValid(parent);
+                else InsertNodeData(parent, item, true);                
             }
             else
             {
-                if (parent.LeftNode != null)
-                {
-                    //Trace.WriteLine("Left Node not empty");
-                    return checkParentValid(parent); 
-                }
-                else
-                {
-                    //Trace.WriteLine("Inserting Node Data Now");
-                    insertNodeData(parent, item, false);
-                }
+                if (parent.LeftNode != null) return CheckParentValid(parent);
+                else InsertNodeData(parent, item, false);
             }
-
             return null;
         }
-
-
-
-
+        
         //add a node to a filled spot in the tree
-        internal void addNode(Node parent, Node item)
+        internal void AddNode(Node parent, Node item)
         {
             Node parentLeftBefore = parent.LeftNode;
             Node parentRightBefore = parent.RightNode;
             parent.RightNode = item;
-
-           
             if(parentRightBefore != null && parentLeftBefore != null)
             {
-                if (parentRightBefore.NodeType == NodeType.Container)
-                {
-                    item.RightNode = parentRightBefore;
-                }
-                else
-                {
-                    item.LeftNode = parentLeftBefore;
-                }
+                if (parentRightBefore.NodeType == NodeType.Container) item.RightNode = parentRightBefore;
+                else  item.LeftNode = parentLeftBefore;
             }
             else
-            {
-                if (item.NodeType == NodeType.Container)
-                {
-                    parent.RightNode = item;
-                }
-                else
-                {
-                    parent.LeftNode = item;
-                }
+            { 
+                if (item.NodeType == NodeType.Container) parent.RightNode = item;
+                else parent.LeftNode = item;
             }
-                    
-
             _numNodes += 1;
-
         }
 
-        internal void removeLeftNode(Node Parent)
+        //removes the left node
+        internal void RemoveLeftNode(Node Parent)
         {
-            if (Parent.LeftNode != null)
-            {
-                Parent.LeftNode = null;
-            }
+            if (Parent.LeftNode != null) Parent.LeftNode = null;
         }
 
-        internal void removeRightNode(Node Parent)
+        //removes the right node
+        internal void RemoveRightNode(Node Parent)
         {
-            if (Parent.RightNode != null)
-            {
-                Parent.RightNode = null;
-            }
+            if (Parent.RightNode != null) Parent.RightNode = null;
         }
 
         //to remove only the node but keep their children
-        internal void removeOnlyNode(Node parent,Node item)
+        internal void RemoveOnlyParentKeepChildren(Node parent,Node item)
         {
             if(parent.RightNode == item)
             {
@@ -284,7 +208,6 @@ namespace SpacePlanning
                 parent.LeftNode = item.LeftNode;
                 parent.LeftNode.RightNode = item.RightNode;
             }
-
         }
 
         // returns random nodetype result

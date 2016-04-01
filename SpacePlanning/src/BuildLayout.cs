@@ -92,7 +92,7 @@ namespace SpacePlanning
                 }
 
 
-                nodeAdditionResult = tree.addNewNodeSide(current, nodeList[i]);
+                nodeAdditionResult = tree.AddNewNodeSide(current, nodeList[i]);
                 string foo = "";
                 //nodeAdditionResult = null , means node properly added
                 //nodeAdditionResult = current, means, parent node of current is null
@@ -164,7 +164,7 @@ namespace SpacePlanning
                     //Trace.WriteLine("Make Sure Space Nodes are childless");
                     current = current.ParentNode;
                 }
-                nodeAdditionResult = tree.addNewNodeSide(current, nodeList[i]);
+                nodeAdditionResult = tree.AddNewNodeSide(current, nodeList[i]);
                 //nodeAdditionResult = null , means node properly added
                 //nodeAdditionResult = current, means, parent node of current is null
                 //nodeAdditionResult = some other node means, current should be that other node to add new node

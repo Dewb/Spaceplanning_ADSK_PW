@@ -29,7 +29,7 @@ namespace SpacePlanning
         private double _prop = 1.2;
 
 
-        // for root node
+        // constructor for root node
         public Node(int id, NodeType type, bool flag, Point centerPt, double radius)
         {
 
@@ -53,10 +53,9 @@ namespace SpacePlanning
 
         }
 
-        // for container node
+        // constructor for container node
         public Node(int id, NodeType type)
         {
-
             _id = id;            
             _nodeType = type;
             _check = false;
@@ -69,160 +68,78 @@ namespace SpacePlanning
 
 
         public Node( int id, Node parent, Node left, Node right, NodeType type, Polygon2d poly, Line2d splitLine, DeptData dept)
-        {
-           
+        {           
             _id = id;            
             _leftChildNode = left;
             _rightChildNode = right;
             _parentNode = parent;
             _nodeType = type;
-
             _deptAssigned = dept;
             _poly = poly;
             _splitLine = splitLine;
-
             _check = false;
         }
 
 
         public double RadiusNode
         {
-
-            get
-            {
-                return _radiusNode;
-            }
-            set
-            {
-                _radiusNode = value;
-            }
-
+            get { return _radiusNode; }
+            set { _radiusNode = value; }
         }
-
 
         public double Proportion
         {
-
-            get
-            {
-                return _prop;
-            }
-           
-
+            get { return _prop; }
         }
+
         public double RadiusNodeExtra
         {
-
-            get
-            {
-                return _extraRadius;
-            }
-            set
-            {
-                _extraRadius = value;
-            }
-
+            get { return _extraRadius; }
+            set { _extraRadius = value; }
         }
+
         public Point CenterPoint
         {
-
-            get
-            {
-                return _centerPt;
-            }
-            set
-            {
-                _centerPt = value;
-            }
-
+            get { return _centerPt; }
+            set { _centerPt = value; }
         }
 
         public bool IsRoot
         {
-
-            get
-            {
-                return _isRoot;
-            }
-
-            set
-            {
-                _isRoot = value;
-            }
-
+            get { return _isRoot; }
+            set { _isRoot = value; }
         }
+
         public bool Check
         {
-
-            get
-            {
-                return _check;
-            }
-
-            set
-            {
-                _check = value;
-            }
-
+            get { return _check; }
+            set { _check = value; }
         }
 
         public Node ParentNode{
-
-            get{
-                return _parentNode;
-            }
-
-            set
-            {
-                _parentNode = value;
-            }
-
+            get { return _parentNode; }
+            set { _parentNode = value; }
         }
 
         public Node LeftNode
         {
-
-            get
-            {
-                return _leftChildNode;
-            }
-
-            set
-            {
-                _leftChildNode = value;
-            }
+            get { return _leftChildNode; }
+            set { _leftChildNode = value; }
 
         }
 
 
         public Node RightNode
         {
-
-            get
-            {
-                return _rightChildNode;
-            }
-
-            set
-            {
-                _rightChildNode = value;
-            }
-
+            get { return _rightChildNode; }
+            set { _rightChildNode = value; }
         }
 
 
         public NodeType NodeType
         {
-
-            get
-            {
-                return _nodeType;
-            }
-
-            set
-            {
-                _nodeType = value;
-            }
+            get { return _nodeType; }
+            set { _nodeType = value; }
 
         }
     }
