@@ -570,8 +570,8 @@ namespace SpacePlanning
         internal static int SortCornersClockwise(Point2d A, Point2d B)
         {
             double aTanA, aTanB; 
-            aTanA = Math.Atan2(A.Y - SplitObject.reference.Y, A.X - SplitObject.reference.X);
-            aTanB = Math.Atan2(B.Y - SplitObject.reference.Y, B.X - SplitObject.reference.X);
+            aTanA = Math.Atan2(A.Y - BuildLayout.reference.Y, A.X - BuildLayout.reference.X);
+            aTanB = Math.Atan2(B.Y - BuildLayout.reference.Y, B.X - BuildLayout.reference.X);
             //  Determine next point in Clockwise rotation
             if (aTanA < aTanB) return -1;
             else if (aTanA > aTanB) return 1;
@@ -579,9 +579,7 @@ namespace SpacePlanning
         }
 
         
-
-        // to be discarded
-        //SORT A GROUP OF POINTS TO FORM A POLYLINE ( NO SELF INTERSECTIONS)
+        //sorts a list of points to form a polyline - not using
         public static List<Point2d> SortPoints(List<Point2d> pointList)
         {
             Point2d cen = PolygonUtility.CentroidFromPoly(pointList);
@@ -610,7 +608,7 @@ namespace SpacePlanning
 
         // Given three colinear points p, q, r, the function checks if
         // point q lies on line segment 'pr'
-        internal static bool onSegment(Point2d p, Point2d q, Point2d r)
+        internal static bool OnSegment(Point2d p, Point2d q, Point2d r)
         {
             if (q.X <= Math.Max(p.X, r.X) && q.X >= Math.Min(p.X, r.X) &&
                 q.Y <= Math.Max(p.Y, r.Y) && q.Y >= Math.Min(p.Y, r.Y)) return true;
@@ -634,7 +632,7 @@ namespace SpacePlanning
         //GIVEN THREE POINTS CHECKS IF POINT Q IS INSIDE THE LINE PR
         // Given three colinear points p, q, r, the function checks if
         // point q lies on line segment 'pr'
-        public static bool onSegment(Line2d givenLine, Point2d q, double eps = 0)
+        public static bool OnSegment(Line2d givenLine, Point2d q, double eps = 0)
         {
             if(givenLine == null || q == null) return false; 
             Point2d p = givenLine.StartPoint, r = givenLine.EndPoint;
@@ -654,8 +652,8 @@ namespace SpacePlanning
             double crossMag = vecA.Cross(vecB);
             if (crossMag != 0) return false;
 
-            bool checkA1 = onSegment(lineB, pA, eps), checkA2 = onSegment(lineB, qA, eps);
-            bool checkB1 = onSegment(lineA, pB, eps), checkB2 = onSegment(lineA, qB, eps);
+            bool checkA1 = OnSegment(lineB, pA, eps), checkA2 = OnSegment(lineB, qA, eps);
+            bool checkB1 = OnSegment(lineA, pB, eps), checkB2 = OnSegment(lineA, qB, eps);
 
             if (checkA1 || checkA2) return true;
             if (checkB1 || checkB2) return true;
@@ -681,16 +679,16 @@ namespace SpacePlanning
             if (o1 != o2 && o3 != o4)
                     return false;
             // p1, q1 and p2 are colinear and p2 lies on segment p1q1
-            if (o1 == 0 && onSegment(p1, p2, q1)) return true;
+            if (o1 == 0 && OnSegment(p1, p2, q1)) return true;
 
             // p1, q1 and p2 are colinear and q2 lies on segment p1q1
-            if (o2 == 0 && onSegment(p1, q2, q1)) return true;
+            if (o2 == 0 && OnSegment(p1, q2, q1)) return true;
 
             // p2, q2 and p1 are colinear and p1 lies on segment p2q2
-            if (o3 == 0 && onSegment(p2, p1, q2)) return true;
+            if (o3 == 0 && OnSegment(p2, p1, q2)) return true;
 
             // p2, q2 and q1 are colinear and q1 lies on segment p2q2
-            if (o4 == 0 && onSegment(p2, q1, q2)) return true;
+            if (o4 == 0 && OnSegment(p2, q1, q2)) return true;
             return false; // Doesn't fall in any of the above cases
        }
             
@@ -735,7 +733,7 @@ namespace SpacePlanning
      
 
         //finds if line is horizontal or vertical
-        internal static bool IsLineOrthogonalCheck(Line2d line)
+        internal static bool IsLineOrthogonal(Line2d line)
         {
             bool check = false;
             Point2d p1 = line.StartPoint;
@@ -803,35 +801,24 @@ namespace SpacePlanning
         }
 
 
-        //CLOSEST POINT TO A LINE FROM A POINT LIST
+        //finds the closest point to a line from a point list
         public static Point2d ClosestPointToLine(List<Point2d> pt, Line2d line)
         {
-            // Get coefficients of the implicit line equation.
-            // Do NOT normalize since scaling by a constant
-            // is irrelevant for just comparing distances.
             double a = line.StartPoint.Y - line.EndPoint.Y;
             double b = line.EndPoint.X - line.StartPoint.X;
             double c = line.StartPoint.X * line.EndPoint.Y - line.EndPoint.X * line.StartPoint.Y;
-            // initialize min index and distance to P[0]
             int index = 0;
-            double min = a * pt[0].X + b * pt[0].Y + c;
-            if (min < 0) min = -min;     // absolute value
-
-
-            // loop through Point array testing for min distance to L
+            double min = Math.Abs(a * pt[0].X + b * pt[0].Y + c);
             for (int i = 1; i < pt.Count; i++)
             {
-                // just use dist squared (sqrt not  needed for comparison)
-                double dist = a * pt[i].X + b * pt[i].Y + c;
-                if (dist < 0) dist = -dist;    // absolute value
+                double dist = Math.Abs(a * pt[i].X + b * pt[i].Y + c);
                 if (dist < min)
-                {      // this point is closer
-                    index = i;              // so have a new minimum
+                {  
+                    index = i;              
                     min = dist;
                 }
             }
-
-                return pt[index];
+            return pt[index];
         } 
 
         // returns line and polygon intersection using now

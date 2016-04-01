@@ -13,123 +13,21 @@ namespace SpacePlanning
     class CodeToTest
     {
 
-        //****DEF - USING THIS TO SPLIT PROGRAMS--------------------------------
-        //RECURSIVE SPLITS A POLY
-        [MultiReturn(new[] { "PolyAfterSplit", "AreaEachPoly", "EachPolyPoint", "UpdatedProgramData" })]
-        public static Dictionary<string, object> RecursiveSplitPolyPrograms(List<Polygon2d> polyInputList, List<ProgramData> progData, double ratioA = 0.5, int recompute = 1)
-        {
-            double ratio = 0.5;
-            List<Polygon2d> polyList = new List<Polygon2d>();
-            List<Point2d> pointsList = new List<Point2d>();
-            List<double> areaList = new List<double>();
-            Stack<Polygon2d> polyRetrieved = new Stack<Polygon2d>();
-            Stack<ProgramData> programDataRetrieved = new Stack<ProgramData>();
-
-            for (int j = 0; j < progData.Count; j++) { programDataRetrieved.Push(progData[j]); }
-
-            for (int i = 0; i < polyInputList.Count; i++)
-            {
-                Polygon2d currentPoly, poly = polyInputList[i];
-                if (poly == null || poly.Points == null || poly.Points.Count == 0) return null;
-
-                polyRetrieved.Push(poly);
-                int count = 0, dir = 1;
-                double areaThreshold = 1000, maximum = 0.9, minimum = 0.3;
-
-                List<Polygon2d> polyAfterSplit = null;
-                Dictionary<string, object> splitReturn = null;
-                Random rand = new Random();
-                while (polyRetrieved.Count > 0 && programDataRetrieved.Count > 0)
-                {
-                    ProgramData progItem = programDataRetrieved.Pop();
-                    ratio = rand.NextDouble() * (maximum - minimum) + minimum;
-                    currentPoly = polyRetrieved.Pop();
-                    try
-                    {
-                        splitReturn = BuildLayout.SplitByRatio(currentPoly, ratio, dir);
-                        polyAfterSplit = (List<Polygon2d>)splitReturn["PolyAfterSplit"];
-                    }
-                    catch (Exception)
-                    {
-                        dir = BasicUtility.toggleInputInt(dir);
-                        splitReturn = BuildLayout.SplitByRatio(currentPoly, ratio, dir);
-                        if (splitReturn == null) { Trace.WriteLine("Could Not Split"); continue; }
-                        polyAfterSplit = (List<Polygon2d>)splitReturn["PolyAfterSplit"];
-                        //throw;
-                    }
-                    List<List<Point2d>> pointsOnPoly = (List<List<Point2d>>)splitReturn["EachPolyPoint"];
-                    double area1 = GraphicsUtility.AreaPolygon2d(polyAfterSplit[0].Points);
-                    double area2 = GraphicsUtility.AreaPolygon2d(polyAfterSplit[1].Points);
-                    if (area1 > areaThreshold)
-                    {
-                        polyRetrieved.Push(polyAfterSplit[0]);
-                        polyList.Add(polyAfterSplit[0]);
-                        progItem.AreaProvided = area1;
-                        pointsList.AddRange(pointsOnPoly[0]);
-                        areaList.Add(area1);
-                    }
-                    if (area2 > areaThreshold)
-                    {
-                        polyRetrieved.Push(polyAfterSplit[1]);
-                        polyList.Add(polyAfterSplit[1]);
-                        progItem.AreaProvided = area2;
-                        pointsList.AddRange(pointsOnPoly[1]);
-                        areaList.Add(area2);
-                    }
-                    dir = BasicUtility.toggleInputInt(dir);
-                    count += 1;
-                }// end of while loop
-            }//end of for loop
-
-            List<ProgramData> AllProgramDataList = new List<ProgramData>();
-            for (int i = 0; i < progData.Count; i++)
-            {
-                ProgramData progItem = progData[i];
-                ProgramData progNew = new ProgramData(progItem);
-                if (i < polyList.Count) progNew.PolyProgAssigned = polyList[i];
-                else progNew.PolyProgAssigned = null;
-                AllProgramDataList.Add(progNew);
-            }
-            //polyList = Polygon2d.PolyReducePoints(polyList);
-            //Trace.WriteLine("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-
-            return new Dictionary<string, object>
-            {
-                { "PolyAfterSplit", (polyList) },
-                { "AreaEachPoly", (areaList) },
-                { "EachPolyPoint", (pointsList) },
-                { "UpdatedProgramData", (AllProgramDataList) }
-            };
-
-
-        }
-
-
-        //RECURSIVE SPLITS A POLY
-        internal static Dictionary<string, object> RecursiveSplitPolyProgramsSingleOut(List<Polygon2d> polyInputList,
-            List<ProgramData> progData, double ratioA = 0.5, int recompute = 1)
-        {
-            return RecursiveSplitPolyPrograms(polyInputList, progData, ratioA, recompute);
-        }
-
+     
 
         //changes the center of one or both polys to ensure correct intersection line is found
         [MultiReturn(new[] { "CenterPolyA", "CenterPolyB", "PolyA", "PolyB" })]
         internal static Dictionary<string, object> ComputePolyCentersAlign(Polygon2d polyA, Polygon2d polyB)
         {
-            double extents = 10000;
             //compute orig centers
             Point2d centerPolyA = GraphicsUtility.CentroidInPointLists(polyA.Points);
             Point2d centerPolyB = GraphicsUtility.CentroidInPointLists(polyB.Points);
 
-            Point2d staticPoint;
-            Polygon2d staticPoly;
-            Point2d movingPoint;
-            Polygon2d movingPoly;
+            Point2d staticPoint, movingPoint;
+            Polygon2d staticPoly, movingPoly;
 
             double areaPolyA = GraphicsUtility.AreaPolygon2d(polyA.Points);
             double areaPolyB = GraphicsUtility.AreaPolygon2d(polyB.Points);
-
             if (areaPolyA > areaPolyB)
             {
                 staticPoint = centerPolyB;
@@ -146,22 +44,13 @@ namespace SpacePlanning
             }
 
             //shift the other points
-
             Point2d movingPoint1 = new Point2d(staticPoint.X, movingPoint.Y);
             Point2d movingPoint2 = new Point2d(movingPoint.X, staticPoint.Y);
-
             bool IsMovingPoint1 = GraphicsUtility.PointInsidePolygonTest(movingPoly.Points, movingPoint1);
             bool IsMovingPoint2 = GraphicsUtility.PointInsidePolygonTest(movingPoly.Points, movingPoint2);
-
-            if (IsMovingPoint1)
-            {
-                movingPoint = movingPoint1;
-
-            }
-            else if (IsMovingPoint2)
-            {
-                movingPoint = movingPoint2;
-            }
+             
+            if (IsMovingPoint1) movingPoint = movingPoint1;
+            else if (IsMovingPoint2) movingPoint = movingPoint2;
             else
             {
                 staticPoint = centerPolyA;
@@ -169,8 +58,6 @@ namespace SpacePlanning
                 movingPoint = movingPoint1;
                 movingPoly = polyB;
             }
-
-
 
             return new Dictionary<string, object>
                 {
@@ -181,103 +68,6 @@ namespace SpacePlanning
                 };
         }
 
-
-
-
-        //changes the center of one or both polys to ensure correct intersection line is found
-        [MultiReturn(new[] { "CenterPolyA", "CenterPolyB", "PolyA", "PolyA" })]
-        internal static Dictionary<string, object> ComputePolyCenters(Polygon2d polyA, Polygon2d polyB)
-        {
-            double extents = 10000;
-            //compute orig centers
-            Point2d centerPolyA = GraphicsUtility.CentroidInPointLists(polyA.Points);
-            Point2d centerPolyB = GraphicsUtility.CentroidInPointLists(polyB.Points);
-
-            //make infinite lines via both centers 0 - horizontal line, 1 - vertical line
-            Line2d lineAX = new Line2d(centerPolyA, extents, 0);
-            Line2d lineAY = new Line2d(centerPolyA, extents, 1);
-
-            Line2d lineBX = new Line2d(centerPolyB, extents, 0);
-            Line2d lineBY = new Line2d(centerPolyB, extents, 1);
-
-
-            //get line line intersection for these lines
-            //AX-BY and BX-AY
-            Point2d pAXBY = GraphicsUtility.LineLineIntersection(lineAX, lineBY);
-            Point2d pBXAY = GraphicsUtility.LineLineIntersection(lineBX, lineAY);
-
-            //check for point containment test for these two
-            bool checkA_AXBY = GraphicsUtility.PointInsidePolygonTest(polyA.Points, pAXBY);
-            bool checkA_BXAY = GraphicsUtility.PointInsidePolygonTest(polyA.Points, pBXAY);
-            bool checkB_AXBY = GraphicsUtility.PointInsidePolygonTest(polyB.Points, pAXBY);
-            bool checkB_BXAY = GraphicsUtility.PointInsidePolygonTest(polyB.Points, pBXAY);
-            ////////////////////////////////////////////////////
-            if (checkA_BXAY == true && checkB_AXBY == true)
-            {
-                return new Dictionary<string, object>
-                {
-                { "CenterPolyA", (centerPolyA) },
-                { "CenterPolyB", (centerPolyB) },
-                { "PolyA", (polyA) },
-                { "PolyB", (polyB) }
-                };
-            }
-
-            if (checkA_AXBY == true && checkB_BXAY == true)
-            {
-                return new Dictionary<string, object>
-                {
-                { "CenterPolyA", (centerPolyA) },
-                { "CenterPolyB", (centerPolyB) },
-                { "PolyA", (polyA) },
-                { "PolyB", (polyB) }
-                };
-            }
-            ////////////////////////////////////////////////////
-
-
-            if (checkA_AXBY == true)
-            {
-
-                //centerPolyB.X = centerPolyA.X;
-
-            }
-            else if (checkA_BXAY == true)
-            {
-                //centerPolyB.Y = centerPolyA.Y;
-
-            }
-            else if (checkB_AXBY == true)
-            {
-
-            }
-            else if (checkB_BXAY == true)
-            {
-
-            }
-            else
-            {
-                return new Dictionary<string, object>
-                {
-                { "CenterPolyA", (centerPolyA) },
-                { "CenterPolyB", (centerPolyB) },
-                { "PolyA", (polyA) },
-                { "PolyB", (polyB) }
-                };
-            }
-
-
-
-
-
-            return new Dictionary<string, object>
-                {
-                { "CenterPolyA", (centerPolyA) },
-                { "CenterPolyB", (centerPolyB) },
-                { "PolyA", (polyA) },
-                { "PolyB", (polyB) }
-                };
-        }
 
 
 
@@ -470,40 +260,12 @@ namespace SpacePlanning
 
         }
 
-        //internal function for Recursive Split By Area to work
-        internal static double DistanceEditBasedOnRatio(double distance, double areaPoly, double areaFound, double area, double setSpan, double areaDifference)
-        {
-            double distanceNew = 0;
 
-
-            distanceNew = distance * (area / areaFound);
-            //Trace.WriteLine("Ratio multiplied to distance is : " + (area / areaFound));
-            //distanceNew = distance;
-            return distanceNew;
-        }
-
+        /*
         //RECURSIVE SPLITS A POLY
         [MultiReturn(new[] { "PolyAfterSplit", "AreaEachPoly", "EachPolyPoint" })]
         public static Dictionary<string, object> RecursiveSplitByArea(Polygon2d poly, double area, int dir, int recompute = 1)
         {
-
-            /*PSUEDO CODE:
-            get poly's vertical and horizontal span
-            based on that get the direction of split
-            get polys area and compare with given area ( if area bigger than polyarea then return null )
-            based on the proportion calc distance
-            bigpoly 
-                split that into two
-                save distance
-                check area of both
-                get the smaller poly and compare with asked area
-                if area more increase distance by that much
-                if area less decrease distance by that much
-                split the bigger poly again
-                repeat                
-            */
-
-
 
             List<Polygon2d> polyList = new List<Polygon2d>();
             List<double> areaList = new List<double>();
@@ -605,106 +367,11 @@ namespace SpacePlanning
                 { "EachPolyPoint", (pointsList) }
             };
         }
+    */
 
 
 
-        //used to split Depts into Program Spaces
-        [MultiReturn(new[] { "PolyAfterSplit", "UpdatedProgramData" })]
-        public static Dictionary<string, object> RecursivePlaceProgramsSeriesNew(List<Polygon2d> polyInputList,
-            List<ProgramData> progData, double minWidth = 5)
-        {
-
-            if (polyInputList == null || polyInputList.Count == 0) return null;
-            Stack<Polygon2d> polyContainerList = new Stack<Polygon2d>();
-            List<Polygon2d> polyList = new List<Polygon2d>();
-            for (int i = 0; i < polyInputList.Count; i++)
-            {
-                if (polyInputList[i] == null || polyInputList[i].Points == null || polyInputList[i].Points.Count == 0) continue;
-                polyContainerList.Push(polyInputList[i]);
-            }
-
-            for (int i = 0; i < progData.Count; i++)
-            {
-                if (polyContainerList.Count > 0)
-                {
-                    while (progData[i].IsAreaSatisfied == false && polyContainerList.Count > 0)
-                    {
-
-                        double areaProg = progData[i].AreaNeeded;
-                        Polygon2d currentPoly = polyContainerList.Pop();
-                        double areaPoly = PolygonUtility.AreaCheckPolygon(currentPoly);
-                        Dictionary<string, object> splitResult;
-                        if (areaPoly < areaProg)
-                        {
-                            polyList.Add(currentPoly);
-                            //currentPoly = polyContainerList.Pop();
-                        }
-                        else
-                        {
-                            double dist = 0; int dir = 1;
-                            double ratio = areaPoly / areaProg;
-
-
-                            List<double> spans = PolygonUtility.GetSpansXYFromPolygon2d(currentPoly.Points);
-                            double spanX = spans[0], spanY = spans[1];
-                            if (spanX > spanY)
-                            {
-                                if (spanY < minWidth)
-                                {
-                                    continue;
-                                }
-                                dist = spanX / ratio; dir = 1;
-                                splitResult = BuildLayout.SplitByDistanceFromPoint(currentPoly, dist, dir);
-                            }
-                            else
-                            {
-                                if (spanX < minWidth)
-                                {
-                                    continue;
-                                }
-                                dist = spanY / ratio; dir = 0;
-                                splitResult = BuildLayout.SplitByDistanceFromPoint(currentPoly, dist, dir);
-                            }
-
-                            List<Polygon2d> polyAfterSplit = (List<Polygon2d>)splitResult["PolyAfterSplit"];
-                            double areaA = PolygonUtility.AreaCheckPolygon(polyAfterSplit[0]);
-                            double areaB = PolygonUtility.AreaCheckPolygon(polyAfterSplit[1]);
-                            Polygon2d space, container;
-                            double areaSpace;
-                            if (areaA < areaB)
-                            {
-                                space = polyAfterSplit[0];
-                                container = polyAfterSplit[1];
-                                areaSpace = areaA;
-                            }
-                            else
-                            {
-                                space = polyAfterSplit[1];
-                                container = polyAfterSplit[0];
-                                areaSpace = areaB;
-                            }
-                            double areaPolyAfterSplit = PolygonUtility.AreaCheckPolygon(polyAfterSplit[0]);
-                            progData[i].AreaProvided += areaSpace;
-                            polyList.Add(space);
-                            polyContainerList.Push(container);
-
-                        }
-                    }//end of while loop
-
-                }
-            }// end of for loop
-
-
-            return new Dictionary<string, object>
-            {
-                { "PolyAfterSplit", (polyList) },
-                { "UpdatedProgramData",(null) }
-            };
-
-
-        }
-
-     
+      
 
 
 

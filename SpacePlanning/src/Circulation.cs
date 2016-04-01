@@ -527,7 +527,7 @@ namespace SpacePlanning
             List<Line2d> onlyOrthoLineList = new List<Line2d>();
             for (int i = 0; i < cleanNetworkLines.Count; i++)
             {
-                bool checkOrtho = GraphicsUtility.IsLineOrthogonalCheck(cleanNetworkLines[i]);
+                bool checkOrtho = GraphicsUtility.IsLineOrthogonal(cleanNetworkLines[i]);
                 if (checkOrtho == true)
                 {
                     onlyOrthoLineList.Add(cleanNetworkLines[i]);
