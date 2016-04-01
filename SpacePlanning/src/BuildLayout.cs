@@ -829,7 +829,7 @@ namespace SpacePlanning
             for (int i = 0; i < polyInputList.Count; i++)
             {
                 Polygon2d pol = polyInputList[i];
-                List<Point2d> bbox = ReadData.FromPointsGetBoundingPoly(pol.Points);
+                List<Point2d> bbox = GraphicsUtility.FromPointsGetBoundingPoly(pol.Points);
                 Dictionary<string, object> cellObject = GridObject.GridPointsInsideOutline(bbox, pol.Points, dimX, dimY);
                 List<Point2d> point2dList = (List<Point2d>)cellObject["PointsInsideOutline"];
                 List<Polygon2d> polyGridList = GridObject.MakeCellsFromGridPoints2d(point2dList, dimX, dimY);

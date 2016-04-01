@@ -442,7 +442,7 @@ namespace SpacePlanning
                 ptAll.Add(tempPts);
                 if (tempPts.Count > 2)
                 {
-                    List<Point2d> boundingPolyPts = ReadData.FromPointsGetBoundingPoly(tempPts);
+                    List<Point2d> boundingPolyPts = GraphicsUtility.FromPointsGetBoundingPoly(tempPts);
                     PolyCurve poly = DynamoGeometry.PolyCurveFromPoints(boundingPolyPts);
                     polyList.Add(poly);
                 }
@@ -487,7 +487,7 @@ namespace SpacePlanning
                 {
                     
                 //Trace.WriteLine("Temp Pt counts are : " + tempPts.Count);
-                List<Point2d> boundingPolyPts = ReadData.FromPointsGetBoundingPoly(tempPts);
+                List<Point2d> boundingPolyPts = GraphicsUtility.FromPointsGetBoundingPoly(tempPts);
                 PolyCurve poly = DynamoGeometry.PolyCurveFromPoints(boundingPolyPts);
                 polyList.Add(poly);
                 }

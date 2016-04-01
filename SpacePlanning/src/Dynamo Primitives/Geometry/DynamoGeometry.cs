@@ -19,7 +19,6 @@ namespace stuffer
         //ADDED CODE : SUBHAJIT DAS++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-        
 
 
 
@@ -29,10 +28,25 @@ namespace stuffer
 
 
 
+        //convert point to point2dList
+        internal static List<Point2d> PointtoPoint2Da(List<Point> pointList)
+        {
+            List<Point2d> point2dList = new List<Point2d>();
+
+            for (int i = 0; i < pointList.Count; i++)
+            {
+                Point2d p2 = Point2d.ByCoordinates(pointList[i].X, pointList[i].Y);
+                point2dList.Add(p2);
+            }
+            pointList.Clear();
+            return point2dList;
+        }
 
 
 
-     
+
+
+
 
         [MultiReturn(new[] { "aVal", "rVal", "gVal", "bVal" })]
         public static Dictionary<string, object> ARGBValues(List<List<Point2d>> ptLists)

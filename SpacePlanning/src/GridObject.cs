@@ -40,7 +40,7 @@ namespace SpacePlanning
         internal static List<Point2d> GridPointsFromBBoxNew(List<Point2d> bbox, double dimXX, double dimYY,double a,double b)
         {
             List<Point2d> pointsGrid = new List<Point2d>();
-            Range2d xyRange = ReadData.FromPoint2dGetRange2D(bbox);
+            Range2d xyRange = GraphicsUtility.FromPoint2dGetRange2D(bbox);
             double xDistance = xyRange.Xrange.Span;
             double yDistance = xyRange.Yrange.Span;
 
@@ -73,7 +73,7 @@ namespace SpacePlanning
         {
             List<Point2d> pointsGrid = new List<Point2d>();
             List<Cell> cells = new List<Cell>();
-            Range2d xyRange = ReadData.FromPoint2dGetRange2D(bbox);
+            Range2d xyRange = GraphicsUtility.FromPoint2dGetRange2D(bbox);
 
             double xDistance = xyRange.Xrange.Span;
             double yDistance = xyRange.Yrange.Span;

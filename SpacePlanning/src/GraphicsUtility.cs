@@ -215,9 +215,7 @@ namespace SpacePlanning
             }
             return cleanLineList;
         }
-
-
-
+        
         //removes duplicates lines from a list of lines
         public static List<Line2d> CleanLines(List<Line2d> lineList)
         {
@@ -782,6 +780,61 @@ namespace SpacePlanning
             List<Point2d> finalPts = newSequence.ToList();
             return finalPts;
         }
+
+
+        //from point2d list get the range2d
+        internal static Range2d FromPoint2dGetRange2D(List<Point2d> point2dList)
+        {
+            List<double> xCordList = new List<double>();
+            List<double> yCordList = new List<double>();
+            double xMax = 0, xMin = 0, yMax = 0, yMin = 0;
+            for (int i = 0; i < point2dList.Count; i++)
+            {
+                xCordList.Add(point2dList[i].X);
+                yCordList.Add(point2dList[i].Y);
+            }
+
+            xMax = xCordList.Max();
+            yMax = yCordList.Max();
+
+            xMin = xCordList.Min();
+            yMin = yCordList.Min();
+
+            Range1d x = new Range1d(xMin, xMax);
+            Range1d y = new Range1d(yMin, yMax);
+            Range2d xyRange = new Range2d(x, y);
+
+            return xyRange;
+        }
+
+       
+
+        //get the bounding box from input points
+        public static List<Point2d> FromPointsGetBoundingPoly(List<Point2d> pointList)
+        {
+            List<Point2d> pointCoordList = new List<Point2d>();
+            List<double> xCordList = new List<double>();
+            List<double> yCordList = new List<double>();
+            double xMax = 0, xMin = 0, yMax = 0, yMin = 0;
+            for (int i = 0; i < pointList.Count; i++)
+            {
+                xCordList.Add(pointList[i].X);
+                yCordList.Add(pointList[i].Y);
+            }
+            xMax = xCordList.Max();
+            yMax = yCordList.Max();
+
+            xMin = xCordList.Min();
+            yMin = yCordList.Min();
+
+            pointCoordList.Add(Point2d.ByCoordinates(xMin, yMin));
+            pointCoordList.Add(Point2d.ByCoordinates(xMin, yMax));
+            pointCoordList.Add(Point2d.ByCoordinates(xMax, yMax));
+            pointCoordList.Add(Point2d.ByCoordinates(xMax, yMin));
+            return pointCoordList;
+        }
+
+
 
 
     }
