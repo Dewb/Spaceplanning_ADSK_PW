@@ -114,7 +114,7 @@
     <Compile Include="src\CodeToTest.cs" />
     <Compile Include="src\CustomVariables.cs" />
     <Compile Include="src\DeptData.cs" />
-    <Compile Include="src\Dump.cs" />
+    <Compile Include="src\TestGraphicsUtility.cs" />
     <Compile Include="src\GridObject.cs" />
     <Compile Include="src\ICloneable.cs" />
     <Compile Include="src\Node.cs" />

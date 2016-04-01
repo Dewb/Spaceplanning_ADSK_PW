@@ -64,10 +64,7 @@ namespace SpacePlanning
             return cleanPolyList;
         }
 
-
-
-
-
+        
         // sorts a list of polygons from a point and returns the indices 
         internal static List<int> SortPolygonsFromAPoint(List<Polygon2d> polygonsList, Point2d centerPt)
         {
@@ -224,86 +221,36 @@ namespace SpacePlanning
             return cleanList;
 
         }
-        //trying new way to sort points clockwise
+        
+        //sort points clockwise direction
         internal static List<Point2d> DoSortClockwise(List<Point2d> poly, List<Point2d> intersectedPoints, List<int> pIndex)
         {
-            if (intersectedPoints == null || intersectedPoints.Count == 0)
-            {
-                return null;
-
-            }
+            if (intersectedPoints == null || intersectedPoints.Count == 0) return null;
             if (intersectedPoints.Count > 2)
             {
-
-                //Trace.WriteLine("Wow found  " + intersectedPoints.Count + " intersection points!!!!!!!!!!!!!!!");
                 List<Point2d> cleanedPtList = CleanDuplicatePoint2dNew(intersectedPoints);
-                //Trace.WriteLine("After Cleaning found  " + cleanedPtList.Count + " intersection points!!!!!!!!!!!!!!!");
-                //intersectedPoints = GraphicsUtility.CleanDuplicatePoint2d(intersectedPoints);
-                //return null;
-
             }
-            /*
-
-            if (intersectedPoints.Count < 2)
-            {
-                Trace.WriteLine("Returning null as less than 1 points");
-                //return null;
-            }
-            List<Point2d> pointList = new List<Point2d>();
-            List<Point2d> mergedPoints = new List<Point2d>();
-            
-            for (int i = 0; i < pIndex.Count; i++)
-            {
-                mergedPoints.Add(poly[pIndex[i]]);
-            }
-            reference = GraphicsUtility.CentroidInPointLists(mergedPoints);
-            mergedPoints.AddRange(intersectedPoints);
-
-            //mergedPoints.Sort((a, b) => GraphicsUtility.Angle(a, reference).CompareTo(GraphicsUtility.Angle(b, reference)));
-            //mergedPoints.Sort(new Comparison<Point2d>(GraphicsUtility.SortCornersClockwise));
-            //return mergedPoints;
-            */
-            return makePolyPointsStraight(poly, intersectedPoints, pIndex);
+            return OrderPolygon2dPoints(poly, intersectedPoints, pIndex);
         }
-
-        internal static List<Point2d> makePolyPointsStraight(List<Point2d> poly, List<Point2d> intersectedPoints, List<int> pIndex)
+                
+        //orders the points to form a closed polygon2d
+        internal static List<Point2d> OrderPolygon2dPoints(List<Point2d> poly, List<Point2d> intersectedPoints, List<int> pIndex)
         {
-
-            if (intersectedPoints.Count < 2)
-            {
-                return null;
-            }
-
-            //List<Point2d> intersectedPoints = GraphicsUtility.PointUniqueChecker(intersectedPointsUnclean);
-            //Trace.WriteLine("Intersected Points Length are : " + intersectedPoints.Count);
-            //bool isUnique = intersectedPoints.Distinct().Count() == intersectedPoints.Count();
-            //Trace.WriteLine("Intersected Point List is unique ?   " + isUnique);
+            if (intersectedPoints.Count < 2) return null;
+   
             List<Point2d> pt = new List<Point2d>();
             bool added = false;
 
-            int a = 0;
-            int b = 1;
-            if (intersectedPoints.Count > 2)
-            {
-                //Trace.WriteLine("Intersected pnts are more than one " + intersectedPoints.Count);
-                //a = 0;
-                //b = intersectedPoints.Count - 1;
-            }
-
-            //Trace.WriteLine("Intersected Points Length are : " + intersectedPoints.Count);
-            //Trace.WriteLine("a and b are : " + a + "  ,  " + b );
-            //Trace.WriteLine("Index Point length is :  " + pIndex.Count);
+            int a = 0, b = 1;
             for (int i = 0; i < pIndex.Count - 1; i++)
             {
                 pt.Add(poly[pIndex[i]]);
-                //enter only when indices difference are more than one and intersected points are not added yet
                 if (Math.Abs(pIndex[i] - pIndex[i + 1]) > 1 && added == false)
                 {
                     List<Point2d> intersNewList = GraphicsUtility.SortPointsByDistanceFromPoint(intersectedPoints,
                         poly[pIndex[i]]);
                     pt.Add(intersNewList[a]);
                     pt.Add(intersNewList[b]);
-                    //Trace.WriteLine("Added Intersect Before for PtA");
                     added = true;
                 }
 
@@ -317,30 +264,20 @@ namespace SpacePlanning
                     added = true;
                 }
 
-                else if (i == (pIndex.Count - 2) && added == true)
-                {
-                    pt.Add(poly[pIndex[i + 1]]);
-                }
+                else if (i == (pIndex.Count - 2) && added == true) pt.Add(poly[pIndex[i + 1]]);
             }
-            //Trace.WriteLine("Point Returned Length : " + pt.Count);
-            //Trace.WriteLine("I++++++++++++++++++++++++++++++++++++++++++");
             return pt;
         }
-
-
-
-        internal static Dictionary<int, object> pointSelector(Random ran, List<Point2d> poly)
+        
+        //random point selector from a list
+        internal static Dictionary<int, object> PointSelector(Random ran, List<Point2d> poly)
         {
             Dictionary<int, object> output = new Dictionary<int, object>();
-
             double num = ran.NextDouble();
-            //Trace.WriteLine("Point Selector Random Found is : " + num);
             int highInd = GraphicsUtility.ReturnHighestPointFromListNew(poly);
             Point2d hiPt = poly[highInd];
             int lowInd = GraphicsUtility.ReturnLowestPointFromListNew(poly);
             Point2d lowPt = poly[lowInd];
-
-
             if (num < 0.5)
             {
                 output[0] = lowPt;
@@ -351,12 +288,10 @@ namespace SpacePlanning
                 output[0] = hiPt; //hiPt
                 output[1] = -1; //lowPt
             }
-
-
             return output;
         }
 
-
+        //optimizes the points in a list of two points
         internal static List<Polygon2d> OptimizePolyPoints(List<Point2d> sortedA, List<Point2d> sortedB,
         bool tag = false, double spacing = 0)
         {
@@ -386,9 +321,8 @@ namespace SpacePlanning
             splittedPoly.Add(polyB);
             return splittedPoly;
         }
-
-
-
+        
+        //returns the hprizontal and vertical span of a polygon2d , places longer span first
         internal static List<double> PolySpanCheck(Polygon2d poly)
         {
             List<double> spanList = new List<double>();
@@ -397,8 +331,6 @@ namespace SpacePlanning
             Point2d span = polyRange.Span;
             double horizontalSpan = span.X;
             double verticalSpan = span.Y;
-
-            //place longer span first
             if (horizontalSpan > verticalSpan)
             {
                 spanList.Add(horizontalSpan);
@@ -412,33 +344,17 @@ namespace SpacePlanning
 
             return spanList;
         }
-
-
-
-        //COMPUTE CENTROID OF A CLOSED POLYGON
+        
+        //calc centroid of a closed polygon2d
         public static Point2d CentroidFromPoly(Polygon2d poly)
         {
             if (poly == null || poly.Points == null || poly.Points.Count == 0) return null;
-            List<Point2d> ptList = poly.Points;
-            double x = 0, y = 0;
-            for (int i = 0; i < ptList.Count; i++)
-            {
-                x += ptList[i].X;
-                y += ptList[i].Y;
-            }
-            x = x / ptList.Count;
-            y = y / ptList.Count;
-            Point2d cen = new Point2d(x, y);
-            poly = null;
-            return cen;
-
+            return CentroidFromPoly(poly.Points);
         }
-
-
-        //COMPUTE CENTROID OF A CLOSED POLYGON
+        
+        //calc centroid of a closed polygon2d
         public static Point2d CentroidFromPoly(List<Point2d> ptList)
         {
-
             double x = 0, y = 0;
             for (int i = 0; i < ptList.Count; i++)
             {
@@ -452,21 +368,12 @@ namespace SpacePlanning
             return cen;
 
         }
-
-
-
+        
+        //gets the bounding box for a closed polygon2d
         public static List<Point2d> FromPointsGetBoundingPoly(List<Point2d> pointList)
         {
-            if (pointList == null)
-            {
-                return null;
-            }
-
-            if (pointList.Count == 0)
-            {
-                return null;
-            }
-
+            if (pointList == null) return null;
+            if (pointList.Count == 0) return null;
             List<Point2d> pointCoordList = new List<Point2d>();
             List<double> xCordList = new List<double>();
             List<double> yCordList = new List<double>();
@@ -490,7 +397,7 @@ namespace SpacePlanning
             return pointCoordList;
         }
 
-
+        //gets the spans in both dir for a polygon2d
         public static List<double> GetSpansXYFromPolygon2d(List<Point2d> poly)
         {
             if (poly == null || poly.Count == 0)
@@ -511,12 +418,11 @@ namespace SpacePlanning
             return spans;
         }
 
+        //gets the range2d obj for a bounding box
         public static Range2d GetRang2DFromBBox(List<Point2d> pointList)
         {
-            if (pointList == null || pointList.Count == 0)
-            {
-                return null;
-            }
+            if (pointList == null || pointList.Count == 0) return null;
+          
             List<double> xCordList = new List<double>();
             List<double> yCordList = new List<double>();
             double xMax = 0, xMin = 0, yMax = 0, yMin = 0;
@@ -535,39 +441,30 @@ namespace SpacePlanning
             Range1d ran1X = new Range1d(xMin, xMax);
             Range1d ran1Y = new Range1d(yMin, yMax);
             Range2d ran2D = new Range2d(ran1X, ran1Y);
-
             return ran2D;
         }
 
         // reduces points in polygon2d list
         internal static List<Polygon2d> PolyReducePoints(List<Polygon2d> polyList)
         {
-            if (polyList == null || polyList.Count == 0)
-            {
-                return null;
-            }
+            if (polyList == null || polyList.Count == 0) return null;
             List<Polygon2d> reducedPolyList = new List<Polygon2d>();
             for (int i = 0; i < polyList.Count; i++)
             {
-                if (polyList[i] == null || polyList[i].Points == null || polyList[i].Points.Count == 0)
-                {
-                    continue;
-                }
+                if (polyList[i] == null || polyList[i].Points == null || polyList[i].Points.Count == 0) continue;
                 Polygon2d redPoly = new Polygon2d(polyList[i].Points);
                 reducedPolyList.Add(redPoly);
             }
-
-
             return reducedPolyList;
         }
 
+        //smoothens a polygon2d by adding point2d in between
         internal static List<Point2d> SmoothPolygon(List<Point2d> pointList, double spacingProvided = 1)
         {
             int threshValue = 50;
             if (pointList == null || pointList.Count == 0) return null;
             if (pointList.Count > threshValue) return pointList;
            
-            //added to make sure spacing is set based on poly dimensions-------------------
             List<double> spans = GetSpansXYFromPolygon2d(pointList);
             double spanX = spans[0];
             double spanY = spans[1];
@@ -597,22 +494,18 @@ namespace SpacePlanning
             }
             return ptList;
         }
-
-
-        //can be discarded
-        //CHECK IF THE AREA POLYGON WORKS FINE
+        
+        //checks area of a polygon2d
         public static double AreaCheckPolygon(Polygon2d poly)
         {
             if (poly == null) return 0;           
             return GraphicsUtility.AreaPolygon2d(poly.Points);
         }
-
-
-        //just for checking can be discarded
+        
+        //to check smoothened polygon2d
         public static List<Point2d> SmoothCheckerForPoly(Polygon2d poly, int spacing)
         {
             List<Point2d> smoothedPoints = SmoothPolygon(poly.Points, spacing);
-            //Polygon2d polyNew = new Polygon2d(smoothedPoints);
             return smoothedPoints;
         }
 

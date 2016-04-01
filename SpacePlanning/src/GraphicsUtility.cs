@@ -238,7 +238,7 @@ namespace SpacePlanning
         }
 
         //returns only unique point2d from a list of points
-        internal static List<Point2d> PointUniqueChecker(List<Point2d> testList)
+        internal static List<Point2d> MakeUniquePoints(List<Point2d> testList)
         {
             List<Point2d> cleanList = new List<Point2d>();
             List<double> Xlist = new List<double>();
@@ -293,7 +293,6 @@ namespace SpacePlanning
         }
 
  
-
         //find lowest point from a list ( only used in the Grahams Scan Convex Hull Algo )
         internal static void FindLowestPointFromList(ref List<Point2d> ptList, int size)
         {
@@ -322,8 +321,7 @@ namespace SpacePlanning
             return rtnval;
         }
 
-
-
+        
 
         //sort point array for Grahams scan algo to find convex hull
         internal static void SortedPoint2dList(ref List<Point2d> ptList, int size)
@@ -342,8 +340,6 @@ namespace SpacePlanning
                     }
                 }
             }
-
-                 
         
 
         //get next to top point on Stack for Graham Scan algo
@@ -473,43 +469,11 @@ namespace SpacePlanning
             return new Point2d(pt.X + vec.X, pt.Y + vec.Y); 
         }
 
-        //make points on grids - not using now
-        public static List<Point> MakeSquarePointsFromCenterSide(Point2d centerPt, double side)
-        {
-            List<Point> ptList = new List<Point>();
-            double a = centerPt.X - (side / 2);
-            double b = centerPt.Y - (side / 2);
-            Point pt = Point.ByCoordinates(a, b);
-            ptList.Add(pt);
-
-            a = centerPt.X - (side / 2);
-            b = centerPt.Y + (side / 2);
-            pt = Point.ByCoordinates(a, b);
-            ptList.Add(pt);
-
-            a = centerPt.X + (side / 2);
-            b = centerPt.Y + (side / 2);
-            pt = Point.ByCoordinates(a, b);
-            ptList.Add(pt);
-
-            a = centerPt.X + (side / 2);
-            b = centerPt.Y - (side / 2);
-            pt = Point.ByCoordinates(a, b);
-            ptList.Add(pt);
-            return ptList;
-        }
-
-        //make cell on grids - not using now
-        public static Polygon MakeSquareFromCenterSide(Point2d centerPt,double side)
-        {     
-            return Polygon.ByPoints(MakeSquarePointsFromCenterSide(centerPt,side)); 
-        }
-
 
         //make polygon2d on grids - notusing now
         public static Polygon2d MakeSquarePolygon2dFromCenterSide(Point2d centerPt, double side)
         {
-            List<Point> ptList = MakeSquarePointsFromCenterSide(centerPt, side);
+            List<Point> ptList = TestGraphicsUtility.MakeSquarePointsFromCenterSide(centerPt, side);
             List<Point2d> pt2dList = new List<Point2d>();
             for (int i = 0; i < ptList.Count; i++)
             {
@@ -517,8 +481,6 @@ namespace SpacePlanning
             }
             return Polygon2d.ByPoints(pt2dList);
         }
-
-
 
         //sort a list with Quicksort algorithm
         public static void Quicksort(ref IComparable[] elements, int left, int right)
@@ -552,9 +514,7 @@ namespace SpacePlanning
             return ((b.X - a.X) * (c.Y - a.Y) - (b.Y - a.Y) * (c.X - a.X)) > 0;
         }
 
-
-
-
+        
         // finds the angle between two points
         internal static double Angle(Point2d A, Point2d center)
         {
@@ -562,10 +522,7 @@ namespace SpacePlanning
             if (A.Y < center.Y) angle = Math.PI + Math.PI - angle;//360-angle
             return angle; //return angle*180/Math.PI;
         }
-
-
-
-
+        
         // sorts two points clockwise, with respect to a reference point not using now
         internal static int SortCornersClockwise(Point2d A, Point2d B)
         {
@@ -605,7 +562,6 @@ namespace SpacePlanning
         }
 
     
-
         // Given three colinear points p, q, r, the function checks if
         // point q lies on line segment 'pr'
         internal static bool OnSegment(Point2d p, Point2d q, Point2d r)
@@ -615,21 +571,8 @@ namespace SpacePlanning
             return false;
         }
 
-        // checks collinearity and order of three points
-        internal static int Orientation(Point2d p, Point2d q, Point2d r)
-        {
-           
-            double val = (q.Y - p.Y) * (r.X - q.X) -
-                      (q.X - p.X) * (r.Y - q.Y);
-
-            if (val == 0) return 0;  // colinear
-
-            return (val > 0) ? 1 : 2; // clock or counterclock wise
-        }
-
-
-
-        //GIVEN THREE POINTS CHECKS IF POINT Q IS INSIDE THE LINE PR
+      
+        
         // Given three colinear points p, q, r, the function checks if
         // point q lies on line segment 'pr'
         public static bool OnSegment(Line2d givenLine, Point2d q, double eps = 0)
@@ -639,6 +582,18 @@ namespace SpacePlanning
             if (q.X <= (Math.Max(p.X, r.X) + eps) && q.X >= (Math.Min(p.X, r.X) - eps) &&
                 q.Y <= (Math.Max(p.Y, r.Y) + eps) && q.Y >= (Math.Min(p.Y, r.Y))- eps) return true;
             return false;
+        }
+
+        // checks collinearity and order of three points
+        internal static int Orientation(Point2d p, Point2d q, Point2d r)
+        {
+
+            double val = (q.Y - p.Y) * (r.X - q.X) -
+                      (q.X - p.X) * (r.Y - q.Y);
+
+            if (val == 0) return 0;  // colinear
+
+            return (val > 0) ? 1 : 2; // clock or counterclock wise
         }
 
 
@@ -661,39 +616,7 @@ namespace SpacePlanning
         }
 
 
-        // WORKS SOMEWHAT - has bugs
-        public static bool CheckLineCollinear(Line2d lineA, Line2d lineB)
-        {
-            Point2d p1 = lineA.StartPoint;
-            Point2d p2 = lineA.EndPoint;
-            Point2d q1 = lineB.StartPoint;
-            Point2d q2 = lineB.EndPoint;
-           
-            // Find the four orientations needed for general and special cases
-            int o1 = Orientation(p1, q1, p2);
-            int o2 = Orientation(p1, q1, q2);
-            int o3 = Orientation(p2, q2, p1);
-            int o4 = Orientation(p2, q2, q1);
-
-            // General case
-            if (o1 != o2 && o3 != o4)
-                    return false;
-            // p1, q1 and p2 are colinear and p2 lies on segment p1q1
-            if (o1 == 0 && OnSegment(p1, p2, q1)) return true;
-
-            // p1, q1 and p2 are colinear and q2 lies on segment p1q1
-            if (o2 == 0 && OnSegment(p1, q2, q1)) return true;
-
-            // p2, q2 and p1 are colinear and p1 lies on segment p2q2
-            if (o3 == 0 && OnSegment(p2, p1, q2)) return true;
-
-            // p2, q2 and q1 are colinear and q1 lies on segment p2q2
-            if (o4 == 0 && OnSegment(p2, q1, q2)) return true;
-            return false; // Doesn't fall in any of the above cases
-       }
-            
- 
-
+       
     
 
         //find perp projection on a line from a point

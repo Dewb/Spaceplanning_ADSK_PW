@@ -24,10 +24,7 @@ namespace SpacePlanning
         private double _dimX;
         private double _dimY;
 
-
-
-        // We make the constructor for this object internal because the 
-        // Dynamo user should construct an object through a static method
+        //constructor
         internal GridObject(List<Point2d> siteOutline, List<Point2d> siteBoundingBox, double dimensionX, double dimensionY)
         {
            
@@ -37,34 +34,13 @@ namespace SpacePlanning
             _dimY = dimensionY;
         }
 
-        /// <summary>
-        /// Takes the input Sat file geometry and converts to a PolyLine Object
-        /// Can Also work with a sequential list of points
-        /// </summary>
-        /// <param name="lines">list of lines 2d store in class.</param>
-        /// <returns>A newly-constructed ZeroTouchEssentials object</returns>
-        public static GridObject BySiteOutline(List<Point2d> siteOutline, List<Point2d> siteBoundingBox, double dimensionX, double dimensionY)
-        {
-            return new GridObject(siteOutline,siteBoundingBox,dimensionX,dimensionY);
-        }
-
-        //private functions
-        internal void addSome()
-        {
-
-        }
-
-        //public functions
-
+    
         
-        // can be deleted later        /////////////////////////
-        //MAKE POINT2D LIST OF POINTS INSIDE THE BOUNDING BOX - points are stored clockwise
+        //make list of point2d from a bounding box as cell centers
         internal static List<Point2d> GridPointsFromBBoxNew(List<Point2d> bbox, double dimXX, double dimYY,double a,double b)
         {
-            // index 0 stores min point 2 stores the max point
             List<Point2d> pointsGrid = new List<Point2d>();
             Range2d xyRange = ReadData.FromPoint2dGetRange2D(bbox);
-
             double xDistance = xyRange.Xrange.Span;
             double yDistance = xyRange.Yrange.Span;
 
@@ -78,32 +54,23 @@ namespace SpacePlanning
             double posY =   bbox[0].Y + diffY*b;
             for (int i = 0; i < numPtsX; i++)
             {
-                
                 for(int j = 0; j < numPtsY; j++)
                 {
-                    
                     pointsGrid.Add(new Point2d(posX, posY));
                     posY += dimYY;
                 }
-
                 posX += dimXX;
                 posY = bbox[0].Y + diffY*b;
             }
-
-            
             return pointsGrid;
 
         }
-
-
         
-
-        // 0         /////////////////////////
-        //MAKE POINT2D LIST OF POINTS INSIDE THE BOUNDING BOX - points are stored clockwise
+        
+        // make point2d list which are inside the bounding box
         [MultiReturn(new[] { "PointsInsideOutline", "CellsFromPoints" })]
         public static Dictionary<string, object> GridPointsInsideOutline(List<Point2d> bbox, List<Point2d> outlinePoints, double dimXX, double dimYY)
         {
-            // index 0 stores min point 2 stores the max point
             List<Point2d> pointsGrid = new List<Point2d>();
             List<Cell> cells = new List<Cell>();
             Range2d xyRange = ReadData.FromPoint2dGetRange2D(bbox);
@@ -137,9 +104,6 @@ namespace SpacePlanning
                 posX += dimXX;
                 posY = bbox[0].Y + diffY;
             }
-
-
-            //return pointsGrid;
             return new Dictionary<string, object>
             {
                 { "PointsInsideOutline", (pointsGrid) },
@@ -148,137 +112,30 @@ namespace SpacePlanning
 
         }
 
-        // 0         /////////////////////////
-        //MAKE POINT2D LIST OF POINTS INSIDE THE BOUNDING BOX - points are stored clockwise
+        // make point2d list which are inside the bounding box
         public static Dictionary<string, object> GridPointsInsideOutlineSingleOut(List<Point2d> bbox, List<Point2d> outlinePoints, double dimXX, double dimYY)
         {
-            // index 0 stores min point 2 stores the max point
-            List<Point2d> pointsGrid = new List<Point2d>();
-            List<Cell> cells = new List<Cell>();
-            Range2d xyRange = ReadData.FromPoint2dGetRange2D(bbox);
-
-            double xDistance = xyRange.Xrange.Span;
-            double yDistance = xyRange.Yrange.Span;
-
-            int numPtsX = Convert.ToInt16(Math.Floor(xDistance / dimXX));
-            int numPtsY = Convert.ToInt16(Math.Floor(yDistance / dimYY));
-
-            double diffX = xDistance - (dimXX * numPtsX);
-            double diffY = yDistance - (dimYY * numPtsY);
-
-            double posX = bbox[0].X + diffX;
-            double posY = bbox[0].Y + diffY;
-            for (int i = 0; i < numPtsX; i++)
+            return GridPointsInsideOutline(bbox, outlinePoints, dimXX, dimYY);
+        }
+        
+        //make cells on the grids
+        public static List<Polygon2d> MakeCellsFromGridPoints(List<Point> pointsgrid,double dimX,double dimY)
+        {
+            List<Point2d> pt2dList = new List<Point2d>();
+            for(int i = 0; i < pointsgrid.Count; i++)
             {
-
-                for (int j = 0; j < numPtsY; j++)
-                {
-
-                    bool inside = GraphicsUtility.PointInsidePolygonTest(outlinePoints, Point2d.ByCoordinates(posX, posY));
-                    if (inside)
-                    {
-                        pointsGrid.Add(new Point2d(posX, posY));
-                        cells.Add(new Cell(new Point2d(posX, posY), dimXX, dimYY, true));
-                    }
-
-                    posY += dimYY;
-                }
-
-                posX += dimXX;
-                posY = bbox[0].Y + diffY;
+                pt2dList.Add(Point2d.ByCoordinates(pointsgrid[i].X, pointsgrid[i].Y));
             }
 
-
-            //return pointsGrid;
-            return new Dictionary<string, object>
-            {
-                { "PointsInsideOutline", (pointsGrid) },
-                { "CellsFromPoints", (cells) }
-            };
-
+            return MakeCellsFromGridPoints2d(pt2dList, dimX, dimY);
+          
         }
 
 
-        // 1     could be deleted       //////////////////////////////
-        internal static List<Point> PointInsidePolygon(List<Point> pointGrid, List<Point> pointOnPoly)
-        {
-            List<Point> pointInsideList = new List<Point>();
-
-            Polygon pol = Polygon.ByPoints(pointOnPoly);
-
-            for (int i = 0; i < pointGrid.Count; i++)
-            {
-                if (pol.ContainmentTest(pointGrid[i]))
-                {
-                    pointInsideList.Add(pointGrid[i]);
-                }
-            }
-
-            pol.Dispose();
-
-            return pointInsideList;
-        }
-
-
-
-        //2A        //////////////////////////
-        public static List<List<Polygon>> MakeCellsFromCellIndex()
-        {
-            List<List<Polygon>> polygonLists = new List<List<Polygon>>();
-
-            return polygonLists;
-        }
-
-
-
-        // 2        //////////////////////////
-        //MAKE CELLS ON THE GRIDS
-        public static List<Polygon> MakeCellsFromGridPoints(List<Point> pointsgrid,double dimX,double dimY)
-        {
-            List<Polygon> cellsPolyList = new List<Polygon>();
-            List<Cell> cellList = new List<Cell>();
-            for (int i = 0; i < pointsgrid.Count; i++)
-            {
-                // Cell cell = Cell.ByCenterPoint(pointsgrid[i], dimX, dimY);
-                //cellList.Add(cell);
-
-                List<Point> ptList = new List<Point>();
-
-                double a = pointsgrid[i].X - (dimX / 2);
-                double b = pointsgrid[i].Y - (dimY / 2);
-                Point pt = Point.ByCoordinates(a, b);
-                ptList.Add(pt);
-
-                a = pointsgrid[i].X - (dimX / 2);
-                b = pointsgrid[i].Y + (dimY / 2);
-                pt = Point.ByCoordinates(a, b);
-                ptList.Add(pt);
-
-                a = pointsgrid[i].X + (dimX / 2);
-                b = pointsgrid[i].Y + (dimY / 2);
-                pt = Point.ByCoordinates(a, b);
-                ptList.Add(pt);
-
-                a = pointsgrid[i].X + (dimX / 2);
-                b = pointsgrid[i].Y - (dimY / 2);
-                pt = Point.ByCoordinates(a, b);
-                ptList.Add(pt);
-
-
-                Polygon pol = Polygon.ByPoints(ptList);
-                cellsPolyList.Add(pol);
-            }
-
-
-            return cellsPolyList;
-        }
-
-
-
-        // 2        //////////////////////////
-        //MAKE CELLS ON THE GRIDS from point2d
+        //make cells on the grids from point2d
         public static List<Polygon2d> MakeCellsFromGridPoints2d(List<Point2d> point2dgrid, double dimX, double dimY)
         {
+
             List<Polygon2d> cellsPolyList = new List<Polygon2d>();
             List<Cell> cellList = new List<Cell>();
             for (int i = 0; i < point2dgrid.Count; i++)
@@ -308,18 +165,15 @@ namespace SpacePlanning
                 Polygon2d pol = Polygon2d.ByPoints(ptList);
                 cellsPolyList.Add(pol);
             }
-
-
             return cellsPolyList;
         }
 
-        // 2a        //////////////////////////
-        //MAKE CELLS ON THE GRIDS
+        
+        //make cells on the grids from point2d from indices
         public static List<Polygon> MakeCellsFromIndicesPoint2d(List<Point2d> pointsgrid, double dimX, double dimY, List<int> indexList)
         {
             List<Polygon> cellsPolyList = new List<Polygon>();
             List<Cell> cellList = new List<Cell>();
-
             if ( indexList == null)
             {
                 indexList = new List<int>();
@@ -328,10 +182,9 @@ namespace SpacePlanning
                     indexList.Add(i);
                 }
             }
+
             for (int i = 0; i < indexList.Count; i++)
             {
-                // Cell cell = Cell.ByCenterPoint(pointsgrid[i], dimX, dimY);
-                //cellList.Add(cell);
 
                 List<Point> ptList = new List<Point>();
 
@@ -363,8 +216,8 @@ namespace SpacePlanning
 
             return cellsPolyList;
         }
-        // 2a        //////////////////////////
-        //MAKE CELLS FROM CELL OBJECTS
+
+        //make cells on the grids from cell objects
         public static List<Polygon> MakeCellsFromCellObjects(List<Cell> cellList, List<int> indexList = default(List<int>))
         {
             List<Polygon> cellsPolyList = new List<Polygon>();
@@ -384,11 +237,9 @@ namespace SpacePlanning
                     indexList.Add(i);
                 }
             }
+
             for (int i = 0; i < indexList.Count; i++)
             {
-                // Cell cell = Cell.ByCenterPoint(pointsgrid[i], dimX, dimY);
-                //cellList.Add(cell);
-
                 List<Point> ptList = new List<Point>();
 
                 double a = pointsgrid[indexList[i]].X - (dimX / 2);
@@ -416,11 +267,10 @@ namespace SpacePlanning
                 cellsPolyList.Add(pol);
             }
 
-
             return cellsPolyList;
         }
 
-        //MAKE GRAHAMS SCAN CONVEX HULL FROM AN INPUT LIST OF POINTS
+        //make grahams scan algo based convex hull from an input list of points
         public static List<Point2d> ConvexHullFromPoint2D(List<Point2d> ptList)
         {
             List<Point2d> convexHullPtList = new List<Point2d>();
@@ -439,7 +289,6 @@ namespace SpacePlanning
                 {
                     tempStack.Pop();
                 }
-
                 tempStack.Push(ptList[i]);
             }
 
@@ -450,17 +299,13 @@ namespace SpacePlanning
                 tempStack.Pop();
             }
             return convexHullPtList;
-
         }
 
         
-
-        //3    could ve deleted     ////////////////////
-        //CODE TO SPIT POINTS WHICH PASS THE CONTAINMENT TEST OF A POLYGON
+        //find points inside polygons
         internal static List<Point> PointsOnlyInsidePolygon(List<Point2d> polyPts, List<Point2d> testPointsList)
         {
             List<Point> ptList = new List<Point>();
-
             for(int i = 0; i < testPointsList.Count; i++)
             {
                bool inside = GraphicsUtility.PointInsidePolygonTest(polyPts, testPointsList[i]);
@@ -469,21 +314,14 @@ namespace SpacePlanning
                     ptList.Add(Point.ByCoordinates(testPointsList[i].X, testPointsList[i].Y));
                 }
             }
-
-
-
-
             return ptList;
         }
-        //4a  /////////////////////////
-        //CODE TO FIND NEIGHBORS OF EACH CELL
+        
+        //make cell neighbor matrix
         [MultiReturn(new[] { "CellNeighborMatrix", "XYEqualtionList" })]
         public static Dictionary<string, object> FormsCellNeighborMatrix(List<Cell> cellLists, int tag = 1)
         {
             List<List<int>> cellNeighborMatrix = new List<List<int>>();
-            
-
-            //0 make new cell Lists
             List<Cell> newCellLists = new List<Cell>();
             for (int i = 0; i < cellLists.Count; i++)
             {
@@ -491,8 +329,6 @@ namespace SpacePlanning
                 newCellLists.Add(cellItem);
             }
             cellLists.Clear();
-
-            //1 get the center points from cellLists
             List<Point2d> cellCenterPtLists = new List<Point2d>();
             for (int i = 0; i < newCellLists.Count; i++)
             {
@@ -500,16 +336,12 @@ namespace SpacePlanning
             }
 
             double[] XYEquationList = new double[cellCenterPtLists.Count];
-
-            //2a - create indices 
-            //List<int> UnsortedIndices = new List<int>();
+            
             double A = 100.0;
             double B = 1.0;
             int[] UnsortedIndices = new int[cellCenterPtLists.Count];
             double[] XCordCenterPt = new double[cellCenterPtLists.Count];
             double[] YCordCenterPt = new double[cellCenterPtLists.Count];
-
-            //2b create the function a*x + b*y for each cell
            
             for (int i = 0; i < cellCenterPtLists.Count; i++)
             {
@@ -518,47 +350,13 @@ namespace SpacePlanning
                 XCordCenterPt[i] = cellCenterPtLists[i].X;
                 YCordCenterPt[i] = cellCenterPtLists[i].Y;
                 double value = (A * cellCenterPtLists[i].X) + (B * cellCenterPtLists[i].Y);
-                //double value = (A * cellCenterPtLists[i].X) / (B * cellCenterPtLists[i].Y);
                 XYEquationList[i] = value;
-                //Trace.WriteLine(i + " XY EquationList : " + value);
            
             }
-
-            for (int i = 0; i < cellCenterPtLists.Count; i++) {
-                break;
-                //Trace.WriteLine(" Before UnsortedIndices : " + UnsortedIndices[i]);
-            }
-
-
-            //3xy sort cellIndices based on X coord and based on Y coord
             List<int> SortedIndicesX = new List<int>();
             List<int> SortedIndicesY = new List<int>();
             List<int> SortedXYEquationIndices = new List<int>();
-            //SortedIndicesX = BasicUtility.quicksort(XCordCenterPt, UnsortedIndices, 0, UnsortedIndices.Length - 1);
-            //SortedIndicesY = BasicUtility.quicksort(YCordCenterPt, UnsortedIndices, 0, UnsortedIndices.Length - 1);
             SortedXYEquationIndices = BasicUtility.quicksort(XYEquationList, UnsortedIndices, 0, UnsortedIndices.Length - 1);
-
-            for (int i = 0; i < cellCenterPtLists.Count; i++)
-            {
-                break;
-                //Trace.WriteLine("Sorted X Cell Indices are : " + SortedIndicesX[i]);
-                //Trace.WriteLine("Sorted Y Cell Indices are : " + SortedIndicesY[i]);
-                //Trace.WriteLine(" UnsortedIndices : " + UnsortedIndices[i]);
-                
-
-            }
-            //Trace.WriteLine(" ++++++++++++++++++++++++++++++++++++++++++++ ");
-            for (int i = 0; i < cellCenterPtLists.Count; i++)            {
-                break;
-                //Trace.WriteLine(" SortedIndices   : " + SortedXYEquationIndices[i]);
-
-
-            }
-           
-
-
-
-            //4 iterate through all the cells and find closest neighbors ( by Binary Search )
             double dimX = newCellLists[0].DimX;
             double dimY = newCellLists[0].DimY;
             List<List<Point2d>> cellNeighborPoint2d = new List<List<Point2d>>();
@@ -567,8 +365,6 @@ namespace SpacePlanning
             for (int i = 0; i < SortedXYEquationIndices.Count; i++)
             {
                 SortedXYEquationValues.Add(XYEquationList[SortedXYEquationIndices[i]]);
-                //Trace.WriteLine(i + " Sorted XY Equations values : " + Math.Round(XYEquationList[SortedXYEquationIndices[i]], 2));
-                //Trace.WriteLine(i + " Sorted XY Equations values : " + XYEquationList[SortedXYEquationIndices[i]]);
             }
 
             List<double> XYEquationLists = new List<double>();
@@ -612,12 +408,7 @@ namespace SpacePlanning
                 neighborPoints.Add(right);
                 cellNeighborPoint2d.Add(neighborPoints);
                 cellNeighborMatrix.Add(neighborCellIndex);
-
-                
             }
-           // Trace.WriteLine("---------------------------------------------------------------------------");
-            //5 return the cellNeighborMatrix and also term each cells Type(corner,edge, core)
-            //return cellNeighborMatrix;
           
             return new Dictionary<string, object>
             {
@@ -627,75 +418,7 @@ namespace SpacePlanning
         }
 
 
-
-        //4b    ///////////////////////////
-        // GET CELLS FROM CELL INDICES
-        //public static GetCellsFromIndices()
-
-
-        /*
-        //4  /////////////////////////
-        //CODE TO FIND NEIGHBORS OF EACH CELL
-        public static List<List<int>> MakeCellNeighborMatrix(List<Cell> cellLists, int tag =1)
-        {
-            List<List<int>> cellNeighborMatrix = new List<List<int>>();
-
-            //0 make new cell Lists
-            List<Cell> newCellLists = new List<Cell>();
-            for (int i = 0; i < cellLists.Count; i++)
-            {
-                Cell cellItem = new Cell(cellLists[i]);
-                newCellLists.Add(cellItem);
-            }
-            cellLists.Clear();
-
-            //1 get the center points from cellLists
-            List<Point2d> cellCenterPtLists = new List<Point2d>();
-            for (int i = 0; i < newCellLists.Count; i++)
-            {
-                cellCenterPtLists.Add(newCellLists[i].CenterPoint);
-            }
-
-            //2 get the lowest point cell index, with least x value and least y value
-            int LowestPointIndex = GraphicsUtility.ReturnLowestPointFromList(cellCenterPtLists);
-
-            //2b - create indices 
-            //List<int> UnsortedIndices = new List<int>();
-            int[] UnsortedIndices = new int[cellCenterPtLists.Count];
-            double[] XCordCenterPt = new double[cellCenterPtLists.Count];
-            double[] YCordCenterPt = new double[cellCenterPtLists.Count];
-            for (int i = 0; i < cellCenterPtLists.Count; i++)
-            {
-                
-                UnsortedIndices[i] = i;
-                XCordCenterPt[i] = cellCenterPtLists[i].X;
-                YCordCenterPt[i] = cellCenterPtLists[i].Y;
-            }
-
-            //3xy sort cellIndices based on X coord and based on Y coord
-            List<int> SortedIndicesX = new List<int>();
-            List<int> SortedIndicesY = new List<int>();
-            SortedIndicesX = BasicUtility.quicksort(XCordCenterPt, UnsortedIndices, 0, UnsortedIndices.Length - 1);
-            SortedIndicesY = BasicUtility.quicksort(YCordCenterPt, UnsortedIndices, 0, UnsortedIndices.Length - 1);
-
-            for(int i = 0; i < cellCenterPtLists.Count; i++)
-            {
-                //Trace.WriteLine("Sorted X Cell Indices are : " + SortedIndicesX[i]);
-                //Trace.WriteLine("Sorted Y Cell Indices are : " + SortedIndicesY[i]);
-            }
-            
-            
-
-            //4 iterate through all the cells and find closest neighbors ( by Binary Search )
-
-
-            //5 return the cellNeighborMatrix and also term each cells Type(corner,edge, core)
-            return cellNeighborMatrix;
-
-           
-        }
-        */
-        // can be deleted later on
+        // test binary search
         public static List<int> TestBinarySearch(List<int> inp, int key)
         {
             List<int> indices = new List<int>();
@@ -708,65 +431,36 @@ namespace SpacePlanning
             int prevValue = 10000000;
             int m = 1;
             while (value != -1) {
-                
-                //Trace.WriteLine("InpList Count is : " + inpList.Count);
-                for (int i = 0; i < inpList.Count; i++)
-                {
-                    break;
-                    //Trace.WriteLine(i + " InpList Items are : " + inpList[i]);
-                }
-               
-                value = BasicUtility.BinarySearch(inpList, key);
-                Trace.WriteLine("Prev Value : " + prevValue + " || Current Value : " + value);
-                
+                value = BasicUtility.BinarySearch(inpList, key);                
                 if (value > -1)
                 {
-
                     inpList.RemoveAt(value);
                     if (value >= prevValue)
                     {
-                        
                         indices.Add(value + 1);
-                        //Trace.WriteLine("Indices array added this : " + (value + 1));
                         m += 1;
-                        //Trace.WriteLine("changed m is : " + m);
                     }
-                    else{
-                        indices.Add(value);
-                        //Trace.WriteLine("Indices array added this : " + value + " No m added ");
-                        //Trace.WriteLine("unchanged m is : " + m);
-                    }
-                   
-
+                    else indices.Add(value);
                 }
-
-
                 prevValue = value;
-                //Trace.WriteLine("-----------------------------------");
 
             }// end of while loop
             return indices;
         }
  
 
-        // can be deleted later on
+        // test quick sort algorithm
         public static List<int> TestQuickSort(double[] main = null, int[] index = null, int tag=1)
         {
             int left = 0;
             int right = index.Length - 1;
-            //index = new int[5] { 0, 1, 2, 3, 4 };
-            //main = new float[5] { 10, 21, 2, 8, 1 };
             int[] newIndex = new int[index.Length];
-
             for(int i = 0; i < index.Length; i++)
             {
                 newIndex[i] = index[i];
             }
 
-
-            List<int> modifiedIndices = BasicUtility.quicksort(main, newIndex, left,right);
-
-            return modifiedIndices;
+            return BasicUtility.quicksort(main, newIndex, left, right); 
         }
 
 

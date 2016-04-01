@@ -2,50 +2,374 @@
 using System.Collections.Generic;
 using stuffer;
 using System.Diagnostics;
-using EnvDTE;
-using System.Runtime.InteropServices;
 using Autodesk.DesignScript.Geometry;
 using Autodesk.DesignScript.Runtime;
-///////////////////////////////////////////////////////////////////
-/// NOTE: This project requires references to the ProtoInterface
-/// and ProtoGeometry DLLs. These are found in the Dynamo install
-/// directory.
-///////////////////////////////////////////////////////////////////
 
 namespace SpacePlanning
 {
     internal class PlaceSpace
     {
 
-        // private variables
-  
-
-
-
-        // We make the constructor for this object internal because the 
-        // Dynamo user should construct an object through a static method
-        internal PlaceSpace()
+        // assign dept objects on the site
+        public static List<DeptData> AssignDeptsToSite(List<DeptData> deptData, List<Cell> cells, int recompute = 0)
         {
+            //Build new dept data list
+            List<DeptData> newDeptDataList = new List<DeptData>();
+            for (int i = 0; i < deptData.Count; i++)
+            {
+                DeptData newDeptData = new DeptData(deptData[i]);
+                newDeptDataList.Add(newDeptData);
+            }
+            for (int i = 0; i < cells.Count; i++)
+            {
+                cells[i].CellAvailable = true;
+            }
+
+            // get cellIndex for Program Centroids
+            List<int> selectedIndices = GetDeptCentroid(newDeptDataList, ref cells, newDeptDataList[0].GridX);
+            List<double> sqEdge = new List<double>();
+            for (int i = 0; i < selectedIndices.Count; i++)
+            {
+                double side = Math.Sqrt(newDeptDataList[i].DeptAreaNeeded);
+                sqEdge.Add(side);
+                Point2d center = cells[selectedIndices[i]].CenterPoint;
+                Polygon2d squareCentroid = GraphicsUtility.MakeSquarePolygon2dFromCenterSide(center, side);
+                for (int j = 0; j < cells.Count; j++)
+                {
+                    if (cells[j].CellAvailable)
+                    {
+                        Point2d testPoint = cells[j].CenterPoint;
+                        if (GraphicsUtility.PointInsidePolygonTest(squareCentroid, testPoint))
+                        {
+                            cells[j].CellAvailable = false;
+                            newDeptDataList[i].CalcAreaAllocated();
+                            newDeptDataList[i].CellAssignPerItem(cells[j]);
+                        }
+                    }
+                }
+            }// end of for loop
+
+            for (int i = 0; i < selectedIndices.Count; i++)
+            {
+                while (newDeptDataList[i].IsAreaSatisfied == false && AnyCellAvailable(cells) == true)
+                {
+                    for (int j = 0; j < cells.Count; j++)
+                    {
+                        if (cells[j].CellAvailable == true)
+                        {
+                            cells[j].CellAvailable = false;
+                            newDeptDataList[i].CalcAreaAllocated();
+                            newDeptDataList[i].CellAssignPerItem(cells[j]);
+                            break;
+
+                        }
+                    }
+                }
+            }
+            cells = null;
+            deptData = null;
+            sqEdge = null;
+            selectedIndices = null;
+            return newDeptDataList;
+
+        }
+
+
+        // assign program objects to each dept
+        [MultiReturn(new[] { "DepartmentDataProgramsAdded", "ProgramDataUpdated" })]
+        internal static Dictionary<string, object> AssignProgstoDepts(List<DeptData> deptData, int recompute)
+        {
+            List<DeptData> newDeptDataList = new List<DeptData>();
+            for (int i = 0; i < deptData.Count; i++)
+            {
+                DeptData newDeptData = new DeptData(deptData[i]);
+                newDeptDataList.Add(newDeptData);
+            }
+            List<ProgramData> progUpdated = new List<ProgramData>();
+            for (int i = 0; i < newDeptDataList.Count; i++)
+            {
+                List<ProgramData> progList = newDeptDataList[i].ProgramsInDept;
+                List<Cell> cellList = newDeptDataList[i].DepartmentCells;
+                if (cellList.Count > 0)
+                {
+                    List<ProgramData> progD = AllocatePrograms(progList, cellList, 0);
+                    newDeptDataList[i].ProgramsInDept = progD;
+                }
+                progUpdated.AddRange(newDeptDataList[i].ProgramsInDept);
+                
+            }
+            deptData = null;
+            return new Dictionary<string, object>
+            {
+                { "DepartmentDataProgramsAdded", (newDeptDataList) },
+                { "ProgramDataUpdated", (progUpdated) }
+            };
+
+        }
+
+
+        // assign programs to the cells provided by each dept
+        internal static List<ProgramData> AllocatePrograms(List<ProgramData> progData, List<Cell> oldCells, int tag = 0)
+        {
+
+            List<Cell> cells = new List<Cell>();
+            for (int i = 0; i < oldCells.Count; i++)
+            {
+                cells.Add(new Cell(oldCells[i]));
+            }
+            for (int i = 0; i < cells.Count; i++)
+            {
+                cells[i].CellAvailable = true;
+            }
+            List<ProgramData> newProgDataList = new List<ProgramData>();
+            for (int i = 0; i < progData.Count; i++)
+            {
+                ProgramData newProgData = new ProgramData(progData[i]);
+                newProgDataList.Add(newProgData);
+            }
+            List<int> selectedIndices = GetProgramCentroid(newProgDataList, ref cells, newProgDataList[0].GridX);
+            List<double> sqEdge = new List<double>();
+
+
+            for (int i = 0; i < selectedIndices.Count; i++)
+            {
+                double side = Math.Sqrt(newProgDataList[i].UnitArea * newProgDataList[i].Quantity);
+                sqEdge.Add(side);
+                Point2d center = cells[selectedIndices[i]].CenterPoint;
+                Polygon2d squareCentroid = GraphicsUtility.MakeSquarePolygon2dFromCenterSide(center, side);
+                for (int j = 0; j < cells.Count; j++)
+                {
+                    if (cells[j].CellAvailable)
+                    {
+                        Point2d testPoint = cells[j].CenterPoint;
+                        if (GraphicsUtility.PointInsidePolygonTest(squareCentroid, testPoint))
+                        {
+                            cells[j].CellAvailable = false;
+                            newProgDataList[i].CalcAreaAllocated();
+                            newProgDataList[i].CellAssignPerItem(cells[j]);
+                        }
+                    }
+                }   
+            }// end of for loop
             
+            for (int i = 0; i < selectedIndices.Count; i++)
+            {
+                while (newProgDataList[i].IsAreaSatisfied == false && AnyCellAvailable(cells) == true)
+                {
+
+                    for (int j = 0; j < cells.Count; j++)
+                    {
+                        if (cells[j].CellAvailable == true)
+                        {
+                            cells[j].CellAvailable = false;
+                            newProgDataList[i].CalcAreaAllocated();
+                            newProgDataList[i].CellAssignPerItem(cells[j]);
+                            break;
+
+                        }
+                    }
+                }
+
+            }
+            oldCells.Clear();
+            return newProgDataList;
+
         }
 
-        /// <summary>
-        /// Takes the input Sat file geometry and converts to a PolyLine Object
-        /// Can Also work with a sequential list of points
-        /// </summary>
-        /// <param name="lines">list of lines 2d store in class.</param>
-        /// <returns>A newly-constructed ZeroTouchEssentials object</returns>
-        public static PlaceSpace BySiteOutline()
+        //places the programs from prog data on the site
+        [MultiReturn(new[] { "ProgramCellIndices", "ProgramData", "CellsForEachProg", "Cells" })]
+        public static Dictionary<string, object> PlaceProgramsInSite(List<ProgramData> progData, List<Cell> cells, List<Point2d> PolyPoints, int num = 5, int tag = 0)
         {
-            return new PlaceSpace();
+            for (int i = 0; i < cells.Count; i++)
+            {
+                cells[i].CellAvailable = true;
+            }
+            List<ProgramData> newProgDataList = new List<ProgramData>();
+            for (int i = 0; i < progData.Count; i++)
+            {
+                ProgramData newProgData = new ProgramData(progData[i]);
+                newProgDataList.Add(newProgData);
+            }
+            List<int> selectedIndices = GetProgramCentroid(newProgDataList, ref cells, newProgDataList[0].GridX);
+            List<double> sqEdge = new List<double>();
+            List<List<int>> cellProgramsList = new List<List<int>>();
+
+
+            for (int i = 0; i < selectedIndices.Count; i++)
+            {
+                double side = Math.Sqrt(newProgDataList[i].UnitArea * newProgDataList[i].Quantity);
+                sqEdge.Add(side);
+                Point2d center = cells[selectedIndices[i]].CenterPoint;
+                Polygon2d squareCentroid = GraphicsUtility.MakeSquarePolygon2dFromCenterSide(center, side);
+                List<int> cellIndexPrograms = new List<int>();
+                int cellAddedCount = 0;
+                for (int j = 0; j < cells.Count; j++)
+                {
+                    if (cells[j].CellAvailable)
+                    {
+                        Point2d testPoint = cells[j].CenterPoint;
+                        if (GraphicsUtility.PointInsidePolygonTest(squareCentroid, testPoint))
+                        {
+                            cellIndexPrograms.Add(j);
+                            cells[j].CellAvailable = false;
+                            newProgDataList[i].CalcAreaAllocated();
+                            cellAddedCount += 1;
+                        }
+                    }
+                }   
+                cellProgramsList.Add(cellIndexPrograms);
+
+
+
+            }// end of for loop
+            for (int i = 0; i < selectedIndices.Count; i++)
+            {
+                while (newProgDataList[i].IsAreaSatisfied == false && AnyCellAvailable(cells) == true)
+                {
+
+                    for (int j = 0; j < cells.Count; j++)
+                    {
+                        if (cells[j].CellAvailable == true)
+                        {
+                            cellProgramsList[i].Add(j);
+                            cells[j].CellAvailable = false;
+                            newProgDataList[i].CalcAreaAllocated();
+                            break;
+
+                        }
+                    }
+                }
+            }
+            List<Cell> newCellList = new List<Cell>();
+            for (int i = 0; i < cells.Count; i++)
+            {
+                Cell aCell = new Cell(cells[i]);
+                newCellList.Add(aCell);
+            }
+
+            List<List<Cell>> cellEachProgGets = new List<List<Cell>>();
+            for (int i = 0; i < newProgDataList.Count; i++)
+            {
+                List<Cell> eachProgCellList = new List<Cell>();
+                if (cellProgramsList[i].Count > 0)
+                {
+                    for (int j = 0; j < cellProgramsList[i].Count; j++)
+                    {
+                        eachProgCellList.Add(newCellList[cellProgramsList[i][j]]);
+                    }
+                    newProgDataList[i].CellAssign(eachProgCellList);
+                    cellEachProgGets.Add(eachProgCellList);
+                }
+
+            }
+            return new Dictionary<string, object>
+            {
+                { "ProgramCellIndices", (cellProgramsList) },
+                { "ProgramData", (newProgDataList) },
+                { "CellsForEachProg", (cellEachProgGets) },
+                { "Cells", (newCellList) }
+            };
+
         }
 
-        //private functions
-        internal void addSome()
+        //places the departments from dept data on the site
+        [MultiReturn(new[] { "DeptCellIndices", "DepartmentData", "CellsForEachDept", "Cells" })]
+        internal static Dictionary<string, object> PlaceDeptsInSite(List<DeptData> deptData, List<Cell> cells, List<Point2d> PolyPoints, int num = 5, int tag = 0)
         {
 
+            //Build new dept data list
+            List<DeptData> newDeptDataList = new List<DeptData>();
+            for (int i = 0; i < deptData.Count; i++)
+            {
+                DeptData newDeptData = new DeptData(deptData[i]);
+                newDeptDataList.Add(newDeptData);
+            }
+
+            deptData.Clear();
+            for (int i = 0; i < cells.Count; i++)
+            {
+                cells[i].CellAvailable = true;
+            }
+            List<int> selectedIndices = GetDeptCentroid(newDeptDataList, ref cells, newDeptDataList[0].GridX);
+            List<double> sqEdge = new List<double>();
+            List<List<int>> cellProgramsList = new List<List<int>>(); 
+
+            for (int i = 0; i < selectedIndices.Count; i++)
+            {
+                double side = Math.Sqrt(newDeptDataList[i].DeptAreaNeeded);
+                sqEdge.Add(side);
+                Point2d center = cells[selectedIndices[i]].CenterPoint;
+                Polygon2d squareCentroid = GraphicsUtility.MakeSquarePolygon2dFromCenterSide(center, side);
+                List<int> cellIndexPrograms = new List<int>();
+                int cellAddedCount = 0;
+                for (int j = 0; j < cells.Count; j++)
+                {
+                    if (cells[j].CellAvailable)
+                    {
+                        Point2d testPoint = cells[j].CenterPoint;
+                        if (GraphicsUtility.PointInsidePolygonTest(squareCentroid, testPoint))
+                        {
+                            cellIndexPrograms.Add(j);
+                            cells[j].CellAvailable = false;
+                            newDeptDataList[i].CalcAreaAllocated();
+                            cellAddedCount += 1;
+                        }
+                    }
+                }
+                cellProgramsList.Add(cellIndexPrograms);
+            }// end of for loop
+            for (int i = 0; i < selectedIndices.Count; i++)
+            {
+                while (newDeptDataList[i].IsAreaSatisfied == false && AnyCellAvailable(cells) == true)
+                {
+
+                    for (int j = 0; j < cells.Count; j++)
+                    {
+                        if (cells[j].CellAvailable == true)
+                        {
+                            cellProgramsList[i].Add(j);
+                            cells[j].CellAvailable = false;
+                            newDeptDataList[i].CalcAreaAllocated();
+                            break;
+
+                        }
+                    }
+                }
+            }
+            List<Cell> newCellList = new List<Cell>();
+            for (int i = 0; i < cells.Count; i++)
+            {
+                Cell aCell = new Cell(cells[i]);
+                newCellList.Add(aCell);
+            }
+            cells.Clear();
+
+            List<List<Cell>> cellEachDeptGets = new List<List<Cell>>();
+            for (int i = 0; i < newDeptDataList.Count; i++)
+            {
+                List<Cell> eachDeptCellList = new List<Cell>();
+                if (cellProgramsList[i].Count > 0)
+                {
+                    for (int j = 0; j < cellProgramsList[i].Count; j++)
+                    {
+                        eachDeptCellList.Add(newCellList[cellProgramsList[i][j]]);
+                    }
+                    newDeptDataList[i].CellAssign(eachDeptCellList);
+                    cellEachDeptGets.Add(eachDeptCellList);
+                }
+
+            }
+            return new Dictionary<string, object>
+            {
+                { "DeptCellIndices", (cellProgramsList) },
+                { "DepartmentData", (newDeptDataList) },
+                { "CellsForEachDept", (cellEachDeptGets) },
+                { "Cells", (newCellList) }
+            };
+
         }
 
+        //get the cells to place the program
         internal static int SelectCellToPlaceProgram(ref List<Cell> cells, Random random)
         {          
 
@@ -62,7 +386,7 @@ namespace SpacePlanning
             return randomIndex;
             }
 
-        //public functions
+        //get the centroid point for a list of program
         internal static List<int> GetProgramCentroid(List<ProgramData> progData, ref List<Cell> cells,double dimX)
         {
 
@@ -75,13 +399,11 @@ namespace SpacePlanning
                 selectedIndices.Add(selectedCell);
                
             }
-           // Trace.WriteLine("Area of Each Cell is : " + cells[0].DimX * cells[0].DimY);
             return selectedIndices;
         }
 
-
-        //public functions
-        internal static List<int> GetProgramCentroid(List<DeptData> deptData, ref List<Cell> cells,double dimX)
+        //get the centroid point for a list of dept
+        internal static List<int> GetDeptCentroid(List<DeptData> deptData, ref List<Cell> cells,double dimX)
         {
             int selectedCell = -1;
             List<int> selectedIndices = new List<int>();
@@ -91,11 +413,10 @@ namespace SpacePlanning
                 selectedCell = SelectCellToPlaceProgram(ref cells, random);
                 selectedIndices.Add(selectedCell);
             }
-            //Trace.WriteLine("Area of Each Cell is : " + cells[0].DimX * cells[0].DimY);
             return selectedIndices;
         }
 
-        //public functions
+        //make polygons from cell objects
         [MultiReturn(new[] { "PolyCurves", "PointLists" })]
         public static Dictionary<string, object> MakePolygonsFromCells(List<List<Cell>> cellProgramsList)
         {
@@ -121,8 +442,6 @@ namespace SpacePlanning
                 ptAll.Add(tempPts);
                 if (tempPts.Count > 2)
                 {
-
-                    //Trace.WriteLine("Temp Pt counts are : " + tempPts.Count);
                     List<Point2d> boundingPolyPts = ReadData.FromPointsGetBoundingPoly(tempPts);
                     PolyCurve poly = DynamoGeometry.PolyCurveFromPoints(boundingPolyPts);
                     polyList.Add(poly);
@@ -143,7 +462,7 @@ namespace SpacePlanning
 
         }
 
-        //public functions
+        //make polygons for programs
         [MultiReturn(new[] { "PolyCurves", "PointLists" })]
         internal static Dictionary<string, object> MakeProgramPolygons(List<List<int>> cellProgramsList, List<Point2d> ptList)
         {
@@ -187,9 +506,8 @@ namespace SpacePlanning
 
 
         }
-
-
-        //public functions
+        
+        //make convex hulls from cell objects
         [MultiReturn(new[] { "PolyCurves", "PointLists" })]
         public static Dictionary<string, object> MakeConvexHullsFromCells(List<List<Cell>> cellProgramsList)
         {
@@ -243,13 +561,8 @@ namespace SpacePlanning
 
 
         }
-
-
-
-
-
-
-        //public functions
+              
+        //make convex hulls for programs
         [MultiReturn(new[] { "PolyCurves", "PointLists" })]
         public static Dictionary<string, object> MakeProgramConvexHulls(List<List<int>> cellProgramsList, List<Point2d> ptList)
         {
@@ -304,612 +617,22 @@ namespace SpacePlanning
 
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        // 1ST MAIN COMPONENT
-        public static List<DeptData> AssignDeptsToSite(List<DeptData> deptData, List<Cell> cells, int recompute = 0)
-        {
-
-            //Build new dept data list
-            List<DeptData> newDeptDataList = new List<DeptData>();
-            for (int i = 0; i < deptData.Count; i++)
-            {
-                DeptData newDeptData = new DeptData(deptData[i]);
-                newDeptDataList.Add(newDeptData);
-            }
-
-            
-
-            // make all cells available
-            for (int i = 0; i < cells.Count; i++)
-            {
-                cells[i].CellAvailable = true;
-            }
-
-            // get cellIndex for Program Centroids
-            List<int> selectedIndices = GetProgramCentroid(newDeptDataList, ref cells, newDeptDataList[0].GridX);
-
-
-
-            // calc program area
-            List<double> sqEdge = new List<double>();
-
-            for (int i = 0; i < selectedIndices.Count; i++)
-            {
-
-                // calc square edge
-                double side = Math.Sqrt(newDeptDataList[i].DeptAreaNeeded);
-                sqEdge.Add(side);
-
-
-                // place square
-                Point2d center = cells[selectedIndices[i]].CenterPoint;
-                Polygon2d squareCentroid = GraphicsUtility.MakeSquarePolygon2dFromCenterSide(center, side);
-          
-
-                // get number of cell points inside square
-                for (int j = 0; j < cells.Count; j++)
-                {
-                    if (cells[j].CellAvailable)
-                    {
-                        //Trace.WriteLine(" Square Centroid is  "  + squareCentroid);
-                        Point2d testPoint = cells[j].CenterPoint;
-                        if (GraphicsUtility.PointInsidePolygonTest(squareCentroid, testPoint))
-                        {
-                            // make cell index list for each program
-                            cells[j].CellAvailable = false;
-                            newDeptDataList[i].CalcAreaAllocated();
-                            newDeptDataList[i].CellAssignPerItem(cells[j]);
-                          
-                        }
-                    }
-                }
-
-
-            }// end of for loop
-
-
-            for (int i = 0; i < selectedIndices.Count; i++)
-            {
-                // keep adding cells till area is satisfied for the program or till any cell is available
-                while (newDeptDataList[i].IsAreaSatisfied == false && AnyCellAvailable(cells) == true)
-                {
-
-                    for (int j = 0; j < cells.Count; j++)
-                    {
-                        if (cells[j].CellAvailable == true)
-                        {
-                            // make cell index list for each program
-                            cells[j].CellAvailable = false;
-                            newDeptDataList[i].CalcAreaAllocated();
-                            newDeptDataList[i].CellAssignPerItem(cells[j]);
-                            break;
-
-                        }
-                    }
-                }
-            }
-
-            /*
-            //make new cell object from inputcells
-            List<Cell> newCellList = new List<Cell>();
-            for (int i = 0; i < cells.Count; i++)
-            {
-                Cell aCell = new Cell(cells[i]);
-                newCellList.Add(aCell);
-            }
-            //
-
-
-            // make new list of list of cells assigned to each dept
-            for (int i = 0; i < newDeptDataList.Count; i++)
-            {
-                List<Cell> eachDeptCellList = new List<Cell>();
-                if (cellProgramsList[i].Count > 0)
-                {
-                    for (int j = 0; j < cellProgramsList[i].Count; j++)
-                    {
-                        eachDeptCellList.Add(newCellList[cellProgramsList[i][j]]);
-                    }
-                    newDeptDataList[i].CellAssign(eachDeptCellList);
-
-                }
-                
-
-            }
-            */
-
-
-            cells = null;
-            deptData = null;
-            sqEdge = null;
-            selectedIndices = null;
-            return newDeptDataList;
-
-        }
-
-
-        // 2ND MAIN COMPONTNENT
-        [MultiReturn(new[] { "DepartmentDataProgramsAdded", "ProgramDataUpdated" })]
-        internal static Dictionary<string,object> AssignProgstoDepts(List<DeptData> deptData,int recompute)
-        {
-
-            //Build new dept data list
-            List<DeptData> newDeptDataList = new List<DeptData>();
-            for (int i = 0; i < deptData.Count; i++)
-            {
-                DeptData newDeptData = new DeptData(deptData[i]);
-                newDeptDataList.Add(newDeptData);
-            }
-
-           
-
-
-            //List<List<ProgramData>> progUpdated = new List<List<ProgramData>>();
-            List<ProgramData> progUpdated = new List<ProgramData>();
-            for (int i = 0; i < newDeptDataList.Count; i++)
-            {
-                List<ProgramData> progList = newDeptDataList[i].ProgramsInDept;
-                List<Cell> cellList = newDeptDataList[i].DepartmentCells;
-                if (cellList.Count > 0)
-                {
-                    //Trace.WriteLine("CellLists obtained has length : " + cellList.Count);
-                    List<ProgramData> progD = AllocateProgramsInDept(progList, cellList, 0);
-                    newDeptDataList[i].ProgramsInDept = progD;
-                }
-
-                // progUpdated.Add(newDeptDataList[i].ProgramsInDept);
-                progUpdated.AddRange(newDeptDataList[i].ProgramsInDept);
-
-
-
-            }
-            deptData = null;
-            return new Dictionary<string, object>
-            {
-
-                { "DepartmentDataProgramsAdded", (newDeptDataList) },
-                { "ProgramDataUpdated", (progUpdated) }
-            };
-
-        }
-
-
-        // internal function to assign programs to the cells provided by each dept
-        internal static List<ProgramData> AllocateProgramsInDept(List<ProgramData> progData, List<Cell> oldCells, int tag = 0)
-        {
-
-            List<Cell> cells = new List<Cell>();
-            // make all cells available
-            for (int i = 0; i < oldCells.Count; i++)
-            {
-                cells.Add(new Cell(oldCells[i]));
-            }
-
-
-            // make all cells available
-            for (int i = 0; i < cells.Count; i++)
-            {
-                cells[i].CellAvailable = true;
-            }
-
-
-            //Build new prog data list
-            List<ProgramData> newProgDataList = new List<ProgramData>();
-            for (int i = 0; i < progData.Count; i++)
-            {
-                ProgramData newProgData = new ProgramData(progData[i]);
-                newProgDataList.Add(newProgData);
-            }
-
-            //progData.Clear();
-            // get cellIndex for Program Centroids
-            List<int> selectedIndices = GetProgramCentroid(newProgDataList, ref cells, newProgDataList[0].GridX);
-
-            // calc program area
-            List<double> sqEdge = new List<double>();
-
-
-            for (int i = 0; i < selectedIndices.Count; i++)
-            {
-
-                // calc square edge
-                double side = Math.Sqrt(newProgDataList[i].UnitArea * newProgDataList[i].Quantity);
-                sqEdge.Add(side);
-
-                // place square
-                Point2d center = cells[selectedIndices[i]].CenterPoint;
-                Polygon2d squareCentroid = GraphicsUtility.MakeSquarePolygon2dFromCenterSide(center, side);
-
-                // get number of cell points inside square
-                for (int j = 0; j < cells.Count; j++)
-                {
-                    if (cells[j].CellAvailable)
-                    {
-                        //Trace.WriteLine(" Square Centroid is  "  + squareCentroid);
-                        Point2d testPoint = cells[j].CenterPoint;
-                        if (GraphicsUtility.PointInsidePolygonTest(squareCentroid, testPoint))
-                        {
-                            // make cell index list for each program
-                            cells[j].CellAvailable = false;
-                            newProgDataList[i].CalcAreaAllocated();
-                            newProgDataList[i].CellAssignPerItem(cells[j]);
-                        }
-                    }
-                }
-
-                //update area allocated to each program     
-
-
-
-            }// end of for loop
-
-
-            for (int i = 0; i < selectedIndices.Count; i++)
-            {
-                // keep adding cells till area is satisfied for the program or till any cell is available
-                while (newProgDataList[i].IsAreaSatisfied == false && AnyCellAvailable(cells) == true)
-                {
-
-                    for (int j = 0; j < cells.Count; j++)
-                    {
-                        if (cells[j].CellAvailable == true)
-                        {
-                            // make cell index list for each program
-                            
-                            cells[j].CellAvailable = false;
-                            newProgDataList[i].CalcAreaAllocated();
-                            newProgDataList[i].CellAssignPerItem(cells[j]);
-                            break;
-
-                        }
-                    }
-                }
-
-            }
-
-            /*
-
-            //make new cell object from inputcells
-            List<Cell> newCellList = new List<Cell>();
-            for (int i = 0; i < cells.Count; i++)
-            {
-                Cell aCell = new Cell(cells[i]);
-                newCellList.Add(aCell);
-            }
-       
-
-            // make new list of list of cells assigned to each dept
-            for (int i = 0; i < newProgDataList.Count; i++)
-            {
-                List<Cell> eachProgCellList = new List<Cell>();
-                if (cellProgramsList[i].Count > 0)
-                {
-                    for (int j = 0; j < cellProgramsList[i].Count; j++)
-                    {
-                        eachProgCellList.Add(newCellList[cellProgramsList[i][j]]);
-                    }
-                    newProgDataList[i].CellAssign(eachProgCellList);
-                }
-
-            }
-            */
-           
-            oldCells.Clear();
-            return newProgDataList;
-
-        }
-
-      
-       
-       
-
-        //public functions
-        [MultiReturn(new[] { "ProgramCellIndices", "ProgramData","CellsForEachProg", "Cells" })]
-        public static Dictionary<string, object> PlaceProgramsInSite(List<ProgramData> progData, List<Cell> cells, List<Point2d> PolyPoints, int num = 5, int tag = 0)
-        {
-
-            // make all cells available
-            for (int i = 0; i < cells.Count; i++)
-            {
-                cells[i].CellAvailable = true;
-            }
-
-
-            //Build new prog data list
-            List<ProgramData> newProgDataList = new List<ProgramData>();
-            for (int i = 0; i < progData.Count; i++)
-            {
-                ProgramData newProgData = new ProgramData(progData[i]);
-                newProgDataList.Add(newProgData);
-            }
-
-            //progData.Clear();
-
-            // get cellIndex for Program Centroids
-            List<int> selectedIndices = GetProgramCentroid(newProgDataList, ref cells, newProgDataList[0].GridX);
-
-
-
-            // calc program area
-            List<double> sqEdge = new List<double>();
-            List<List<int>> cellProgramsList = new List<List<int>>(); // to be returned
-
-
-            for (int i = 0; i < selectedIndices.Count; i++)
-            {
-
-                // calc square edge
-                double side = Math.Sqrt(newProgDataList[i].UnitArea * newProgDataList[i].Quantity);
-                sqEdge.Add(side);
-                //Trace.WriteLine("Side of Square for  Cell " + i + " : " + side);
-                //Trace.WriteLine("Area of Program Unit is  : " + progData[i].UnitArea);
-
-
-                // place square
-                Point2d center = cells[selectedIndices[i]].CenterPoint;
-                Polygon2d squareCentroid = GraphicsUtility.MakeSquarePolygon2dFromCenterSide(center, side);
-                List<int> cellIndexPrograms = new List<int>();
-                int cellAddedCount = 0;
-
-                // get number of cell points inside square
-                for (int j = 0; j < cells.Count; j++)
-                {
-                    if (cells[j].CellAvailable)
-                    {
-                        //Trace.WriteLine(" Square Centroid is  "  + squareCentroid);
-                        Point2d testPoint = cells[j].CenterPoint;
-                        if (GraphicsUtility.PointInsidePolygonTest(squareCentroid, testPoint))
-                        {
-                            // make cell index list for each program
-                            cellIndexPrograms.Add(j);
-                            cells[j].CellAvailable = false;
-                            newProgDataList[i].CalcAreaAllocated();
-                            //Trace.WriteLine(" Added Cell is : " + j);
-                            cellAddedCount += 1;
-                        }
-                    }
-                }
-
-                //update area allocated to each program     
-                cellProgramsList.Add(cellIndexPrograms);
-
-
-
-            }// end of for loop
-
-
-            for (int i = 0; i < selectedIndices.Count; i++)
-            {
-                // keep adding cells till area is satisfied for the program or till any cell is available
-                while (newProgDataList[i].IsAreaSatisfied == false && AnyCellAvailable(cells) == true)
-                {
-
-                    for (int j = 0; j < cells.Count; j++)
-                    {
-                        if (cells[j].CellAvailable == true)
-                        {
-                            // make cell index list for each program
-                            cellProgramsList[i].Add(j);
-                            cells[j].CellAvailable = false;
-                            newProgDataList[i].CalcAreaAllocated();
-                            break;
-
-                        }
-                    }
-                }
-
-                //Trace.WriteLine("Number of Cells added for the program : " + progData[i].NumberofCellsAdded);
-            }
-
-
-            //make new cell object from inputcells
-            List<Cell> newCellList = new List<Cell>();
-            for (int i = 0; i < cells.Count; i++)
-            {
-                Cell aCell = new Cell(cells[i]);
-                newCellList.Add(aCell);
-            }
-            //cells.Clear();
-
-            List<List<Cell>> cellEachProgGets = new List<List<Cell>>();
-            // make new list of list of cells assigned to each dept
-            for (int i = 0; i < newProgDataList.Count; i++)
-            {
-                List<Cell> eachProgCellList = new List<Cell>();
-                if (cellProgramsList[i].Count > 0)
-                {
-                    for (int j = 0; j < cellProgramsList[i].Count; j++)
-                    {
-                        eachProgCellList.Add(newCellList[cellProgramsList[i][j]]);
-                    }
-                    newProgDataList[i].CellAssign(eachProgCellList);
-                    cellEachProgGets.Add(eachProgCellList);
-                }
-
-            }
-
-
-            //return cellProgramsList;
-            return new Dictionary<string, object>
-            {
-                { "ProgramCellIndices", (cellProgramsList) },
-                { "ProgramData", (newProgDataList) },
-                { "CellsForEachProg", (cellEachProgGets) },
-                { "Cells", (newCellList) }
-            };
-
-        }
-
-
-       
-        [MultiReturn(new[] { "DeptCellIndices", "DepartmentData", "CellsForEachDept", "Cells" })]
-        internal static Dictionary<string, object> PlaceDeptsInSite(List<DeptData> deptData, List<Cell> cells, List<Point2d> PolyPoints, int num = 5, int tag = 0)
-        {
-
-            //Build new dept data list
-            List<DeptData> newDeptDataList = new List<DeptData>();
-            for (int i = 0; i < deptData.Count; i++)
-            {
-                DeptData newDeptData = new DeptData(deptData[i]);
-                newDeptDataList.Add(newDeptData);
-            }
-
-            deptData.Clear();
-
-            // make all cells available
-            for (int i = 0; i < cells.Count; i++)
-            {
-                cells[i].CellAvailable = true;
-            }
-
-            // get cellIndex for Program Centroids
-            List<int> selectedIndices = GetProgramCentroid(newDeptDataList, ref cells, newDeptDataList[0].GridX);
-
-
-
-            // calc program area
-            List<double> sqEdge = new List<double>();
-            List<List<int>> cellProgramsList = new List<List<int>>(); // to be returned
-
-            for (int i = 0; i < selectedIndices.Count; i++)
-            {
-
-                // calc square edge
-                double side = Math.Sqrt(newDeptDataList[i].DeptAreaNeeded);
-                sqEdge.Add(side);
-                //Trace.WriteLine("Side of Square for  Cell " + i + " : " + side);
-                //Trace.WriteLine("Area of Program Unit is  : " + progData[i].UnitArea);
-
-
-                // place square
-                Point2d center = cells[selectedIndices[i]].CenterPoint;
-                Polygon2d squareCentroid = GraphicsUtility.MakeSquarePolygon2dFromCenterSide(center, side);
-                List<int> cellIndexPrograms = new List<int>();
-                int cellAddedCount = 0;
-
-                // get number of cell points inside square
-                for (int j = 0; j < cells.Count; j++)
-                {
-                    if (cells[j].CellAvailable)
-                    {
-                        //Trace.WriteLine(" Square Centroid is  "  + squareCentroid);
-                        Point2d testPoint = cells[j].CenterPoint;
-                        if (GraphicsUtility.PointInsidePolygonTest(squareCentroid, testPoint))
-                        {
-                            // make cell index list for each program
-                            cellIndexPrograms.Add(j);
-                            cells[j].CellAvailable = false;
-                            newDeptDataList[i].CalcAreaAllocated();
-                            //Trace.WriteLine(" Added Cell is : " + j);
-                            cellAddedCount += 1;
-                        }
-                    }
-                }
-
-                //update area allocated to each program
-                cellProgramsList.Add(cellIndexPrograms);
-
-
-
-            }// end of for loop
-
-
-            for (int i = 0; i < selectedIndices.Count; i++)
-            {
-                // keep adding cells till area is satisfied for the program or till any cell is available
-                while (newDeptDataList[i].IsAreaSatisfied == false && AnyCellAvailable(cells) == true)
-                {
-
-                    for (int j = 0; j < cells.Count; j++)
-                    {
-                        if (cells[j].CellAvailable == true)
-                        {
-                            // make cell index list for each program
-                            cellProgramsList[i].Add(j);
-                            cells[j].CellAvailable = false;
-                            newDeptDataList[i].CalcAreaAllocated();
-                            break;
-
-                        }
-                    }
-                }
-
-                //Trace.WriteLine("Number of Cells added for the program : " + deptData[i].NumberofCellsAdded);
-            }
-
-
-            //make new cell object from inputcells
-            List<Cell> newCellList = new List<Cell>();
-            for(int i = 0; i < cells.Count; i++)
-            {
-                Cell aCell = new Cell(cells[i]);
-                newCellList.Add(aCell);
-            }
-            cells.Clear();
-
-            List<List<Cell>> cellEachDeptGets = new List<List<Cell>>();
-            // make new list of list of cells assigned to each dept
-            for (int i = 0; i < newDeptDataList.Count; i++)
-            {
-                List<Cell> eachDeptCellList = new List<Cell>();
-                if (cellProgramsList[i].Count > 0)
-                {
-                    for (int j = 0; j < cellProgramsList[i].Count; j++)
-                    {
-                        eachDeptCellList.Add(newCellList[cellProgramsList[i][j]]);
-                    }
-                    newDeptDataList[i].CellAssign(eachDeptCellList);
-                    cellEachDeptGets.Add(eachDeptCellList);
-                }
-               
-            }
-
-                //return cellProgramsList;
-                return new Dictionary<string, object>
-            {
-                { "DeptCellIndices", (cellProgramsList) },
-                { "DepartmentData", (newDeptDataList) },
-                { "CellsForEachDept", (cellEachDeptGets) },
-                { "Cells", (newCellList) }
-            };
-
-        }
-
+        //checks to see if any cell is available or not
         internal static bool AnyCellAvailable(List<Cell> cells)
         {
             bool check = false;
-            int count = 0;
             for (int i = 0; i < cells.Count; i++)
             {
                 if (cells[i].CellAvailable)
                 {
-                    count += 1;
                     check = true;
                     break;
                 }
             }
-            //Trace.WriteLine("Number of Vacant Cells available are : " + count);
-            //Trace.WriteLine("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-            //if (count > 0) { check = true; }
-
             return check;
         }
-
-      
+        
+        //count number of available cells
         internal static List<int> CountAvailableCells(List<Cell> cells)
         {
             List<int> cellInfo = new List<int>();

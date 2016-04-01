@@ -977,7 +977,7 @@ namespace SpacePlanning
 
             List<Point2d> poly = PolygonUtility.SmoothPolygon(polyOrig, spacingProvided);
             if (!PolygonUtility.CheckPointList(poly)) return null;
-            Dictionary<int, object> obj = PolygonUtility.pointSelector(ran,poly);
+            Dictionary<int, object> obj = PolygonUtility.PointSelector(ran,poly);
             Point2d pt = (Point2d)obj[0];
             int orient = (int)obj[1];
             Line2d splitLine = new Line2d(pt, extents, dir);          

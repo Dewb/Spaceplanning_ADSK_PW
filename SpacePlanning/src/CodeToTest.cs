@@ -76,69 +76,31 @@ namespace SpacePlanning
         [MultiReturn(new[] { "Neighbour", "SharedEdgeA", "SharedEdgeB", "LineMoved", "CenterToCenterLine", "CenterPolyPoint", "CenterPolyOtherPoint" })]
         internal static Dictionary<string, object> PolygonPolygonCommonEdgeDict(Polygon2d poly, Polygon2d other)
         {
-            /*
-            first reduce number of pts in both polys
-            find their centers
-            make a vec between their center
-            get horizontal comp of vec
-            get vertical comp of vec
-            which length is long will be our vector
-
-            then for both polys
-                check line line intersection between line between two centers and each line of the poly
-                    if no intersect, no edge
-                    find the line intersects 
-                    find the perpendicular projection of centers on these linese
-
-            */
 
             bool check = false;
-            if (poly == null || other == null)
-            {
-                return null;
-            }
-
+            if (poly == null || other == null) return null;
+       
             double eps = 200;
-            //Polygon2d polyReg = poly;
-            //Polygon2d otherReg = other;
-            //reduce number of points
             Polygon2d polyReg = new Polygon2d(poly.Points);
             Polygon2d otherReg = new Polygon2d(other.Points);
-            //reassign centers to each poly
-            //Dictionary<string,object> UpdatedCenters  = ComputePolyCentersAlign(polyReg, otherReg);
             Dictionary<string, object> UpdatedCenters = ComputePolyCentersAlign(polyReg, otherReg);
 
             Point2d centerPoly = (Point2d)UpdatedCenters["CenterPolyA"];
             Point2d centerOther = (Point2d)UpdatedCenters["CenterPolyB"];
-
             polyReg = (Polygon2d)UpdatedCenters["PolyA"];
             otherReg = (Polygon2d)UpdatedCenters["PolyB"];
-
             //make vectors
             Vector2d centerToCen = new Vector2d(centerPoly, centerOther);
             Vector2d centerToCenX = new Vector2d(centerToCen.X, 0);
             Vector2d centerToCenY = new Vector2d(0, centerToCen.Y);
-
-
-
-
-
             //make centerLine
             Line2d centerLine = new Line2d(centerPoly, centerOther);
             Vector2d keyVec;
-            if (centerToCenX.Length > centerToCenY.Length)
-            {
-                keyVec = new Vector2d(centerToCenX.X, centerToCenX.Y);
-            }
-            else
-            {
-                keyVec = new Vector2d(centerToCenY.X, centerToCenY.Y);
-            }
-
+            if (centerToCenX.Length > centerToCenY.Length) keyVec = new Vector2d(centerToCenX.X, centerToCenX.Y);
+            else    keyVec = new Vector2d(centerToCenY.X, centerToCenY.Y);
             //check line poly intersection between centertocen vector and each polys            
             Line2d lineInPolyReg = GraphicsUtility.LinePolygonIntersectionReturnLine(polyReg.Points, centerLine, centerOther);
             Line2d lineInOtherReg = GraphicsUtility.LinePolygonIntersectionReturnLine(otherReg.Points, centerLine, centerPoly);
-
 
             //find distance d1 and d2 from two centers to linepolyintersection line
             Point2d projectedPtOnPolyReg = GraphicsUtility.ProjectedPointOnLine(lineInPolyReg, centerPoly);
@@ -148,24 +110,14 @@ namespace SpacePlanning
             double dist2 = GraphicsUtility.DistanceBetweenPoints(centerOther, projectedPtOnOtherReg);
 
             double totalDistance = 2 * (dist1 + dist2);
-            //Line2d lineMoved = new Line2d(lineInPolyReg);
             Line2d lineMoved = new Line2d(lineInPolyReg.StartPoint, lineInPolyReg.EndPoint);
-            //lineMoved.move(centerPoly); CHANGED
             lineMoved = LineUtility.move(lineMoved,centerPoly);
             Point2d projectedPt = GraphicsUtility.ProjectedPointOnLine(lineMoved, centerOther);
             double distance = GraphicsUtility.DistanceBetweenPoints(projectedPt, centerOther);
 
             bool isNeighbour = false;
-            if (totalDistance - eps < distance && distance < totalDistance + eps)
-            {
-                isNeighbour = true;
-            }
-            else
-            {
-                isNeighbour = false;
-            }
-
-            //"Neighbour", "SharedEdgeA", "SharedEdgeB" 
+            if (totalDistance - eps < distance && distance < totalDistance + eps) isNeighbour = true;
+            else isNeighbour = false; 
 
             return new Dictionary<string, object>
             {
@@ -181,84 +133,6 @@ namespace SpacePlanning
         }
 
 
-
-        //find common edge between two polygons, - works with bugs
-        internal static Line2d PolygonPolygonCommonEdge(Polygon2d poly, Polygon2d other)
-        {
-            /*
-            first reduce number of pts in both polys
-            find their centers
-            make a vec between their center
-            get horizontal comp of vec
-            get vertical comp of vec
-            which length is long will be our vector
-
-            then for both polys
-                check line line intersection between line between two centers and each line of the poly
-                    if no intersect, no edge
-                    find the line intersects 
-                    find the perpendicular projection of centers on these linese
-
-            */
-
-            bool check = false;
-            if (poly == null || other == null)
-            {
-                return null;
-            }
-            double eps = 100;
-            //reduce number of points
-            Polygon2d polyReg = new Polygon2d(poly.Points);
-            Polygon2d otherReg = new Polygon2d(other.Points);
-
-            //find centers
-            Point2d centerPoly = GraphicsUtility.CentroidInPointLists(polyReg.Points);
-            Point2d centerOther = GraphicsUtility.CentroidInPointLists(otherReg.Points);
-
-            //make vectors
-            Vector2d centerToCen = new Vector2d(centerPoly, centerOther);
-            Vector2d centerToCenX = new Vector2d(centerToCen.X, 0);
-            Vector2d centerToCenY = new Vector2d(0, centerToCen.Y);
-
-            //make centerLine
-            Line2d centerLine = new Line2d(centerPoly, centerOther);
-            Vector2d keyVec;
-            if (centerToCenX.Length > centerToCenY.Length)
-            {
-                keyVec = new Vector2d(centerToCenX.X, centerToCenX.Y);
-            }
-            else
-            {
-                keyVec = new Vector2d(centerToCenY.X, centerToCenY.Y);
-            }
-
-            //check line poly intersection between centertocen vector and each polys            
-            Line2d lineInPolyReg = GraphicsUtility.LinePolygonIntersectionReturnLine(polyReg.Points, centerLine, centerOther);
-            Line2d lineInOtherReg = GraphicsUtility.LinePolygonIntersectionReturnLine(otherReg.Points, centerLine, centerPoly);
-            
-            Point2d projectedPtOnPolyReg = GraphicsUtility.ProjectedPointOnLine(lineInPolyReg, centerPoly);
-            Point2d projectedPtOnOtherReg = GraphicsUtility.ProjectedPointOnLine(lineInOtherReg, centerOther);
-
-            double dist1 = GraphicsUtility.DistanceBetweenPoints(centerPoly, projectedPtOnPolyReg);
-            double dist2 = GraphicsUtility.DistanceBetweenPoints(centerOther, projectedPtOnOtherReg);
-
-            double totalDistance = 2 * (dist1 + dist2);
-            //lineInPolyReg.move(centerPoly);
-            lineInPolyReg = LineUtility.move(lineInPolyReg, centerPoly);
-            Point2d projectedPt = GraphicsUtility.ProjectedPointOnLine(lineInPolyReg, centerOther);
-            double distance = GraphicsUtility.DistanceBetweenPoints(projectedPt, centerOther);
-
-
-            if (totalDistance - eps < distance && distance < totalDistance + eps)
-            {
-                return lineInOtherReg;
-            }
-            else
-            {
-                return null;
-            }
-
-        }
 
 
         /*
