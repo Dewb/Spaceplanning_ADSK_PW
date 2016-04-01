@@ -13,18 +13,13 @@ namespace SpacePlanning
 {
     public class SpaceAnalysis
     {
-
-
-
-        //DEPT ANALYTICS
+        
+        //provides information related to dept data
         [MultiReturn(new[] { "DepartmentNames", "NumCellsTaken", "AreaSatisfied", "AreaNeeded", "AreaProvided", "ProgramsInDepts", "PolyAssignedDepts" })]
         public static Dictionary<string, object> DeptAnalytics(List<DeptData> deptData)
         {
 
-            if (deptData == null)
-            {
-                return null;
-            }
+            if (deptData == null) return null;
             List<string> deptNameList = new List<string>();
             List<int> numCellsList = new List<int>();
             List<bool> areaSatisfiedList = new List<bool>();
@@ -42,8 +37,6 @@ namespace SpacePlanning
                 areaProvidedList.Add(deptData[i].AreaProvided);
                 polyAssignedList.Add(deptData[i].PolyDeptAssigned);
             }
-
-
             return new Dictionary<string, object>
             {
                 { "DepartmentNames", (deptNameList) },
@@ -56,7 +49,7 @@ namespace SpacePlanning
             };
         }
 
-        //PROGRAM ANALYTICS
+        //Pprovides information related to program data
         [MultiReturn(new[] { "ProgramNames", "NumCellsTaken", "AreaSatisfied", "AreaNeeded", "AreaProvided", "Quantity", "PolyAssignedProgs" })]
         public static Dictionary<string, object> ProgramAnalytics(List<ProgramData> progData)
         {

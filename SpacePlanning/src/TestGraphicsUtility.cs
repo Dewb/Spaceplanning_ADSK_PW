@@ -12,7 +12,7 @@ namespace SpacePlanning
     internal class TestGraphicsUtility
     {
         //################################################################################################################
-        //this class stores methods realted to GraphicsUtility class which needs to be tested further for dependability
+        //this class stores methods realted to GraphicsUtility class which needs to be tested further for reliability
         //################################################################################################################
 
 

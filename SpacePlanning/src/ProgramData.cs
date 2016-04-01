@@ -222,10 +222,6 @@ namespace SpacePlanning
             get { return _gridY; }
         }
 
-
-        //CALC ARE GIVEN
-        //internal void Cal
-
         //CALC THE AREA ALLOCATED
         internal void CalcAreaAllocated()
         {
