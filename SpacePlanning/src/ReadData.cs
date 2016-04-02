@@ -33,8 +33,22 @@ namespace SpacePlanning
         }
 
         //read embedded .csv file and make data stack
-        [MultiReturn(new[] { "DataStackArray", "ProgramDataObject", "DeptNames", "DeptDataObject" })]
-        public static Dictionary<string, IEnumerable<object>> AutoMakeDataStack([ArbitraryDimensionArrayImport]double dimX, [ArbitraryDimensionArrayImport]double dimY, double factor = 1)
+        //arrange depts on site, till all depts have not been satisfied
+        /// <summary>
+        /// It arranges the dept on the site based on input from program document
+        /// Returns the dept polygon2d and dept  .
+        /// </summary>
+        /// <param name="DimX">x axis dimension of the grid</param>
+        /// <param name="Dimy">y axis dimension of the grid</param>
+        /// <param name="CirculationFactor">Multiplier to account for add on circulation area</param>
+        /// <returns name="DataStackArray">Data Stack from the embedded .csv</param>
+        /// <returns name="ProgramDataObject">Program Data Object containing information from the embedded .csv file</param>
+        /// <returns name="DeptDataObject">Department Data Object containing information from the embedded .csv file</param>
+        /// <search>
+        /// make data stack, embedded data
+        /// </search>
+        [MultiReturn(new[] { "DataStackArray", "ProgramDataObject","DeptDataObject" })]
+        public static Dictionary<string, IEnumerable<object>> AutoMakeDataStack([ArbitraryDimensionArrayImport]double dimX, [ArbitraryDimensionArrayImport]double dimY, double circulationFactor = 1)
         {
 
             List<string> progIdList = new List<string>();
@@ -66,7 +80,7 @@ namespace SpacePlanning
                 programList.Add(values[1]);
                 deptNameList.Add(values[2]);
                 progQuantList.Add(values[3]);
-                double areaValue = Convert.ToDouble(values[4]) * factor;
+                double areaValue = Convert.ToDouble(values[4]) * circulationFactor;
                 areaEachProgList.Add(areaValue.ToString());
                 prefValProgList.Add(values[5]);
                 progAdjList.Add(values[6]);
@@ -77,7 +91,7 @@ namespace SpacePlanning
                 List<string> adjList = new List<string>();
                 adjList.Add(values[6]);
                 ProgramData progData = new ProgramData(Convert.ToInt16(values[0]), values[1], values[2], Convert.ToInt16(values[3]),
-                    Convert.ToDouble(values[4]) * factor, Convert.ToInt16(values[5]), adjList, dummyCell, dimX, dimY);
+                    Convert.ToDouble(values[4]) * circulationFactor, Convert.ToInt16(values[5]), adjList, dummyCell, dimX, dimY);
                 programDataStack.Add(progData);
             }// end of for each statement
 
@@ -105,19 +119,26 @@ namespace SpacePlanning
             {
                 { "DataStackArray", (dataStack) },
                 { "ProgramDataObject", (programDataStack) },
-                { "DeptNames", (deptNames) },
                 { "DeptDataObject", (deptDataStack) }
             };
 
         }
         
         //read embedded .csv file and make data stack
-        public static Dictionary<string, IEnumerable<object>> AutoMakeDataStackSingleOut([ArbitraryDimensionArrayImport]double dimX, [ArbitraryDimensionArrayImport]double dimY, double factor = 1)
+        internal static Dictionary<string, IEnumerable<object>> AutoMakeDataStackSingleOut([ArbitraryDimensionArrayImport]double dimX, [ArbitraryDimensionArrayImport]double dimY, double factor = 1)
         {
             return AutoMakeDataStack(dimX, dimY, factor);
         }
 
         //read embedded .sat file and make building outline
+        /// <summary>
+        /// It arranges the dept on the site based on input from program document
+        /// Returns the dept polygon2d and dept  .
+        /// </summary>
+        /// <returns name="NurbsGeometry">List of Nurbs curve representing the edges of the buildable area</param>
+        /// <search>
+        /// make site outline, building periphery
+        /// </search>
         public static Geometry[] AutoMakeBuildingOutline()
         {
             Stream res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.Asset.ATORIGINDK.sat");
@@ -134,11 +155,22 @@ namespace SpacePlanning
             }
             writeStream.Close();
             return Geometry.ImportFromSAT(saveTo); 
-
-
         }
 
         //read provided .csv file and make data stack
+        /// <summary>
+        /// It arranges the dept on the site based on input from program document
+        /// Returns the dept polygon2d and dept  .
+        /// </summary>
+        /// <param name="DimX">x axis dimension of the grid</param>
+        /// <param name="Dimy">y axis dimension of the grid</param>
+        /// <param name="CirculationFactor">Multiplier to account for add on circulation area</param>
+        /// <returns name="DataStackArray">Data Stack from the embedded .csv</param>
+        /// <returns name="ProgramDataObject">Program Data Object containing information from the input .csv file</param>
+        /// <returns name="DeptDataObject">Department Data Object containing information from the input .csv file</param>
+        /// <search>
+        /// make data stack, embedded data
+        /// </search>
         [MultiReturn(new[] { "DataStackArray", "ProgramDataObject", "DeptNames", "DeptDataObject" })]
         public static Dictionary<string, IEnumerable<object>> MakeDataStack([ArbitraryDimensionArrayImport]string path, [ArbitraryDimensionArrayImport]double dimX, [ArbitraryDimensionArrayImport]double dimY, double factor=1)
         {
@@ -224,14 +256,31 @@ namespace SpacePlanning
         }
 
         //reads .sat file and returns geometry
+        /// <summary>
+        /// It arranges the dept on the site based on input from program document
+        /// Returns the dept polygon2d and dept  .
+        /// </summary>
+        /// <param name="Path">Path of the input sat file as a string</param>
+        /// <returns name="NurbsGeometry">List of Nurbs curve representing site outline</param>
+        /// <search>
+        /// make nurbs curve, site outline
+        /// </search>
         public static Geometry[] ReadBuildingOutline(string path)
-        {
-           
-            return Geometry.ImportFromSAT(path);
-           
+        {           
+            return Geometry.ImportFromSAT(path);           
         }
 
         //get point information from outline
+        /// <summary>
+        /// It arranges the dept on the site based on input from program document
+        /// Returns the dept polygon2d and dept  .
+        /// </summary>
+        /// <param name="NurbsList">List fo Nurbs Geometry</param>
+        /// <returns name="DataStackArray">Data Stack from the embedded .csv</param>
+        /// <returns name="PointList">Point List representing site outline</param>
+        /// <search>
+        /// get points of site outline
+        /// </search>
         public static List<Point2d> FromOutlineGetPoints(List<NurbsCurve> nurbList)
         {
             List<Point2d> pointList = new List<Point2d>();

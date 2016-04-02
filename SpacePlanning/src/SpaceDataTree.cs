@@ -6,11 +6,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
+
+//#########################################################################################################################
+//this class creates the SPACE DATA TREE OBJECT
+//the space data tree is a binary tree where in each node has two children , left and right
+//this object is created while departments are allocated on site.
+//based on the split of the site, each node of the tree is assigned information including two children , left and right
+//left child of any node, stores a node type of 'Space' while the right child stores the node type container
+//#########################################################################################################################
 namespace SpacePlanning
 {
     public class SpaceDataTree
     {
-
         private Node _root;
         private int _numNodes;
         private List<string> _nodeTypeString;
@@ -196,7 +204,7 @@ namespace SpacePlanning
         }
 
         //to remove only the node but keep their children
-        internal void RemoveOnlyParentKeepChildren(Node parent,Node item)
+        internal void RemoveParentKeepChildren(Node parent,Node item)
         {
             if(parent.RightNode == item)
             {

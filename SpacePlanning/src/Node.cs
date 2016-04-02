@@ -6,25 +6,38 @@ using System.Threading.Tasks;
 using stuffer;
 using Autodesk.DesignScript.Geometry;
 
+
+//#########################################################################################################################
+//this class makes a NODE OBJECT, which stores link to two choldren , left and right and its parent 
+//the node data type is used to build the SpaceData Tree
+//if a node is root then it has null parent
+//a node can be of two types, 'Space' or 'Container'
+//a space node type represents a node which stores information of space ( either program or dept )
+//a space node type has no children
+//space node types are assigned the left child and container node types are assigned to the right child of a parent node
+//the last container in a Space Data Tree has both left and right  child as space node
+//a container node type represents a node which stores further sub chains of nodes ( both space type and container type)
+//#########################################################################################################################
+
+
+
 namespace SpacePlanning
 {
     public class Node
     {
-
-        
         private int _id;
         private Line2d _splitLine;       
-        private Node _leftChildNode;
-        private Node _rightChildNode;
-        private Node _parentNode;
+        private Node _left;
+        private Node _right;
+        private Node _parent;
         private NodeType _nodeType;
         private Polygon2d _poly;
         private DeptData _deptAssigned;
         private bool _check;
         private bool _isRoot = false;
         private Point _centerPt;
-        private double _radiusNode;
-        private double _radiusAddContainer;
+        private double _radius;
+        private double _radiusForContainer;
         private double _extraRadius;
         private double _prop = 1.2;
 
@@ -36,17 +49,17 @@ namespace SpacePlanning
             _id = id;
             _poly = null;
             _nodeType = type;
-            _parentNode = null;
+            _parent = null;
             _deptAssigned = null;
             _check = false;
             _isRoot = flag;
             _centerPt = centerPt;
-            _radiusNode = radius;
-            _radiusAddContainer = _radiusNode / _prop;
+            _radius = radius;
+            _radiusForContainer = _radius / _prop;
 
             if(type == NodeType.Container)
             {
-                _extraRadius = _radiusNode + _radiusAddContainer;
+                _extraRadius = _radius + _radiusForContainer;
             }    
 
 
@@ -60,7 +73,7 @@ namespace SpacePlanning
             _nodeType = type;
             _check = false;
             _poly = null;
-            _parentNode = null;
+            _parent = null;
             _deptAssigned = null;
 
 
@@ -70,9 +83,9 @@ namespace SpacePlanning
         public Node( int id, Node parent, Node left, Node right, NodeType type, Polygon2d poly, Line2d splitLine, DeptData dept)
         {           
             _id = id;            
-            _leftChildNode = left;
-            _rightChildNode = right;
-            _parentNode = parent;
+            _left = left;
+            _right = right;
+            _parent = parent;
             _nodeType = type;
             _deptAssigned = dept;
             _poly = poly;
@@ -83,8 +96,8 @@ namespace SpacePlanning
 
         public double RadiusNode
         {
-            get { return _radiusNode; }
-            set { _radiusNode = value; }
+            get { return _radius; }
+            set { _radius = value; }
         }
 
         public double Proportion
@@ -117,22 +130,22 @@ namespace SpacePlanning
         }
 
         public Node ParentNode{
-            get { return _parentNode; }
-            set { _parentNode = value; }
+            get { return _parent; }
+            set { _parent = value; }
         }
 
         public Node LeftNode
         {
-            get { return _leftChildNode; }
-            set { _leftChildNode = value; }
+            get { return _left; }
+            set { _left = value; }
 
         }
 
 
         public Node RightNode
         {
-            get { return _rightChildNode; }
-            set { _rightChildNode = value; }
+            get { return _right; }
+            set { _right = value; }
         }
 
 

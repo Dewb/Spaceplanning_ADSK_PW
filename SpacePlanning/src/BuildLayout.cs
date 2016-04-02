@@ -16,111 +16,52 @@ namespace SpacePlanning
 
     public class BuildLayout
     {      
-        public static double spacingSet = 6; //higher value makes code faster but less precise 3 was good 4 worked and 1
-        public static double spacingSet2 = 1;
+        internal static double spacingSet = 6; //higher value makes code faster but less precise 3 was good 4 worked and 1
+        internal static double spacingSet2 = 1;
         internal static Random ranGenerate = new Random();
         internal static double recurse = 0;
         internal static Point2d reference = new Point2d(0,0);
-        internal static int maxCount = 5;
-        internal static int maxRound = 5;
+        internal static int maxCount = 5, maxRound = 5;
 
 
-
+        //gets and sets the space between points for any smoothened polygon2d
         internal double spacingSetOrig
         {
-            get
-            {
-                return spacingSet;
-            }
-            set
-            {
-                spacingSet = value;
-            }
+            get { return spacingSet; }
+            set { spacingSet = value; }
         }
 
+        //gets and sets the space between points for any smoothened polygon2d
         internal double spacingSetAnother
         {
-            get
-            {
-                return spacingSet2;
-            }
-            set
-            {
-                spacingSet2 = value;
-            }
+            get { return spacingSet2; }
+            set { spacingSet2 = value; }
         }
 
      
-
-        //****DEF - USING THIS TO SPLIT PROGRAMS-------------------------------
-
-        //make a tree to test
+        //makes a space data tree
         [MultiReturn(new[] { "SpaceTree", "NodeList" })]
         internal static Dictionary<string,object> CreateSpaceTree(int numNodes, Point origin, double spaceX, double spaceY,double radius, double recompute = 5)
         {
-            // make root node
             Node root = new Node(0, NodeType.Container, true, origin,radius);            
             List<Node> nodeList = new List<Node>();
-            //nodeList.Add(root);
-            Random ran = new Random();
             bool tag = true;
             for (int i = 0; i < numNodes-1; i++)
             {
-                Node N;
-                double val = ran.NextDouble();
-                //NodeType ndType = BasicUtility.GenerateNodeType(val);
-                NodeType ndType = SpaceDataTree.GenerateBalancedNodeType(tag);
-                tag = !tag;
-                N = new Node(i + 1, ndType);                        
-                nodeList.Add(N);
+                tag = !tag;                     
+                nodeList.Add(new Node(i + 1, SpaceDataTree.GenerateBalancedNodeType(tag)));
             }
-            //////////////////////////////////////////////////////////////////
             SpaceDataTree tree = new SpaceDataTree(root,origin,spaceX,spaceY);
-            Node current = root;
-            
+            Node current = root;            
             Node nodeAdditionResult = null;
             for (int i = 0; i < nodeList.Count; i++)
-            {
-              
-                if (current.NodeType == NodeType.Space)
-                {
-                    Trace.WriteLine("Make Sure Space Nodes are childless");
-                    //current = current.ParentNode.RightNode;
-                    //current = current.RightNode;
-                    current = current.ParentNode;
-                  
-                }
-
-
+            {              
+                if (current.NodeType == NodeType.Space) current = current.ParentNode;
                 nodeAdditionResult = tree.AddNewNodeSide(current, nodeList[i]);
-                string foo = "";
-                //nodeAdditionResult = null , means node properly added
-                //nodeAdditionResult = current, means, parent node of current is null
-                //nodeAdditionResult = some other node means, current should be that other node to add new node
-                if (nodeAdditionResult == current)
-                {
-                    Trace.WriteLine("Parent Node is found Null");
-                    break;
-
-                }else if (nodeAdditionResult != current && nodeAdditionResult != null)
-                {
-                    Trace.WriteLine("Current Should be that other Node");
-                    current = nodeAdditionResult;
-                }
-                else
-                {
-                    Trace.WriteLine("Node is added properly Yay");
-                    current = nodeList[i];
-                  
-                }
-                Trace.WriteLine("+++++++++++++++++++++++++++++++++++++ \\");
-                string foo1 = "";
-      
-    
+                if (nodeAdditionResult == current) break;
+                else if (nodeAdditionResult != current && nodeAdditionResult != null) current = nodeAdditionResult;
+                else current = nodeList[i];         
             }
-            Trace.WriteLine("Tree Constructed=====================");
-            //return tree;
-
             return new Dictionary<string, object>
             {
                 { "SpaceTree", (tree) },
@@ -128,67 +69,25 @@ namespace SpacePlanning
             };
 
         }
-        
-
-
-        /// <summary>
-        /// Thisnode places the programs in the dept polygon2d's based on the list from the program document
-        /// It returns the input number multiplied by 2.
-        /// </summary>
-        /// <param name="a">Dept Polygon2d where programs should be placed</param>
-        /// <param name="b">Program Data Object containing program information</param>
-        /// <search>
-        /// split, divide , partition space based on distance
-        /// </search>
-        public static int TestCode(int a, int b)
-        {
-            return a + b;
-        }
 
 
 
-        //make a tree to test
+        //makes a space data tree from dept data
         [MultiReturn(new[] { "SpaceTree", "NodeList" })]
         internal static Dictionary<string, object> CreateSpaceTreeFromDeptData(Node root, List<Node> nodeList,
             Point origin, double spaceX, double spaceY, double radius, bool symettry = true)
         {
-            // make root node
-            //Node root = new Node(0, NodeType.Container, true, origin, radius);
             SpaceDataTree tree = new SpaceDataTree(root, origin, spaceX, spaceY);
             Node current = root;
             Node nodeAdditionResult = null;
             for (int i = 0; i < nodeList.Count; i++)
             {
-                if (current.NodeType == NodeType.Space)
-                {
-                    //Trace.WriteLine("Make Sure Space Nodes are childless");
-                    current = current.ParentNode;
-                }
+                if (current.NodeType == NodeType.Space) current = current.ParentNode;
                 nodeAdditionResult = tree.AddNewNodeSide(current, nodeList[i]);
-                //nodeAdditionResult = null , means node properly added
-                //nodeAdditionResult = current, means, parent node of current is null
-                //nodeAdditionResult = some other node means, current should be that other node to add new node
-                if (nodeAdditionResult == current)
-                {
-                    //Trace.WriteLine("Parent Node is found Null");
-                    break;
-
-                }
-                else if (nodeAdditionResult != current && nodeAdditionResult != null)
-                {
-                    //Trace.WriteLine("Current Should be that other Node");
-                    current = nodeAdditionResult;
-                }
-                else
-                {
-                    //Trace.WriteLine("Node is added properly Yay");
-                    current = nodeList[i];
-
-                }
-                //Trace.WriteLine("+++++++++++++++++++++++++++++++++++++ \\");
-
+                if (nodeAdditionResult == current) break;
+                else if (nodeAdditionResult != current && nodeAdditionResult != null) current = nodeAdditionResult;
+                else current = nodeList[i];
             }
-            //Trace.WriteLine("Tree Constructed=====================");
             return new Dictionary<string, object>
             {
                 { "SpaceTree", (tree) },
@@ -199,8 +98,7 @@ namespace SpacePlanning
 
 
 
-        //****DEF - USING THIS TO SPLIT DEPTS-------------------------------
-        // SPLITS A POLY TO MAKE DEPTS
+        //places dept and updates dept data with the added area and polys to each dept
         [MultiReturn(new[] { "DeptPolys", "LeftOverPolys", "CentralStation", "UpdatedDeptData","SpaceDataTree" })]
         internal static Dictionary<string, object> DeptSplitRefined(Polygon2d poly, List<DeptData> deptData, List<Cell> cellInside, double offset, int recompute = 1)
         {

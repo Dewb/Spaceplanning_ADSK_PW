@@ -9,7 +9,7 @@ using Autodesk.DesignScript.Runtime;
 
 namespace SpacePlanning
 {
-    public class PolygonUtility
+    internal class PolygonUtility
     {
 
         //checks a polygon2d to have min Area and min dimensions

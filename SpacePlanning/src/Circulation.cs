@@ -12,9 +12,21 @@ namespace SpacePlanning
 {
     public class Circulation
     {
-        
+        /// <summary>
+        /// It arranges the dept on the site based on input from program document
+        /// Returns the dept polygon2d and dept  .
+        /// </summary>
+        /// <param name="DeptData">DeptData Object</param>
+        /// <param name="Poly">Polygon2d representing departments in the site</param>
+        /// <param name="Limit">Distance allowed to be considered as a neighbor of a department</param>
+        /// <returns name="ProgramDataObject">Program Data Object containing information from the embedded .csv file</param>
+        /// <returns name="DepartmentTopologyList">List of list showing who are the neighboring departments for each department</param>
+        /// <returns name="DepartmentTopologyList">List of list showing who are the neighboring departments for each department</param>
+        /// <search>
+        /// make data stack, embedded data
+        /// </search>
         //Make Dept Topology Matrix , finds all the shared edges between dept polys, and based on that  makes dept neighbors
-        [MultiReturn(new[] { "DeptTopologyList", "DeptNeighborNameList", "DeptAllPolygons", "SharedEdge" })]
+        [MultiReturn(new[] { "DeptTopologyList", "CirculationNetwork", "DeptAllPolygons", "NonRedundantCirculationNetwork" })]
         public static Dictionary<string, object> MakeDeptTopology(List<DeptData> deptData, Polygon2d poly, double limit = 0)
         {
             List<Polygon2d> polygonsAllDeptList = new List<Polygon2d>();
@@ -55,9 +67,9 @@ namespace SpacePlanning
             return new Dictionary<string, object>
             {
                 { "DeptTopologyList", (deptNamesNeighbors) },
-                { "DeptNeighborNameList", (networkLine) },
+                { "CirculationNetwork", (networkLine) },
                 { "DeptAllPolygons", (polygonsAllDeptList) },
-                { "SharedEdge", (cleanNetworkLines) }
+                { "NonRedundantCirculationNetwork", (cleanNetworkLines) }
 
             };
         }
