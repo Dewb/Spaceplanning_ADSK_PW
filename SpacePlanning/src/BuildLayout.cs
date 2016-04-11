@@ -98,6 +98,35 @@ namespace SpacePlanning
 
 
 
+        //check if a given polygon2d has any of its longer edges aligned with any edge of the containerpolygon2d
+        internal static bool CheckPolyGetsExternalWall(Polygon2d poly, Polygon2d containerPoly, double shortEdgeDist = 16)
+        {
+            bool check = false;
+            //make given polys reduce number of points
+            Polygon2d polyReg = new Polygon2d(poly.Points);
+            Polygon2d containerPolyReg = new Polygon2d(containerPoly.Points);
+            for(int i = 0; i < polyReg.Points.Count; i++)
+            {
+                int a = i, b = i + 1;
+                double eps = 0;
+                if (i == polyReg.Points.Count-1) b = 0;
+                double distance = GraphicsUtility.DistanceBetweenPoints(polyReg.Points[a], polyReg.Points[b]);
+                if (distance <= shortEdgeDist) continue;
+                Line2d lineA = Line2d.ByStartPointEndPoint(polyReg.Points[a], polyReg.Points[b]);
+                for(int j = 0; j < containerPolyReg.Points.Count; j++)
+                {
+                    int c = j, d = j + 1;
+                    if (j == containerPolyReg.Points.Count - 1) d = 0;
+                    Line2d lineB = Line2d.ByStartPointEndPoint(containerPolyReg.Points[c], containerPolyReg.Points[d]);
+                    check = GraphicsUtility.LineAdjacencyCheck(lineA, lineB, eps);
+                    if (check) break;
+                }
+                if (check) break;
+            }
+            Trace.WriteLine("Well lines are found to be adjacent ? ++++++++++++++++++++   " + check);
+            return check;
+        }
+
         //places dept and updates dept data with the added area and polys to each dept
         [MultiReturn(new[] { "DeptPolys", "LeftOverPolys", "CentralStation", "UpdatedDeptData","SpaceDataTree" })]
         internal static Dictionary<string, object> DeptSplitRefined(Polygon2d poly, List<DeptData> deptData, List<Cell> cellInside, double offset, int recompute = 1)
@@ -141,6 +170,7 @@ namespace SpacePlanning
 
                 Random ran = new Random();
                 Node spaceNode, containerNode;
+                bool checkExternalWallAdj = false;
 
                 // when dept is inpatient unit
                 if (i == 0)
@@ -150,12 +180,28 @@ namespace SpacePlanning
                         dir = BasicUtility.ToggleInputInt(dir);
                         currentPolyObj = leftOverPoly.Pop();
                         areaCurrentPoly = PolygonUtility.AreaCheckPolygon(currentPolyObj);
-                        Dictionary<string,object> splitReturned = SplitByDistance(currentPolyObj, ran, offset, dir);
-                        List<Polygon2d> edgeSplitted = (List<Polygon2d>)splitReturned["PolyAfterSplit"];
-
-                        if (edgeSplitted == null) return null;
-                        double areaA = PolygonUtility.AreaCheckPolygon(edgeSplitted[0]);
-                        double areaB = PolygonUtility.AreaCheckPolygon(edgeSplitted[1]);
+                        int countNew = 0, maxPlacement = 100;
+                        double areaA = 0, areaB = 0;
+                        List<Polygon2d> edgeSplitted = new List<Polygon2d>();
+                        while (!checkExternalWallAdj && countNew < maxPlacement)
+                        {
+                            Dictionary<string, object> splitReturned = SplitByDistance(currentPolyObj, ran, offset, dir);
+                            edgeSplitted = (List<Polygon2d>)splitReturned["PolyAfterSplit"];
+                            if (edgeSplitted == null) return null;
+                            areaA = PolygonUtility.AreaCheckPolygon(edgeSplitted[0]);
+                            areaB = PolygonUtility.AreaCheckPolygon(edgeSplitted[1]);
+                            //make a check on the returned polygon2d, if that gets an external wall or not
+                            if (areaA < areaB)
+                            {
+                                checkExternalWallAdj = CheckPolyGetsExternalWall(edgeSplitted[0], poly, offset);
+                            }
+                            else
+                            {
+                                checkExternalWallAdj = CheckPolyGetsExternalWall(edgeSplitted[1], poly, offset);
+                            }
+                            Trace.WriteLine("trying to have an external edge " + countNew);
+                            countNew += 1;
+                        }// end of while
                         if (areaA < areaB)
                         {
                             everyDeptPoly.Add(edgeSplitted[0]);
@@ -170,8 +216,9 @@ namespace SpacePlanning
                             areaCheck += areaB;
                             leftOverPoly.Push(edgeSplitted[0]);
                         }
+                        checkExternalWallAdj = false;
                         count1 += 1;
-                    }
+                    }// end of while loop
 
                     spaceNode = new Node(i, NodeType.Space);
                     containerNode = new Node(i, NodeType.Container);
@@ -232,10 +279,11 @@ namespace SpacePlanning
 
             }// end of for loop
             double minArea = 10, areaMoreCheck = 0;
+            //adding left over polys to inpatient blocks, commented out now to remove inconsistent blocks
             /*
             Random ran2 = new Random();
             //for any left over poly
-            double minArea = 10, areaMoreCheck = 0;
+            //double minArea = 10, areaMoreCheck = 0;
             if (leftOverPoly.Count > 0)
             {
                 while (leftOverPoly.Count > 0 && count3 < maxRound)
