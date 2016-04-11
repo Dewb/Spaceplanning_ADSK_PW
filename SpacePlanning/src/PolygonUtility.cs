@@ -370,34 +370,7 @@ namespace SpacePlanning
 
         }
         
-        //gets the bounding box for a closed polygon2d
-        public static List<Point2d> FromPointsGetBoundingPoly(List<Point2d> pointList)
-        {
-            if (pointList == null) return null;
-            if (pointList.Count == 0) return null;
-            List<Point2d> pointCoordList = new List<Point2d>();
-            List<double> xCordList = new List<double>();
-            List<double> yCordList = new List<double>();
-            double xMax = 0, xMin = 0, yMax = 0, yMin = 0;
-            for (int i = 0; i < pointList.Count; i++)
-            {
-                xCordList.Add(pointList[i].X);
-                yCordList.Add(pointList[i].Y);
-            }
-
-            xMax = xCordList.Max();
-            yMax = yCordList.Max();
-
-            xMin = xCordList.Min();
-            yMin = yCordList.Min();
-
-            pointCoordList.Add(Point2d.ByCoordinates(xMin, yMin));
-            pointCoordList.Add(Point2d.ByCoordinates(xMin, yMax));
-            pointCoordList.Add(Point2d.ByCoordinates(xMax, yMax));
-            pointCoordList.Add(Point2d.ByCoordinates(xMax, yMin));
-            return pointCoordList;
-        }
-
+      
         //gets the spans in both dir for a polygon2d
         public static List<double> GetSpansXYFromPolygon2d(List<Point2d> poly)
         {
@@ -408,7 +381,7 @@ namespace SpacePlanning
                 zeroList.Add(0);
                 return zeroList;
             }
-            List<Point2d> polyBBox = FromPointsGetBoundingPoly(poly);
+            List<Point2d> polyBBox = ReadData.FromPointsGetBoundingPoly(poly);
             Range2d polyRange = GetRang2DFromBBox(poly);
             Point2d span = polyRange.Span;
             double horizontalSpan = span.X;

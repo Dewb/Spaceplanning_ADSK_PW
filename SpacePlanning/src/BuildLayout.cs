@@ -231,7 +231,8 @@ namespace SpacePlanning
                 AllDepartmentNames.Add(deptItem.DepartmentName);
 
             }// end of for loop
-
+            double minArea = 10, areaMoreCheck = 0;
+            /*
             Random ran2 = new Random();
             //for any left over poly
             double minArea = 10, areaMoreCheck = 0;
@@ -256,8 +257,7 @@ namespace SpacePlanning
                         continue;
                     }
                     double areaA = PolygonUtility.AreaCheckPolygon(edgeSplitted[0]);
-                    double areaB = PolygonUtility.AreaCheckPolygon(edgeSplitted[1]);                                               
-
+                    double areaB = PolygonUtility.AreaCheckPolygon(edgeSplitted[1]);          
                     if (areaA < areaB)
                     {
                         AllDeptPolys[0].Add(edgeSplitted[0]);
@@ -273,8 +273,9 @@ namespace SpacePlanning
                     count3 += 1;
                 }// end of while loop
             }// end of if loop for leftover count
-            AllDeptAreaAdded[0] += areaMoreCheck;     
-            
+
+            */
+            AllDeptAreaAdded[0] += areaMoreCheck;                 
             // adding the left over polys to the 2nd highest dept after inpatient
             if(leftOverPoly.Count > 0)
             {
@@ -301,18 +302,19 @@ namespace SpacePlanning
             List<Polygon2d> AllLeftOverPolys = new List<Polygon2d>();
             AllLeftOverPolys.AddRange(leftOverPoly);
 
-            //make the centralStation 
+            
+            //make the centralStation on second highest dept
             Point2d centerPt = PolygonUtility.CentroidFromPoly(poly.Points);
-            Dictionary<string,object>  centralPolyLists = MakeCentralStation(AllDeptPolys[0], centerPt);
+            Dictionary<string,object>  centralPolyLists = MakeCentralStation(AllDeptPolys[1], centerPt);
             int index = (int)centralPolyLists["IndexInPatientPoly"];
             List<Polygon2d> polyReturned = (List<Polygon2d>)centralPolyLists["PolyCentral"];
 
             if (polyReturned.Count > 1)
             {
-                AllDeptPolys[0].RemoveAt(index);
-                AllDeptPolys[0].Add(polyReturned[1]); 
+                AllDeptPolys[1].RemoveAt(index);
+                AllDeptPolys[1].Add(polyReturned[1]); 
             }
-            else AllDeptPolys[0][index] = polyReturned[0];            
+            else AllDeptPolys[1][index] = polyReturned[0];            
             
             //create space data tree
             double spaceX = 22;
@@ -329,7 +331,7 @@ namespace SpacePlanning
             {
                 { "DeptPolys", (AllDeptPolys) },
                 { "LeftOverPolys", (AllLeftOverPolys) },
-                { "CentralStation", (polyReturned[0]) },
+                { "CentralStation", (polyReturned[0]) }, //polyReturned[0]
                 { "UpdatedDeptData", (UpdatedDeptData)},
                 { "SpaceDataTree", (SpaceTreeData) }
             };
@@ -622,7 +624,7 @@ namespace SpacePlanning
         // USING NOW 
         //splits a ploy into two based on dist and dir, selects the starting pt and side randomly
         /// <summary>
-        /// Thisnode places the programs in the dept polygon2d's based on the list from the program document
+        /// This node places the programs in the dept polygon2d's based on the list from the program document
         /// It returns the input number multiplied by 2.
         /// </summary>
         /// <param name="PolyInputList">Dept Polygon2d where programs should be placed</param>
