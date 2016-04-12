@@ -96,10 +96,89 @@ namespace SpacePlanning
 
         }
 
+        //make the given poly all points orthonogonal to each other
+        public static Polygon2d MakePolyPointsOrtho(Polygon2d poly)
+        {
+            Polygon2d polyReg = new Polygon2d(poly.Points);
+            List<Point2d> ptForOrthoPoly = new List<Point2d>();
+            for(int i = 0; i < polyReg.Points.Count; i++)
+            {
+                Point2d pt = Point2d.ByCoordinates(polyReg.Points[i].X, polyReg.Points[i].Y);
+                ptForOrthoPoly.Add(pt);
+            }
+           
+            for(int i = 0; i < polyReg.Points.Count; i++)
+            {
+                int a = i, b = i + 1;
+                double eps = 50;
+                if (i == polyReg.Points.Count - 1) b = 0;
+                Line2d line = new Line2d(polyReg.Points[a], polyReg.Points[b]);
+                if(GraphicsUtility.CheckLineOrient(line) == -1)
+                {
+                    double diffX = Math.Abs(line.StartPoint.X - line.EndPoint.X);
+                    double diffY = Math.Abs(line.StartPoint.Y - line.EndPoint.Y);
+                    Point2d cenPoly = PolygonUtility.CentroidFromPoly(polyReg);
+                    if (diffX > diffY)
+                    {
+                        Point2d ptEndA = Point2d.ByCoordinates(0, polyReg.Points[a].Y + eps);
+                        Line2d refLineA = Line2d.ByStartPointEndPoint(polyReg.Points[a], ptEndA);
+                        refLineA = LineUtility.extend(refLineA);
 
+                        Point2d ptEndB = Point2d.ByCoordinates(0, polyReg.Points[b].Y + eps);
+                        Line2d refLineB = Line2d.ByStartPointEndPoint(polyReg.Points[b], ptEndB);
+                        refLineB = LineUtility.extend(refLineB);
+
+                        Point2d projectedPtA = GraphicsUtility.ProjectedPointOnLine(refLineB, polyReg.Points[a]);
+                        Point2d projectedPtB = GraphicsUtility.ProjectedPointOnLine(refLineA, polyReg.Points[b]);
+
+                        Vector2d vecA = new Vector2d(projectedPtA, cenPoly);
+                        Vector2d vecB = new Vector2d(projectedPtB, cenPoly);
+                        double vecALength = vecA.Length;
+                        double vecBLength = vecB.Length;
+                        if(vecALength < vecBLength)
+                        {
+                            ptForOrthoPoly[i] = projectedPtA;
+                        }
+                        else
+                        {
+                            ptForOrthoPoly[i] = projectedPtB;
+                        }
+                    }
+                    else
+                    {
+
+                        Point2d ptEndA = Point2d.ByCoordinates(polyReg.Points[a].X + eps, 0 );
+                        Line2d refLineA = Line2d.ByStartPointEndPoint(polyReg.Points[a], ptEndA);
+                        refLineA = LineUtility.extend(refLineA);
+
+                        Point2d ptEndB = Point2d.ByCoordinates(polyReg.Points[b].X + eps,0);
+                        Line2d refLineB = Line2d.ByStartPointEndPoint(polyReg.Points[b], ptEndB);
+                        refLineB = LineUtility.extend(refLineB);
+
+                        Point2d projectedPtA = GraphicsUtility.ProjectedPointOnLine(refLineB, polyReg.Points[a]);
+                        Point2d projectedPtB = GraphicsUtility.ProjectedPointOnLine(refLineA, polyReg.Points[b]);
+
+                        Vector2d vecA = new Vector2d(projectedPtA, cenPoly);
+                        Vector2d vecB = new Vector2d(projectedPtB, cenPoly);
+                        double vecALength = vecA.Length;
+                        double vecBLength = vecB.Length;
+                        if (vecALength > vecBLength)
+                        {
+                            ptForOrthoPoly[i] = projectedPtA;
+                        }
+                        else
+                        {
+                            ptForOrthoPoly[i] = projectedPtB;
+                        }
+                    }
+                }
+            }
+            Polygon2d orthoPoly = new Polygon2d(ptForOrthoPoly);
+            return orthoPoly;
+        }
 
         //check if a given polygon2d has any of its longer edges aligned with any edge of the containerpolygon2d
-        internal static bool CheckPolyGetsExternalWall(Polygon2d poly, Polygon2d containerPoly, double shortEdgeDist = 16)
+        public static bool CheckPolyGetsExternalWall(Polygon2d poly, Polygon2d containerPoly, double shortEdgeDist = 16)
         {
             bool check = false;
             //make given polys reduce number of points
@@ -111,7 +190,8 @@ namespace SpacePlanning
                 double eps = 0;
                 if (i == polyReg.Points.Count-1) b = 0;
                 double distance = GraphicsUtility.DistanceBetweenPoints(polyReg.Points[a], polyReg.Points[b]);
-                if (distance <= shortEdgeDist) continue;
+                List<double> spansSorted = PolygonUtility.PolySpanCheck(containerPolyReg);
+                if (distance <= spansSorted[0]*0.75) continue;
                 Line2d lineA = Line2d.ByStartPointEndPoint(polyReg.Points[a], polyReg.Points[b]);
                 for(int j = 0; j < containerPolyReg.Points.Count; j++)
                 {

@@ -82,7 +82,7 @@ namespace SpacePlanning
 
             double dotX = vecLine.Dot(vecX);
             double dotY = vecLine.Dot(vecY);
-            Line2d lineReturn = new Line2d(null);
+            Line2d lineReturn = new Line2d(line);
 
             if (dotX == 0)
             {

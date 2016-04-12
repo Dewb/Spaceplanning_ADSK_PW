@@ -19,7 +19,7 @@ using System.Diagnostics;
 
 namespace SpacePlanning
 {
-    internal class GraphicsUtility
+    public class GraphicsUtility
     {     
 
         //checks if a point is inside a polygon or not
@@ -80,7 +80,7 @@ namespace SpacePlanning
             double y = line.StartPoint.Y - line.EndPoint.Y;       
             if (x == 0) return 1;
             else if ( y==0) return 0;
-            else return 0;
+            else return -1; // was 0 prev
         }
       
         //joins two collinear lines to make one line - using now
