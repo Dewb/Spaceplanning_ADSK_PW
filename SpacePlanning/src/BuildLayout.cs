@@ -16,7 +16,7 @@ namespace SpacePlanning
 
     public class BuildLayout
     {      
-        internal static double spacingSet = 6; //higher value makes code faster but less precise 3 was good 4 worked and 1
+        internal static double spacingSet = 10; //higher value makes code faster, 6 was good too
         internal static double spacingSet2 = 1;
         internal static Random ranGenerate = new Random();
         internal static double recurse = 0;
@@ -96,6 +96,18 @@ namespace SpacePlanning
 
         }
 
+
+        //use makePolypointsOrtho multiple times
+        public static Polygon2d FitPolyToBeOrtho(Polygon2d inputPoly, int times = 5)
+        {
+            Polygon2d polyReturn = MakePolyPointsOrtho(inputPoly);
+            for (int i=0; i< times; i++)
+            {
+                polyReturn = MakePolyPointsOrtho(inputPoly);
+            }
+            return polyReturn;
+        }
+
         //make the given poly all points orthonogonal to each other
         public static Polygon2d MakePolyPointsOrtho(Polygon2d poly)
         {
@@ -173,8 +185,7 @@ namespace SpacePlanning
                     }
                 }
             }
-            Polygon2d orthoPoly = new Polygon2d(ptForOrthoPoly);
-            return orthoPoly;
+            return new Polygon2d(ptForOrthoPoly); 
         }
 
         //check if a given polygon2d has any of its longer edges aligned with any edge of the containerpolygon2d
@@ -360,50 +371,55 @@ namespace SpacePlanning
             }// end of for loop
             double minArea = 10, areaMoreCheck = 0;
             //adding left over polys to inpatient blocks, commented out now to remove inconsistent blocks
-            /*
-            Random ran2 = new Random();
-            //for any left over poly
-            //double minArea = 10, areaMoreCheck = 0;
-            if (leftOverPoly.Count > 0)
-            {
-                while (leftOverPoly.Count > 0 && count3 < maxRound)
-                {
-                    dir = BasicUtility.ToggleInputInt(dir);
-                    Polygon2d currentPolyObj = leftOverPoly.Pop();
-                    if (!PolygonUtility.CheckPolyDimension(currentPolyObj))
-                    {
-                        count3 += 1;
-                        continue;
-                    }
-                    double areaCurrentPoly = PolygonUtility.AreaCheckPolygon(currentPolyObj);
-                    Dictionary<string,object> splitReturned = SplitByDistance(currentPolyObj, ran2, offset, dir);
-                    List<Polygon2d> edgeSplitted = (List<Polygon2d>)splitReturned["PolyAfterSplit"];
-                    if (edgeSplitted == null) return null;
-                    if (!PolygonUtility.CheckPolyDimension(edgeSplitted[0]))
-                    {
-                        count3 += 1;
-                        continue;
-                    }
-                    double areaA = PolygonUtility.AreaCheckPolygon(edgeSplitted[0]);
-                    double areaB = PolygonUtility.AreaCheckPolygon(edgeSplitted[1]);          
-                    if (areaA < areaB)
-                    {
-                        AllDeptPolys[0].Add(edgeSplitted[0]);
-                        areaMoreCheck += areaA;
-                        if (areaB > minArea) leftOverPoly.Push(edgeSplitted[1]); 
-                    }
-                    else
-                    {
-                        AllDeptPolys[0].Add(edgeSplitted[1]);
-                        areaMoreCheck += areaB;
-                        if (areaA > minArea) { leftOverPoly.Push(edgeSplitted[0]); }
-                    }
-                    count3 += 1;
-                }// end of while loop
-            }// end of if loop for leftover count
 
-            */
-            AllDeptAreaAdded[0] += areaMoreCheck;                 
+            ///*
+            Random ran2 = new Random();
+            double num = ran2.NextDouble();
+            if (num > 0.5)
+            {    //for any left over poly
+                 //double minArea = 10, areaMoreCheck = 0;
+                if (leftOverPoly.Count > 0)
+                {
+                    while (leftOverPoly.Count > 0 && count3 < maxRound)
+                    {
+                        dir = BasicUtility.ToggleInputInt(dir);
+                        Polygon2d currentPolyObj = leftOverPoly.Pop();
+                        if (!PolygonUtility.CheckPolyDimension(currentPolyObj))
+                        {
+                            count3 += 1;
+                            continue;
+                        }
+                        double areaCurrentPoly = PolygonUtility.AreaCheckPolygon(currentPolyObj);
+                        Dictionary<string, object> splitReturned = SplitByDistance(currentPolyObj, ran2, offset, dir);
+                        List<Polygon2d> edgeSplitted = (List<Polygon2d>)splitReturned["PolyAfterSplit"];
+                        if (edgeSplitted == null) return null;
+                        if (!PolygonUtility.CheckPolyDimension(edgeSplitted[0]))
+                        {
+                            count3 += 1;
+                            continue;
+                        }
+                        double areaA = PolygonUtility.AreaCheckPolygon(edgeSplitted[0]);
+                        double areaB = PolygonUtility.AreaCheckPolygon(edgeSplitted[1]);
+                        if (areaA < areaB)
+                        {
+                            AllDeptPolys[0].Add(edgeSplitted[0]);
+                            areaMoreCheck += areaA;
+                            if (areaB > minArea) leftOverPoly.Push(edgeSplitted[1]);
+                        }
+                        else
+                        {
+                            AllDeptPolys[0].Add(edgeSplitted[1]);
+                            areaMoreCheck += areaB;
+                            if (areaA > minArea) { leftOverPoly.Push(edgeSplitted[0]); }
+                        }
+                        count3 += 1;
+                    }// end of while loop
+                }// end of if loop for leftover count 
+            }
+
+
+                //*/
+                AllDeptAreaAdded[0] += areaMoreCheck;                 
             // adding the left over polys to the 2nd highest dept after inpatient
             if(leftOverPoly.Count > 0)
             {
