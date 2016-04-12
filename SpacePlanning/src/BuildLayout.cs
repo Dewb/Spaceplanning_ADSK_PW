@@ -120,11 +120,11 @@ namespace SpacePlanning
                     Point2d cenPoly = PolygonUtility.CentroidFromPoly(polyReg);
                     if (diffX > diffY)
                     {
-                        Point2d ptEndA = Point2d.ByCoordinates(0, polyReg.Points[a].Y + eps);
+                        Point2d ptEndA = Point2d.ByCoordinates(polyReg.Points[a].X, polyReg.Points[a].Y + eps);
                         Line2d refLineA = Line2d.ByStartPointEndPoint(polyReg.Points[a], ptEndA);
                         refLineA = LineUtility.extend(refLineA);
 
-                        Point2d ptEndB = Point2d.ByCoordinates(0, polyReg.Points[b].Y + eps);
+                        Point2d ptEndB = Point2d.ByCoordinates(polyReg.Points[b].X, polyReg.Points[b].Y + eps);
                         Line2d refLineB = Line2d.ByStartPointEndPoint(polyReg.Points[b], ptEndB);
                         refLineB = LineUtility.extend(refLineB);
 
@@ -135,7 +135,7 @@ namespace SpacePlanning
                         Vector2d vecB = new Vector2d(projectedPtB, cenPoly);
                         double vecALength = vecA.Length;
                         double vecBLength = vecB.Length;
-                        if(vecALength < vecBLength)
+                        if(vecALength > vecBLength)
                         {
                             ptForOrthoPoly[i] = projectedPtA;
                         }
@@ -147,11 +147,11 @@ namespace SpacePlanning
                     else
                     {
 
-                        Point2d ptEndA = Point2d.ByCoordinates(polyReg.Points[a].X + eps, 0 );
+                        Point2d ptEndA = Point2d.ByCoordinates(polyReg.Points[a].X + eps, polyReg.Points[a].Y);
                         Line2d refLineA = Line2d.ByStartPointEndPoint(polyReg.Points[a], ptEndA);
                         refLineA = LineUtility.extend(refLineA);
 
-                        Point2d ptEndB = Point2d.ByCoordinates(polyReg.Points[b].X + eps,0);
+                        Point2d ptEndB = Point2d.ByCoordinates(polyReg.Points[b].X + eps, polyReg.Points[b].Y);
                         Line2d refLineB = Line2d.ByStartPointEndPoint(polyReg.Points[b], ptEndB);
                         refLineB = LineUtility.extend(refLineB);
 
