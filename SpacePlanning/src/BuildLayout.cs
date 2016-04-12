@@ -11,8 +11,7 @@ using Autodesk.DesignScript.Geometry;
 
 namespace SpacePlanning
 {
-
-    
+        
 
     public class BuildLayout
     {      
@@ -127,9 +126,34 @@ namespace SpacePlanning
                 Line2d line = new Line2d(polyReg.Points[a], polyReg.Points[b]);
                 if(GraphicsUtility.CheckLineOrient(line) == -1)
                 {
-                    double diffX = Math.Abs(line.StartPoint.X - line.EndPoint.X);
-                    double diffY = Math.Abs(line.StartPoint.Y - line.EndPoint.Y);
+                    //double diffX = Math.Abs(line.StartPoint.X - line.EndPoint.X);
+                    //double diffY = Math.Abs(line.StartPoint.Y - line.EndPoint.Y);
                     Point2d cenPoly = PolygonUtility.CentroidFromPoly(polyReg);
+                    Point2d ptEndA = Point2d.ByCoordinates(polyReg.Points[a].X + eps, polyReg.Points[a].Y);
+                    Line2d refLineA = Line2d.ByStartPointEndPoint(polyReg.Points[a], ptEndA);
+
+                    Point2d ptEndB = Point2d.ByCoordinates(polyReg.Points[b].X + eps, polyReg.Points[b].Y);
+                    Line2d refLineB = Line2d.ByStartPointEndPoint(polyReg.Points[b], ptEndB);
+
+                    Point2d projectedPtA = GraphicsUtility.ProjectedPointOnLine(refLineB, polyReg.Points[a]);
+                    Point2d projectedPtB = GraphicsUtility.ProjectedPointOnLine(refLineA, polyReg.Points[b]);
+
+                    Vector2d vecA = new Vector2d(projectedPtA, cenPoly);
+                    Vector2d vecB = new Vector2d(projectedPtB, cenPoly);
+                    double vecALength = vecA.Length;
+                    double vecBLength = vecB.Length;
+                    if (vecALength > vecBLength)
+                    {
+                        //ptForOrthoPoly[i] = projectedPtA;
+                        ptForOrthoPoly.Insert(b, projectedPtB);
+                    }
+                    else
+                    {
+                        //ptForOrthoPoly[i] = projectedPtB;
+                        ptForOrthoPoly.Insert(b, projectedPtA);
+                    }
+
+                    /*
                     if (diffX > diffY)
                     {
                         Point2d ptEndA = Point2d.ByCoordinates(polyReg.Points[a].X, polyReg.Points[a].Y + eps);
@@ -147,13 +171,15 @@ namespace SpacePlanning
                         Vector2d vecB = new Vector2d(projectedPtB, cenPoly);
                         double vecALength = vecA.Length;
                         double vecBLength = vecB.Length;
-                        if(vecALength > vecBLength)
+                        if(vecALength < vecBLength)
                         {
-                            ptForOrthoPoly[i] = projectedPtA;
+                            //ptForOrthoPoly[i] = projectedPtA;
+                            ptForOrthoPoly.Insert(b, projectedPtB);
                         }
                         else
                         {
-                            ptForOrthoPoly[i] = projectedPtB;
+                            //ptForOrthoPoly[i] = projectedPtB;
+                            ptForOrthoPoly.Insert(b, projectedPtA);
                         }
                     }
                     else
@@ -174,15 +200,18 @@ namespace SpacePlanning
                         Vector2d vecB = new Vector2d(projectedPtB, cenPoly);
                         double vecALength = vecA.Length;
                         double vecBLength = vecB.Length;
-                        if (vecALength > vecBLength)
+                        if (vecALength < vecBLength)
                         {
-                            ptForOrthoPoly[i] = projectedPtA;
+                            //ptForOrthoPoly[i] = projectedPtA;
+                            ptForOrthoPoly.Insert(b, projectedPtB);
                         }
                         else
                         {
-                            ptForOrthoPoly[i] = projectedPtB;
+                            //ptForOrthoPoly[i] = projectedPtB;
+                            ptForOrthoPoly.Insert(b, projectedPtB);
                         }
                     }
+                    */
                 }
             }
             return new Polygon2d(ptForOrthoPoly); 
