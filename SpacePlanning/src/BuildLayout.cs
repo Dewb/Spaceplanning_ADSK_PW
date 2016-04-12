@@ -371,11 +371,10 @@ namespace SpacePlanning
             }// end of for loop
             double minArea = 10, areaMoreCheck = 0;
             //adding left over polys to inpatient blocks, commented out now to remove inconsistent blocks
-
             ///*
             Random ran2 = new Random();
             double num = ran2.NextDouble();
-            if (num > 0.5)
+            if (recompute > 3)
             {    //for any left over poly
                  //double minArea = 10, areaMoreCheck = 0;
                 if (leftOverPoly.Count > 0)
@@ -555,7 +554,7 @@ namespace SpacePlanning
             {
                 Trace.WriteLine("Lets Go Again for : " + count);
                 int reco = rand.Next();
-                deptArrangement = DeptSplitRefined(poly, deptData, cellInside, offset, reco);
+                deptArrangement = DeptSplitRefined(poly, deptData, cellInside, offset, recompute);
                 if(deptArrangement != null)
                 {
                     List<List<Polygon2d>> deptAllPolys =(List<List<Polygon2d>>) deptArrangement["DeptPolys"];
