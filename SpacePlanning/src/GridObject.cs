@@ -375,13 +375,15 @@ namespace SpacePlanning
         public static Polygon2d MakeOrthoBorderOutline(List<List<int>> cellNeighborMatrix, List<Cell> cellList)
         {
 
+
+
             //get the id of the lowest left cell centroid from all the boundary cells
             List<Point2d> cenPtBorderCells = new List<Point2d>();
             List<Point2d> borderPolyPoints = new List<Point2d>();
             for (int i = 0; i < cellList.Count; i++) cenPtBorderCells.Add(cellList[i].CenterPoint);
             int lowestCellId = GraphicsUtility.ReturnLowestPointFromListNew(cenPtBorderCells);
             Cell currentCell = cellList[lowestCellId];
-            Point2d currentCellPoint = currentCell.CenterPoint;
+            Point2d currentCellPoint = currentCell.LeftDownCorner;
             int currentIndex = lowestCellId;
             bool downMode = false;
             int num = 0;
@@ -393,21 +395,33 @@ namespace SpacePlanning
                     cellList[cellNeighborMatrix[currentIndex][0]].CellAvailable && downMode == false)
                 {
                     currentIndex = cellNeighborMatrix[currentIndex][0]; // right
+                    //currentCell = cellList[currentIndex];
+                    //currentCell.CellAvailable = false;
+                    //currentCellPoint = currentCell.RightDownCorner;
                 }
                 else if (cellNeighborMatrix[currentIndex][1] > -1 && 
                     cellList[cellNeighborMatrix[currentIndex][1]].CellAvailable && downMode == false)
                 {
                     currentIndex = cellNeighborMatrix[currentIndex][1]; // up
+                    //currentCell = cellList[currentIndex];
+                    //currentCell.CellAvailable = false;
+                    //currentCellPoint = currentCell.RightUpCorner;
                 }
                 else if (cellNeighborMatrix[currentIndex][2] > -1 && 
                     cellList[cellNeighborMatrix[currentIndex][2]].CellAvailable)
                 {
                     currentIndex = cellNeighborMatrix[currentIndex][2]; // left
+                    //currentCell = cellList[currentIndex];
+                    //currentCell.CellAvailable = false;
+                    //currentCellPoint = currentCell.LeftUpCorner;
                 }
                 else if (cellNeighborMatrix[currentIndex][3] > -1 && 
                     cellList[cellNeighborMatrix[currentIndex][3]].CellAvailable)
                 {
                     currentIndex = cellNeighborMatrix[currentIndex][3]; // down
+                    //currentCell = cellList[currentIndex];
+                    //currentCell.CellAvailable = false;
+                    //currentCellPoint = currentCell.LeftDownCorner;
                     downMode = true;
                 }
                 currentCell = cellList[currentIndex];
