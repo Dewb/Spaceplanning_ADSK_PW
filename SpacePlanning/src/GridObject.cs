@@ -383,36 +383,36 @@ namespace SpacePlanning
             Cell currentCell = cellList[lowestCellId];
             Point2d currentCellPoint = currentCell.CenterPoint;
             int currentIndex = lowestCellId;
-            bool complete = false;
+            bool downMode = false;
             int num = 0;
             //order of neighbors : right , up , left , down
             while (num < 3000)
             {
                 borderPolyPoints.Add(currentCellPoint);
                 if (cellNeighborMatrix[currentIndex][0] > -1 && 
-                    cellList[cellNeighborMatrix[currentIndex][0]].CellAvailable && cellNeighborMatrix[currentIndex].Exists(x => x == -1))
+                    cellList[cellNeighborMatrix[currentIndex][0]].CellAvailable && downMode == false)
                 {
-                    currentIndex = cellNeighborMatrix[currentIndex][0];
+                    currentIndex = cellNeighborMatrix[currentIndex][0]; // right
                 }
                 else if (cellNeighborMatrix[currentIndex][1] > -1 && 
-                    cellList[cellNeighborMatrix[currentIndex][1]].CellAvailable && cellNeighborMatrix[currentIndex].Exists(x => x == -1))
+                    cellList[cellNeighborMatrix[currentIndex][1]].CellAvailable && downMode == false)
                 {
-                    currentIndex = cellNeighborMatrix[currentIndex][1];
+                    currentIndex = cellNeighborMatrix[currentIndex][1]; // up
                 }
                 else if (cellNeighborMatrix[currentIndex][2] > -1 && 
-                    cellList[cellNeighborMatrix[currentIndex][2]].CellAvailable && cellNeighborMatrix[currentIndex].Exists(x => x == -1))
+                    cellList[cellNeighborMatrix[currentIndex][2]].CellAvailable)
                 {
-                    currentIndex = cellNeighborMatrix[currentIndex][2];
+                    currentIndex = cellNeighborMatrix[currentIndex][2]; // left
                 }
                 else if (cellNeighborMatrix[currentIndex][3] > -1 && 
-                    cellList[cellNeighborMatrix[currentIndex][3]].CellAvailable && cellNeighborMatrix[currentIndex].Exists(x => x == -1))
+                    cellList[cellNeighborMatrix[currentIndex][3]].CellAvailable)
                 {
-                    currentIndex = cellNeighborMatrix[currentIndex][3];
+                    currentIndex = cellNeighborMatrix[currentIndex][3]; // down
+                    downMode = true;
                 }
                 currentCell = cellList[currentIndex];
                 currentCell.CellAvailable = false;
                 currentCellPoint = currentCell.CenterPoint;
-                if (currentIndex == lowestCellId) complete = true;
                 num += 1;
             }
 
