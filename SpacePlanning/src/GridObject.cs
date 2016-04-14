@@ -328,8 +328,8 @@ namespace SpacePlanning
             return cellIdList;
             }
 
-        //get only corner and edge cells
-        public static Polygon2d MakeBorderPoly(List<List<int>> cellNeighborMatrix, List<int> borderCellIdList, List<Cell> cellList)
+        //get border cells and make outline border poly -  not working
+        internal static Polygon2d MakeBorderPoly(List<List<int>> cellNeighborMatrix, List<int> borderCellIdList, List<Cell> cellList)
         {
            
             //get the id of the lowest left cell centroid from all the boundary cells
@@ -371,8 +371,8 @@ namespace SpacePlanning
         }
 
 
-        //get only corner and edge cells
-        public static Polygon2d MakeBorderPoly2(List<List<int>> cellNeighborMatrix, List<Cell> cellList)
+        //get the cells and make an orthogonal outline poly
+        public static Polygon2d MakeOrthoBorderOutline(List<List<int>> cellNeighborMatrix, List<Cell> cellList)
         {
 
             //get the id of the lowest left cell centroid from all the boundary cells
@@ -412,7 +412,7 @@ namespace SpacePlanning
                 }
                 currentCell = cellList[currentIndex];
                 currentCell.CellAvailable = false;
-                currentCellPoint = currentCell.CenterPoint;
+                currentCellPoint = currentCell.LeftDownCorner;
                 num += 1;
             }
 

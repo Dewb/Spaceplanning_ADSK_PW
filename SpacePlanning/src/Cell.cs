@@ -51,6 +51,25 @@ namespace SpacePlanning
             get { return _centerPoint; }
         }
 
+        public Point2d LeftDownCorner
+        {
+            get { return new Point2d(_centerPoint.X - _dimX/2, _centerPoint.Y - _dimY/2); }
+        }
+
+        public Point2d RightDownCorner
+        {
+            get { return new Point2d(_centerPoint.X + _dimX / 2, _centerPoint.Y - _dimY / 2); }
+        }
+
+        public Point2d LeftUpCorner
+        {
+            get { return new Point2d(_centerPoint.X - _dimX / 2, _centerPoint.Y + _dimY / 2); }
+        }
+
+        public Point2d RightUpCorner
+        {
+            get { return new Point2d(_centerPoint.X + _dimX / 2, _centerPoint.Y + _dimY / 2); }
+        }
         public double DimX
         {
             get { return _dimX; }
