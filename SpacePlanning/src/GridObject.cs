@@ -27,17 +27,17 @@ namespace SpacePlanning
         //constructor
         internal GridObject(List<Point2d> siteOutline, List<Point2d> siteBoundingBox, double dimensionX, double dimensionY)
         {
-           
+
             _siteOutline = siteOutline;
             _siteBoundingBox = siteBoundingBox;
             _dimX = dimensionX;
             _dimY = dimensionY;
         }
 
-    
-        
+
+
         //make list of point2d from a bounding box as cell centers
-        internal static List<Point2d> GridPointsFromBBoxNew(List<Point2d> bbox, double dimXX, double dimYY,double a,double b)
+        internal static List<Point2d> GridPointsFromBBoxNew(List<Point2d> bbox, double dimXX, double dimYY, double a, double b)
         {
             List<Point2d> pointsGrid = new List<Point2d>();
             Range2d xyRange = GraphicsUtility.FromPoint2dGetRange2D(bbox);
@@ -50,23 +50,23 @@ namespace SpacePlanning
             double diffX = xDistance - (dimXX * numPtsX);
             double diffY = yDistance - (dimYY * numPtsY);
 
-            double posX =   bbox[0].X + diffX*a;
-            double posY =   bbox[0].Y + diffY*b;
+            double posX = bbox[0].X + diffX * a;
+            double posY = bbox[0].Y + diffY * b;
             for (int i = 0; i < numPtsX; i++)
             {
-                for(int j = 0; j < numPtsY; j++)
+                for (int j = 0; j < numPtsY; j++)
                 {
                     pointsGrid.Add(new Point2d(posX, posY));
                     posY += dimYY;
                 }
                 posX += dimXX;
-                posY = bbox[0].Y + diffY*b;
+                posY = bbox[0].Y + diffY * b;
             }
             return pointsGrid;
 
         }
-        
-        
+
+
         // make point2d list which are inside the bounding box
         [MultiReturn(new[] { "PointsInsideOutline", "CellsFromPoints" })]
         public static Dictionary<string, object> GridPointsInsideOutline(List<Point2d> bbox, List<Point2d> outlinePoints, double dimXX, double dimYY)
@@ -97,7 +97,7 @@ namespace SpacePlanning
                         pointsGrid.Add(new Point2d(posX, posY));
                         cells.Add(new Cell(new Point2d(posX, posY), dimXX, dimYY, true));
                     }
-                    
+
                     posY += dimYY;
                 }
 
@@ -117,18 +117,18 @@ namespace SpacePlanning
         {
             return GridPointsInsideOutline(bbox, outlinePoints, dimXX, dimYY);
         }
-        
+
         //make cells on the grids
-        public static List<Polygon2d> MakeCellsFromGridPoints(List<Point> pointsgrid,double dimX,double dimY)
+        public static List<Polygon2d> MakeCellsFromGridPoints(List<Point> pointsgrid, double dimX, double dimY)
         {
             List<Point2d> pt2dList = new List<Point2d>();
-            for(int i = 0; i < pointsgrid.Count; i++)
+            for (int i = 0; i < pointsgrid.Count; i++)
             {
                 pt2dList.Add(Point2d.ByCoordinates(pointsgrid[i].X, pointsgrid[i].Y));
             }
 
             return MakeCellsFromGridPoints2d(pt2dList, dimX, dimY);
-          
+
         }
 
 
@@ -144,7 +144,7 @@ namespace SpacePlanning
 
                 double a = point2dgrid[i].X - (dimX / 2);
                 double b = point2dgrid[i].Y - (dimY / 2);
-                Point2d pt = Point2d.ByCoordinates(a,b);
+                Point2d pt = Point2d.ByCoordinates(a, b);
                 ptList.Add(pt);
 
                 a = point2dgrid[i].X - (dimX / 2);
@@ -168,13 +168,13 @@ namespace SpacePlanning
             return cellsPolyList;
         }
 
-        
+
         //make cells on the grids from point2d from indices
         public static List<Polygon> MakeCellsFromIndicesPoint2d(List<Point2d> pointsgrid, double dimX, double dimY, List<int> indexList)
         {
             List<Polygon> cellsPolyList = new List<Polygon>();
             List<Cell> cellList = new List<Cell>();
-            if ( indexList == null)
+            if (indexList == null)
             {
                 indexList = new List<int>();
                 for (int i = 0; i < pointsgrid.Count; i++)
@@ -282,10 +282,10 @@ namespace SpacePlanning
             tempStack.Push(ptList[0]);
             tempStack.Push(ptList[1]);
             tempStack.Push(ptList[2]);
-            for(int i=3; i < sizePtList; i++)
+            for (int i = 3; i < sizePtList; i++)
             {
-                while( GraphicsUtility.CheckPointOrder(GraphicsUtility.BeforeTopPoint(ref tempStack),
-                    (Point2d)tempStack.Peek(),ptList[i]) != 2 && tempStack.Count > 1)
+                while (GraphicsUtility.CheckPointOrder(GraphicsUtility.BeforeTopPoint(ref tempStack),
+                    (Point2d)tempStack.Peek(), ptList[i]) != 2 && tempStack.Count > 1)
                 {
                     tempStack.Pop();
                 }
@@ -301,14 +301,14 @@ namespace SpacePlanning
             return convexHullPtList;
         }
 
-        
+
         //find points inside polygons
         internal static List<Point> PointsOnlyInsidePolygon(List<Point2d> polyPts, List<Point2d> testPointsList)
         {
             List<Point> ptList = new List<Point>();
-            for(int i = 0; i < testPointsList.Count; i++)
+            for (int i = 0; i < testPointsList.Count; i++)
             {
-               bool inside = GraphicsUtility.PointInsidePolygonTest(polyPts, testPointsList[i]);
+                bool inside = GraphicsUtility.PointInsidePolygonTest(polyPts, testPointsList[i]);
                 if (inside)
                 {
                     ptList.Add(Point.ByCoordinates(testPointsList[i].X, testPointsList[i].Y));
@@ -316,7 +316,111 @@ namespace SpacePlanning
             }
             return ptList;
         }
-        
+
+        //get only corner and edge cells
+        public static List<int> GetCornerAndEdgeCellId( List<List<int>> cellNeighborMatrix){
+            List<int> cellIdList = new List<int>();
+            for(int i = 0; i < cellNeighborMatrix.Count; i++)
+            {
+                cellNeighborMatrix[i].Remove(-1);
+                if(cellNeighborMatrix[i].Count <= 3) cellIdList.Add(i);
+            }
+            return cellIdList;
+            }
+
+        //get only corner and edge cells
+        public static Polygon2d MakeBorderPoly(List<List<int>> cellNeighborMatrix, List<int> borderCellIdList, List<Cell> cellList)
+        {
+           
+            //get the id of the lowest left cell centroid from all the boundary cells
+            List<Point2d> cenPtBorderCells = new List<Point2d>();
+            List<Point2d> borderPolyPoints = new List<Point2d>();
+            for (int i = 0; i < borderCellIdList.Count; i++) cenPtBorderCells.Add(cellList[borderCellIdList[i]].CenterPoint);    
+            int lowestCellId = GraphicsUtility.ReturnLowestPointFromListNew(cenPtBorderCells);
+            Cell currentCell = cellList[borderCellIdList[lowestCellId]];
+            Point2d currentCellPoint = currentCell.CenterPoint;
+            int currentIndex = lowestCellId;
+            int num = 0;
+            //order of neighbors : right , up , left , down
+            while (num < borderCellIdList.Count)
+            {
+                borderPolyPoints.Add(currentCellPoint);
+                if (cellNeighborMatrix[currentIndex][0] > -1)
+                {
+                    currentIndex = cellNeighborMatrix[borderCellIdList[currentIndex]][0];
+                }
+                else if(cellNeighborMatrix[borderCellIdList[currentIndex]][1] > -1)
+                {
+                    currentIndex = cellNeighborMatrix[borderCellIdList[currentIndex]][1];
+                }
+                else if (cellNeighborMatrix[borderCellIdList[currentIndex]][2] > -1)
+                {
+                    currentIndex = cellNeighborMatrix[borderCellIdList[currentIndex]][2];
+                }
+                else if (cellNeighborMatrix[borderCellIdList[currentIndex]][3] > -1)
+                {
+                    currentIndex = cellNeighborMatrix[borderCellIdList[currentIndex]][3];
+                }
+                currentCell = cellList[borderCellIdList[currentIndex]];
+                currentCellPoint = currentCell.CenterPoint;
+                num += 1;
+            }
+            
+            return new Polygon2d(borderPolyPoints);
+            //return lowestCellId;
+        }
+
+
+        //get only corner and edge cells
+        public static Polygon2d MakeBorderPoly2(List<List<int>> cellNeighborMatrix, List<Cell> cellList)
+        {
+
+            //get the id of the lowest left cell centroid from all the boundary cells
+            List<Point2d> cenPtBorderCells = new List<Point2d>();
+            List<Point2d> borderPolyPoints = new List<Point2d>();
+            for (int i = 0; i < cellList.Count; i++) cenPtBorderCells.Add(cellList[i].CenterPoint);
+            int lowestCellId = GraphicsUtility.ReturnLowestPointFromListNew(cenPtBorderCells);
+            Cell currentCell = cellList[lowestCellId];
+            Point2d currentCellPoint = currentCell.CenterPoint;
+            int currentIndex = lowestCellId;
+            bool complete = false;
+            int num = 0;
+            //order of neighbors : right , up , left , down
+            while (num < 3000)
+            {
+                borderPolyPoints.Add(currentCellPoint);
+                if (cellNeighborMatrix[currentIndex][0] > -1 && 
+                    cellList[cellNeighborMatrix[currentIndex][0]].CellAvailable && cellNeighborMatrix[currentIndex].Exists(x => x == -1))
+                {
+                    currentIndex = cellNeighborMatrix[currentIndex][0];
+                }
+                else if (cellNeighborMatrix[currentIndex][1] > -1 && 
+                    cellList[cellNeighborMatrix[currentIndex][1]].CellAvailable && cellNeighborMatrix[currentIndex].Exists(x => x == -1))
+                {
+                    currentIndex = cellNeighborMatrix[currentIndex][1];
+                }
+                else if (cellNeighborMatrix[currentIndex][2] > -1 && 
+                    cellList[cellNeighborMatrix[currentIndex][2]].CellAvailable && cellNeighborMatrix[currentIndex].Exists(x => x == -1))
+                {
+                    currentIndex = cellNeighborMatrix[currentIndex][2];
+                }
+                else if (cellNeighborMatrix[currentIndex][3] > -1 && 
+                    cellList[cellNeighborMatrix[currentIndex][3]].CellAvailable && cellNeighborMatrix[currentIndex].Exists(x => x == -1))
+                {
+                    currentIndex = cellNeighborMatrix[currentIndex][3];
+                }
+                currentCell = cellList[currentIndex];
+                currentCell.CellAvailable = false;
+                currentCellPoint = currentCell.CenterPoint;
+                if (currentIndex == lowestCellId) complete = true;
+                num += 1;
+            }
+
+            return new Polygon2d(borderPolyPoints);
+        }
+
+
+
         //make cell neighbor matrix
         [MultiReturn(new[] { "CellNeighborMatrix", "XYEqualtionList" })]
         public static Dictionary<string, object> FormsCellNeighborMatrix(List<Cell> cellLists, int tag = 1)
@@ -397,15 +501,18 @@ namespace SpacePlanning
                 int rightCellIndex = BasicUtility.BinarySearchDouble(XYEquationLists, rightValue);
 
 
-                if (downCellIndex > -1) { neighborCellIndex.Add(downCellIndex); };
-                if (leftCellIndex > -1) { neighborCellIndex.Add(leftCellIndex); };
-                if (upCellIndex > -1)   { neighborCellIndex.Add(upCellIndex);   };
-                if (rightCellIndex > -1){ neighborCellIndex.Add(rightCellIndex);};
+                //RULD - right, up, left, down | adding -1 means the cell does not have any neighbor at that spot
+                if (rightCellIndex > -1)    { neighborCellIndex.Add(rightCellIndex);} else { neighborCellIndex.Add(-1); };
+                if (upCellIndex > -1)       { neighborCellIndex.Add(upCellIndex);   } else { neighborCellIndex.Add(-1); }; 
+                if (leftCellIndex > -1)     { neighborCellIndex.Add(leftCellIndex); } else { neighborCellIndex.Add(-1); };
+                if (downCellIndex > -1)     { neighborCellIndex.Add(downCellIndex); } else { neighborCellIndex.Add(-1); };
 
-                neighborPoints.Add(down);
-                neighborPoints.Add(left);
-                neighborPoints.Add(up);
+
+
                 neighborPoints.Add(right);
+                neighborPoints.Add(up);
+                neighborPoints.Add(left);
+                neighborPoints.Add(down);     
                 cellNeighborPoint2d.Add(neighborPoints);
                 cellNeighborMatrix.Add(neighborCellIndex);
             }
