@@ -47,6 +47,17 @@ namespace SpacePlanning
 
         }
 
+        //moves a line from its midpoint to a given point
+        internal static Line2d move(Line2d line, double distance)
+        {
+            double x1 = line.StartPoint.X + distance, y1 = line.StartPoint.Y + distance;
+            double x2 = line.EndPoint.X + distance, y2 = line.EndPoint.Y + distance;
+            Point2d start = new Point2d(x1, y1);
+            Point2d end = new Point2d(x2, y2);
+            return new Line2d(start, end);
+
+        }
+
         //moves a line by a given distance
         internal static Line2d move(Line2d line, List<Point2d> poly, double distance)
         {

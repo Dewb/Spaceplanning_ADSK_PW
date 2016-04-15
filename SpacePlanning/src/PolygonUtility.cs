@@ -169,11 +169,11 @@ namespace SpacePlanning
         internal static List<Point2d> DoSortClockwise(List<Point2d> poly, List<Point2d> intersectedPoints, List<int> pIndex)
         {
             if (intersectedPoints == null || intersectedPoints.Count == 0) return null;
-            if (intersectedPoints.Count > 2)
-            {
-                List<Point2d> cleanedPtList = CleanDuplicatePoint2d(intersectedPoints);
-            }
-            return OrderPolygon2dPoints(poly, intersectedPoints, pIndex);
+            List<Point2d> cleanedPtList = new List<Point2d>();
+            if (intersectedPoints.Count > 2) cleanedPtList = CleanDuplicatePoint2d(intersectedPoints);
+            else cleanedPtList = intersectedPoints;
+            Trace.WriteLine("Found Intersections : " + cleanedPtList.Count);
+            return OrderPolygon2dPoints(poly, cleanedPtList, pIndex); //intersectedPoints
         }
                 
         //orders the points to form a closed polygon2d
@@ -260,12 +260,13 @@ namespace SpacePlanning
             bool splitDone = false;
             Stack<Polygon2d> splittedPolys = new Stack<Polygon2d>();
             Polygon2d currentPoly = new Polygon2d(SmoothPolygon(polyReg.Points, BuildLayout.spacingSet));
+            //Polygon2d currentPoly = polyReg;
             splittedPolys.Push(currentPoly);
             Random ran = new Random();
             int countBig = 0, maxRounds = 200;
             List<int> numSidesList = new List<int>();
             List<Polygon2d> allPolyAfterSplit = new List<Polygon2d>();
-            while (splittedPolys.Count > 0 && countBig < maxRounds)
+            while (splittedPolys.Count > 0 && countBig < maxRounds && allSplitLines.Count > 0)
             {
                 int count = 0, maxTry = 100;
                 int numSides = NumberofSidesPoly(currentPoly);
@@ -280,11 +281,12 @@ namespace SpacePlanning
                     continue;
                 }
                 //SPLIT blocks                
-                while (splitDone == false && count < maxTry)
+                while (splitDone == false && count < maxTry && allSplitLines.Count > 0)
                 {
                     //randomly get a line
                     int selectLineNum = (int)Math.Floor(BasicUtility.RandomBetweenNumbers(ran, allSplitLines.Count, 0));
                     Line2d splitLine = allSplitLines[selectLineNum];
+                    splitLine = LineUtility.move(splitLine, 0.05);
                     Dictionary<string, object> splitPolys = BuildLayout.SplitByLine(currentPoly, splitLine, 0); //{ "PolyAfterSplit", "SplitLine" })]
                     List<Polygon2d> polyAfterSplit = (List<Polygon2d>)splitPolys["PolyAfterSplit"];
                     if (polyAfterSplit == null || polyAfterSplit.Count < 2)
@@ -295,7 +297,7 @@ namespace SpacePlanning
                     else
                     {
                         //ADD to wholesomeblocklist
-                        //allSplitLines.RemoveAt(selectLineNum);
+                        allSplitLines.RemoveAt(selectLineNum);
                         splittedPolys.Push(polyAfterSplit[0]);
                         splittedPolys.Push(polyAfterSplit[1]);
                         allPolyAfterSplit.AddRange(polyAfterSplit);
