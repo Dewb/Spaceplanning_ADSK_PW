@@ -5,11 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 using stuffer;
 using Autodesk.DesignScript.Runtime;
-
+using System.Diagnostics;
 
 namespace SpacePlanning
 {
-    internal class PolygonUtility
+    public class PolygonUtility
     {
 
         //checks a polygon2d to have min Area and min dimensions
@@ -130,67 +130,9 @@ namespace SpacePlanning
             return sortedPoint;
         }
 
-        //can be discarded cleans duplicate points and returns updated list
-        internal static List<Point2d> CleanDuplicatePoint2d(List<Point2d> ptListUnclean)
-        {
-            List<Point2d> cleanList = new List<Point2d>();
-            List<double> dummyList = new List<double>();
-            List<bool> isDuplicate = new List<bool>();
-            double eps = 1;
-            bool duplicate = false;
-
-
-
-            for (int i = 0; i < ptListUnclean.Count; i++)
-            {
-                duplicate = false;
-                double count = 0;
-                for (int j = 0; j < ptListUnclean.Count; j++)
-                {
-
-                    if (j == i)
-                    {
-                        continue;
-                    }
-
-                    if (ptListUnclean[i].X - eps < ptListUnclean[j].X && ptListUnclean[j].X < ptListUnclean[i].X + eps)
-                    {
-                        if (ptListUnclean[i].Y - eps < ptListUnclean[j].Y && ptListUnclean[j].Y < ptListUnclean[i].Y + eps)
-                        {
-                            count += 1;
-                        }
-                    }
-
-                    if (count > 1)
-                    {
-                        duplicate = true;
-
-                        //continue;
-                    }
-
-
-                }
-
-                dummyList.Add(count);
-
-
-
-            }
-            for (int i = 0; i < ptListUnclean.Count; i++)
-            {
-                //Trace.WriteLine("count here is : " + dummyList[i]);
-                if (dummyList[i] < 2)
-                {
-                    cleanList.Add(ptListUnclean[i]);
-                }
-
-            }
-            return cleanList;
-        }
-
-
+    
         //cleans duplicate points and returns updated list - using this now
-        internal static List<Point2d> CleanDuplicatePoint2dNew(List<Point2d> ptListUnclean)
+        internal static List<Point2d> CleanDuplicatePoint2d(List<Point2d> ptListUnclean)
         {
             List<Point2d> cleanList = new List<Point2d>();
             List<double> exprList = new List<double>();
@@ -229,7 +171,7 @@ namespace SpacePlanning
             if (intersectedPoints == null || intersectedPoints.Count == 0) return null;
             if (intersectedPoints.Count > 2)
             {
-                List<Point2d> cleanedPtList = CleanDuplicatePoint2dNew(intersectedPoints);
+                List<Point2d> cleanedPtList = CleanDuplicatePoint2d(intersectedPoints);
             }
             return OrderPolygon2dPoints(poly, intersectedPoints, pIndex);
         }
@@ -269,7 +211,135 @@ namespace SpacePlanning
             }
             return pt;
         }
-        
+
+        //get a poly and find rectangular polys inside. then merge them together to form a big poly
+        public static Dictionary<string, object> MakeWholesomeBlockInPoly(Polygon2d poly)
+        {
+            if (poly == null || poly.Points == null || poly.Points.Count == 0) return null;
+            List<Polygon2d> wholesomePolyList = new List<Polygon2d>();
+            Polygon2d polyReg = new Polygon2d(poly.Points);
+            List<Line2d> hLines = new List<Line2d>();
+            List<Line2d> vLines = new List<Line2d>();
+            List<Point2d> hMidPt = new List<Point2d>();
+            List<Point2d> vMidPt = new List<Point2d>();
+            for (int i = 0; i < polyReg.Points.Count; i++)
+            {
+                int a = i, b = i + 1;
+                if (i == polyReg.Points.Count - 1) b = 0;
+                Line2d line = new Line2d(polyReg.Points[a], polyReg.Points[b]);
+                int lineType = GraphicsUtility.CheckLineOrient(line);
+                if (lineType != -1)
+                {
+                    if (lineType == 0)
+                    {
+                        hLines.Add(line);
+                        hMidPt.Add(LineUtility.LineMidPoint(line));
+                    }
+                    if (lineType == 1)
+                    {
+                        vLines.Add(line);
+                        vMidPt.Add(LineUtility.LineMidPoint(line));
+                    }
+                }
+            }
+            //int hIndLow = GraphicsUtility.ReturnLowestPointFromListNew(hMidPt);
+            //int hIndHigh = GraphicsUtility.ReturnHighestPointFromListNew(hMidPt);
+            int hIndLow = TestGraphicsUtility.ReturnLowestPointFromList(hMidPt);
+            int hIndHigh = GraphicsUtility.ReturnHighestPointFromListNew(hMidPt);
+            int vIndLow = GraphicsUtility.ReturnLowestPointFromListNew(vMidPt);
+            int vIndHigh = GraphicsUtility.ReturnHighestPointFromListNew(vMidPt);
+            hLines.RemoveAt(hIndLow);
+            hLines.RemoveAt(hIndHigh);
+            vLines.RemoveAt(vIndLow);
+            vLines.RemoveAt(vIndHigh);
+            List<Line2d> allSplitLines = new List<Line2d>();
+            allSplitLines.AddRange(hLines);
+            allSplitLines.AddRange(vLines);
+
+
+            bool splitDone = false;
+            Stack<Polygon2d> splittedPolys = new Stack<Polygon2d>();
+            Polygon2d currentPoly = new Polygon2d(SmoothPolygon(polyReg.Points, BuildLayout.spacingSet));
+            splittedPolys.Push(currentPoly);
+            Random ran = new Random();
+            int countBig = 0, maxRounds = 200;
+            List<int> numSidesList = new List<int>();
+            List<Polygon2d> allPolyAfterSplit = new List<Polygon2d>();
+            while (splittedPolys.Count > 0 && countBig < maxRounds)
+            {
+                int count = 0, maxTry = 100;
+                int numSides = NumberofSidesPoly(currentPoly);
+                numSidesList.Add(numSides);
+                Trace.WriteLine("Current Number side Number is  " + numSides);
+                //CHECK sides
+                if (numSides < 5)
+                {
+                    wholesomePolyList.Add(currentPoly);
+                    currentPoly = splittedPolys.Pop();
+                    Trace.WriteLine("WholeSomeBlock Found " + wholesomePolyList.Count);
+                    continue;
+                }
+                //SPLIT blocks                
+                while (splitDone == false && count < maxTry)
+                {
+                    //randomly get a line
+                    int selectLineNum = (int)Math.Floor(BasicUtility.RandomBetweenNumbers(ran, allSplitLines.Count, 0));
+                    Line2d splitLine = allSplitLines[selectLineNum];
+                    Dictionary<string, object> splitPolys = BuildLayout.SplitByLine(currentPoly, splitLine, 0); //{ "PolyAfterSplit", "SplitLine" })]
+                    List<Polygon2d> polyAfterSplit = (List<Polygon2d>)splitPolys["PolyAfterSplit"];
+                    if (polyAfterSplit == null || polyAfterSplit.Count < 2)
+                    {
+                        Trace.WriteLine("!!!!!!!!!!!!!!!!!!! Drat !!!!!!!!!!!!!!!!");
+                        splitDone = false;
+                    }
+                    else
+                    {
+                        //ADD to wholesomeblocklist
+                        //allSplitLines.RemoveAt(selectLineNum);
+                        splittedPolys.Push(polyAfterSplit[0]);
+                        splittedPolys.Push(polyAfterSplit[1]);
+                        allPolyAfterSplit.AddRange(polyAfterSplit);
+                        splitDone = true;
+                        Trace.WriteLine("SplitWorked well");
+                    }
+                    count += 1;
+                    countBig += 1;
+                    Trace.WriteLine("Whiles are going for : " + countBig);
+
+                } // end of second while loop      
+                Trace.WriteLine("++++Still this many blocks left++++++++++ : " + splittedPolys.Count);
+                splitDone = false;
+            }// end of 1st while loop
+
+            return new Dictionary<string, object>
+            {
+                { "HorizontalLines", (hLines) },
+                { "VerticalLines", (vLines) },
+                { "HorizontalMidPoint", (hMidPt) },
+                { "VerticalMidPoint", (vMidPt) },
+                { "HorizontalIndexLow", (hIndLow) },
+                { "HorizontalIndexHigh", (hIndHigh) },
+                { "WholesomePolys", (wholesomePolyList) },
+                { "NumSidesList", (numSidesList) },
+                { "PolysAfterSplit", (allPolyAfterSplit) }
+            };
+        }
+
+
+        //finds number of sides in a polygon2d
+        public static int NumberofSidesPoly(Polygon2d poly)
+        {
+            if (poly == null || poly.Points == null || poly.Points.Count == 0) return -1;
+            int sides = 0;
+            Polygon2d polyReg = new Polygon2d(poly.Points);
+            for(int i = 0; i < polyReg.Points.Count; i++)
+            {
+                int a = i, b = i + 1;
+                if (i == polyReg.Points.Count - 1) b = 0;
+                sides += 1;                
+            }
+            return sides;
+        }
         //random point selector from a list
         internal static Dictionary<int, object> PointSelector(Random ran, List<Point2d> poly)
         {

@@ -5,6 +5,7 @@ using Autodesk.DesignScript.Geometry;
 using stuffer;
 using System.Collections;
 using System.Diagnostics;
+using System.Linq;
 
 ///////////////////////////////////////////////////////////////////
 /// NOTE: This project requires references to the ProtoInterface
@@ -374,9 +375,7 @@ namespace SpacePlanning
         //get the cells and make an orthogonal outline poly
         public static Polygon2d MakeOrthoBorderOutline(List<List<int>> cellNeighborMatrix, List<Cell> cellList)
         {
-
-
-
+            if (cellList == null || cellList.Count == 0) return null;
             //get the id of the lowest left cell centroid from all the boundary cells
             List<Point2d> cenPtBorderCells = new List<Point2d>();
             List<Point2d> borderPolyPoints = new List<Point2d>();
@@ -435,6 +434,42 @@ namespace SpacePlanning
 
 
 
+
+        //get list of poly and merge them to make one big poly
+        public static Polygon2d MergePoly(List<Polygon2d> polyList, List<Cell> cellListInput)
+        {
+            List<Cell> cellList = cellListInput.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy
+            List<Cell> cellsInsideList = new List<Cell>();
+            for(int i = 0; i < polyList.Count; i++)
+            {
+                for(int j = 0; j < cellList.Count; j++)
+                {
+                    if (GraphicsUtility.PointInsidePolygonTest(polyList[i], cellList[j].CenterPoint))
+                        cellsInsideList.Add(cellList[j]);
+                }
+            }
+            Dictionary<string, object> cellNeighborData = FormsCellNeighborMatrix(cellsInsideList);
+            List<List<int>> cellNeighborMatrix = (List<List<int>>)cellNeighborData["CellNeighborMatrix"];
+            string foo = "";
+            return MakeOrthoBorderOutline(cellNeighborMatrix, cellsInsideList);
+        }
+
+
+
+        //make cells and then make ortho border
+        public static Polygon2d MakeOrthogonalCornersPoly(List<Point2d> outlinePoints,double dim)
+        {
+            List<Point2d> bboxPoints = ReadData.FromPointsGetBoundingPoly(outlinePoints);
+            Dictionary<string,object> cellInformation = GridPointsInsideOutline(bboxPoints, outlinePoints, dim, dim);
+            List<Cell> cellList1 = (List<Cell>)cellInformation["CellsFromPoints"];
+            List<Cell> cellList2 = cellList1.Select(x => new Cell(x.CenterPoint,x.DimX,x.DimY)).ToList(); // example of deep copy
+            List<Point2d> pointsInsideOutline = (List<Point2d>)cellInformation["PointsInsideOutline"];
+            Dictionary<string, object> cellNeighborData = FormsCellNeighborMatrix(cellList1);
+            List<List<int>> cellNeighborMatrix = (List <List<int>>)cellNeighborData["CellNeighborMatrix"];
+            return MakeOrthoBorderOutline(cellNeighborMatrix, cellList2);
+        }
+
+
         //make cell neighbor matrix
         [MultiReturn(new[] { "CellNeighborMatrix", "XYEqualtionList" })]
         public static Dictionary<string, object> FormsCellNeighborMatrix(List<Cell> cellLists, int tag = 1)
@@ -446,7 +481,7 @@ namespace SpacePlanning
                 Cell cellItem = new Cell(cellLists[i]);
                 newCellLists.Add(cellItem);
             }
-            cellLists.Clear();
+            //cellLists.Clear();
             List<Point2d> cellCenterPtLists = new List<Point2d>();
             for (int i = 0; i < newCellLists.Count; i++)
             {
