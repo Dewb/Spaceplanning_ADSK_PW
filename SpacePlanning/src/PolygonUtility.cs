@@ -217,14 +217,14 @@ namespace SpacePlanning
         {
             bool blockPlaced = false;
             int count = 0, maxTry = 50;
-            double areaSite = PolygonUtility.AreaCheckPolygon(poly);
+            double areaSite = AreaCheckPolygon(poly);
             Dictionary<string, object> wholeSomeData = MakeWholesomeBlockInPoly(poly, recompute);
             while (blockPlaced == false && count < maxTry)
             {
                 wholeSomeData = MakeWholesomeBlockInPoly(poly, recompute);
                 List<Polygon2d> polysWhole = (List<Polygon2d>)wholeSomeData["WholesomePolys"];
                 double areaPlaced = 0;
-                for (int i = 0; i < polysWhole.Count; i++) areaPlaced += PolygonUtility.AreaCheckPolygon(polysWhole[i]);
+                for (int i = 0; i < polysWhole.Count; i++) areaPlaced += AreaCheckPolygon(polysWhole[i]);
                 if (areaPlaced < areaSite / 2) blockPlaced = false;
                 else blockPlaced = true;
                 count += 1;
