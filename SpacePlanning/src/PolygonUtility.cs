@@ -212,6 +212,28 @@ namespace SpacePlanning
             return pt;
         }
 
+        //make wholesome polys inside till it meets certain area cover
+        public static Dictionary<string, object> MakeFormInSite(Polygon2d poly, int recompute = 5)
+        {
+            bool blockPlaced = false;
+            int count = 0, maxTry = 50;
+            double areaSite = PolygonUtility.AreaCheckPolygon(poly);
+            Dictionary<string, object> wholeSomeData = MakeWholesomeBlockInPoly(poly, recompute);
+            while (blockPlaced == false && count < maxTry)
+            {
+                wholeSomeData = MakeWholesomeBlockInPoly(poly, recompute);
+                List<Polygon2d> polysWhole = (List<Polygon2d>)wholeSomeData["WholesomePolys"];
+                double areaPlaced = 0;
+                for (int i = 0; i < polysWhole.Count; i++) areaPlaced += PolygonUtility.AreaCheckPolygon(polysWhole[i]);
+                if (areaPlaced < areaSite / 2) blockPlaced = false;
+                else blockPlaced = true;
+                count += 1;
+                Trace.WriteLine("Trying forming up for : " + count);
+            }         
+            return wholeSomeData;
+        }
+
+
         //get a poly and find rectangular polys inside. then merge them together to form a big poly
         public static Dictionary<string, object> MakeWholesomeBlockInPoly(Polygon2d poly, int recompute = 5)
         {
@@ -318,6 +340,15 @@ namespace SpacePlanning
                 Trace.WriteLine("===============Whiles are going for : " + countBig);
             }// end of 1st while loop
 
+            List<Polygon2d> cleanWholesomePolyList = new List<Polygon2d>();
+            //rationalize the wholesome polys
+            for(int i = 0; i < wholesomePolyList.Count; i++)
+            {
+                if (wholesomePolyList[i] == null || wholesomePolyList[i].Points == null || 
+                    wholesomePolyList[i].Points.Count < 4 ) continue;
+                cleanWholesomePolyList.Add(new Polygon2d(wholesomePolyList[i].Points));
+            }
+
             return new Dictionary<string, object>
             {
                 { "HorizontalLines", (hLines) },
@@ -326,7 +357,7 @@ namespace SpacePlanning
                 { "VerticalMidPoint", (vMidPt) },
                 { "HorizontalIndexLow", (hIndLow) },
                 { "HorizontalIndexHigh", (hIndHigh) },
-                { "WholesomePolys", (wholesomePolyList) },
+                { "WholesomePolys", (cleanWholesomePolyList) },
                 { "NumSidesList", (numSidesList) },
                 { "PolysAfterSplit", (allPolyAfterSplit) }
             };
