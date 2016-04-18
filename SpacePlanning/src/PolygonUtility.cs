@@ -216,7 +216,7 @@ namespace SpacePlanning
         public static Dictionary<string, object> MakeFormInSite(Polygon2d poly, int recompute = 5)
         {
             bool blockPlaced = false;
-            int count = 0, maxTry = 50;
+            int count = 0, maxTry = 200;
             double areaSite = AreaCheckPolygon(poly);
             Dictionary<string, object> wholeSomeData = MakeWholesomeBlockInPoly(poly, recompute);
             while (blockPlaced == false && count < maxTry)
@@ -225,7 +225,7 @@ namespace SpacePlanning
                 List<Polygon2d> polysWhole = (List<Polygon2d>)wholeSomeData["WholesomePolys"];
                 double areaPlaced = 0;
                 for (int i = 0; i < polysWhole.Count; i++) areaPlaced += AreaCheckPolygon(polysWhole[i]);
-                if (areaPlaced < areaSite / 2) blockPlaced = false;
+                if (areaPlaced < areaSite*0.75) blockPlaced = false;
                 else blockPlaced = true;
                 count += 1;
                 Trace.WriteLine("Trying forming up for : " + count);
