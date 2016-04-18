@@ -213,7 +213,7 @@ namespace SpacePlanning
         }
 
         //get a poly and find rectangular polys inside. then merge them together to form a big poly
-        public static Dictionary<string, object> MakeWholesomeBlockInPoly(Polygon2d poly)
+        public static Dictionary<string, object> MakeWholesomeBlockInPoly(Polygon2d poly, int recompute = 5)
         {
             if (poly == null || poly.Points == null || poly.Points.Count == 0) return null;
             List<Polygon2d> wholesomePolyList = new List<Polygon2d>();
@@ -271,16 +271,18 @@ namespace SpacePlanning
                 int count = 0, maxTry = 100;
                 int numSides = NumberofSidesPoly(currentPoly);
                 numSidesList.Add(numSides);
-                Trace.WriteLine("Current Number side Number is  " + numSides);
-                //CHECK sides
+                //CHECK sides-------------------------------------------------------------------------------
                 if (numSides < 5)
                 {
+                    //ADD to wholesomeblocklist
                     wholesomePolyList.Add(currentPoly);
                     currentPoly = splittedPolys.Pop();
                     Trace.WriteLine("WholeSomeBlock Found " + wholesomePolyList.Count);
-                    continue;
+                    //continue;
                 }
-                //SPLIT blocks                
+                Trace.WriteLine("================Current Number side Number is  " + numSides);            
+                    
+                //SPLIT blocks-----------------------------------------------------------------------------                
                 while (splitDone == false && count < maxTry && allSplitLines.Count > 0)
                 {
                     //randomly get a line
@@ -289,28 +291,31 @@ namespace SpacePlanning
                     splitLine = LineUtility.move(splitLine, 0.05);
                     Dictionary<string, object> splitPolys = BuildLayout.SplitByLine(currentPoly, splitLine, 0); //{ "PolyAfterSplit", "SplitLine" })]
                     List<Polygon2d> polyAfterSplit = (List<Polygon2d>)splitPolys["PolyAfterSplit"];
-                    if (polyAfterSplit == null || polyAfterSplit.Count < 2)
+                    if (polyAfterSplit == null || polyAfterSplit.Count < 2 || 
+                        polyAfterSplit[0] == null || polyAfterSplit[0].Points == null || polyAfterSplit[0].Points.Count == 0 ||
+                        polyAfterSplit[1] == null || polyAfterSplit[1].Points == null || polyAfterSplit[1].Points.Count == 0)
                     {
                         Trace.WriteLine("!!!!!!!!!!!!!!!!!!! Drat !!!!!!!!!!!!!!!!");
                         splitDone = false;
                     }
                     else
                     {
-                        //ADD to wholesomeblocklist
                         allSplitLines.RemoveAt(selectLineNum);
-                        splittedPolys.Push(polyAfterSplit[0]);
+                        currentPoly = polyAfterSplit[0];
+                        //splittedPolys.Push(polyAfterSplit[0]);
                         splittedPolys.Push(polyAfterSplit[1]);
                         allPolyAfterSplit.AddRange(polyAfterSplit);
                         splitDone = true;
                         Trace.WriteLine("SplitWorked well");
                     }
-                    count += 1;
-                    countBig += 1;
-                    Trace.WriteLine("Whiles are going for : " + countBig);
+                    count += 1;                   
 
                 } // end of second while loop      
                 Trace.WriteLine("++++Still this many blocks left++++++++++ : " + splittedPolys.Count);
+              
                 splitDone = false;
+                countBig += 1;
+                Trace.WriteLine("===============Whiles are going for : " + countBig);
             }// end of 1st while loop
 
             return new Dictionary<string, object>
