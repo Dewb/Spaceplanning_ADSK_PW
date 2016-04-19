@@ -333,51 +333,30 @@ namespace SpacePlanning
             for (int i = 0; i < cellNeighborMatrix.Count; i++)
             {
                 List<int> idsList = new List<int>();
-                for (int j = 0; j < cellNeighborMatrix[i].Count; j++)
-                {
-                    idsList.Add(cellNeighborMatrix[i][j]);
-                }
+                for (int j = 0; j < cellNeighborMatrix[i].Count; j++) idsList.Add(cellNeighborMatrix[i][j]);
                 cellNeighborMatrixCopy.Add(idsList);
             }
             for (int i = 0; i < cellNeighborMatrix.Count; i++)
             {
                 cellNeighborMatrix[i].Remove(-1);
-                if (cellNeighborMatrix[i].Count <= 3) { cellIdList.Add(i); cornerCellList.Add(true); }
-                else cornerCellList.Add(false);        
+                if (cellNeighborMatrix[i].Count <= 3)  cellIdList.Add(i);   
             }
 
-            /*for (int i = 0; i < cellNeighborMatrixCopy.Count; i++)
+            for (int i = 0; i < cellNeighborMatrixCopy.Count; i++)
             {
-                int cornerCount = 0;
-                for (int j = 0; j < cellNeighborMatrixCopy[i].Count; j++) if (cellNeighborMatrixCopy[i][j] > -1) { if (cornerCellList[cellNeighborMatrixCopy[i][j]]) cornerCount += 1; }
-                if (cornerCount > 1 && cornerCount < 3)
+                bool cellSelected = false;
+                if (cellNeighborMatrixCopy[i][0] > -1 && cellNeighborMatrixCopy[i][1] > -1
+                    && cellNeighborMatrixCopy[i][2] > -1 && cellNeighborMatrixCopy[i][3] > -1)
                 {
                     //1-RU
-                    if      (cellNeighborMatrixCopy[cellNeighborMatrixCopy[i][0]][1] == -1) cellIdList.Add(i);
+                    if (cellNeighborMatrixCopy[cellNeighborMatrixCopy[i][0]][1] == -1) cellSelected = true;
                     //2-UL
-                    else if (cellNeighborMatrixCopy[cellNeighborMatrixCopy[i][1]][2] == -1) cellIdList.Add(i);
+                    else if (cellNeighborMatrixCopy[cellNeighborMatrixCopy[i][1]][2] == -1) cellSelected = true;
                     //3-LD
-                    else if (cellNeighborMatrixCopy[cellNeighborMatrixCopy[i][2]][3] == -1) cellIdList.Add(i);
+                    else if (cellNeighborMatrixCopy[cellNeighborMatrixCopy[i][2]][3] == -1) cellSelected = true;
                     //4-DR
-                    else if (cellNeighborMatrixCopy[cellNeighborMatrixCopy[i][3]][0] == -1) cellIdList.Add(i);
-                }
-            }*/
-
-            for (int i = 0; i < cellNeighborMatrix.Count; i++)
-            {
-                int cornerCount = 0;
-                for (int j = 0; j < cellNeighborMatrix[i].Count; j++) if (cellNeighborMatrix[i][j] > -1) { if (cornerCellList[cellNeighborMatrix[i][j]]) cornerCount += 1; }
-                if (cornerCount > 1 && cornerCount < 3)
-                {
-                    Trace.WriteLine("Corner Entered : " + cornerCount);
-                    //1-RU
-                    if      (cellNeighborMatrixCopy[i][0] > -1) { if (cellNeighborMatrixCopy[cellNeighborMatrixCopy[i][0]][1] == -1) { cellIdList.Add(i); Trace.WriteLine("1st case entered : "); } }
-                    //2-UL
-                    else if (cellNeighborMatrixCopy[i][1] > -1) { if (cellNeighborMatrixCopy[cellNeighborMatrixCopy[i][1]][2] == -1) { cellIdList.Add(i); Trace.WriteLine("2nd case entered : "); } }
-                    //3-LD
-                    else if (cellNeighborMatrixCopy[i][2] > -1) { if (cellNeighborMatrixCopy[cellNeighborMatrixCopy[i][2]][3] == -1) { cellIdList.Add(i); Trace.WriteLine("3rd case entered : "); } }
-                    //4-DR
-                    else if (cellNeighborMatrixCopy[i][3] > -1) { if (cellNeighborMatrixCopy[cellNeighborMatrixCopy[i][3]][0] == -1) { cellIdList.Add(i); Trace.WriteLine("4th case entered : "); } }
+                    else if (cellNeighborMatrixCopy[cellNeighborMatrixCopy[i][3]][0] == -1) cellSelected = true;
+                    if (cellSelected) cellIdList.Add(i);
                 }
             }
             return cellIdList;
@@ -500,7 +479,6 @@ namespace SpacePlanning
             int currentIndex = lowestCellId;
             bool downMode = false;
             int num = 0;
-            // List<List<int>> cellNeighborMatrixCopy = cellNeighborMatrix.Select(x =>x ).ToList();
             List<List<int>> cellNeighborMatrixCopy = new List<List<int>>();
             for (int i = 0; i < cellNeighborMatrix.Count; i++)
             {
