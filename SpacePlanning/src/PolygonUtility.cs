@@ -225,7 +225,7 @@ namespace SpacePlanning
                 List<Polygon2d> polysWhole = (List<Polygon2d>)wholeSomeData["WholesomePolys"];
                 double areaPlaced = 0;
                 for (int i = 0; i < polysWhole.Count; i++) areaPlaced += AreaCheckPolygon(polysWhole[i]);
-                if (areaPlaced < areaSite*0.75) blockPlaced = false;
+                if (areaPlaced < areaSite*0.5) blockPlaced = false;
                 else blockPlaced = true;
                 count += 1;
                 Trace.WriteLine("Trying forming up for : " + count);

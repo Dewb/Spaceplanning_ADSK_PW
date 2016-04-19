@@ -321,11 +321,30 @@ namespace SpacePlanning
         //get only corner and edge cells
         public static List<int> GetCornerAndEdgeCellId( List<List<int>> cellNeighborMatrix){
             List<int> cellIdList = new List<int>();
+            List<bool> cornerCellList = new List<bool>();
             for(int i = 0; i < cellNeighborMatrix.Count; i++)
             {
                 cellNeighborMatrix[i].Remove(-1);
-                if(cellNeighborMatrix[i].Count <= 3) cellIdList.Add(i);
+                if (cellNeighborMatrix[i].Count <= 3) { cellIdList.Add(i); cornerCellList.Add(true); }
+                else cornerCellList.Add(false);
+                //for in between corner cells
+                //if (i > 0 && i < cellNeighborMatrix.Count-1)
+                {
+                    //cellNeighborMatrix[i+1].Remove(-1);
+                    //if (cellNeighborMatrix[i-1].Count <= 3 && cellNeighborMatrix[i + 1].Count <= 3) cellIdList.Add(i);
+                }
+                
             }
+
+            for (int i = 0; i < cellNeighborMatrix.Count; i++)
+            {
+                int cornerCount = 0;
+                for (int j = 0; j < cellNeighborMatrix[i].Count; j++)
+                {
+                    if(cellNeighborMatrix[i][j] > -1){ if (cornerCellList[cellNeighborMatrix[i][j]]) cornerCount += 1; }                    
+                }
+                if (cornerCount > 1) cellIdList.Add(i);
+                }
             return cellIdList;
             }
 
