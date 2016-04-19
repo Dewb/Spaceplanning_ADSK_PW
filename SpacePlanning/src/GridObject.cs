@@ -241,6 +241,9 @@ namespace SpacePlanning
 
             for (int i = 0; i < indexList.Count; i++)
             {
+                if(indexList[i] > -1)
+                {
+
                 List<Point> ptList = new List<Point>();
 
                 double a = pointsgrid[indexList[i]].X - (dimX / 2);
@@ -263,9 +266,12 @@ namespace SpacePlanning
                 pt = Point.ByCoordinates(a, b);
                 ptList.Add(pt);
 
+            
 
                 Polygon pol = Polygon.ByPoints(ptList);
                 cellsPolyList.Add(pol);
+
+                }
             }
 
             return cellsPolyList;
@@ -326,30 +332,20 @@ namespace SpacePlanning
             {
                 cellNeighborMatrix[i].Remove(-1);
                 if (cellNeighborMatrix[i].Count <= 3) { cellIdList.Add(i); cornerCellList.Add(true); }
-                else cornerCellList.Add(false);
-                //for in between corner cells
-                //if (i > 0 && i < cellNeighborMatrix.Count-1)
-                {
-                    //cellNeighborMatrix[i+1].Remove(-1);
-                    //if (cellNeighborMatrix[i-1].Count <= 3 && cellNeighborMatrix[i + 1].Count <= 3) cellIdList.Add(i);
-                }
-                
+                else cornerCellList.Add(false);        
             }
 
             for (int i = 0; i < cellNeighborMatrix.Count; i++)
             {
                 int cornerCount = 0;
-                for (int j = 0; j < cellNeighborMatrix[i].Count; j++)
-                {
-                    if(cellNeighborMatrix[i][j] > -1){ if (cornerCellList[cellNeighborMatrix[i][j]]) cornerCount += 1; }                    
-                }
-                if (cornerCount > 1) cellIdList.Add(i);
-                }
+                for (int j = 0; j < cellNeighborMatrix[i].Count; j++) if (cellNeighborMatrix[i][j] > -1) { if (cornerCellList[cellNeighborMatrix[i][j]]) cornerCount += 1; }
+                if (cornerCount > 1 && cornerCount < 3) cellIdList.Add(i);
+            }
             return cellIdList;
             }
 
         //get border cells and make outline border poly -  not working
-        internal static Polygon2d MakeBorderPoly(List<List<int>> cellNeighborMatrix, List<int> borderCellIdList, List<Cell> cellList)
+        public static Polygon2d MakeBorderPoly(List<List<int>> cellNeighborMatrix, List<int> borderCellIdList, List<Cell> cellList)
         {
            
             //get the id of the lowest left cell centroid from all the boundary cells
@@ -365,7 +361,7 @@ namespace SpacePlanning
             while (num < borderCellIdList.Count)
             {
                 borderPolyPoints.Add(currentCellPoint);
-                if (cellNeighborMatrix[currentIndex][0] > -1)
+                if (cellNeighborMatrix[borderCellIdList[currentIndex]][0] > -1)
                 {
                     currentIndex = cellNeighborMatrix[borderCellIdList[currentIndex]][0];
                 }
@@ -451,9 +447,8 @@ namespace SpacePlanning
             return new Polygon2d(borderPolyPoints);
         }
 
-
         //get the cells and make an orthogonal outline poly
-        public static Polygon2d MakeOrthoBorderOutline2(List<List<int>> cellNeighborMatrix, List<Cell> cellList)
+        public static Polygon2d CreateBorder(List<List<int>> cellNeighborMatrix, List<Cell> cellList)
         {
             if (cellList == null || cellList.Count == 0) return null;
             //get the id of the lowest left cell centroid from all the boundary cells
@@ -466,12 +461,28 @@ namespace SpacePlanning
             int currentIndex = lowestCellId;
             bool downMode = false;
             int num = 0;
+            // List<List<int>> cellNeighborMatrixCopy = cellNeighborMatrix.Select(x =>x ).ToList();
+            List<List<int>> cellNeighborMatrixCopy = new List<List<int>>();
+            for (int i = 0; i < cellNeighborMatrix.Count; i++)
+            {
+                List<int> idsList = new List<int>();
+                for(int j=0;j<cellNeighborMatrix[i].Count; j++)
+                {
+                    idsList.Add(cellNeighborMatrix[i][j]);
+                }
+                cellNeighborMatrixCopy.Add(idsList);
+            }
+            List<int> borderCellIdList = GetCornerAndEdgeCellId(cellNeighborMatrixCopy);
+            List<bool> isBorderCellList = new List<bool>();
+            for (int i = 0; i < cellList.Count; i++)  isBorderCellList.Add(false);
+            for (int i = 0; i < borderCellIdList.Count; i++) isBorderCellList[borderCellIdList[i]] = true;
+
             //order of neighbors : right , up , left , down
             while (num < 3000)
             {
                 borderPolyPoints.Add(currentCellPoint);
                 if (cellNeighborMatrix[currentIndex][0] > -1 &&
-                    cellList[cellNeighborMatrix[currentIndex][0]].CellAvailable && downMode == false)
+                    cellList[cellNeighborMatrix[currentIndex][0]].CellAvailable && isBorderCellList[cellNeighborMatrix[currentIndex][0]])
                 {
                     currentIndex = cellNeighborMatrix[currentIndex][0]; // right
                     //currentCell = cellList[currentIndex];
@@ -479,7 +490,73 @@ namespace SpacePlanning
                     //currentCellPoint = currentCell.RightDownCorner;
                 }
                 else if (cellNeighborMatrix[currentIndex][1] > -1 &&
-                    cellList[cellNeighborMatrix[currentIndex][1]].CellAvailable && downMode == false)
+                    cellList[cellNeighborMatrix[currentIndex][1]].CellAvailable && isBorderCellList[cellNeighborMatrix[currentIndex][1]])
+                {
+                    currentIndex = cellNeighborMatrix[currentIndex][1]; // up
+                    //currentCell = cellList[currentIndex];
+                    //currentCell.CellAvailable = false;
+                    //currentCellPoint = currentCell.RightUpCorner;
+                }
+                else if (cellNeighborMatrix[currentIndex][2] > -1 &&
+                    cellList[cellNeighborMatrix[currentIndex][2]].CellAvailable && isBorderCellList[cellNeighborMatrix[currentIndex][2]])
+                {
+                    currentIndex = cellNeighborMatrix[currentIndex][2]; // left
+                    //currentCell = cellList[currentIndex];
+                    //currentCell.CellAvailable = false;
+                    //currentCellPoint = currentCell.LeftUpCorner;
+                }
+                else if (cellNeighborMatrix[currentIndex][3] > -1 &&
+                    cellList[cellNeighborMatrix[currentIndex][3]].CellAvailable && isBorderCellList[cellNeighborMatrix[currentIndex][3]])
+                {
+                    currentIndex = cellNeighborMatrix[currentIndex][3]; // down
+                    //currentCell = cellList[currentIndex];
+                    //currentCell.CellAvailable = false;
+                    //currentCellPoint = currentCell.LeftDownCorner;
+                }
+                currentCell = cellList[currentIndex];
+                currentCell.CellAvailable = false;
+                currentCellPoint = currentCell.LeftDownCorner;
+                num += 1;
+            }
+
+            return new Polygon2d(borderPolyPoints);
+        }
+
+        //get the cells and make an orthogonal outline poly
+        public static Dictionary<string,object> CreateBorderOutline(List<Cell> cellList, List<int> borderCellIdList)
+        {
+            if (cellList == null || cellList.Count == 0) return null;
+            //get the id of the lowest left cell centroid from all the boundary cells
+            List<Point2d> cenPtBorderCells = new List<Point2d>();
+            List<Point2d> borderPolyPoints = new List<Point2d>();
+            List <Cell> borderCellLists = new List<Cell>();
+            for (int i = 0; i < borderCellIdList.Count; i++)
+            {
+                cenPtBorderCells.Add(cellList[borderCellIdList[i]].CenterPoint);
+                borderCellLists.Add(cellList[borderCellIdList[i]]);
+            }
+            int lowestCellId = GraphicsUtility.ReturnLowestPointFromListNew(cenPtBorderCells);
+            Cell currentCell = cellList[lowestCellId];
+            Point2d currentCellPoint = currentCell.LeftDownCorner; 
+            int currentIndex = lowestCellId;
+            bool downMode = false;
+            int num = 0;
+            Dictionary<string,object> cellInformation = FormsCellNeighborMatrix(borderCellLists);
+            List<List<int>> cellNeighborMatrix = (List<List<int>>)cellInformation["CellNeighborMatrix"];
+            //order of neighbors : right , up , left , down
+            while (num < 50)
+            {
+                borderPolyPoints.Add(currentCellPoint);
+                if (cellNeighborMatrix[currentIndex][0] > -1 &&
+                    cellList[cellNeighborMatrix[currentIndex][0]].CellAvailable)
+                {
+                    currentIndex = cellNeighborMatrix[currentIndex][0]; // right
+                    //currentCell = cellList[currentIndex];
+                    //currentCell.CellAvailable = false;
+                    //currentCellPoint = currentCell.RightDownCorner;
+                }
+                else if (cellNeighborMatrix[currentIndex][1] > -1 &&
+                    cellList[cellNeighborMatrix[currentIndex][1]].CellAvailable)
                 {
                     currentIndex = cellNeighborMatrix[currentIndex][1]; // up
                     //currentCell = cellList[currentIndex];
@@ -501,7 +578,7 @@ namespace SpacePlanning
                     //currentCell = cellList[currentIndex];
                     //currentCell.CellAvailable = false;
                     //currentCellPoint = currentCell.LeftDownCorner;
-                    downMode = true;
+                  
                 }
                 currentCell = cellList[currentIndex];
                 currentCell.CellAvailable = false;
@@ -509,8 +586,14 @@ namespace SpacePlanning
                 num += 1;
             }
 
-            return new Polygon2d(borderPolyPoints);
+            return new Dictionary<string, object>
+            {
+                { "BorderOutline", (new Polygon2d(borderPolyPoints)) },
+                { "LowestCellId", ( lowestCellId) },
+                { "CellNeighborMatrixForBorderCells" , (cellNeighborMatrix) }
+            };
         }
+    
 
 
 
@@ -559,7 +642,24 @@ namespace SpacePlanning
             };
         }
 
+        //make cells inside polly
+        public static List<Cell> CellsInsidePoly(List<Point2d> outlinePoints, double dim)
+        {
+            List<Point2d> bboxPoints = ReadData.FromPointsGetBoundingPoly(outlinePoints);
+            Dictionary<string, object> cellInformation = GridPointsInsideOutline(bboxPoints, outlinePoints, dim, dim);
+            return(List<Cell>)cellInformation["CellsFromPoints"];            
+        }
 
+        //gets cells bt indices in a list
+        public static List<Cell> CellsByIndex(List<Cell> cellLists, List<int> cellIdLists)
+        {
+            List<Cell> cellSelectedList = new List<Cell>();
+            for(int i = 0; i < cellIdLists.Count; i++)
+            {
+                cellSelectedList.Add(cellLists[cellIdLists[i]]);
+            }
+            return cellSelectedList;
+        }
 
         //make cells and then make ortho border
         public static Dictionary<string,object> MakeOrthogonalCornersPoly(List<Point2d> outlinePoints,double dim)
