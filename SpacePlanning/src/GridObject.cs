@@ -219,7 +219,7 @@ namespace SpacePlanning
         }
 
         //make cells on the grids from cell objects
-        public static List<Polygon> MakeCellsFromCellObjects(List<Cell> cellList, List<int> indexList = default(List<int>))
+        public static List<Polygon> MakeCellsFromCellObjects(List<Cell> cellList, List<int> indexList = default(List<int>), double height  = 0)
         {
             List<Polygon> cellsPolyList = new List<Polygon>();
             List<Point2d> pointsgrid = new List<Point2d>();
@@ -248,22 +248,22 @@ namespace SpacePlanning
 
                 double a = pointsgrid[indexList[i]].X - (dimX / 2);
                 double b = pointsgrid[indexList[i]].Y - (dimY / 2);
-                Point pt = Point.ByCoordinates(a, b);
+                Point pt = Point.ByCoordinates(a, b,height);
                 ptList.Add(pt);
 
                 a = pointsgrid[indexList[i]].X - (dimX / 2);
                 b = pointsgrid[indexList[i]].Y + (dimY / 2);
-                pt = Point.ByCoordinates(a, b);
+                pt = Point.ByCoordinates(a, b,height);
                 ptList.Add(pt);
 
                 a = pointsgrid[indexList[i]].X + (dimX / 2);
                 b = pointsgrid[indexList[i]].Y + (dimY / 2);
-                pt = Point.ByCoordinates(a, b);
+                pt = Point.ByCoordinates(a, b,height);
                 ptList.Add(pt);
 
                 a = pointsgrid[indexList[i]].X + (dimX / 2);
                 b = pointsgrid[indexList[i]].Y - (dimY / 2);
-                pt = Point.ByCoordinates(a, b);
+                pt = Point.ByCoordinates(a, b,height);
                 ptList.Add(pt);
 
             
@@ -755,7 +755,7 @@ namespace SpacePlanning
 
         //make cell neighbor matrix
         [MultiReturn(new[] { "CellNeighborMatrix", "XYEqualtionList" })]
-        public static Dictionary<string, object> FormsCellNeighborMatrix(List<Cell> cellLists, int tag = 1)
+        public static Dictionary<string, object> FormsCellNeighborMatrixNewer(List<Cell> cellLists, int tag = 1)
         {
             List<List<int>> cellNeighborMatrix = new List<List<int>>();
             List<Cell> newCellLists = new List<Cell>();
@@ -860,6 +860,110 @@ namespace SpacePlanning
         }
 
 
+        //make cell neighbor matrix - older
+        [MultiReturn(new[] { "CellNeighborMatrix", "XYEqualtionList" })]
+        public static Dictionary<string, object> FormsCellNeighborMatrix(List<Cell> cellLists, int tag = 1)
+        {
+            List<List<int>> cellNeighborMatrix = new List<List<int>>();
+            List<Cell> newCellLists = new List<Cell>();
+            for (int i = 0; i < cellLists.Count; i++)
+            {
+                Cell cellItem = new Cell(cellLists[i]);
+                newCellLists.Add(cellItem);
+            }
+            cellLists.Clear();
+            List<Point2d> cellCenterPtLists = new List<Point2d>();
+            for (int i = 0; i < newCellLists.Count; i++)
+            {
+                cellCenterPtLists.Add(newCellLists[i].CenterPoint);
+            }
+
+            double[] XYEquationList = new double[cellCenterPtLists.Count];
+
+            double A = 100.0;
+            double B = 1.0;
+            int[] UnsortedIndices = new int[cellCenterPtLists.Count];
+            double[] XCordCenterPt = new double[cellCenterPtLists.Count];
+            double[] YCordCenterPt = new double[cellCenterPtLists.Count];
+
+            for (int i = 0; i < cellCenterPtLists.Count; i++)
+            {
+
+                UnsortedIndices[i] = i;
+                XCordCenterPt[i] = cellCenterPtLists[i].X;
+                YCordCenterPt[i] = cellCenterPtLists[i].Y;
+                double value = (A * cellCenterPtLists[i].X) + (B * cellCenterPtLists[i].Y);
+                XYEquationList[i] = value;
+
+            }
+            List<int> SortedIndicesX = new List<int>();
+            List<int> SortedIndicesY = new List<int>();
+            List<int> SortedXYEquationIndices = new List<int>();
+            SortedXYEquationIndices = BasicUtility.Quicksort(XYEquationList, UnsortedIndices, 0, UnsortedIndices.Length - 1);
+            double dimX = newCellLists[0].DimX;
+            double dimY = newCellLists[0].DimY;
+            List<List<Point2d>> cellNeighborPoint2d = new List<List<Point2d>>();
+
+            List<double> SortedXYEquationValues = new List<double>();
+            for (int i = 0; i < SortedXYEquationIndices.Count; i++)
+            {
+                SortedXYEquationValues.Add(XYEquationList[SortedXYEquationIndices[i]]);
+            }
+
+            List<double> XYEquationLists = new List<double>();
+            for (int k = 0; k < cellCenterPtLists.Count; k++)
+            {
+                XYEquationLists.Add(XYEquationList[k]);
+            }
+            for (int i = 0; i < cellCenterPtLists.Count; i++)
+            {
+                Cell currentCell = newCellLists[i];
+                List<Point2d> neighborPoints = new List<Point2d>();
+                List<int> neighborCellIndex = new List<int>();
+                Point2d currentCenterPt = cellCenterPtLists[i];
+                Point2d down = new Point2d(currentCenterPt.X, currentCenterPt.Y - dimY);
+                Point2d left = new Point2d(currentCenterPt.X - dimX, currentCenterPt.Y);
+                Point2d up = new Point2d(currentCenterPt.X, currentCenterPt.Y + dimY);
+                Point2d right = new Point2d(currentCenterPt.X + dimX, currentCenterPt.Y);
+
+                //find index of down cell
+                double downValue = (A * currentCenterPt.X) + (B * (currentCenterPt.Y - dimY));
+                int downCellIndex = BasicUtility.BinarySearchDouble(XYEquationLists, downValue);
+                //find index of left cell
+                double leftValue = (A * (currentCenterPt.X - dimX)) + (B * (currentCenterPt.Y));
+                int leftCellIndex = BasicUtility.BinarySearchDouble(XYEquationLists, leftValue);
+                //find index of up cell
+                double upValue = (A * (currentCenterPt.X)) + (B * (currentCenterPt.Y + dimY));
+                int upCellIndex = BasicUtility.BinarySearchDouble(XYEquationLists, upValue);
+                //find index of up cell
+                double rightValue = (A * (currentCenterPt.X + dimX)) + (B * (currentCenterPt.Y));
+                int rightCellIndex = BasicUtility.BinarySearchDouble(XYEquationLists, rightValue);
+
+
+                //RULD - right, up, left, down | adding -1 means the cell does not have any neighbor at that spot
+                if (rightCellIndex > -1) { neighborCellIndex.Add(rightCellIndex); } else { neighborCellIndex.Add(-1); };
+                if (upCellIndex > -1) { neighborCellIndex.Add(upCellIndex); } else { neighborCellIndex.Add(-1); };
+                if (leftCellIndex > -1) { neighborCellIndex.Add(leftCellIndex); } else { neighborCellIndex.Add(-1); };
+                if (downCellIndex > -1) { neighborCellIndex.Add(downCellIndex); } else { neighborCellIndex.Add(-1); };
+
+
+
+                neighborPoints.Add(right);
+                neighborPoints.Add(up);
+                neighborPoints.Add(left);
+                neighborPoints.Add(down);
+                cellNeighborPoint2d.Add(neighborPoints);
+                cellNeighborMatrix.Add(neighborCellIndex);
+            }
+
+            return new Dictionary<string, object>
+            {
+                { "CellNeighborMatrix", (cellNeighborMatrix) },
+                { "XYEqualtionList", ( XYEquationLists) }
+            };
+        }
+        
+        
         // test binary search
         public static List<int> TestBinarySearch(List<int> inp, int key)
         {
