@@ -356,7 +356,7 @@ namespace SpacePlanning
                     else if (cellNeighborMatrixCopy[cellNeighborMatrixCopy[i][2]][3] == -1) cellSelected = true;
                     //4-DR
                     else if (cellNeighborMatrixCopy[cellNeighborMatrixCopy[i][3]][0] == -1) cellSelected = true;
-                    if (cellSelected) cellIdList.Add(i);
+                    //if (cellSelected) cellIdList.Add(i);
                 }
             }
             return cellIdList;
@@ -699,7 +699,59 @@ namespace SpacePlanning
             return cellSelectedList;
         }
 
-      
+        public static Dictionary<string, object> CreateCellNeighborMatrix(List<Cell> cellLists, int tag = 1)
+        {
+            List<List<int>> cellNeighborMatrix = new List<List<int>>();
+            double dimX = cellLists[0].DimX, dimY = cellLists[0].DimY, eps = 0.2;
+            List<double> xyEquationList = new List<double>();
+
+            for (int i = 0; i < cellLists.Count; i++)
+            {
+                double x = cellLists[i].CenterPoint.X, y = cellLists[i].CenterPoint.Y, A = 33, B = 50;
+                double eq = A * x * x * x + B * y * y * y + (A - B) * x + (B - A) * y;
+                xyEquationList.Add(eq);
+            }
+
+            for (int i = 0; i < cellLists.Count; i++)
+            {
+                double x = cellLists[i].CenterPoint.X, y = cellLists[i].CenterPoint.Y, A = 33, B = 50;
+                double eq = A * x * x * x + B * y * y * y + (A - B) * x + (B - A) * y;
+                xyEquationList.Add(eq);
+            }
+
+
+
+            return new Dictionary<string, object>
+            {
+                { "CellNeighborMatrix", (cellNeighborMatrix) },
+                { "XYEqualtionList", ( xyEquationList) }
+            };
+
+        }
+
+        //finds any id issues in the cellNeighborMatrix
+        public static List<bool> FindProblemCellNeighbors(List<List<int>> cellNeighborMatrix)
+        {
+            List<bool> isErrorList = new List<bool>();
+            for(int i = 0; i < cellNeighborMatrix.Count; i++)
+            {
+                bool error = false;
+                for(int j = 0; j < cellNeighborMatrix[i].Count; j++)
+                {
+                    if (i == cellNeighborMatrix[i][j]) error = true;
+                }
+                isErrorList.Add(error);
+            }
+            return isErrorList;
+        }
+
+        //returns the value of equation for cell neighbor matrix
+        internal static double EquationforXYLocation(double x, double y)
+        {
+            double A = 5, B = 1.2;
+            //return A * x * x * x + B * y * y * y + (A - B) * x + (B - A) * y;
+            return 1000*Math.Round(((A * x + B * y) / A), 3); 
+        }
 
         //make cell neighbor matrix
         [MultiReturn(new[] { "CellNeighborMatrix", "XYEqualtionList" })]
@@ -733,7 +785,7 @@ namespace SpacePlanning
                 UnsortedIndices[i] = i;
                 XCordCenterPt[i] = cellCenterPtLists[i].X;
                 YCordCenterPt[i] = cellCenterPtLists[i].Y;
-                double value = (A * cellCenterPtLists[i].X) + (B * cellCenterPtLists[i].Y);
+                double value = EquationforXYLocation(cellCenterPtLists[i].X, cellCenterPtLists[i].Y);
                 XYEquationList[i] = value;
            
             }
@@ -768,17 +820,22 @@ namespace SpacePlanning
                 Point2d right   = new Point2d(currentCenterPt.X + dimX, currentCenterPt.Y);
 
                 //find index of down cell
-                double downValue = (A * currentCenterPt.X) + (B * (currentCenterPt.Y - dimY));               
+                double downValue = EquationforXYLocation(currentCenterPt.X, (currentCenterPt.Y - dimY));
                 int downCellIndex = BasicUtility.BinarySearchDouble(XYEquationLists, downValue);
+                //if (downCellIndex == i) downCellIndex = -1;
                 //find index of left cell
-                double leftValue = (A * (currentCenterPt.X-dimX)) + (B * (currentCenterPt.Y));
+                double leftValue = EquationforXYLocation((currentCenterPt.X - dimX), currentCenterPt.Y);
                 int leftCellIndex = BasicUtility.BinarySearchDouble(XYEquationLists, leftValue);
+               // if (leftCellIndex == i) leftCellIndex = -1;
                 //find index of up cell
-                double upValue = (A * (currentCenterPt.X)) + (B * (currentCenterPt.Y+dimY));
+                double upValue = EquationforXYLocation(currentCenterPt.X, (currentCenterPt.Y + dimY));
                 int upCellIndex = BasicUtility.BinarySearchDouble(XYEquationLists, upValue);
+                //if (upCellIndex == i) upCellIndex = -1;
+
                 //find index of up cell
-                double rightValue = (A * (currentCenterPt.X+dimX)) + (B * (currentCenterPt.Y));
+                double rightValue = EquationforXYLocation((currentCenterPt.X + dimX), currentCenterPt.Y);
                 int rightCellIndex = BasicUtility.BinarySearchDouble(XYEquationLists, rightValue);
+                //if (rightCellIndex == i) rightCellIndex = -1;
 
 
                 //RULD - right, up, left, down | adding -1 means the cell does not have any neighbor at that spot
@@ -786,8 +843,6 @@ namespace SpacePlanning
                 if (upCellIndex > -1)       { neighborCellIndex.Add(upCellIndex);   } else { neighborCellIndex.Add(-1); }; 
                 if (leftCellIndex > -1)     { neighborCellIndex.Add(leftCellIndex); } else { neighborCellIndex.Add(-1); };
                 if (downCellIndex > -1)     { neighborCellIndex.Add(downCellIndex); } else { neighborCellIndex.Add(-1); };
-
-
 
                 neighborPoints.Add(right);
                 neighborPoints.Add(up);

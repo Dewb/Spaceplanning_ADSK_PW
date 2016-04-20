@@ -125,7 +125,7 @@ namespace SpacePlanning
 
 
         //binary search algo with double
-        internal static int BinarySearchDouble(List<double> inputArray, double key)
+        public static int BinarySearchDouble(List<double> inputArray, double key)
         {
             int min = 0;
             int max = inputArray.Count - 1;
