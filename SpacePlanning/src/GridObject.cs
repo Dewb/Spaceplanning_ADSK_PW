@@ -219,7 +219,7 @@ namespace SpacePlanning
         }
 
         //make cells on the grids from cell objects
-        public static List<Polygon> MakeCellsFromCellObjects(List<Cell> cellList, List<int> indexList = default(List<int>), double height  = 0)
+        public static List<Polygon> MakeCellsFromCellObjects(List<Cell> cellList, List<int> indexList = null, double height  = 0)
         {
             List<Polygon> cellsPolyList = new List<Polygon>();
             List<Point2d> pointsgrid = new List<Point2d>();
@@ -230,7 +230,7 @@ namespace SpacePlanning
             double dimX = cellList[0].DimX;
             double dimY = cellList[0].DimY;
 
-            if (indexList == default(List<int>))
+            if (indexList.Count == 0)
             {
                 indexList = new List<int>();
                 for (int i = 0; i < pointsgrid.Count; i++)
@@ -665,8 +665,12 @@ namespace SpacePlanning
             {
                 for (int j = 0; j < cellList.Count; j++)
                 {
-                    if (GraphicsUtility.PointInsidePolygonTest(polyList[i], cellList[j].CenterPoint))
+                    if (GraphicsUtility.PointInsidePolygonTest(polyList[i], cellList[j].CenterPoint) && cellList[j].CellAvailable)
+                    {
                         cellsInsideList.Add(cellList[j]);
+                        cellList[j].CellAvailable = false;
+                    }
+                        
                 }
             }
             Dictionary<string, object> cellNeighborData = FormsCellNeighborMatrix(cellsInsideList);
@@ -752,6 +756,42 @@ namespace SpacePlanning
             //return 1000 * Math.Round((A * x * x * x + B * y * y * y + (A - B) * x + (B - A) * y),3);
             //return 1000*Math.Round(((A * x + B * y)), 3); 
             return 1000*Math.Round(((A * x) + (B * y)),3);
+        }
+
+
+
+        //sorts a list of cells based on a equation
+        [MultiReturn(new[] { "SortedCells", "SortedCellIndices", "XYEqualtionList" })]
+        public static Dictionary<string, object> SortCellList(List<Cell> cellLists)
+        {
+            List<Cell> newCellLists = new List<Cell>();
+            for (int i = 0; i < cellLists.Count; i++) newCellLists.Add(new Cell(cellLists[i]));
+            List<Point2d> cellCenterPtLists = new List<Point2d>();
+            for (int i = 0; i < newCellLists.Count; i++) cellCenterPtLists.Add(newCellLists[i].CenterPoint);  
+
+            double[] XYEquationList = new double[cellCenterPtLists.Count];
+            int[] UnsortedIndices = new int[cellCenterPtLists.Count];
+            double[] XCordCenterPt = new double[cellCenterPtLists.Count];
+            double[] YCordCenterPt = new double[cellCenterPtLists.Count];
+
+            for (int i = 0; i < cellCenterPtLists.Count; i++)
+            {
+                UnsortedIndices[i] = i;
+                XCordCenterPt[i] = cellCenterPtLists[i].X; YCordCenterPt[i] = cellCenterPtLists[i].Y;
+                XYEquationList[i] = EquationforXYLocation(cellCenterPtLists[i].X, cellCenterPtLists[i].Y);
+            }
+            List<int> SortedIndicesX = new List<int>(), SortedIndicesY = new List<int>(), SortedXYEquationIndices = new List<int>(); 
+            SortedXYEquationIndices = BasicUtility.Quicksort(XYEquationList, UnsortedIndices, 0, UnsortedIndices.Length - 1);
+            List<double> XYEquationLists = new List<double>();
+            for (int k = 0; k < cellCenterPtLists.Count; k++) XYEquationLists.Add(XYEquationList[k]);
+            List<Cell> sortedCells = new List<Cell>();
+            for(int i = 0; i < SortedXYEquationIndices.Count; i++) sortedCells.Add(newCellLists[SortedXYEquationIndices[i]]);
+            return new Dictionary<string, object>
+            {
+                { "SortedCells", (sortedCells) },
+                { "SortedCellIndices", (SortedXYEquationIndices) },
+                { "XYEqualtionList", ( XYEquationLists) }
+            };
         }
 
         //make cell neighbor matrix
