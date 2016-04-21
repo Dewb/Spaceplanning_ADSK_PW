@@ -356,7 +356,7 @@ namespace SpacePlanning
                     else if (cellNeighborMatrixCopy[cellNeighborMatrixCopy[i][2]][3] == -1) cellSelected = true;
                     //4-DR
                     else if (cellNeighborMatrixCopy[cellNeighborMatrixCopy[i][3]][0] == -1) cellSelected = true;
-                    //if (cellSelected) cellIdList.Add(i);
+                    if (cellSelected) cellIdList.Add(i);
                 }
             }
             return cellIdList;
@@ -748,14 +748,15 @@ namespace SpacePlanning
         //returns the value of equation for cell neighbor matrix
         internal static double EquationforXYLocation(double x, double y)
         {
-            double A = 5, B = 1.2;
-            //return A * x * x * x + B * y * y * y + (A - B) * x + (B - A) * y;
-            return 1000*Math.Round(((A * x + B * y) / A), 3); 
+            double A = 100, B = 1;
+           //return 1000 * Math.Round((A * x * x * x + B * y * y * y + (A - B) * x + (B - A) * y),3);
+            //return 1000*Math.Round(((A * x + B * y)), 3); 
+            return 1000*Math.Round(((A * x) + (B * y)),3);
         }
 
         //make cell neighbor matrix
         [MultiReturn(new[] { "CellNeighborMatrix", "XYEqualtionList" })]
-        public static Dictionary<string, object> FormsCellNeighborMatrixNewer(List<Cell> cellLists, int tag = 1)
+        public static Dictionary<string, object> FormsCellNeighborMatrix(List<Cell> cellLists, int tag = 1)
         {
             List<List<int>> cellNeighborMatrix = new List<List<int>>();
             List<Cell> newCellLists = new List<Cell>();
@@ -862,7 +863,7 @@ namespace SpacePlanning
 
         //make cell neighbor matrix - older
         [MultiReturn(new[] { "CellNeighborMatrix", "XYEqualtionList" })]
-        public static Dictionary<string, object> FormsCellNeighborMatrix(List<Cell> cellLists, int tag = 1)
+        public static Dictionary<string, object> FormsCellNeighborMatrixO(List<Cell> cellLists, int tag = 1)
         {
             List<List<int>> cellNeighborMatrix = new List<List<int>>();
             List<Cell> newCellLists = new List<Cell>();
