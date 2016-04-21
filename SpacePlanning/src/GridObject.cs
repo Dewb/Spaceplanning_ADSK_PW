@@ -661,10 +661,8 @@ namespace SpacePlanning
             return MakeOrthoBorderOutline(cellNeighborMatrix, cellsInsideList);           
           
         }
-
-
         //get list of poly and merge them to make one big poly
-        public static Dictionary<string,object> MergePolyDict(List<Polygon2d> polyList, List<Cell> cellListInput)
+        public static Dictionary<string, object> MergePolyDictO(List<Polygon2d> polyList, List<Cell> cellListInput)
         {
             List<Cell> cellList = cellListInput.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy
             List<Cell> cellsInsideList = new List<Cell>();
@@ -676,7 +674,7 @@ namespace SpacePlanning
                     {
                         cellsInsideList.Add(cellList[j]);
                         cellList[j].CellAvailable = false;
-                    }                        
+                    }
                 }
             }
 
@@ -699,6 +697,38 @@ namespace SpacePlanning
                 { "SortedCells", ( sortedCells) },
                 { "CellNeighborMatrix", ( cellNeighborMatrixCopy) },
                 { "CellNeighborMatrixOrig", ( cellNeighborMatrix) },
+            };
+        }
+
+
+        //get list of poly and merge them to make one big poly
+        public static Dictionary<string,object> MergePolyDict(List<Polygon2d> polyList, List<Cell> cellListInput)
+        {
+            List<Cell> cellList = cellListInput.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy
+            List<Cell> cellsInsideList = new List<Cell>();
+            for (int i = 0; i < polyList.Count; i++)
+            {
+                for (int j = 0; j < cellList.Count; j++)
+                {
+                    if (GraphicsUtility.PointInsidePolygonTest(polyList[i], cellList[j].CenterPoint) && cellList[j].CellAvailable)
+                    {
+                        cellsInsideList.Add(cellList[j]);
+                        cellList[j].CellAvailable = false;
+                    }                        
+                }
+            }
+            //form the cell neighbor matrix
+            Dictionary<string, object> cellNeighborData = FormsCellNeighborMatrix(cellsInsideList);
+            List<List<int>> cellNeighborMatrix = (List<List<int>>)cellNeighborData["CellNeighborMatrix"];//---
+            List<Cell> sortedCells = (List<Cell>)cellNeighborData["SortedCells"];
+            Dictionary<string, object> cellNeighborData2 = FormsCellNeighborMatrix(sortedCells);
+            List<List<int>> cellNeighborMatrix2 = (List<List<int>>)cellNeighborData2["CellNeighborMatrix"];//---
+            Polygon2d mergePoly = MakeOrthoBorderOutline(cellNeighborMatrix2, sortedCells);
+            return new Dictionary<string, object>
+            {
+                { "MergePoly", (mergePoly) },
+                { "SortedCells", ( sortedCells) },
+                { "CellNeighborMatrix", ( cellNeighborMatrix) },
             };
         }
 
