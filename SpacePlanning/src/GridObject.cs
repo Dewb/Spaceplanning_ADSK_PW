@@ -406,9 +406,17 @@ namespace SpacePlanning
 
 
         //get the cells and make an orthogonal outline poly
-        public static Polygon2d MakeOrthoBorderOutline(List<List<int>> cellNeighborMatrix, List<Cell> cellList)
+        public static Polygon2d MakeOrthoBorderOutline(List<List<int>> cellNeighborMatrixCopy, List<Cell> cellListInp)
         {
-            if (cellList == null || cellList.Count == 0) return null;
+            List<List<int>> cellNeighborMatrix = new List<List<int>>();
+            for (int i = 0; i < cellNeighborMatrixCopy.Count; i++)
+            {
+                List<int> idsList = new List<int>();
+                for (int j = 0; j < cellNeighborMatrixCopy[i].Count; j++) idsList.Add(cellNeighborMatrixCopy[i][j]);
+                cellNeighborMatrix.Add(idsList);
+            }
+            if (cellListInp == null || cellListInp.Count == 0) return null;
+            List<Cell> cellList = cellListInp.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy
             //get the id of the lowest left cell centroid from all the boundary cells
             List<Point2d> cenPtBorderCells = new List<Point2d>();
             List<Point2d> borderPolyPoints = new List<Point2d>();
@@ -461,7 +469,6 @@ namespace SpacePlanning
                 currentCellPoint = currentCell.LeftDownCorner;
                 num += 1;
             }
-
             return new Polygon2d(borderPolyPoints);
         }
 
@@ -669,18 +676,29 @@ namespace SpacePlanning
                     {
                         cellsInsideList.Add(cellList[j]);
                         cellList[j].CellAvailable = false;
-                    }
-                        
+                    }                        
                 }
             }
+
             Dictionary<string, object> cellNeighborData = FormsCellNeighborMatrix(cellsInsideList);
             List<List<int>> cellNeighborMatrix = (List<List<int>>)cellNeighborData["CellNeighborMatrix"];
-            string foo = "";
-            Polygon2d mergePoly = MakeOrthoBorderOutline(cellNeighborMatrix, cellsInsideList);
+
+            List<List<int>> cellNeighborMatrixCopy = new List<List<int>>();
+            for (int i = 0; i < cellNeighborMatrix.Count; i++)
+            {
+                List<int> idsList = new List<int>();
+                for (int j = 0; j < cellNeighborMatrix[i].Count; j++) idsList.Add(cellNeighborMatrix[i][j]);
+                cellNeighborMatrixCopy.Add(idsList);
+            }
+            List<Cell> sortedCells = (List<Cell>)cellNeighborData["SortedCells"];
+            Polygon2d mergePoly = MakeOrthoBorderOutline(cellNeighborMatrixCopy, sortedCells);
             return new Dictionary<string, object>
             {
                 { "MergePoly", (mergePoly) },
-                { "CellLists", ( cellsInsideList) }
+                { "CellLists", ( cellsInsideList) },
+                { "SortedCells", ( sortedCells) },
+                { "CellNeighborMatrix", ( cellNeighborMatrixCopy) },
+                { "CellNeighborMatrixOrig", ( cellNeighborMatrix) },
             };
         }
 
@@ -786,26 +804,34 @@ namespace SpacePlanning
             for (int k = 0; k < cellCenterPtLists.Count; k++) XYEquationLists.Add(XYEquationList[k]);
             List<Cell> sortedCells = new List<Cell>();
             for(int i = 0; i < SortedXYEquationIndices.Count; i++) sortedCells.Add(newCellLists[SortedXYEquationIndices[i]]);
+
             return new Dictionary<string, object>
             {
                 { "SortedCells", (sortedCells) },
+                { "CellCenterPoints" , (cellCenterPtLists) },
                 { "SortedCellIndices", (SortedXYEquationIndices) },
                 { "XYEqualtionList", ( XYEquationLists) }
             };
         }
 
         //make cell neighbor matrix
-        [MultiReturn(new[] { "CellNeighborMatrix", "XYEqualtionList" })]
-        public static Dictionary<string, object> FormsCellNeighborMatrix(List<Cell> cellLists, int tag = 1)
+        [MultiReturn(new[] { "CellNeighborMatrix", "XYEqualtionList", "SortedCells" })]
+        public static Dictionary<string, object> FormsCellNeighborMatrix(List<Cell> cellLists)
         {
+            double dimX = cellLists[0].DimX, dimY = cellLists[0].DimY;
             List<List<int>> cellNeighborMatrix = new List<List<int>>();
+            List<Cell> cellListCopy = cellLists.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy
+            Dictionary<string, object> sortedObject = SortCellList(cellListCopy);
+            List<Cell> newCellLists = (List<Cell>)sortedObject["SortedCells"];
+            List<Point2d> cellCenterPtLists = (List<Point2d>)sortedObject["CellCenterPoints"];
+            List<double> XYEquationLists = (List<double>)sortedObject["XYEqualtionList"];
+            /*
             List<Cell> newCellLists = new List<Cell>();
             for (int i = 0; i < cellLists.Count; i++)
             {
                 Cell cellItem = new Cell(cellLists[i]);
                 newCellLists.Add(cellItem);
             }
-            //cellLists.Clear();
             List<Point2d> cellCenterPtLists = new List<Point2d>();
             for (int i = 0; i < newCellLists.Count; i++)
             {
@@ -834,9 +860,7 @@ namespace SpacePlanning
             List<int> SortedIndicesY = new List<int>();
             List<int> SortedXYEquationIndices = new List<int>();
             SortedXYEquationIndices = BasicUtility.Quicksort(XYEquationList, UnsortedIndices, 0, UnsortedIndices.Length - 1);
-            double dimX = newCellLists[0].DimX;
-            double dimY = newCellLists[0].DimY;
-            List<List<Point2d>> cellNeighborPoint2d = new List<List<Point2d>>();
+           
             
             List<double> SortedXYEquationValues = new List<double>();
             for (int i = 0; i < SortedXYEquationIndices.Count; i++)
@@ -849,6 +873,9 @@ namespace SpacePlanning
             {
                 XYEquationLists.Add(XYEquationList[k]);
             }
+            */
+            
+
             for (int i = 0; i < cellCenterPtLists.Count; i++)
             {
                 Cell currentCell = newCellLists[i];
@@ -889,14 +916,14 @@ namespace SpacePlanning
                 neighborPoints.Add(up);
                 neighborPoints.Add(left);
                 neighborPoints.Add(down);     
-                cellNeighborPoint2d.Add(neighborPoints);
                 cellNeighborMatrix.Add(neighborCellIndex);
             }
           
             return new Dictionary<string, object>
             {
                 { "CellNeighborMatrix", (cellNeighborMatrix) },
-                { "XYEqualtionList", ( XYEquationLists) }
+                { "XYEqualtionList", ( XYEquationLists) },
+                { "SortedCells" , (newCellLists) }
             };
         }
 
