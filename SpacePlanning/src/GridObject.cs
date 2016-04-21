@@ -749,7 +749,7 @@ namespace SpacePlanning
         internal static double EquationforXYLocation(double x, double y)
         {
             double A = 100, B = 1;
-           //return 1000 * Math.Round((A * x * x * x + B * y * y * y + (A - B) * x + (B - A) * y),3);
+            //return 1000 * Math.Round((A * x * x * x + B * y * y * y + (A - B) * x + (B - A) * y),3);
             //return 1000*Math.Round(((A * x + B * y)), 3); 
             return 1000*Math.Round(((A * x) + (B * y)),3);
         }
