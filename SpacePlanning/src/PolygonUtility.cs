@@ -212,30 +212,10 @@ namespace SpacePlanning
             return pt;
         }
 
-        //make wholesome polys inside till it meets certain area cover
-        public static Dictionary<string, object> MakeFormInSite(Polygon2d poly, int recompute = 5)
-        {
-            bool blockPlaced = false;
-            int count = 0, maxTry = 200;
-            double areaSite = AreaCheckPolygon(poly);
-            Dictionary<string, object> wholeSomeData = MakeWholesomeBlockInPoly(poly, recompute);
-            while (blockPlaced == false && count < maxTry)
-            {
-                wholeSomeData = MakeWholesomeBlockInPoly(poly, recompute);
-                List<Polygon2d> polysWhole = (List<Polygon2d>)wholeSomeData["WholesomePolys"];
-                double areaPlaced = 0;
-                for (int i = 0; i < polysWhole.Count; i++) areaPlaced += AreaCheckPolygon(polysWhole[i]);
-                if (areaPlaced < areaSite*0.5) blockPlaced = false;
-                else blockPlaced = true;
-                count += 1;
-                Trace.WriteLine("Trying forming up for : " + count);
-            }         
-            return wholeSomeData;
-        }
-
+     
 
         //get a poly and find rectangular polys inside. then merge them together to form a big poly
-        public static Dictionary<string, object> MakeWholesomeBlockInPoly(Polygon2d poly, int recompute = 5)
+        public static Dictionary<string, object> MakeWholesomeBlockInPoly(Polygon2d poly, double recompute = 5)
         {
             if (poly == null || poly.Points == null || poly.Points.Count == 0) return null;
             List<Polygon2d> wholesomePolyList = new List<Polygon2d>();
@@ -351,14 +331,7 @@ namespace SpacePlanning
 
             return new Dictionary<string, object>
             {
-                { "HorizontalLines", (hLines) },
-                { "VerticalLines", (vLines) },
-                { "HorizontalMidPoint", (hMidPt) },
-                { "VerticalMidPoint", (vMidPt) },
-                { "HorizontalIndexLow", (hIndLow) },
-                { "HorizontalIndexHigh", (hIndHigh) },
                 { "WholesomePolys", (cleanWholesomePolyList) },
-                { "NumSidesList", (numSidesList) },
                 { "PolysAfterSplit", (allPolyAfterSplit) }
             };
         }

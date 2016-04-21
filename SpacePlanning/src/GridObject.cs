@@ -34,8 +34,7 @@ namespace SpacePlanning
             _dimX = dimensionX;
             _dimY = dimensionY;
         }
-
-
+        
 
         //make list of point2d from a bounding box as cell centers
         internal static List<Point2d> GridPointsFromBBoxNew(List<Point2d> bbox, double dimXX, double dimYY, double a, double b)
@@ -362,51 +361,9 @@ namespace SpacePlanning
             return cellIdList;
             }
 
-        //get border cells and make outline border poly -  not working
-        public static Polygon2d MakeBorderPoly(List<List<int>> cellNeighborMatrix, List<int> borderCellIdList, List<Cell> cellList)
-        {
-           
-            //get the id of the lowest left cell centroid from all the boundary cells
-            List<Point2d> cenPtBorderCells = new List<Point2d>();
-            List<Point2d> borderPolyPoints = new List<Point2d>();
-            for (int i = 0; i < borderCellIdList.Count; i++) cenPtBorderCells.Add(cellList[borderCellIdList[i]].CenterPoint);    
-            int lowestCellId = GraphicsUtility.ReturnLowestPointFromListNew(cenPtBorderCells);
-            Cell currentCell = cellList[borderCellIdList[lowestCellId]];
-            Point2d currentCellPoint = currentCell.CenterPoint;
-            int currentIndex = lowestCellId;
-            int num = 0;
-            //order of neighbors : right , up , left , down
-            while (num < borderCellIdList.Count)
-            {
-                borderPolyPoints.Add(currentCellPoint);
-                if (cellNeighborMatrix[borderCellIdList[currentIndex]][0] > -1)
-                {
-                    currentIndex = cellNeighborMatrix[borderCellIdList[currentIndex]][0];
-                }
-                else if(cellNeighborMatrix[borderCellIdList[currentIndex]][1] > -1)
-                {
-                    currentIndex = cellNeighborMatrix[borderCellIdList[currentIndex]][1];
-                }
-                else if (cellNeighborMatrix[borderCellIdList[currentIndex]][2] > -1)
-                {
-                    currentIndex = cellNeighborMatrix[borderCellIdList[currentIndex]][2];
-                }
-                else if (cellNeighborMatrix[borderCellIdList[currentIndex]][3] > -1)
-                {
-                    currentIndex = cellNeighborMatrix[borderCellIdList[currentIndex]][3];
-                }
-                currentCell = cellList[borderCellIdList[currentIndex]];
-                currentCellPoint = currentCell.CenterPoint;
-                num += 1;
-            }
-            
-            return new Polygon2d(borderPolyPoints);
-            //return lowestCellId;
-        }
-
-
+   
         //get the cells and make an orthogonal outline poly
-        public static Polygon2d MakeOrthoBorderOutline(List<List<int>> cellNeighborMatrixCopy, List<Cell> cellListInp)
+        public static Polygon2d OrthoMaker(List<List<int>> cellNeighborMatrixCopy, List<Cell> cellListInp)
         {
             List<List<int>> cellNeighborMatrix = new List<List<int>>();
             for (int i = 0; i < cellNeighborMatrixCopy.Count; i++)
@@ -472,7 +429,7 @@ namespace SpacePlanning
             return new Polygon2d(borderPolyPoints);
         }
 
-        //get the cells and make an orthogonal outline poly
+        //get the cells and make an orthogonal outline poly - not using now
         public static Polygon2d CreateBorder(List<List<int>> cellNeighborMatrix, List<Cell> cellList)
         {
             if (cellList == null || cellList.Count == 0) return null;
@@ -547,7 +504,8 @@ namespace SpacePlanning
         }
 
         //make cells and then make ortho border
-        public static Dictionary<string, object> MakeOrthogonalCornersPoly(List<Point2d> outlinePoints, double dim)
+        [MultiReturn(new[] { "OrthoBorderOutline", "CellLists" })]
+        public static Dictionary<string, object> CreateBorderOrtho(List<Point2d> outlinePoints, double dim)
         {
             List<Point2d> bboxPoints = ReadData.FromPointsGetBoundingPoly(outlinePoints);
             Dictionary<string, object> cellInformation = GridPointsInsideOutline(bboxPoints, outlinePoints, dim, dim);
@@ -557,7 +515,7 @@ namespace SpacePlanning
             List<Point2d> pointsInsideOutline = (List<Point2d>)cellInformation["PointsInsideOutline"];
             Dictionary<string, object> cellNeighborData = FormsCellNeighborMatrix(cellList1);
             List<List<int>> cellNeighborMatrix = (List<List<int>>)cellNeighborData["CellNeighborMatrix"];
-            Polygon2d orthoBorder = MakeOrthoBorderOutline(cellNeighborMatrix, cellList2);
+            Polygon2d orthoBorder = OrthoMaker(cellNeighborMatrix, cellList2);
             return new Dictionary<string, object>
             {
                 { "OrthoBorderOutline", (orthoBorder) },
@@ -565,144 +523,31 @@ namespace SpacePlanning
             };
         }
 
-
-        //get the cells and make an orthogonal outline poly
-        public static Dictionary<string,object> CreateBorderOutline(List<Cell> cellList, List<int> borderCellIdList)
+        //make wholesome polys inside till it meets certain area cover
+        [MultiReturn(new[] { "WholesomePolys", "PolysAfterSplit" })]
+        public static Dictionary<string, object> FormMakerInSite(Polygon2d poly,double groundCover = 0.5)
         {
-            if (cellList == null || cellList.Count == 0) return null;
-            //get the id of the lowest left cell centroid from all the boundary cells
-            List<Point2d> cenPtBorderCells = new List<Point2d>();
-            List<Point2d> borderPolyPoints = new List<Point2d>();
-            List <Cell> borderCellLists = new List<Cell>();
-            for (int i = 0; i < borderCellIdList.Count; i++)
+            bool blockPlaced = false;
+            int count = 0, maxTry = 200;
+            double areaSite = PolygonUtility.AreaCheckPolygon(poly);
+            Dictionary<string, object> wholeSomeData = PolygonUtility.MakeWholesomeBlockInPoly(poly, groundCover);
+            while (blockPlaced == false && count < maxTry)
             {
-                cenPtBorderCells.Add(cellList[borderCellIdList[i]].CenterPoint);
-                borderCellLists.Add(cellList[borderCellIdList[i]]);
+                wholeSomeData = PolygonUtility.MakeWholesomeBlockInPoly(poly, groundCover);
+                List<Polygon2d> polysWhole = (List<Polygon2d>)wholeSomeData["WholesomePolys"];
+                double areaPlaced = 0;
+                for (int i = 0; i < polysWhole.Count; i++) areaPlaced += PolygonUtility.AreaCheckPolygon(polysWhole[i]);
+                if (areaPlaced < areaSite * groundCover) blockPlaced = false;
+                else blockPlaced = true;
+                count += 1;
+                Trace.WriteLine("Trying forming up for : " + count);
             }
-            int lowestCellId = GraphicsUtility.ReturnLowestPointFromListNew(cenPtBorderCells);
-            Cell currentCell = cellList[lowestCellId];
-            Point2d currentCellPoint = currentCell.LeftDownCorner; 
-            int currentIndex = lowestCellId;
-            bool downMode = false;
-            int num = 0;
-            Dictionary<string,object> cellInformation = FormsCellNeighborMatrix(borderCellLists);
-            List<List<int>> cellNeighborMatrix = (List<List<int>>)cellInformation["CellNeighborMatrix"];
-            //order of neighbors : right , up , left , down
-            while (num < 50)
-            {
-                borderPolyPoints.Add(currentCellPoint);
-                if (cellNeighborMatrix[currentIndex][0] > -1 &&
-                    cellList[cellNeighborMatrix[currentIndex][0]].CellAvailable)
-                {
-                    currentIndex = cellNeighborMatrix[currentIndex][0]; // right
-                    //currentCell = cellList[currentIndex];
-                    //currentCell.CellAvailable = false;
-                    //currentCellPoint = currentCell.RightDownCorner;
-                }
-                else if (cellNeighborMatrix[currentIndex][1] > -1 &&
-                    cellList[cellNeighborMatrix[currentIndex][1]].CellAvailable)
-                {
-                    currentIndex = cellNeighborMatrix[currentIndex][1]; // up
-                    //currentCell = cellList[currentIndex];
-                    //currentCell.CellAvailable = false;
-                    //currentCellPoint = currentCell.RightUpCorner;
-                }
-                else if (cellNeighborMatrix[currentIndex][2] > -1 &&
-                    cellList[cellNeighborMatrix[currentIndex][2]].CellAvailable)
-                {
-                    currentIndex = cellNeighborMatrix[currentIndex][2]; // left
-                    //currentCell = cellList[currentIndex];
-                    //currentCell.CellAvailable = false;
-                    //currentCellPoint = currentCell.LeftUpCorner;
-                }
-                else if (cellNeighborMatrix[currentIndex][3] > -1 &&
-                    cellList[cellNeighborMatrix[currentIndex][3]].CellAvailable)
-                {
-                    currentIndex = cellNeighborMatrix[currentIndex][3]; // down
-                    //currentCell = cellList[currentIndex];
-                    //currentCell.CellAvailable = false;
-                    //currentCellPoint = currentCell.LeftDownCorner;
-                  
-                }
-                currentCell = cellList[currentIndex];
-                currentCell.CellAvailable = false;
-                currentCellPoint = currentCell.LeftDownCorner;
-                num += 1;
-            }
-
-            return new Dictionary<string, object>
-            {
-                { "BorderOutline", (new Polygon2d(borderPolyPoints)) },
-                { "LowestCellId", ( lowestCellId) },
-                { "CellNeighborMatrixForBorderCells" , (cellNeighborMatrix) }
-            };
+            return wholeSomeData;
         }
 
-  
-
-
-
         //get list of poly and merge them to make one big poly
-        public static Polygon2d MergePoly(List<Polygon2d> polyList, List<Cell> cellListInput)
-        {
-            List<Cell> cellList = cellListInput.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy
-            List<Cell> cellsInsideList = new List<Cell>();
-            for(int i = 0; i < polyList.Count; i++)
-            {
-                for(int j = 0; j < cellList.Count; j++)
-                {
-                    if (GraphicsUtility.PointInsidePolygonTest(polyList[i], cellList[j].CenterPoint))
-                        cellsInsideList.Add(cellList[j]);
-                }
-            }
-            Dictionary<string, object> cellNeighborData = FormsCellNeighborMatrix(cellsInsideList);
-            List<List<int>> cellNeighborMatrix = (List<List<int>>)cellNeighborData["CellNeighborMatrix"];
-            string foo = "";
-            return MakeOrthoBorderOutline(cellNeighborMatrix, cellsInsideList);           
-          
-        }
-        //get list of poly and merge them to make one big poly
-        public static Dictionary<string, object> MergePolyDictO(List<Polygon2d> polyList, List<Cell> cellListInput)
-        {
-            List<Cell> cellList = cellListInput.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy
-            List<Cell> cellsInsideList = new List<Cell>();
-            for (int i = 0; i < polyList.Count; i++)
-            {
-                for (int j = 0; j < cellList.Count; j++)
-                {
-                    if (GraphicsUtility.PointInsidePolygonTest(polyList[i], cellList[j].CenterPoint) && cellList[j].CellAvailable)
-                    {
-                        cellsInsideList.Add(cellList[j]);
-                        cellList[j].CellAvailable = false;
-                    }
-                }
-            }
-
-            Dictionary<string, object> cellNeighborData = FormsCellNeighborMatrix(cellsInsideList);
-            List<List<int>> cellNeighborMatrix = (List<List<int>>)cellNeighborData["CellNeighborMatrix"];
-
-            List<List<int>> cellNeighborMatrixCopy = new List<List<int>>();
-            for (int i = 0; i < cellNeighborMatrix.Count; i++)
-            {
-                List<int> idsList = new List<int>();
-                for (int j = 0; j < cellNeighborMatrix[i].Count; j++) idsList.Add(cellNeighborMatrix[i][j]);
-                cellNeighborMatrixCopy.Add(idsList);
-            }
-            List<Cell> sortedCells = (List<Cell>)cellNeighborData["SortedCells"];
-            Polygon2d mergePoly = MakeOrthoBorderOutline(cellNeighborMatrixCopy, sortedCells);
-            return new Dictionary<string, object>
-            {
-                { "MergePoly", (mergePoly) },
-                { "CellLists", ( cellsInsideList) },
-                { "SortedCells", ( sortedCells) },
-                { "CellNeighborMatrix", ( cellNeighborMatrixCopy) },
-                { "CellNeighborMatrixOrig", ( cellNeighborMatrix) },
-            };
-        }
-
-
-        //get list of poly and merge them to make one big poly
-        public static Dictionary<string,object> MergePolyDict(List<Polygon2d> polyList, List<Cell> cellListInput)
+        [MultiReturn(new[] { "MergedPoly", "SortedCells"})]
+        public static Dictionary<string,object> MergePoly(List<Polygon2d> polyList, List<Cell> cellListInput)
         {
             List<Cell> cellList = cellListInput.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy
             List<Cell> cellsInsideList = new List<Cell>();
@@ -723,12 +568,11 @@ namespace SpacePlanning
             List<Cell> sortedCells = (List<Cell>)cellNeighborData["SortedCells"];
             Dictionary<string, object> cellNeighborData2 = FormsCellNeighborMatrix(sortedCells);
             List<List<int>> cellNeighborMatrix2 = (List<List<int>>)cellNeighborData2["CellNeighborMatrix"];//---
-            Polygon2d mergePoly = MakeOrthoBorderOutline(cellNeighborMatrix2, sortedCells);
+            Polygon2d mergePoly = OrthoMaker(cellNeighborMatrix2, sortedCells);
             return new Dictionary<string, object>
             {
-                { "MergePoly", (mergePoly) },
-                { "SortedCells", ( sortedCells) },
-                { "CellNeighborMatrix", ( cellNeighborMatrix) },
+                { "MergedPoly", (mergePoly) },
+                { "SortedCells", ( sortedCells) }
             };
         }
 
@@ -751,38 +595,9 @@ namespace SpacePlanning
             return cellSelectedList;
         }
 
-        public static Dictionary<string, object> CreateCellNeighborMatrix(List<Cell> cellLists, int tag = 1)
-        {
-            List<List<int>> cellNeighborMatrix = new List<List<int>>();
-            double dimX = cellLists[0].DimX, dimY = cellLists[0].DimY, eps = 0.2;
-            List<double> xyEquationList = new List<double>();
-
-            for (int i = 0; i < cellLists.Count; i++)
-            {
-                double x = cellLists[i].CenterPoint.X, y = cellLists[i].CenterPoint.Y, A = 33, B = 50;
-                double eq = A * x * x * x + B * y * y * y + (A - B) * x + (B - A) * y;
-                xyEquationList.Add(eq);
-            }
-
-            for (int i = 0; i < cellLists.Count; i++)
-            {
-                double x = cellLists[i].CenterPoint.X, y = cellLists[i].CenterPoint.Y, A = 33, B = 50;
-                double eq = A * x * x * x + B * y * y * y + (A - B) * x + (B - A) * y;
-                xyEquationList.Add(eq);
-            }
-
-
-
-            return new Dictionary<string, object>
-            {
-                { "CellNeighborMatrix", (cellNeighborMatrix) },
-                { "XYEqualtionList", ( xyEquationList) }
-            };
-
-        }
-
+      
         //finds any id issues in the cellNeighborMatrix
-        public static List<bool> FindProblemCellNeighbors(List<List<int>> cellNeighborMatrix)
+        public static List<bool> FindProblemsInCellNeighbors(List<List<int>> cellNeighborMatrix)
         {
             List<bool> isErrorList = new List<bool>();
             for(int i = 0; i < cellNeighborMatrix.Count; i++)
@@ -805,9 +620,7 @@ namespace SpacePlanning
             //return 1000*Math.Round(((A * x + B * y)), 3); 
             return 1000*Math.Round(((A * x) + (B * y)),3);
         }
-
-
-
+        
         //sorts a list of cells based on a equation
         [MultiReturn(new[] { "SortedCells", "SortedCellIndices", "XYEqualtionList" })]
         public static Dictionary<string, object> SortCellList(List<Cell> cellLists)
@@ -958,157 +771,8 @@ namespace SpacePlanning
         }
 
 
-        //make cell neighbor matrix - older
-        [MultiReturn(new[] { "CellNeighborMatrix", "XYEqualtionList" })]
-        public static Dictionary<string, object> FormsCellNeighborMatrixO(List<Cell> cellLists, int tag = 1)
-        {
-            List<List<int>> cellNeighborMatrix = new List<List<int>>();
-            List<Cell> newCellLists = new List<Cell>();
-            for (int i = 0; i < cellLists.Count; i++)
-            {
-                Cell cellItem = new Cell(cellLists[i]);
-                newCellLists.Add(cellItem);
-            }
-            cellLists.Clear();
-            List<Point2d> cellCenterPtLists = new List<Point2d>();
-            for (int i = 0; i < newCellLists.Count; i++)
-            {
-                cellCenterPtLists.Add(newCellLists[i].CenterPoint);
-            }
-
-            double[] XYEquationList = new double[cellCenterPtLists.Count];
-
-            double A = 100.0;
-            double B = 1.0;
-            int[] UnsortedIndices = new int[cellCenterPtLists.Count];
-            double[] XCordCenterPt = new double[cellCenterPtLists.Count];
-            double[] YCordCenterPt = new double[cellCenterPtLists.Count];
-
-            for (int i = 0; i < cellCenterPtLists.Count; i++)
-            {
-
-                UnsortedIndices[i] = i;
-                XCordCenterPt[i] = cellCenterPtLists[i].X;
-                YCordCenterPt[i] = cellCenterPtLists[i].Y;
-                double value = (A * cellCenterPtLists[i].X) + (B * cellCenterPtLists[i].Y);
-                XYEquationList[i] = value;
-
-            }
-            List<int> SortedIndicesX = new List<int>();
-            List<int> SortedIndicesY = new List<int>();
-            List<int> SortedXYEquationIndices = new List<int>();
-            SortedXYEquationIndices = BasicUtility.Quicksort(XYEquationList, UnsortedIndices, 0, UnsortedIndices.Length - 1);
-            double dimX = newCellLists[0].DimX;
-            double dimY = newCellLists[0].DimY;
-            List<List<Point2d>> cellNeighborPoint2d = new List<List<Point2d>>();
-
-            List<double> SortedXYEquationValues = new List<double>();
-            for (int i = 0; i < SortedXYEquationIndices.Count; i++)
-            {
-                SortedXYEquationValues.Add(XYEquationList[SortedXYEquationIndices[i]]);
-            }
-
-            List<double> XYEquationLists = new List<double>();
-            for (int k = 0; k < cellCenterPtLists.Count; k++)
-            {
-                XYEquationLists.Add(XYEquationList[k]);
-            }
-            for (int i = 0; i < cellCenterPtLists.Count; i++)
-            {
-                Cell currentCell = newCellLists[i];
-                List<Point2d> neighborPoints = new List<Point2d>();
-                List<int> neighborCellIndex = new List<int>();
-                Point2d currentCenterPt = cellCenterPtLists[i];
-                Point2d down = new Point2d(currentCenterPt.X, currentCenterPt.Y - dimY);
-                Point2d left = new Point2d(currentCenterPt.X - dimX, currentCenterPt.Y);
-                Point2d up = new Point2d(currentCenterPt.X, currentCenterPt.Y + dimY);
-                Point2d right = new Point2d(currentCenterPt.X + dimX, currentCenterPt.Y);
-
-                //find index of down cell
-                double downValue = (A * currentCenterPt.X) + (B * (currentCenterPt.Y - dimY));
-                int downCellIndex = BasicUtility.BinarySearchDouble(XYEquationLists, downValue);
-                //find index of left cell
-                double leftValue = (A * (currentCenterPt.X - dimX)) + (B * (currentCenterPt.Y));
-                int leftCellIndex = BasicUtility.BinarySearchDouble(XYEquationLists, leftValue);
-                //find index of up cell
-                double upValue = (A * (currentCenterPt.X)) + (B * (currentCenterPt.Y + dimY));
-                int upCellIndex = BasicUtility.BinarySearchDouble(XYEquationLists, upValue);
-                //find index of up cell
-                double rightValue = (A * (currentCenterPt.X + dimX)) + (B * (currentCenterPt.Y));
-                int rightCellIndex = BasicUtility.BinarySearchDouble(XYEquationLists, rightValue);
-
-
-                //RULD - right, up, left, down | adding -1 means the cell does not have any neighbor at that spot
-                if (rightCellIndex > -1) { neighborCellIndex.Add(rightCellIndex); } else { neighborCellIndex.Add(-1); };
-                if (upCellIndex > -1) { neighborCellIndex.Add(upCellIndex); } else { neighborCellIndex.Add(-1); };
-                if (leftCellIndex > -1) { neighborCellIndex.Add(leftCellIndex); } else { neighborCellIndex.Add(-1); };
-                if (downCellIndex > -1) { neighborCellIndex.Add(downCellIndex); } else { neighborCellIndex.Add(-1); };
-
-
-
-                neighborPoints.Add(right);
-                neighborPoints.Add(up);
-                neighborPoints.Add(left);
-                neighborPoints.Add(down);
-                cellNeighborPoint2d.Add(neighborPoints);
-                cellNeighborMatrix.Add(neighborCellIndex);
-            }
-
-            return new Dictionary<string, object>
-            {
-                { "CellNeighborMatrix", (cellNeighborMatrix) },
-                { "XYEqualtionList", ( XYEquationLists) }
-            };
-        }
         
-        
-        // test binary search
-        public static List<int> TestBinarySearch(List<int> inp, int key)
-        {
-            List<int> indices = new List<int>();
-            List<int> inpList = new List<int>();
-            for(int i = 0; i < inp.Count; i++)
-            {
-                inpList.Add(inp[i]);
-            }
-            int value = 0;
-            int prevValue = 10000000;
-            int m = 1;
-            while (value != -1) {
-                value = BasicUtility.BinarySearch(inpList, key);                
-                if (value > -1)
-                {
-                    inpList.RemoveAt(value);
-                    if (value >= prevValue)
-                    {
-                        indices.Add(value + 1);
-                        m += 1;
-                    }
-                    else indices.Add(value);
-                }
-                prevValue = value;
-
-            }// end of while loop
-            return indices;
-        }
- 
-
-        // test quick sort algorithm
-        public static List<int> TestQuickSort(double[] main = null, int[] index = null, int tag=1)
-        {
-            int left = 0;
-            int right = index.Length - 1;
-            int[] newIndex = new int[index.Length];
-            for(int i = 0; i < index.Length; i++)
-            {
-                newIndex[i] = index[i];
-            }
-
-            return BasicUtility.Quicksort(main, newIndex, left, right); 
-        }
-
-
-
+      
 
 
     }

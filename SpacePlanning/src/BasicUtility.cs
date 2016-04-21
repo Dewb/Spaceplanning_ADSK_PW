@@ -125,7 +125,7 @@ namespace SpacePlanning
 
 
         //binary search algo with double
-        public static int BinarySearchDouble(List<double> inputArray, double key)
+        internal static int BinarySearchDouble(List<double> inputArray, double key)
         {
             int min = 0;
             int max = inputArray.Count - 1;
@@ -162,8 +162,58 @@ namespace SpacePlanning
             return dups;
 
         }
+
+
+        // test binary search
+        internal static List<int> TestBinarySearch(List<int> inp, int key)
+        {
+            List<int> indices = new List<int>();
+            List<int> inpList = new List<int>();
+            for (int i = 0; i < inp.Count; i++)
+            {
+                inpList.Add(inp[i]);
+            }
+            int value = 0;
+            int prevValue = 10000000;
+            int m = 1;
+            while (value != -1)
+            {
+                value = BinarySearch(inpList, key);
+                if (value > -1)
+                {
+                    inpList.RemoveAt(value);
+                    if (value >= prevValue)
+                    {
+                        indices.Add(value + 1);
+                        m += 1;
+                    }
+                    else indices.Add(value);
+                }
+                prevValue = value;
+
+            }// end of while loop
+            return indices;
+        }
+
+
+        // test quick sort algorithm
+        internal static List<int> TestQuickSort(double[] main = null, int[] index = null, int tag = 1)
+        {
+            int left = 0;
+            int right = index.Length - 1;
+            int[] newIndex = new int[index.Length];
+            for (int i = 0; i < index.Length; i++)
+            {
+                newIndex[i] = index[i];
+            }
+
+            return Quicksort(main, newIndex, left, right);
+        }
+
+
+
     }
 
 
-    
+
 }
