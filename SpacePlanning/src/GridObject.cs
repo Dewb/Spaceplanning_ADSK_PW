@@ -542,7 +542,7 @@ namespace SpacePlanning
                 if (areaPlaced < areaSite * groundCoverLow || areaPlaced > areaSite * groundCoverHigh) blockPlaced = false;
                 else blockPlaced = true;
                 count += 1;
-                Trace.WriteLine("Trying forming up for : " + count);
+                //Trace.WriteLine("Trying forming up for : " + count);
             }
             List<Polygon2d> cleanWholesomePolyList = (List<Polygon2d>)wholeSomeData["WholesomePolys"];
             return new Dictionary<string, object>

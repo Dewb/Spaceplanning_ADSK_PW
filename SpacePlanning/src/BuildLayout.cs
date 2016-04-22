@@ -20,7 +20,7 @@ namespace SpacePlanning
         internal static Random ranGenerate = new Random();
         internal static double recurse = 0;
         internal static Point2d reference = new Point2d(0,0);
-        internal static int maxCount = 5, maxRound = 5;
+        internal static int maxCount = 2000, maxRound = 50;
 
 
         //gets and sets the space between points for any smoothened polygon2d
@@ -221,6 +221,7 @@ namespace SpacePlanning
         public static bool CheckPolyGetsExternalWall(Polygon2d poly, Polygon2d containerPoly, double shortEdgeDist = 16)
         {
             bool check = false;
+            if (!PolygonUtility.CheckPoly(poly)) return check;
             //make given polys reduce number of points
             Polygon2d polyReg = new Polygon2d(poly.Points);
             Polygon2d containerPolyReg = new Polygon2d(containerPoly.Points);
@@ -243,7 +244,7 @@ namespace SpacePlanning
                 }
                 if (check) break;
             }
-            Trace.WriteLine("Well lines are found to be adjacent ? ++++++++++++++++++++   " + check);
+            //Trace.WriteLine("Well lines are found to be adjacent ? ++++++++++++++++++++   " + check);
             return check;
         }
 
@@ -306,8 +307,9 @@ namespace SpacePlanning
                         while (!checkExternalWallAdj && countNew < maxPlacement)
                         {
                             Dictionary<string, object> splitReturned = SplitByDistance(currentPolyObj, ran, offset, dir);
+                            if (splitReturned == null) return null;
                             edgeSplitted = (List<Polygon2d>)splitReturned["PolyAfterSplit"];
-                            if (edgeSplitted == null) return null;
+                            if (!PolygonUtility.CheckPolyList(edgeSplitted)) return null;
                             areaA = PolygonUtility.AreaCheckPolygon(edgeSplitted[0]);
                             areaB = PolygonUtility.AreaCheckPolygon(edgeSplitted[1]);
                             //make a check on the returned polygon2d, if that gets an external wall or not
@@ -319,7 +321,7 @@ namespace SpacePlanning
                             {
                                 checkExternalWallAdj = CheckPolyGetsExternalWall(edgeSplitted[1], poly, offset);
                             }
-                            Trace.WriteLine("trying to have an external edge " + countNew);
+                            //Trace.WriteLine("trying to have an external edge " + countNew);
                             countNew += 1;
                         }// end of while
                         if (areaA < areaB)
@@ -536,6 +538,7 @@ namespace SpacePlanning
                 //Dictionary<string, object> splittedPoly = SplitByDistanceFromPoint(polyToPlace, dis, dir);
                 Dictionary<string, object> splittedPoly = SplitByDistance(polyToPlace, ran, dis, dir);
                 List<Polygon2d> polyReturnedList = (List<Polygon2d>)splittedPoly["PolyAfterSplit"];
+                if (!PolygonUtility.CheckPolyList(polyReturnedList)) return null;
                 List<int> ind = PolygonUtility.SortPolygonsFromAPoint(polyReturnedList, centerPt);
                 newPolyLists.Add(polyReturnedList[ind[0]]);
                 newPolyLists.Add(polyReturnedList[ind[1]]);
@@ -685,38 +688,45 @@ namespace SpacePlanning
                     dir = 0;
                     setSpan = spans[1];
                 }
-
                 Polygon2d currentPoly = poly;
                 int count = 0;
                 Random ran2 = new Random();
                 while (setSpan > 0 && programDataRetrieved.Count > 0)
                 {
-                    ProgramData progItem = programDataRetrieved.Pop();
+                    
                     Dictionary<string, object> splitReturn = SplitByDistance(currentPoly, ran2, distance, dir);
                     List<Polygon2d> polyAfterSplitting = (List<Polygon2d>)splitReturn["PolyAfterSplit"];
-                    double selectedArea = 0;
-                    double area1 = GraphicsUtility.AreaPolygon2d(polyAfterSplitting[0].Points);
-                    double area2 = GraphicsUtility.AreaPolygon2d(polyAfterSplitting[1].Points);
-                    if (area1 > area2)
+                    if (PolygonUtility.CheckPolyList(polyAfterSplitting))
                     {
-                        currentPoly = polyAfterSplitting[0];
-                        if (polyAfterSplitting[1] == null) break;
-                        polyList.Add(polyAfterSplitting[1]);
-                        progItem.AreaProvided = area1;
-                        areaList.Add(area2);
-                        selectedArea = area2;
+                        ProgramData progItem = programDataRetrieved.Pop();
+                        double selectedArea = 0;
+                        double area1 = GraphicsUtility.AreaPolygon2d(polyAfterSplitting[0].Points);
+                        double area2 = GraphicsUtility.AreaPolygon2d(polyAfterSplitting[1].Points);
+                        if (area1 > area2)
+                        {
+                            currentPoly = polyAfterSplitting[0];
+                            if (polyAfterSplitting[1] == null) break;
+                            polyList.Add(polyAfterSplitting[1]);
+                            progItem.AreaProvided = area1;
+                            areaList.Add(area2);
+                            selectedArea = area2;
+                        }
+                        else
+                        {
+                            currentPoly = polyAfterSplitting[1];
+                            polyList.Add(polyAfterSplitting[0]);
+                            progItem.AreaProvided = area2;
+                            areaList.Add(area1);
+                            selectedArea = area1;
+                        }
+                        if (currentPoly.Points == null) break;
+                        setSpan -= distance;
+                        count += 1;
                     }
                     else
                     {
-                        currentPoly = polyAfterSplitting[1];
-                        polyList.Add(polyAfterSplitting[0]);
-                        progItem.AreaProvided = area2;
-                        areaList.Add(area1);
-                        selectedArea = area1;
+                        break;
                     }
-                    if (currentPoly.Points == null) break;
-                    setSpan -= distance;
-                    count += 1;
                 }// end of while loop
 
 
@@ -842,8 +852,6 @@ namespace SpacePlanning
         // from a list of given polys  it assigns each program a list of polys till its area is satisfied
         internal static List<List<Polygon2d>> AssignPolysToProgramData(List<ProgramData> newProgDataList, List<Polygon2d> polygonLists)
         {
-
-          
             //reset the area provided to the input progdata
             for (int i = 0; i < newProgDataList.Count; i++)
             {
@@ -856,28 +864,26 @@ namespace SpacePlanning
             for (int i =0; i < newProgDataList.Count; i++)
             {
                 ProgramData progItem = newProgDataList[i];
-                Trace.WriteLine("Starting Porg Data : " + i + "///////////");
+                //Trace.WriteLine("Starting Porg Data : " + i + "///////////");
                 bool added = false;
                 //double areaProgram = progData[i].CurrentAreaNeeds;
                 List<Polygon2d> polysForProg = new List<Polygon2d>();
                 while (progItem.CurrentAreaNeeds>0 && polyStack.Count>0)
                 {
-                    Trace.WriteLine("  = = now in while = = ");
+                    //Trace.WriteLine("  = = now in while = = ");
                     Polygon2d currentPoly = polyStack.Pop();
                     double currentArea = PolygonUtility.AreaCheckPolygon(currentPoly);
                     progItem.AddAreaToProg(currentArea);
                     polysForProg.Add(currentPoly);
-                    Trace.WriteLine("Area Given Now is : " + progItem.AreaAllocatedValue);
-                    Trace.WriteLine("Area Left over to Add :" + progItem.CurrentAreaNeeds);
+                    //Trace.WriteLine("Area Given Now is : " + progItem.AreaAllocatedValue);
+                    //Trace.WriteLine("Area Left over to Add :" + progItem.CurrentAreaNeeds);
                     added = true;
                 }
-
                 //dummy is just to make sure the function re reuns when slider is hit
                 if(added) polyEachProgramList.Add(polysForProg);
-                if (!added) Trace.WriteLine("Did not add.  PolyStack Left : " + polyStack.Count + " | Current area needs were : " + progItem.CurrentAreaNeeds);
-                Trace.WriteLine("++++++++++++++++++++++++++++++");
-            }
-            
+                //if (!added) Trace.WriteLine("Did not add.  PolyStack Left : " + polyStack.Count + " | Current area needs were : " + progItem.CurrentAreaNeeds);
+                //Trace.WriteLine("++++++++++++++++++++++++++++++");
+            }            
             return polyEachProgramList;
         }
 
@@ -892,11 +898,7 @@ namespace SpacePlanning
             List<double> areaList = new List<double>();
             Stack<ProgramData> programDataRetrieved = new Stack<ProgramData>();
             List<ProgramData> newProgDataList = new List<ProgramData>();
-            for (int i = 0; i < progData.Count; i++)
-            {
-                ProgramData newProgData = new ProgramData(progData[i]);
-                newProgDataList.Add(newProgData);
-            }
+            for (int i = 0; i < progData.Count; i++) newProgDataList.Add(new ProgramData(progData[i]));
             List<Polygon2d> polyOrganizedList = new List<Polygon2d>();
             for (int i = 0; i < polyInputList.Count; i++)
             {
@@ -906,8 +908,7 @@ namespace SpacePlanning
                 List<Point2d> point2dList = (List<Point2d>)cellObject["PointsInsideOutline"];
                 List<Polygon2d> polyGridList = GridObject.MakeCellsFromGridPoints2d(point2dList, dimX, dimY);
                 polyOrganizedList.AddRange(polyGridList);
-            }
-            
+            }            
             polyList = AssignPolysToProgramData(newProgDataList, polyOrganizedList);
 
             return new Dictionary<string, object>

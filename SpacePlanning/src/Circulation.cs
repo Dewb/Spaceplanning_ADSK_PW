@@ -29,6 +29,7 @@ namespace SpacePlanning
         [MultiReturn(new[] { "DeptTopologyList", "CirculationNetwork", "DeptAllPolygons", "NonRedundantCirculationNetwork" })]
         public static Dictionary<string, object> MakeDeptTopology(List<DeptData> deptData, Polygon2d poly, double limit = 0)
         {
+            if (deptData == null || deptData.Count == 0 || !PolygonUtility.CheckPoly(poly)) return null;
             List<Polygon2d> polygonsAllDeptList = new List<Polygon2d>();
             List<DeptData> deptDataAllDeptList = new List<DeptData>();
             List<List<string>> deptNamesNeighbors = new List<List<string>>();
@@ -144,6 +145,7 @@ namespace SpacePlanning
         [MultiReturn(new[] { "CirculationPolygons", "UpdatedDeptPolygons" })]
         public static Dictionary<string, object> MakeDeptCirculation(List<DeptData> deptData, List<List<Line2d>> lineList, double width = 8)
         {
+            if (deptData == null || deptData.Count == 0 || lineList == null) return null;
             List<Line2d> cleanLineList = GraphicsUtility.FlattenLine2dList(lineList);
             List<Polygon2d> allDeptPolyList = new List<Polygon2d>();
             List<Polygon2d> circulationPolyList = new List<Polygon2d>();
@@ -167,12 +169,11 @@ namespace SpacePlanning
                     Polygon2d deptPoly = allDeptPolyList[j];
                     Point2d midPt = LineUtility.LineMidPoint(splitter);
                     Point2d nudgedMidPt = LineUtility.NudgeLineMidPt(splitter, deptPoly, 0.5);
-                    bool checkInside = GraphicsUtility.PointInsidePolygonTest(deptPoly, nudgedMidPt);
-                    if (checkInside)
+                    if (GraphicsUtility.PointInsidePolygonTest(deptPoly, nudgedMidPt))
                     {
                         Dictionary<string, object> splitResult = BuildLayout.SplitByLine(deptPoly, splitter, width);
                         List<Polygon2d> polyAfterSplit = (List<Polygon2d>)(splitResult["PolyAfterSplit"]);
-                        if (polyAfterSplit != null)
+                        if (PolygonUtility.CheckPolyList(polyAfterSplit))
                         {
                             double areaA = GraphicsUtility.AreaPolygon2d(polyAfterSplit[0].Points);
                             double areaB = GraphicsUtility.AreaPolygon2d(polyAfterSplit[1].Points);
@@ -201,12 +202,7 @@ namespace SpacePlanning
                 for (int j = 0; j < deptIdList.Count; j++)
                 {
                     if (deptIdList[j] == i)
-                    {
-                        if (j < updatedDeptPolyList.Count)
-                        {
-                            polyForDeptBranch.Add(updatedDeptPolyList[j]);
-                        }
-                    }
+                        if (j < updatedDeptPolyList.Count) polyForDeptBranch.Add(updatedDeptPolyList[j]);
                 }
                 deptPolyBranchedInList.Add(polyForDeptBranch);
             }

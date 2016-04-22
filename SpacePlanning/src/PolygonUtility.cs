@@ -30,6 +30,13 @@ namespace SpacePlanning
             else return true;
         }
 
+        //checks a polygonlist if any poly is null then return false
+        internal static bool CheckPolyList(List<Polygon2d> polyList)
+        {
+            bool check = true;
+            for(int i = 0; i < polyList.Count; i++) if (!CheckPoly(polyList[i])) check = false;
+            return check;            
+        }
         //check if a pointlist is null then return false
         internal static bool CheckPointList(List<Point2d> ptList)
         {
@@ -172,7 +179,7 @@ namespace SpacePlanning
             List<Point2d> cleanedPtList = new List<Point2d>();
             if (intersectedPoints.Count > 2) cleanedPtList = CleanDuplicatePoint2d(intersectedPoints);
             else cleanedPtList = intersectedPoints;
-            Trace.WriteLine("Found Intersections : " + cleanedPtList.Count);
+            //Trace.WriteLine("Found Intersections : " + cleanedPtList.Count);
             return OrderPolygon2dPoints(poly, cleanedPtList, pIndex); //intersectedPoints
         }
                 
@@ -279,10 +286,10 @@ namespace SpacePlanning
                     //ADD to wholesomeblocklist
                     wholesomePolyList.Add(currentPoly);
                     currentPoly = splittedPolys.Pop();
-                    Trace.WriteLine("WholeSomeBlock Found " + wholesomePolyList.Count);
+                    //Trace.WriteLine("WholeSomeBlock Found " + wholesomePolyList.Count);
                     //continue;
                 }
-                Trace.WriteLine("================Current Number side Number is  " + numSides);            
+                //Trace.WriteLine("================Current Number side Number is  " + numSides);            
                     
                 //SPLIT blocks-----------------------------------------------------------------------------                
                 while (splitDone == false && count < maxTry && allSplitLines.Count > 0)
@@ -297,7 +304,7 @@ namespace SpacePlanning
                         polyAfterSplit[0] == null || polyAfterSplit[0].Points == null || polyAfterSplit[0].Points.Count == 0 ||
                         polyAfterSplit[1] == null || polyAfterSplit[1].Points == null || polyAfterSplit[1].Points.Count == 0)
                     {
-                        Trace.WriteLine("!!!!!!!!!!!!!!!!!!! Drat !!!!!!!!!!!!!!!!");
+                        //Trace.WriteLine("!!!!!!!!!!!!!!!!!!! Drat !!!!!!!!!!!!!!!!");
                         splitDone = false;
                     }
                     else
@@ -308,16 +315,16 @@ namespace SpacePlanning
                         splittedPolys.Push(polyAfterSplit[1]);
                         allPolyAfterSplit.AddRange(polyAfterSplit);
                         splitDone = true;
-                        Trace.WriteLine("SplitWorked well");
+                        //Trace.WriteLine("SplitWorked well");
                     }
                     count += 1;                   
 
                 } // end of second while loop      
-                Trace.WriteLine("++++Still this many blocks left++++++++++ : " + splittedPolys.Count);
+                //Trace.WriteLine("++++Still this many blocks left++++++++++ : " + splittedPolys.Count);
               
                 splitDone = false;
                 countBig += 1;
-                Trace.WriteLine("===============Whiles are going for : " + countBig);
+                //Trace.WriteLine("===============Whiles are going for : " + countBig);
             }// end of 1st while loop
 
             List<Polygon2d> cleanWholesomePolyList = new List<Polygon2d>();
@@ -398,6 +405,11 @@ namespace SpacePlanning
                 polyA = new Polygon2d(sortedA, 0);
                 polyB = new Polygon2d(sortedB, 0);
             }
+
+            //added check to see if poly is null
+            if (!CheckPoly(polyA)) polyA = null;
+            if (!CheckPoly(polyB)) polyB = null;
+
             List<Polygon2d> splittedPoly = new List<Polygon2d>();
             splittedPoly.Add(polyA);
             splittedPoly.Add(polyB);

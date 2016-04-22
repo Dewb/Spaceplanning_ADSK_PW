@@ -751,17 +751,12 @@ namespace SpacePlanning
         //flatten list of line2d
         internal static List<Line2d> FlattenLine2dList(List<List<Line2d>> lineList)
         {
+            if (lineList == null || lineList.Count == 0) return null;
             List<Line2d> flatLineList = new List<Line2d>();
             for (int i = 0; i < lineList.Count; i++)
             {
                 if (lineList[i] != null)
-                {
-                    if (lineList[i].Count > 0)
-                    {
-                        flatLineList.AddRange(lineList[i]);
-                    }
-                }
-
+                    if (lineList[i].Count > 0) flatLineList.AddRange(lineList[i]);
             }
             return flatLineList;
         }
