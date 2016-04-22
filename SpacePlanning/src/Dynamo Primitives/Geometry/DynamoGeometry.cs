@@ -227,22 +227,12 @@ namespace stuffer
             List<Surface> surfaceList = new List<Surface>();
             for (int i = 0; i < poly.Count; i++)
             {
-                if (poly[i] == null)
-                {
-                    continue;
-                }
-                List<Point> ptList = pointFromPoint2dList(poly[i].Points);
+                if (poly[i] == null) continue;
+                //List<Point> ptList = pointFromPoint2dList(poly[i].Points);
                 //PolyCurve pCurve = PolyCurve.ByPoints(ptList);
                 Polygon pCurve = PolygonByPolygon2d(poly[i], height);
-
-                if (pCurve == null)
-                {
-                    continue;
-                }
-                Surface surf = Surface.ByPatch(pCurve);
-
-
-                surfaceList.Add(surf);
+                if (pCurve == null) continue;
+                surfaceList.Add(Surface.ByPatch(pCurve));
             }
             return surfaceList;
         }
