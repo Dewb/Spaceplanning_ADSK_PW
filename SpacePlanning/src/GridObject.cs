@@ -65,8 +65,7 @@ namespace SpacePlanning
             return pointsGrid;
 
         }
-
-
+        
         // make point2d list which are inside the bounding box
         [MultiReturn(new[] { "PointsInsideOutline", "CellsFromPoints" })]
         public static Dictionary<string, object> GridPointsInsideOutline(List<Point2d> bbox, List<Point2d> outlinePoints, double dimXX, double dimYY)
@@ -524,25 +523,35 @@ namespace SpacePlanning
         }
 
         //make wholesome polys inside till it meets certain area cover
-        [MultiReturn(new[] { "WholesomePolys", "PolysAfterSplit" })]
-        public static Dictionary<string, object> FormMakerInSite(Polygon2d poly,double groundCover = 0.5)
+        [MultiReturn(new[] { "WholesomePolys", "SiteArea" , "BuildingOutlineArea", "GroundCoverAchieved" })]
+        public static Dictionary<string, object> FormMakerInSite(Polygon2d poly, Polygon2d origSitePoly, double groundCover = 0.5)
         {
             bool blockPlaced = false;
-            int count = 0, maxTry = 200;
-            double areaSite = PolygonUtility.AreaCheckPolygon(poly);
+            int count = 0, maxTry = 50;
+            double areaSite = PolygonUtility.AreaCheckPolygon(origSitePoly), eps = 0.05, areaPlaced = 0;
+            if (groundCover < eps) groundCover = 2 * eps;
+            if (groundCover > 0.8) groundCover = 0.8;
+            double groundCoverLow = groundCover - eps, groundCoverHigh = groundCover + eps;
             Dictionary<string, object> wholeSomeData = PolygonUtility.MakeWholesomeBlockInPoly(poly, groundCover);
             while (blockPlaced == false && count < maxTry)
             {
                 wholeSomeData = PolygonUtility.MakeWholesomeBlockInPoly(poly, groundCover);
                 List<Polygon2d> polysWhole = (List<Polygon2d>)wholeSomeData["WholesomePolys"];
-                double areaPlaced = 0;
+                areaPlaced = 0;
                 for (int i = 0; i < polysWhole.Count; i++) areaPlaced += PolygonUtility.AreaCheckPolygon(polysWhole[i]);
-                if (areaPlaced < areaSite * groundCover) blockPlaced = false;
+                if (areaPlaced < areaSite * groundCoverLow || areaPlaced > areaSite * groundCoverHigh) blockPlaced = false;
                 else blockPlaced = true;
                 count += 1;
                 Trace.WriteLine("Trying forming up for : " + count);
             }
-            return wholeSomeData;
+            List<Polygon2d> cleanWholesomePolyList = (List<Polygon2d>)wholeSomeData["WholesomePolys"];
+            return new Dictionary<string, object>
+            {
+                { "WholesomePolys", (cleanWholesomePolyList) },
+                { "SiteArea", (areaSite) },
+                { "BuildingOutlineArea", (areaPlaced) },
+                { "GroundCoverAchieved", (areaPlaced/areaSite) }
+            };
         }
 
         //get list of poly and merge them to make one big poly

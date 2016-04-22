@@ -9,8 +9,8 @@ using System.Diagnostics;
 
 namespace stuffer
 {
-  public static class DynamoGeometry
-  {
+    public static class DynamoGeometry
+    {
         //////////////////////////////////////////////////////////////////////////
         // To Dynamo Geometry
 
@@ -69,7 +69,7 @@ namespace stuffer
                 List<int> gL = new List<int>();
                 List<int> bL = new List<int>();
 
-                
+
                 int r = r1.Next(aa, bb);
                 int g = r2.Next(aa, bb);
                 int b = r3.Next(aa, bb);
@@ -88,9 +88,9 @@ namespace stuffer
                 rList.Add(rL);
                 gList.Add(gL);
                 bList.Add(bL);
-                
+
             }
-           // return geomObject;
+            // return geomObject;
 
             return new Dictionary<string, object>
             {
@@ -146,22 +146,22 @@ namespace stuffer
 
             }
             return rList;
-            
+
 
         }
 
-       
+
         public static List<Geometry> PointListsByColor(List<List<Point2d>> ptLists)
         {
             List<Geometry> geomObject = new List<Geometry>();
-            for(int i = 0; i < ptLists.Count; i++)
+            for (int i = 0; i < ptLists.Count; i++)
             {
                 List<Point2d> ptL = new List<Point2d>();
-                for(int j = 0; j < ptL.Count; j++)
+                for (int j = 0; j < ptL.Count; j++)
                 {
                     // Autodesk.DesignScript.Geometry.Geometry
                     Point p = Point.ByCoordinates(0, 0, 0);
-                    
+
                 }
             }
             return geomObject;
@@ -201,12 +201,12 @@ namespace stuffer
         //GET POINT GEOMETRY FROM POINT 2D LIST
         public static List<Point> pointFromPoint2dList(List<Point2d> pointList)
         {
-            if(pointList == null || pointList.Count == 0)
+            if (pointList == null || pointList.Count == 0)
             {
                 return null;
             }
             List<Point> ptGeom = new List<Point>();
-            for(int i=0; i< pointList.Count; i++)
+            for (int i = 0; i < pointList.Count; i++)
             {
                 ptGeom.Add(Point.ByCoordinates(pointList[i].X, pointList[i].Y));
             }
@@ -235,13 +235,13 @@ namespace stuffer
                 //PolyCurve pCurve = PolyCurve.ByPoints(ptList);
                 Polygon pCurve = PolygonByPolygon2d(poly[i], height);
 
-                if(pCurve == null)
+                if (pCurve == null)
                 {
                     continue;
                 }
                 Surface surf = Surface.ByPatch(pCurve);
 
-                
+
                 surfaceList.Add(surf);
             }
             return surfaceList;
@@ -257,7 +257,7 @@ namespace stuffer
                 return null;
 
             List<Point> ptList = new List<Point>();
-            for(int i = 0; i < pointList.Count; i++)
+            for (int i = 0; i < pointList.Count; i++)
             {
                 ptList.Add(Point.ByCoordinates(pointList[i].X, pointList[i].Y));
             }
@@ -287,7 +287,7 @@ namespace stuffer
                 return null;
 
             List<Point> pointList = new List<Point>();
-            for(int i = 0; i < poly.Points.Length; i++)
+            for (int i = 0; i < poly.Points.Length; i++)
             {
                 pointList.Add(Point.ByCoordinates(poly.Points[i].X, poly.Points[i].Y));
             }
@@ -308,108 +308,113 @@ namespace stuffer
 
 
         public static Point PointByPoint2d(Point2d point, double height = 0)
-    {
-      if (point == null)
-        return null;
+        {
+            if (point == null)
+                return null;
 
-      return Point.ByCoordinates(point.X, point.Y, height);
-    }
+            return Point.ByCoordinates(point.X, point.Y, height);
+        }
 
-    public static Point PointByPoint3d(Point3d point)
-    {
-      if (point == null)
-        return null;
+        public static Point PointByPoint3d(Point3d point)
+        {
+            if (point == null)
+                return null;
 
-      return Point.ByCoordinates(point.X, point.Y, point.Z);
-    }
+            return Point.ByCoordinates(point.X, point.Y, point.Z);
+        }
 
-    public static Line LineByLine2d(Line2d line, double height = 0)
-    {
-      if (line == null)
-        return null;
-      if (line.StartPoint.Compare(line.EndPoint))
-        return null;
+        public static Line LineByLine2d(Line2d line, double height = 0)
+        {
+            if (line == null)
+                return null;
+            if (line.StartPoint.Compare(line.EndPoint))
+                return null;
 
-      return
-        Line.ByStartPointEndPoint(
-          Point.ByCoordinates(line.StartPoint.X, line.StartPoint.Y, height),
-          Point.ByCoordinates(line.EndPoint.X, line.EndPoint.Y, height));
-    }
+            return
+              Line.ByStartPointEndPoint(
+                Point.ByCoordinates(line.StartPoint.X, line.StartPoint.Y, height),
+                Point.ByCoordinates(line.EndPoint.X, line.EndPoint.Y, height));
+        }
 
-    public static List<Vector> VectorListByVector2dList(List<Vector2d> input)
-    {
-      if (input == null)
-        return null;
+        public static List<Vector> VectorListByVector2dList(List<Vector2d> input)
+        {
+            if (input == null)
+                return null;
 
-      List<Vector> output = new List<Vector>();
-      foreach (Vector2d vector in input)
-      {
-        output.Add(Vector.ByCoordinates(vector.X, vector.Y, 0));
-      }
-
-      return output;
-    }
-
-    public static List<Line> AxisLines(double length = 100, double height = 0)
-    {
-      List<Line> axis = new List<Line>();
-      axis.Add(
-        Line.ByStartPointEndPoint(
-          Point.ByCoordinates(-length, 0, height),
-          Point.ByCoordinates(length, 0, height)));
-      axis.Add(
-        Line.ByStartPointEndPoint(
-          Point.ByCoordinates(0, -length, height),
-          Point.ByCoordinates(0, length, height)));
-
-      return axis;
-    }
-
-    public static Cuboid CuboidBySpace(Space space)
-    {
-      if (space == null)
-        return null;
-
-      Point2d pos2 = new Point2d(space.Position.X, space.Position.Y);
-      Point2d dim2 = new Point2d(space.Dimensions.X, space.Dimensions.Y);
-      Point3d p0 = new Point3d(pos2 - dim2/2.0, space.Position.Z);
-      Point3d p1 = new Point3d(pos2 + dim2/2.0, space.Position.Z + space.Dimensions.Z);
-
-      return Cuboid.ByCorners(PointByPoint3d(p0), PointByPoint3d(p1));
-    }
-
-    public static Polygon PolygonByBBox2d(Range2d bbox, double height)
-    {
-      if (bbox == null)
-        return null;
-      List<Point> points = new List<Point>();
-      points.Add(Point.ByCoordinates(bbox.Min.X, bbox.Min.Y, height));
-      points.Add(Point.ByCoordinates(bbox.Max.X, bbox.Min.Y, height));
-      points.Add(Point.ByCoordinates(bbox.Max.X, bbox.Max.Y, height));
-      points.Add(Point.ByCoordinates(bbox.Min.X, bbox.Max.Y, height));
-
-      return Polygon.ByPoints(points);
-    }
-
-    public static Polygon PolygonByPolygon2d(Polygon2d polygon, double height)
-    {
-      if (polygon == null)
+            List<Vector> output = new List<Vector>();
+            foreach (Vector2d vector in input)
             {
+                output.Add(Vector.ByCoordinates(vector.X, vector.Y, 0));
+            }
+
+            return output;
+        }
+
+        public static List<Line> AxisLines(double length = 100, double height = 0)
+        {
+            List<Line> axis = new List<Line>();
+            axis.Add(
+              Line.ByStartPointEndPoint(
+                Point.ByCoordinates(-length, 0, height),
+                Point.ByCoordinates(length, 0, height)));
+            axis.Add(
+              Line.ByStartPointEndPoint(
+                Point.ByCoordinates(0, -length, height),
+                Point.ByCoordinates(0, length, height)));
+
+            return axis;
+        }
+
+        public static Cuboid CuboidBySpace(Space space)
+        {
+            if (space == null)
+                return null;
+
+            Point2d pos2 = new Point2d(space.Position.X, space.Position.Y);
+            Point2d dim2 = new Point2d(space.Dimensions.X, space.Dimensions.Y);
+            Point3d p0 = new Point3d(pos2 - dim2 / 2.0, space.Position.Z);
+            Point3d p1 = new Point3d(pos2 + dim2 / 2.0, space.Position.Z + space.Dimensions.Z);
+
+            return Cuboid.ByCorners(PointByPoint3d(p0), PointByPoint3d(p1));
+        }
+
+        public static Polygon PolygonByBBox2d(Range2d bbox, double height)
+        {
+            if (bbox == null)
+                return null;
+            List<Point> points = new List<Point>();
+            points.Add(Point.ByCoordinates(bbox.Min.X, bbox.Min.Y, height));
+            points.Add(Point.ByCoordinates(bbox.Max.X, bbox.Min.Y, height));
+            points.Add(Point.ByCoordinates(bbox.Max.X, bbox.Max.Y, height));
+            points.Add(Point.ByCoordinates(bbox.Min.X, bbox.Max.Y, height));
+
+            return Polygon.ByPoints(points);
+        }
+
+        public static Polygon PolygonByPolygon2da(Polygon2d polygon, double height)
+        {
+            Polygon pol;
+            if (polygon == null)
+            {
+                //pol.Dispose();
                 return null;
             }
-       
-        if (polygon.Points == null)
-        {
-            return null;
-        }
-      List<Point> points = new List<Point>();
-      foreach (Point2d point in polygon.Points)
-      {
-        points.Add(Point.ByCoordinates(point.X, point.Y, height));
-      }
+
+            if (polygon.Points == null)
+            {
+                //pol.Dispose();
+                return null;
+            }
+
+            List<Point> points = new List<Point>();
+            foreach (Point2d point in polygon.Points)
+            {
+                points.Add(Point.ByCoordinates(point.X, point.Y, height));
+            }
             try
             {
-                return Polygon.ByPoints(points);
+                pol = Polygon.ByPoints(points);
+                return pol;
             }
             catch (Exception)
             {
@@ -417,12 +422,44 @@ namespace stuffer
                 //throw;
             }
 
+        }
 
-       polygon = null;
+        public static Polygon PolygonByPolygon2d(Polygon2d polygon, double height)
+        {
+            List<Point> pt = new List<Point>();
+            pt.Add(Point.ByCoordinates(0, 0));
+            pt.Add(Point.ByCoordinates(0, 100));
+            pt.Add(Point.ByCoordinates(100, 0));
+            Polygon pol = Polygon.ByPoints(pt);
+            bool polyFormed = false;
+            if (polygon == null || polygon.Points == null)
+            {
+                return null;
+            }
 
-    }
+            List<Point> points = new List<Point>();
+            foreach (Point2d point in polygon.Points)
+            {
+                points.Add(Point.ByCoordinates(point.X, point.Y, height));
+            }
+            try
+            {
+                pol = Polygon.ByPoints(points);
+                polyFormed = true;
+                //return pol;
+            }
+            catch (Exception)
+            {
+                polyFormed = false;
+                //throw;
+            }
 
-    public static List<Polygon> PolygonsByOutline2d(Outline2d outline, double height)
+            if (polyFormed) return pol;
+            else { pol.Dispose(); pt.Clear(); return null; }
+
+        }
+
+        public static List<Polygon> PolygonsByOutline2d(Outline2d outline, double height)
     {
       if (outline == null || outline.Polygons == null)
         return null;
