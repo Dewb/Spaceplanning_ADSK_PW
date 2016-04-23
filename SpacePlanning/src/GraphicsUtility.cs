@@ -100,7 +100,7 @@ namespace SpacePlanning
         //returns the point having lowest x,y value from a list using now
         internal static int ReturnLowestPointFromListNew(List<Point2d> ptList)
         {
-            if (ptList == null || ptList.Count == 0) return -1;
+            if (!PolygonUtility.CheckPointList(ptList)) return -1;
             Point2d lowestPoint = ptList[0];
             int size = ptList.Count;
             int index = 0;
@@ -119,7 +119,7 @@ namespace SpacePlanning
         //returns the point having highest x,y value from a list - using now
         internal static int ReturnHighestPointFromListNew(List<Point2d> ptList)
         {
-            if (ptList == null || ptList.Count == 0) return -1;
+            if (!PolygonUtility.CheckPointList(ptList)) return -1;
             Point2d highestPoint = ptList[0];
             int size = ptList.Count;
             int index = 0;

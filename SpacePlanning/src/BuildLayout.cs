@@ -644,6 +644,144 @@ namespace SpacePlanning
         }
 
 
+
+        //get a poly and find rectangular polys inside. then merge them together to form a big poly
+        [MultiReturn(new[] { "WholesomePolys", "PolysAfterSplit", "SplittableLines","HorizontalLowPt", "HorizontalHighPt","AllHorizontalPts" })]
+        public static Dictionary<string, object> MakeInpatientBlocks(Polygon2d poly, double recompute = 5)
+        {
+            //---------------pseudo code
+            // from poly outline - get the outliner lines for x axis and y axis dir
+            // sort these lines based on line length
+            // get any of the longer lines and make a split
+            // check the smaller area splitted poly how many sides it has
+                // if not 4, put in further poly stack to be split, if 4, then assign to an inpatient
+            // get the first poly from the splittable stack, and repeat the above till splittable poly stack is empty
+
+
+
+
+
+            if (!PolygonUtility.CheckPoly(poly)) return null;
+            List<Polygon2d> wholesomePolyList = new List<Polygon2d>();
+            Polygon2d polyReg = new Polygon2d(poly.Points);
+            List<Line2d> hLines = new List<Line2d>();
+            List<Line2d> vLines = new List<Line2d>();
+            List<Point2d> hMidPt = new List<Point2d>();
+            List<Point2d> vMidPt = new List<Point2d>();
+            for (int i = 0; i < polyReg.Points.Count; i++)
+            {
+                int a = i, b = i + 1;
+                if (i == polyReg.Points.Count - 1) b = 0;
+                Line2d line = new Line2d(polyReg.Points[a], polyReg.Points[b]);
+                int lineType = GraphicsUtility.CheckLineOrient(line);
+                if (lineType != -1)
+                {
+                    if (lineType == 0)
+                    {
+                        hLines.Add(line);
+                        hMidPt.Add(LineUtility.LineMidPoint(line));
+                    }
+                    if (lineType == 1)
+                    {
+                        vLines.Add(line);
+                        vMidPt.Add(LineUtility.LineMidPoint(line));
+                    }
+                }
+            }
+            List<Line2d> selectedHLines = new List<Line2d>();
+            List<Line2d> selectedVLines = new List<Line2d>();
+            List<Point2d> hMidptCopy = hMidPt.Select(x => Point2d.ByCoordinates(x.X,x.Y)).ToList(); // example of deep copy
+            //int hIndLow = GraphicsUtility.ReturnLowestPointFromListNew(hMidPt);
+            //int hIndHigh = GraphicsUtility.ReturnHighestPointFromListNew(hMidPt);
+            int hIndLow = TestGraphicsUtility.ReturnLowestPointFromList(hMidPt);
+            int hIndHigh = TestGraphicsUtility.ReturnHighestPointFromList(hMidptCopy);
+            int vIndLow = GraphicsUtility.ReturnLowestPointFromListNew(vMidPt);
+            int vIndHigh = GraphicsUtility.ReturnHighestPointFromListNew(vMidPt);
+            //hLines.RemoveAt(hIndLow);
+            //hLines.RemoveAt(hIndHigh);
+            //vLines.RemoveAt(vIndLow);
+            //vLines.RemoveAt(vIndHigh);
+            selectedHLines.Add(hLines[hIndLow]); selectedHLines.Add(hLines[hIndHigh]);
+            selectedVLines.Add(vLines[vIndLow]); selectedVLines.Add(vLines[vIndHigh]);
+            List<Line2d> allSplitLines = new List<Line2d>();
+            allSplitLines.AddRange(selectedHLines);
+            allSplitLines.AddRange(selectedVLines);
+
+            /*
+            bool splitDone = false;
+            Stack<Polygon2d> splittedPolys = new Stack<Polygon2d>();
+            Polygon2d currentPoly = new Polygon2d(PolygonUtility.SmoothPolygon(polyReg.Points, BuildLayout.spacingSet));
+            //Polygon2d currentPoly = polyReg;
+            splittedPolys.Push(currentPoly);
+            Random ran = new Random();
+            int countBig = 0, maxRounds = 200;
+            List<int> numSidesList = new List<int>();
+            List<Polygon2d> allPolyAfterSplit = new List<Polygon2d>();
+            while (splittedPolys.Count > 0 && countBig < maxRounds && allSplitLines.Count > 0)
+            {
+                int count = 0, maxTry = 100;
+                int numSides = PolygonUtility.NumberofSidesPoly(currentPoly);
+                numSidesList.Add(numSides);
+                //CHECK sides-------------------------------------------------------------------------------
+                if (numSides < 5)
+                {
+                    wholesomePolyList.Add(currentPoly);
+                    currentPoly = splittedPolys.Pop();        
+                }          
+
+                //SPLIT blocks-----------------------------------------------------------------------------                
+                while (splitDone == false && count < maxTry && allSplitLines.Count > 0)
+                {
+                    //randomly get a line
+                    int selectLineNum = (int)Math.Floor(BasicUtility.RandomBetweenNumbers(ran, allSplitLines.Count, 0));
+                    Line2d splitLine = allSplitLines[selectLineNum];
+                    splitLine = LineUtility.move(splitLine, 0.05);
+                    Dictionary<string, object> splitPolys = BuildLayout.SplitByLine(currentPoly, splitLine, 0); //{ "PolyAfterSplit", "SplitLine" })]
+                    List<Polygon2d> polyAfterSplit = (List<Polygon2d>)splitPolys["PolyAfterSplit"];
+                    if (polyAfterSplit == null || polyAfterSplit.Count < 2 ||
+                        polyAfterSplit[0] == null || polyAfterSplit[0].Points == null || polyAfterSplit[0].Points.Count == 0 ||
+                        polyAfterSplit[1] == null || polyAfterSplit[1].Points == null || polyAfterSplit[1].Points.Count == 0)
+                    {
+                        splitDone = false;
+                    }
+                    else
+                    {
+                        allSplitLines.RemoveAt(selectLineNum);
+                        currentPoly = polyAfterSplit[0];
+                        splittedPolys.Push(polyAfterSplit[1]);
+                        allPolyAfterSplit.AddRange(polyAfterSplit);
+                        splitDone = true;
+                    }
+                    count += 1;
+
+                } // end of second while loop      
+
+                splitDone = false;
+                countBig += 1;
+            }// end of 1st while loop
+
+            List<Polygon2d> cleanWholesomePolyList = new List<Polygon2d>();
+            //rationalize the wholesome polys
+            for (int i = 0; i < wholesomePolyList.Count; i++)
+            {
+                if (wholesomePolyList[i] == null || wholesomePolyList[i].Points == null ||
+                    wholesomePolyList[i].Points.Count < 4) continue;
+                cleanWholesomePolyList.Add(new Polygon2d(wholesomePolyList[i].Points));
+            }
+            */
+            return new Dictionary<string, object>
+            {
+                { "WholesomePolys", (null) },
+                { "PolysAfterSplit", (null) },
+                { "SplittableLines", (allSplitLines) },
+                { "HorizontalLowPt", (hMidPt[hIndLow]) },
+                { "HorizontalHighPt", (hMidptCopy[hIndHigh]) },
+                { "AllHorizontalPts", (hMidPt) }
+            };
+        }
+
+
+
         //splits a big poly in a single direction
         /// <summary>
         /// Thisnode places the programs in the dept polygon2d's based on the list from the program document
