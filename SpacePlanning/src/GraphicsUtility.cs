@@ -174,6 +174,65 @@ namespace SpacePlanning
             return dummyLineList;
         }
 
+        //removes duplicate lines from a list, based on the lines from another list
+        public static List<Line2d> RemoveDuplicateLinesFromAnotherList(List<Line2d> lineListOrig, List<Line2d> otherLineList)
+        {
+            List<Line2d> lineEditedList = new List<Line2d>();
+            for (int i = 0; i < lineListOrig.Count; i++) lineEditedList.Add(lineListOrig[i]);
+            List<bool> duplicateTagList = new List<bool>();
+            for (int i = 0; i < lineListOrig.Count; i++)
+            {
+                bool duplicate = false;
+                for (int j = 0; j < otherLineList.Count; j++)
+                {
+                    if (lineListOrig[i].Compare(otherLineList[j])) { duplicate = true; break; }
+                }
+                duplicateTagList.Add(duplicate);
+            }
+            int count = 0;
+            for (int i = 0; i < duplicateTagList.Count; i++)
+            {
+                if (duplicateTagList[i])
+                {
+                    lineEditedList.RemoveAt(i-count);
+                    count += 1;
+                }
+            }
+                      
+            return lineEditedList;
+        }
+
+
+        //removes duplicate lines from a list, based on the lines from another list
+        public static List<Line2d> RemoveDuplicateLinesFromOtherList(List<Line2d> lineListOrig, List<Line2d> otherLineList)
+        {
+            List<Line2d> lineEditedList = new List<Line2d>();
+            for (int i = 0; i < lineListOrig.Count; i++) lineEditedList.Add(lineListOrig[i]);
+            List<bool> duplicateTagList = new List<bool>();
+            for (int i = 0; i < lineListOrig.Count; i++)
+            {
+                bool duplicate = false;
+                for (int j = 0; j < otherLineList.Count; j++)
+                {
+                    if(lineListOrig[i].StartPoint.X == otherLineList[j].StartPoint.X &&
+                        lineListOrig[i].StartPoint.Y == otherLineList[j].StartPoint.Y &&
+                        lineListOrig[i].EndPoint.X == otherLineList[j].EndPoint.X &&
+                        lineListOrig[i].EndPoint.Y == otherLineList[j].EndPoint.Y) { duplicate = true; break; }
+
+                }
+                duplicateTagList.Add(duplicate);
+            }
+            int count = 0;
+            for (int i = 0; i < duplicateTagList.Count; i++)
+            {
+                if (duplicateTagList[i])
+                {
+                    lineEditedList.RemoveAt(i - count);
+                    count += 1;
+                }
+            }
+            return lineEditedList;
+        }
 
         // Removes the lines which are on the poly lines
         internal static List<Line2d> RemoveDuplicateslinesWithPoly(Polygon2d poly, List<Line2d> lineList)

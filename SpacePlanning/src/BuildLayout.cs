@@ -718,7 +718,7 @@ namespace SpacePlanning
         
 
         //get a poly and find rectangular polys inside. then merge them together to form a big poly
-        [MultiReturn(new[] { "InpatientPolys", "SplitablePolys", "LeftOverPolys", "SplittableLines","OffsetLines","Count","SplitLineLast","SplitDone"})]
+        [MultiReturn(new[] { "InpatientPolys", "SplitablePolys", "LeftOverPolys", "SplittableLines","OffsetLines","Count","SplitLineLast","SplitDone","UsedLines"})]
         public static Dictionary<string, object> MakeInpatientBlocks(Polygon2d poly, double patientRoomDepth = 16, double recompute = 5)
         {
             //---------------pseudo code
@@ -735,6 +735,7 @@ namespace SpacePlanning
             List<Polygon2d> leftOverPolyList = new List<Polygon2d>();
             List<Line2d> allSplitLinesOut = new List<Line2d>();
             List<Line2d> offsetLinesOut = new List<Line2d>();
+            List<Line2d> usedLineList = new List<Line2d>();
             List<int> sortedIndices = new List<int>();
             bool splitDone = false;
             int maxTry = 500, count = 0;
@@ -769,6 +770,7 @@ namespace SpacePlanning
                     continue;
                 }
                 count += 1;
+                usedLineList.Add(splitLine);
                 allSplitLinesOut.Add(splitLine);
                 allSplitLinesOut.AddRange(allSplitLines);
                 offsetLinesOut.AddRange(offsetLines);
@@ -784,7 +786,8 @@ namespace SpacePlanning
                 { "OffsetLines", (offsetLinesOut) },
                 { "Count", (count) },
                 { "SplitLineLast", (allSplitLinesOut[0]) },
-                { "SplitDone", (splitDone) }
+                { "SplitDone", (splitDone) },
+                { "UsedLines", (usedLineList) },
             };
         }
 
