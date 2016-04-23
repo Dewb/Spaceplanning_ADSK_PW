@@ -718,7 +718,7 @@ namespace SpacePlanning
         
 
         //get a poly and find rectangular polys inside. then merge them together to form a big poly
-        [MultiReturn(new[] { "InpatientPolys", "SplitablePolys", "LeftOverPolys", "SplittableLines","OffsetLines" })]
+        [MultiReturn(new[] { "InpatientPolys", "SplitablePolys", "LeftOverPolys", "SplittableLines","OffsetLines","Count"})]
         public static Dictionary<string, object> MakeInpatientBlocks(Polygon2d poly, double patientRoomDepth = 16, double recompute = 5)
         {
             //---------------pseudo code
@@ -733,8 +733,8 @@ namespace SpacePlanning
             if (!PolygonUtility.CheckPoly(poly)) return null;
             List<Polygon2d> inPatientPolyList = new List<Polygon2d>();
             List<Polygon2d> leftOverPolyList = new List<Polygon2d>();
-            List<Line2d> allSplitLines = new List<Line2d>();
-            List<Line2d> offsetLines = new List<Line2d>();
+            List<Line2d> allSplitLinesOut = new List<Line2d>();
+            List<Line2d> offsetLinesOut = new List<Line2d>();
             List<int> sortedIndices = new List<int>();
             bool splitDone = false;
             int maxTry = 500, count = 0;
@@ -744,17 +744,16 @@ namespace SpacePlanning
             splitablePolys.Push(poly);
       
             while (!splitDone && splitablePolys .Count > 0 && count < maxTry)
-            {
-                
+            {                
                 Polygon2d currentPoly = splitablePolys.Pop();
-                Dictionary<string, object> outerLineObj = FindOuterLinesAndOffsets(currentPoly, patientRoomDepth,1500, recompute);
-                allSplitLines = (List<Line2d>)outerLineObj["SplittableLines"];
-                offsetLines = (List<Line2d>)outerLineObj["OffsetLines"];
+                Dictionary<string, object> outerLineObj = FindOuterLinesAndOffsets(currentPoly, patientRoomDepth,1500, count);
+                List<Line2d> allSplitLines = (List<Line2d>)outerLineObj["SplittableLines"];
+                List<Line2d> offsetLines = (List<Line2d>)outerLineObj["OffsetLines"];
                 sortedIndices = (List<int>)outerLineObj["SortedIndices"];
-                int selectLineNum = (int)Math.Floor(BasicUtility.RandomBetweenNumbers(ran, allSplitLines.Count-1, 0));
+                int selectLineNum = (int)Math.Floor(BasicUtility.RandomBetweenNumbers(ran, allSplitLines.Count, 0));
                 Line2d splitLine = allSplitLines[selectLineNum];
                 //splitLine = LineUtility.Move(splitLine, 0.05);
-                Dictionary<string, object> splitPolys = BuildLayout.SplitByLine(currentPoly, splitLine, 0); //{ "PolyAfterSplit", "SplitLine" })]
+                Dictionary<string, object> splitPolys = SplitByLine(currentPoly, splitLine, 0); //{ "PolyAfterSplit", "SplitLine" })]
                 List<Polygon2d> polyAfterSplit = (List<Polygon2d>)splitPolys["PolyAfterSplit"];
                 if (PolygonUtility.CheckPolyList(polyAfterSplit))
                 {
@@ -769,14 +768,19 @@ namespace SpacePlanning
                     splitDone = true;
                 }
                 count += 1;
-            }
+                allSplitLinesOut.AddRange(allSplitLines);
+                offsetLinesOut.AddRange(offsetLines);
+
+            }//end of while loop
+            
             return new Dictionary<string, object>
             {
                 { "InpatientPolys", (inPatientPolyList) },
                 { "SplitablePolys", (splitablePolys) },
                 { "LeftOverPolys", (leftOverPolyList) },
-                { "SplittableLines", (allSplitLines) },
-                { "OffsetLines", (offsetLines) },
+                { "SplittableLines", (allSplitLinesOut) },
+                { "OffsetLines", (offsetLinesOut) },
+                { "Count", (count) }
             };
         }
 
@@ -1180,7 +1184,7 @@ namespace SpacePlanning
      
         //splits a polygon by a line 
         [MultiReturn(new[] { "PolyAfterSplit", "SplitLine" })]
-        internal static Dictionary<string, object> SplitByLine(Polygon2d polyOutline, Line2d inputLine, double distance = 5)
+        public static Dictionary<string, object> SplitByLine(Polygon2d polyOutline, Line2d inputLine, double distance = 5)
         {
 
             if (!PolygonUtility.CheckPoly(polyOutline)) return null;
