@@ -718,7 +718,7 @@ namespace SpacePlanning
         
 
         //get a poly and find rectangular polys inside. then merge them together to form a big poly
-        [MultiReturn(new[] { "InpatientPolys", "SplitablePolys", "LeftOverPolys", "SplittableLines","OffsetLines","Count"})]
+        [MultiReturn(new[] { "InpatientPolys", "SplitablePolys", "LeftOverPolys", "SplittableLines","OffsetLines","Count","SplitLineLast","SplitDone"})]
         public static Dictionary<string, object> MakeInpatientBlocks(Polygon2d poly, double patientRoomDepth = 16, double recompute = 5)
         {
             //---------------pseudo code
@@ -740,10 +740,11 @@ namespace SpacePlanning
             int maxTry = 500, count = 0;
             Random ran = new Random();
             
+            
             Stack<Polygon2d> splitablePolys = new Stack<Polygon2d>();
             splitablePolys.Push(poly);
       
-            while (!splitDone && splitablePolys .Count > 0 && count < maxTry)
+            while (splitablePolys .Count > 0 && count < maxTry)
             {                
                 Polygon2d currentPoly = splitablePolys.Pop();
                 Dictionary<string, object> outerLineObj = FindOuterLinesAndOffsets(currentPoly, patientRoomDepth,1500, count);
@@ -751,7 +752,7 @@ namespace SpacePlanning
                 List<Line2d> offsetLines = (List<Line2d>)outerLineObj["OffsetLines"];
                 sortedIndices = (List<int>)outerLineObj["SortedIndices"];
                 int selectLineNum = (int)Math.Floor(BasicUtility.RandomBetweenNumbers(ran, allSplitLines.Count, 0));
-                Line2d splitLine = allSplitLines[selectLineNum];
+                Line2d splitLine = offsetLines[selectLineNum];
                 //splitLine = LineUtility.Move(splitLine, 0.05);
                 Dictionary<string, object> splitPolys = SplitByLine(currentPoly, splitLine, 0); //{ "PolyAfterSplit", "SplitLine" })]
                 List<Polygon2d> polyAfterSplit = (List<Polygon2d>)splitPolys["PolyAfterSplit"];
@@ -765,9 +766,10 @@ namespace SpacePlanning
                 }
                 else
                 {
-                    splitDone = true;
+                    continue;
                 }
                 count += 1;
+                allSplitLinesOut.Add(splitLine);
                 allSplitLinesOut.AddRange(allSplitLines);
                 offsetLinesOut.AddRange(offsetLines);
 
@@ -780,7 +782,9 @@ namespace SpacePlanning
                 { "LeftOverPolys", (leftOverPolyList) },
                 { "SplittableLines", (allSplitLinesOut) },
                 { "OffsetLines", (offsetLinesOut) },
-                { "Count", (count) }
+                { "Count", (count) },
+                { "SplitLineLast", (allSplitLinesOut[0]) },
+                { "SplitDone", (splitDone) }
             };
         }
 
