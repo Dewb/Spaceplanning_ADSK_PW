@@ -646,7 +646,7 @@ namespace SpacePlanning
 
 
         //get a poly and find rectangular polys inside. then merge them together to form a big poly
-        [MultiReturn(new[] { "WholesomePolys", "PolysAfterSplit", "SplittableLines","HorizontalLowPt", "HorizontalHighPt","AllHorizontalPts" })]
+        [MultiReturn(new[] { "WholesomePolys", "SortedIndices", "SplittableLines","HorizontalLowPt", "HorizontalHighPt","AllHorizontalPts" })]
         public static Dictionary<string, object> MakeInpatientBlocks(Polygon2d poly, double recompute = 5)
         {
             //---------------pseudo code
@@ -690,22 +690,24 @@ namespace SpacePlanning
             }
             List<Line2d> selectedHLines = new List<Line2d>();
             List<Line2d> selectedVLines = new List<Line2d>();
-            List<Point2d> hMidptCopy = hMidPt.Select(x => Point2d.ByCoordinates(x.X,x.Y)).ToList(); // example of deep copy
-            //int hIndLow = GraphicsUtility.ReturnLowestPointFromListNew(hMidPt);
-            //int hIndHigh = GraphicsUtility.ReturnHighestPointFromListNew(hMidPt);
             int hIndLow = TestGraphicsUtility.ReturnLowestPointFromList(hMidPt);
-            int hIndHigh = TestGraphicsUtility.ReturnHighestPointFromList(hMidptCopy);
+            int hIndHigh = TestGraphicsUtility.ReturnHighestPointFromList(hMidPt);
             int vIndLow = GraphicsUtility.ReturnLowestPointFromListNew(vMidPt);
             int vIndHigh = GraphicsUtility.ReturnHighestPointFromListNew(vMidPt);
-            //hLines.RemoveAt(hIndLow);
-            //hLines.RemoveAt(hIndHigh);
-            //vLines.RemoveAt(vIndLow);
-            //vLines.RemoveAt(vIndHigh);
             selectedHLines.Add(hLines[hIndLow]); selectedHLines.Add(hLines[hIndHigh]);
             selectedVLines.Add(vLines[vIndLow]); selectedVLines.Add(vLines[vIndHigh]);
             List<Line2d> allSplitLines = new List<Line2d>();
             allSplitLines.AddRange(selectedHLines);
             allSplitLines.AddRange(selectedVLines);
+
+            double[] splitLineLength =  new double[allSplitLines.Count];
+            int[] unsortedIndices = new int[allSplitLines.Count];
+            for (int i = 0; i < allSplitLines.Count; i++) {
+                splitLineLength[i] = allSplitLines[i].Length;
+                unsortedIndices[i] = i;
+            }
+           List<int> sortedIndices =  BasicUtility.Quicksort(splitLineLength, unsortedIndices, 0, allSplitLines.Count-1);
+           sortedIndices.Reverse();
 
             /*
             bool splitDone = false;
@@ -772,10 +774,10 @@ namespace SpacePlanning
             return new Dictionary<string, object>
             {
                 { "WholesomePolys", (null) },
-                { "PolysAfterSplit", (null) },
+                { "SortedIndices", (sortedIndices) },
                 { "SplittableLines", (allSplitLines) },
                 { "HorizontalLowPt", (hMidPt[hIndLow]) },
-                { "HorizontalHighPt", (hMidptCopy[hIndHigh]) },
+                { "HorizontalHighPt", (hMidPt[hIndHigh]) },
                 { "AllHorizontalPts", (hMidPt) }
             };
         }
