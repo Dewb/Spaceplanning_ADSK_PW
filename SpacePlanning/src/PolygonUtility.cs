@@ -219,6 +219,24 @@ namespace SpacePlanning
             return pt;
         }
 
+
+        //get a polygonlist and sort based on area
+        internal static List<Polygon2d> SortPolygonList(List<Polygon2d> polyList)
+        {
+            if (!CheckPolyList(polyList)) return null;
+            List<double> areaPolyList = new List<double>();
+            int[] indArray = new int[polyList.Count];
+            for (int i = 0; i < polyList.Count; i++)
+            {
+                areaPolyList.Add(AreaCheckPolygon(polyList[i]));
+                indArray[i] = i;
+            }
+            double[] areaArray = areaPolyList.ToArray();
+            List<int> sortedIndices = BasicUtility.Quicksort(areaArray, indArray, 0, areaArray.Length - 1);
+            List<Polygon2d> sortedPolys = new List<Polygon2d>();
+            for (int i = 0; i < polyList.Count; i++) sortedPolys.Add(polyList[sortedIndices[i]]);
+            return sortedPolys;
+        }
      
 
         //get a poly and find rectangular polys inside. then merge them together to form a big poly
@@ -297,7 +315,7 @@ namespace SpacePlanning
                     //randomly get a line
                     int selectLineNum = (int)Math.Floor(BasicUtility.RandomBetweenNumbers(ran, allSplitLines.Count, 0));
                     Line2d splitLine = allSplitLines[selectLineNum];
-                    splitLine = LineUtility.move(splitLine, 0.05);
+                    splitLine = LineUtility.Move(splitLine, 0.05);
                     Dictionary<string, object> splitPolys = BuildLayout.SplitByLine(currentPoly, splitLine, 0); //{ "PolyAfterSplit", "SplitLine" })]
                     List<Polygon2d> polyAfterSplit = (List<Polygon2d>)splitPolys["PolyAfterSplit"];
                     if (polyAfterSplit == null || polyAfterSplit.Count < 2 || 

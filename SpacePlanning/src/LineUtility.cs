@@ -10,7 +10,7 @@ using Autodesk.DesignScript.Geometry;
 
 namespace SpacePlanning
 {
-    internal class LineUtility
+    public class LineUtility
     {
 
         //returns the midPt of a line
@@ -36,25 +36,13 @@ namespace SpacePlanning
         internal static Line2d Offset(Line2d lineInp,Polygon2d poly, double distance)
         {
             if (lineInp == null || !PolygonUtility.CheckPoly(poly)) return null;
-            Line2d line = extend(lineInp);
-            Point2d shiftedMidPt = NudgeLineMidPt(line, poly, distance);
-            Point2d startPtNew = Point2d.ByCoordinates(0, 0);
-            Point2d endPtNew = Point2d.ByCoordinates(0, 0);
-            if (GraphicsUtility.CheckLineOrient(line) == 0)
-            {
-                startPtNew = Point2d.ByCoordinates(line.StartPoint.X, shiftedMidPt.Y + line.StartPoint.Y);
-                endPtNew = Point2d.ByCoordinates(line.EndPoint.X, shiftedMidPt.Y + line.EndPoint.Y);
-            }
-            else
-            {
-                startPtNew = Point2d.ByCoordinates(shiftedMidPt.X + line.StartPoint.X,line.StartPoint.Y);
-                endPtNew = Point2d.ByCoordinates(shiftedMidPt.X + line.EndPoint.X,line.EndPoint.Y);
-            }
-            return Line2d.ByStartPointEndPoint(startPtNew, endPtNew); 
+            //Line2d line = Extend(lineInp);
+            Line2d line = lineInp;
+            return Move(line, NudgeLineMidPt(line, poly, distance));
         }
 
         //moves a line from its midpoint to a given point
-        internal static Line2d move(Line2d line,Point2d point)
+        internal static Line2d Move(Line2d line,Point2d point)
         {
             Point2d midPt = LineMidPoint(line);
             double distX = point.X - midPt.X;
@@ -68,7 +56,7 @@ namespace SpacePlanning
         }
 
         //moves a line from its midpoint to a given point
-        internal static Line2d move(Line2d line, double distance)
+        internal static Line2d Move(Line2d line, double distance)
         {
             double x1 = line.StartPoint.X + distance, y1 = line.StartPoint.Y + distance;
             double x2 = line.EndPoint.X + distance, y2 = line.EndPoint.Y + distance;
@@ -79,7 +67,7 @@ namespace SpacePlanning
         }
 
         //moves a line by a given distance
-        internal static Line2d move(Line2d line, List<Point2d> poly, double distance)
+        internal static Line2d Move(Line2d line, List<Point2d> poly, double distance)
         {
             Point2d midPt = LineMidPoint(line);
             Point2d centerPoly = GraphicsUtility.CentroidInPointLists(poly);
@@ -93,27 +81,22 @@ namespace SpacePlanning
         }
 
         //moves a line by a distance
-        internal static Line2d move(Line2d line, double distX, double distY)
+        internal static Line2d Move(Line2d line, double distX, double distY)
         {
             Point2d start = new Point2d((line.StartPoint.X + distX), (line.StartPoint.Y + distY));
             Point2d end = new Point2d((line.EndPoint.X + distX), (line.EndPoint.Y + distY));
             return new Line2d(start, end);
-
         }
 
 
         //extends both of the ends of a line
-        internal static Line2d extend(Line2d line)
+        public static Line2d Extend(Line2d line, double extend =0)
         {
-            double eps = 1000, extend = 100000;
-            Vector2d vecLine = new Vector2d(line.StartPoint, line.EndPoint);
-            Vector2d vecX = new Vector2d(line.StartPoint, Point2d.ByCoordinates(line.StartPoint.X + eps, 0));
-            Vector2d vecY = new Vector2d(line.StartPoint, Point2d.ByCoordinates(0, line.StartPoint.X + eps));
-
-            double dotX = vecLine.Dot(vecX), dotY = vecLine.Dot(vecY);
+            double eps = 1000;
+            if(extend == 0) extend = 100000;
             Line2d lineReturn = new Line2d(line);
-            if (dotX == 0) lineReturn = move(line, 0, extend); //vertical
-            else if (dotY == 0) lineReturn = move(line, extend, 0); //horizontal
+            if (GraphicsUtility.CheckLineOrient(line) == 0) lineReturn = Move(line, 0, extend); //vertical
+            else lineReturn = Move(line, extend, 0); //horizontal
             return lineReturn;
         }
     }

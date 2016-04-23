@@ -354,7 +354,7 @@ namespace SpacePlanning
 
             double totalDistance = 2 * (dist1 + dist2);
             Line2d lineMoved = new Line2d(lineInPolyReg.StartPoint, lineInPolyReg.EndPoint);
-            lineMoved = LineUtility.move(lineMoved, centerPoly);
+            lineMoved = LineUtility.Move(lineMoved, centerPoly);
             Point2d projectedPt = GraphicsUtility.ProjectedPointOnLine(lineMoved, centerOther);
             double distance = GraphicsUtility.DistanceBetweenPoints(projectedPt, centerOther);
 
