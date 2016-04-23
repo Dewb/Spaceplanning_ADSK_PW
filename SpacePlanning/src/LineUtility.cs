@@ -29,8 +29,28 @@ namespace SpacePlanning
             Vector2d vecToCenter = new Vector2d(midPt, polyCenter);
             Vector2d vecNormalized = vecToCenter.Normalize();
             Vector2d vecScaled = vecNormalized.Scale(scale);
-            Point2d point = new Point2d(midPt.X + vecScaled.X, midPt.Y + vecScaled.Y);
-            return point;
+            return new Point2d(midPt.X + vecScaled.X, midPt.Y + vecScaled.Y); 
+        }
+
+        //offsets an input line by a given distance towards the centroid of given poly
+        internal static Line2d Offset(Line2d lineInp,Polygon2d poly, double distance)
+        {
+            if (lineInp == null || !PolygonUtility.CheckPoly(poly)) return null;
+            Line2d line = extend(lineInp);
+            Point2d shiftedMidPt = NudgeLineMidPt(line, poly, distance);
+            Point2d startPtNew = Point2d.ByCoordinates(0, 0);
+            Point2d endPtNew = Point2d.ByCoordinates(0, 0);
+            if (GraphicsUtility.CheckLineOrient(line) == 0)
+            {
+                startPtNew = Point2d.ByCoordinates(line.StartPoint.X, shiftedMidPt.Y + line.StartPoint.Y);
+                endPtNew = Point2d.ByCoordinates(line.EndPoint.X, shiftedMidPt.Y + line.EndPoint.Y);
+            }
+            else
+            {
+                startPtNew = Point2d.ByCoordinates(shiftedMidPt.X + line.StartPoint.X,line.StartPoint.Y);
+                endPtNew = Point2d.ByCoordinates(shiftedMidPt.X + line.EndPoint.X,line.EndPoint.Y);
+            }
+            return Line2d.ByStartPointEndPoint(startPtNew, endPtNew); 
         }
 
         //moves a line from its midpoint to a given point
@@ -85,28 +105,15 @@ namespace SpacePlanning
         //extends both of the ends of a line
         internal static Line2d extend(Line2d line)
         {
-            double eps = 1000;
-            double extend = 100000;
+            double eps = 1000, extend = 100000;
             Vector2d vecLine = new Vector2d(line.StartPoint, line.EndPoint);
             Vector2d vecX = new Vector2d(line.StartPoint, Point2d.ByCoordinates(line.StartPoint.X + eps, 0));
             Vector2d vecY = new Vector2d(line.StartPoint, Point2d.ByCoordinates(0, line.StartPoint.X + eps));
 
-            double dotX = vecLine.Dot(vecX);
-            double dotY = vecLine.Dot(vecY);
+            double dotX = vecLine.Dot(vecX), dotY = vecLine.Dot(vecY);
             Line2d lineReturn = new Line2d(line);
-
-            if (dotX == 0)
-            {
-                //line is vertical
-                lineReturn =  move(line, 0, extend);
-
-            }
-            else if (dotY == 0)
-            {
-                //line is horizontal
-                lineReturn =  move(line,extend, 0);
-
-            }
+            if (dotX == 0) lineReturn = move(line, 0, extend); //vertical
+            else if (dotY == 0) lineReturn = move(line, extend, 0); //horizontal
             return lineReturn;
         }
     }

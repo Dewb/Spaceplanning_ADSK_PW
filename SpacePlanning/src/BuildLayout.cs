@@ -646,12 +646,12 @@ namespace SpacePlanning
 
 
         //get a poly and find rectangular polys inside. then merge them together to form a big poly
-        [MultiReturn(new[] { "WholesomePolys", "SortedIndices", "SplittableLines","HorizontalLowPt", "HorizontalHighPt","AllHorizontalPts" })]
-        public static Dictionary<string, object> MakeInpatientBlocks(Polygon2d poly, double recompute = 5)
+        [MultiReturn(new[] { "WholesomePolys", "SortedIndices", "SplittableLines","HorizontalLowPt", "HorizontalHighPt","AllHorizontalPts","OffsetLines","OffsetMidPts" })]
+        public static Dictionary<string, object> MakeInpatientBlocks(Polygon2d poly, double patientRoomDepth = 16, double recompute = 5)
         {
             //---------------pseudo code
-            // from poly outline - get the outliner lines for x axis and y axis dir
-            // sort these lines based on line length
+            // from poly outline - get the outliner lines for x axis and y axis dir                                     DONE
+            // sort these lines based on line length                                                                    DONE
             // get any of the longer lines and make a split
             // check the smaller area splitted poly how many sides it has
                 // if not 4, put in further poly stack to be split, if 4, then assign to an inpatient
@@ -708,6 +708,14 @@ namespace SpacePlanning
             }
            List<int> sortedIndices =  BasicUtility.Quicksort(splitLineLength, unsortedIndices, 0, allSplitLines.Count-1);
            sortedIndices.Reverse();
+
+            List<Line2d> offsetLines = new List<Line2d>();
+            List<Point2d> midPtsOffsets = new List<Point2d>();
+            for (int i = 0; i < allSplitLines.Count; i++)
+            {
+                offsetLines.Add(LineUtility.Offset(allSplitLines[i], poly, patientRoomDepth));
+                midPtsOffsets.Add(LineUtility.NudgeLineMidPt(allSplitLines[i], poly, patientRoomDepth));
+            }
 
             /*
             bool splitDone = false;
@@ -778,7 +786,9 @@ namespace SpacePlanning
                 { "SplittableLines", (allSplitLines) },
                 { "HorizontalLowPt", (hMidPt[hIndLow]) },
                 { "HorizontalHighPt", (hMidPt[hIndHigh]) },
-                { "AllHorizontalPts", (hMidPt) }
+                { "AllHorizontalPts", (hMidPt) },
+                { "OffsetLines", (offsetLines) },
+                { "OffsetMidPts", (midPtsOffsets) }
             };
         }
 
