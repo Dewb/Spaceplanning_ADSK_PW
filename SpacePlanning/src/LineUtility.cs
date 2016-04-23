@@ -99,5 +99,28 @@ namespace SpacePlanning
             else lineReturn = Move(line, extend, 0); //horizontal
             return lineReturn;
         }
+
+
+        //extends both of the ends of a line - correct implementation
+        public static Line2d ExtendLine(Line2d line, double extend = 0)
+        {
+            if (extend == 0) extend = 10000;
+            double startPtX = 0, startPtY = 0, endPtX = 0, endPtY = 0;
+            if(GraphicsUtility.CheckLineOrient(line) == 1)
+            {
+                startPtX = line.StartPoint.X;
+                startPtY = line.StartPoint.Y - extend;
+                endPtX = line.EndPoint.X;
+                endPtY = line.EndPoint.Y + extend;
+            }
+            else
+            {
+                startPtX = line.StartPoint.X - extend;
+                startPtY = line.StartPoint.Y;
+                endPtX = line.EndPoint.X + extend;
+                endPtY = line.EndPoint.Y;
+            }
+            return new Line2d(new Point2d(startPtX, startPtY), new Point2d(endPtX, endPtY));
+        }
     }
 }

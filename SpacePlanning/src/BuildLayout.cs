@@ -647,7 +647,7 @@ namespace SpacePlanning
 
         //get a poly and find rectangular polys inside. then merge them together to form a big poly
         [MultiReturn(new[] { "SplittableLines", "OffsetLines","SortedIndices", "OffsetMidPts" })]
-        public static Dictionary<string, object> FindOuterLinesAndOffsets(Polygon2d poly, double patientRoomDepth = 16, double recompute = 5)
+        public static Dictionary<string, object> FindOuterLinesAndOffsets(Polygon2d poly, double patientRoomDepth = 16, double extension = 1500,double recompute = 5)
         {
             if (!PolygonUtility.CheckPoly(poly)) return null;
             Polygon2d polyReg = new Polygon2d(poly.Points);
@@ -665,12 +665,14 @@ namespace SpacePlanning
                 {
                     if (lineType == 0)
                     {
-                        hLines.Add(line);
+                        Line2d extendedLine = LineUtility.ExtendLine(line, extension);
+                        hLines.Add(extendedLine);
                         hMidPt.Add(LineUtility.LineMidPoint(line));
                     }
                     if (lineType == 1)
                     {
-                        vLines.Add(line);
+                        Line2d extendedLine = LineUtility.ExtendLine(line, extension);
+                        vLines.Add(extendedLine);
                         vMidPt.Add(LineUtility.LineMidPoint(line));
                     }
                 }
@@ -716,7 +718,7 @@ namespace SpacePlanning
         
 
         //get a poly and find rectangular polys inside. then merge them together to form a big poly
-        [MultiReturn(new[] { "InpatientPolys", "SplitablePolys", "SplittableLines","OffsetLines" })]
+        [MultiReturn(new[] { "InpatientPolys", "SplitablePolys", "LeftOverPolys", "SplittableLines","OffsetLines" })]
         public static Dictionary<string, object> MakeInpatientBlocks(Polygon2d poly, double patientRoomDepth = 16, double recompute = 5)
         {
             //---------------pseudo code
@@ -730,11 +732,7 @@ namespace SpacePlanning
             
             if (!PolygonUtility.CheckPoly(poly)) return null;
             List<Polygon2d> inPatientPolyList = new List<Polygon2d>();
-
-            //Dictionary<string, object> outerLineObj = FindOuterLinesAndOffsets(poly, patientRoomDepth, recompute);
-            //List<Line2d> allSplitLines = (List<Line2d>)outerLineObj["SplittableLines"];
-            //List<Line2d> offsetLines = (List<Line2d>)outerLineObj["OffsetLines"];
-            //List<int> sortedIndices = (List<int>)outerLineObj["SortedIndices"];
+            List<Polygon2d> leftOverPolyList = new List<Polygon2d>();
             List<Line2d> allSplitLines = new List<Line2d>();
             List<Line2d> offsetLines = new List<Line2d>();
             List<int> sortedIndices = new List<int>();
@@ -749,7 +747,7 @@ namespace SpacePlanning
             {
                 
                 Polygon2d currentPoly = splitablePolys.Pop();
-                Dictionary<string, object> outerLineObj = FindOuterLinesAndOffsets(currentPoly, patientRoomDepth, recompute);
+                Dictionary<string, object> outerLineObj = FindOuterLinesAndOffsets(currentPoly, patientRoomDepth,1500, recompute);
                 allSplitLines = (List<Line2d>)outerLineObj["SplittableLines"];
                 offsetLines = (List<Line2d>)outerLineObj["OffsetLines"];
                 sortedIndices = (List<int>)outerLineObj["SortedIndices"];
@@ -764,6 +762,7 @@ namespace SpacePlanning
                     if (PolygonUtility.NumberofSidesPoly(sortedPolys[0]) < 5) inPatientPolyList.Add(sortedPolys[0]);
                     else splitablePolys.Push(sortedPolys[0]);
                     splitablePolys.Push(sortedPolys[1]);
+                    leftOverPolyList.Add(sortedPolys[1]);
                 }
                 else
                 {
@@ -775,6 +774,7 @@ namespace SpacePlanning
             {
                 { "InpatientPolys", (inPatientPolyList) },
                 { "SplitablePolys", (splitablePolys) },
+                { "LeftOverPolys", (leftOverPolyList) },
                 { "SplittableLines", (allSplitLines) },
                 { "OffsetLines", (offsetLines) },
             };
