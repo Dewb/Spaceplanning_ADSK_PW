@@ -637,9 +637,7 @@ namespace SpacePlanning
             return deptArrangement;
 
         }
-
-
-
+        
         //get a poly and find rectangular polys inside. then merge them together to form a big poly
         [MultiReturn(new[] { "SplittableLines", "OffsetLines","SortedIndices", "OffsetMidPts" })]
         public static Dictionary<string, object> FindOuterLinesAndOffsets(Polygon2d poly, double patientRoomDepth = 16, double extension = 8000,double recompute = 5)
@@ -718,15 +716,6 @@ namespace SpacePlanning
         [MultiReturn(new[] { "InpatientPolys", "SplitablePolys", "LeftOverPolys", "SplittableLines","OffsetLines","Count","SplitLineLast", "CleanedOffsetLines", "UsedLines"})]
         public static Dictionary<string, object> MakeInpatientBlocks(Polygon2d poly, double patientRoomDepth = 16, double recompute = 5)
         {
-            //---------------pseudo code
-            // from poly outline - get the outliner lines for x axis and y axis dir                                     DONE
-            // sort these lines based on line length                                                                    DONE
-            // get any of the longer lines and make a split
-            // check the smaller area splitted poly how many sides it has
-                // if not 4, put in further poly stack to be split, if 4, then assign to an inpatient
-            // get the first poly from the splittable stack, and repeat the above till splittable poly stack is empty
-
-            
             if (!PolygonUtility.CheckPoly(poly)) return null;
             List<Polygon2d> inPatientPolyList = new List<Polygon2d>();
             List<Polygon2d> leftOverPolyList = new List<Polygon2d>();
@@ -911,8 +900,6 @@ namespace SpacePlanning
         }
 
         
-
-       
         //splits a polygon into two based on ratio and dir
         [MultiReturn(new[] { "PolyAfterSplit", "SplitLine", "IntersectedPoints"})]
         internal static Dictionary<string, object> SplitByRatio(Polygon2d polyOutline, double ratio = 0.5, int dir = 0)
@@ -1077,8 +1064,6 @@ namespace SpacePlanning
         }
 
      
-
-
         //gets a poly and recursively splits it till acceptabledimension is met and makes a polyorganized list
         internal static void MakePolysOfProportion(Polygon2d poly, List<Polygon2d> polyOrganizedList, 
             List<Polygon2d> polycoverList, double acceptableWidth, double targetArea)
@@ -1163,9 +1148,7 @@ namespace SpacePlanning
                 }
             }
         }// end of function
-
-
-
+        
 
         //uses makepolysofproportion function to split one big poly into sub components
         internal static Dictionary<string,object> SplitBigPolys(List<Polygon2d> polyInputList, double acceptableWidth, double factor = 4)
@@ -1192,9 +1175,6 @@ namespace SpacePlanning
         }
 
         
-
-
-     
         //splits a polygon by a line 
         [MultiReturn(new[] { "PolyAfterSplit", "SplitLine" })]
         public static Dictionary<string, object> SplitByLine(Polygon2d polyOutline, Line2d inputLine, double distance = 5)
@@ -1293,11 +1273,7 @@ namespace SpacePlanning
             };
 
         }
-
-
-
-
-
+        
         //makes intersections and returns the two polygon2ds after intersection
         internal static Dictionary<string, object> MakeIntersections(List<Point2d> poly, Line2d splitLine, double space)
         {
