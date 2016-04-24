@@ -775,10 +775,6 @@ namespace SpacePlanning
             };
         }
         #endregion
-
-
-
-
-
+        
     }
 }

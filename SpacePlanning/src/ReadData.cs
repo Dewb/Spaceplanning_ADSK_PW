@@ -49,22 +49,16 @@ namespace SpacePlanning
             List<ProgramData> programDataStack = new List<ProgramData>();
 
             int readCount = 0;
-            string[] csvText = Properties.Resources.PROGRAMCSV.Split('\n');
-            //Properties.Resources.PROGRAMCSV.Split('\n');
-            // convert stream to string
-
-
+            //string[] csvText = Properties.Resources.PROGRAMCSV.Split('\n'); 
             Stream res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.01 FEB PROGRAM.csv");
             StreamReader reader = new StreamReader(res);
-            //string[] csvText = new[] { reader.ReadLine() };
+            string docInfo = reader.ReadToEnd();
+            string[] csvText = docInfo.Split('\n');
             Trace.WriteLine(csvText);
             foreach (string s in csvText)
             {
-                if (s.Length == 0) continue;
-                //Trace.WriteLine(s);
-                //Trace.WriteLine("_________________________________:" + s.Length);
+                if (s.Length == 0) continue;              
                 var values = s.Split(',');
-
                 if (readCount == 0)
                 {
                     readCount += 1;
