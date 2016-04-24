@@ -9,6 +9,6 @@
     <StartProgram>C:\Program Files\Autodesk\Dynamo Studio 2016\DynamoStudio.exe</StartProgram>
   </PropertyGroup>
   <PropertyGroup>
-    <ReferencePath>C:\Users\t_dassu\Documents\Visual Studio 2015\Projects\SpacePlanning\src\</ReferencePath>
+    <ReferencePath>C:\Users\t_dassu\Documents\Visual Studio 2015\Projects\SpacePlanning\src\;C:\Users\t_dassu\Documents\Visual Studio 2015\Projects\SpacePlanning\SpacePlanning\src\Properties\</ReferencePath>
   </PropertyGroup>
 </Project>

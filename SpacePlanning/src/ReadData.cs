@@ -65,10 +65,19 @@ namespace SpacePlanning
 
             int readCount = 0;
             string[] csvText = Properties.Resources.PROGRAMCSV.Split('\n');
+            //Properties.Resources.PROGRAMCSV.Split('\n');
+            // convert stream to string
+            
+           
             Stream res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.Asset.01 FEB PROGRAM.csv");
+            StreamReader reader = new StreamReader(res);
+            //string[] csvText = new[] { reader.ReadLine() };
+            Trace.WriteLine(csvText);
             foreach (string s in csvText)
             {
                 if (s.Length == 0) continue;
+                //Trace.WriteLine(s);
+                //Trace.WriteLine("_____________________________________:" + s.Length);
                 var values = s.Split(',');
 
                 if (readCount == 0)
