@@ -3,17 +3,18 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-
-
-//#########################################################################################################################
-//this class creates the SPACE DATA TREE OBJECT
-//the space data tree is a binary tree where in each node has two children , left and right
-//this object is created while departments are allocated on site.
-//based on the split of the site, each node of the tree is assigned information including two children , left and right
-//left child of any node, stores a node type of 'Space' while the right child stores the node type container
-//#########################################################################################################################
 namespace SpacePlanning
 {
+    /// <summary>
+    ///this class creates the SPACE DATA TREE OBJECT
+    ///the space data tree is a binary tree where in each node has two children , left and right
+    ///this object is created while departments/ programs are allocated on site on the back end.
+    ///this is done at the back end for fast access of dept/ prog data for dept topology computation
+    ///and circulation network search
+    ///based on the split of the site, each node of the tree is assigned information including two children , left and right
+    ///left child , stores a node type of 'Space' while the right child stores the node type container 
+    ///further details about the 'space' and 'container' is provided in the Node Class
+    /// </summary>
     public class SpaceDataTree
     {
         private Node _root;

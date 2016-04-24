@@ -5,24 +5,19 @@ using System.Text;
 using System.Threading.Tasks;
 using stuffer;
 using Autodesk.DesignScript.Geometry;
-
-
-//#########################################################################################################################
-//this class makes a NODE OBJECT, which stores links to two choldren, left and right and its parent 
-//the node data type is used to build the SpaceData Tree
-//if a node is root then it has null parent
-//a node can be of two types, 'Space' or 'Container'
-//a space node type represents a node which stores information of space ( either program or dept )
-//a space node type has no children
-//space node types are assigned to the left child and container node types are assigned to the right child of a parent node
-//the last container in a Space Data Tree has both left and right  child as space node
-//a container node type represents a node which stores further sub chains of nodes ( both space and container nodetype)
-//#########################################################################################################################
-
-
-
 namespace SpacePlanning
 {
+    /// <summary>
+    /// this class makes a NODE OBJECT, which stores link to two choldren, left and right and a link to its parent 
+    /// the node data object is used to build the SpaceData Tree
+    /// if a node is root then it has null parent
+    /// a node can be of two types, 'Space' or 'Container'
+    /// space node type represents a node which stores information of space ( either program or dept )
+    /// container node type represents a node which stores further sub chains of nodes ( both space and container nodetype)
+    /// space node type has no children
+    /// space node types are assigned to the left child and container node types are assigned to the right child of a parent node
+    /// the last container in a Space Data Tree has both left and right  child as space nodes
+    /// </summary>
     public class Node
     {
         private int _id;
