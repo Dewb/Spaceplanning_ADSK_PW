@@ -77,7 +77,7 @@ namespace SpacePlanning
             {
                 if (s.Length == 0) continue;
                 //Trace.WriteLine(s);
-                //Trace.WriteLine("_____________________________________:" + s.Length);
+                //Trace.WriteLine("_________________________________:" + s.Length);
                 var values = s.Split(',');
 
                 if (readCount == 0)
