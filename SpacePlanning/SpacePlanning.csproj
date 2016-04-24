@@ -140,9 +140,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Asset\OUTLINESCALEDDK.sat" />
-    <EmbeddedResource Include="Asset\01 FEB PROGRAM.csv" />
-    <EmbeddedResource Include="Asset\ATORIGINDK.sat" />
+    <EmbeddedResource Include="src\Asset\OUTLINESCALEDDK.sat" />
+    <EmbeddedResource Include="src\Asset\01 FEB PROGRAM.csv" />
+    <EmbeddedResource Include="src\Asset\ATORIGINDK.sat" />
     <None Include="src\Properties\Resources\01 FEB PROGRAM.csv" />
   </ItemGroup>
   <ItemGroup />

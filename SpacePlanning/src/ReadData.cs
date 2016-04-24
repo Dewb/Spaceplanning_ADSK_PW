@@ -69,7 +69,7 @@ namespace SpacePlanning
             // convert stream to string
             
            
-            Stream res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.Asset.01 FEB PROGRAM.csv");
+            Stream res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.01 FEB PROGRAM.csv");
             StreamReader reader = new StreamReader(res);
             //string[] csvText = new[] { reader.ReadLine() };
             Trace.WriteLine(csvText);
@@ -150,7 +150,7 @@ namespace SpacePlanning
         /// </search>
         public static Geometry[] AutoMakeBuildingOutline()
         {
-            Stream res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.Asset.ATORIGINDK.sat");
+            Stream res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.ATORIGINDK.sat");
             string saveTo = Path.GetTempFileName();
             FileStream writeStream = new FileStream(saveTo, FileMode.Create, FileAccess.Write);
 
