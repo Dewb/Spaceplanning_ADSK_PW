@@ -12,6 +12,7 @@ namespace SpacePlanning
 {
     public class Circulation
     {
+        #region - Public Methods
         /// <summary>
         /// It arranges the dept on the site based on input from program document
         /// Returns the dept polygon2d and dept  .
@@ -330,9 +331,10 @@ namespace SpacePlanning
             };
         }
 
-   
+        #endregion
 
-        
+
+
 
     }
 }

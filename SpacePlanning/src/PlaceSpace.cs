@@ -9,9 +9,9 @@ namespace SpacePlanning
 {
     internal class PlaceSpace
     {
-
+        #region - Private Methods
         // assign dept objects on the site
-        public static List<DeptData> AssignDeptsToSite(List<DeptData> deptData, List<Cell> cells, int recompute = 0)
+        internal static List<DeptData> AssignDeptsToSite(List<DeptData> deptData, List<Cell> cells, int recompute = 0)
         {
             //Build new dept data list
             List<DeptData> newDeptDataList = new List<DeptData>();
@@ -178,7 +178,7 @@ namespace SpacePlanning
 
         //places the programs from prog data on the site
         [MultiReturn(new[] { "ProgramCellIndices", "ProgramData", "CellsForEachProg", "Cells" })]
-        public static Dictionary<string, object> PlaceProgramsInSite(List<ProgramData> progData, List<Cell> cells, List<Point2d> PolyPoints, int num = 5, int tag = 0)
+        internal static Dictionary<string, object> PlaceProgramsInSite(List<ProgramData> progData, List<Cell> cells, List<Point2d> PolyPoints, int num = 5, int tag = 0)
         {
             for (int i = 0; i < cells.Count; i++)
             {
@@ -418,7 +418,7 @@ namespace SpacePlanning
 
         //make polygons from cell objects
         [MultiReturn(new[] { "PolyCurves", "PointLists" })]
-        public static Dictionary<string, object> MakePolygonsFromCells(List<List<Cell>> cellProgramsList)
+        internal static Dictionary<string, object> MakePolygonsFromCells(List<List<Cell>> cellProgramsList)
         {
             List<PolyCurve> polyList = new List<PolyCurve>();
             List<List<Point2d>> ptAll = new List<List<Point2d>>();
@@ -509,7 +509,7 @@ namespace SpacePlanning
         
         //make convex hulls from cell objects
         [MultiReturn(new[] { "PolyCurves", "PointLists" })]
-        public static Dictionary<string, object> MakeConvexHullsFromCells(List<List<Cell>> cellProgramsList)
+        internal static Dictionary<string, object> MakeConvexHullsFromCells(List<List<Cell>> cellProgramsList)
         {
             List<Polygon> polyList = new List<Polygon>();
             List<List<Point2d>> ptAllnew = new List<List<Point2d>>();
@@ -564,7 +564,7 @@ namespace SpacePlanning
               
         //make convex hulls for programs
         [MultiReturn(new[] { "PolyCurves", "PointLists" })]
-        public static Dictionary<string, object> MakeProgramConvexHulls(List<List<int>> cellProgramsList, List<Point2d> ptList)
+        internal static Dictionary<string, object> MakeProgramConvexHulls(List<List<int>> cellProgramsList, List<Point2d> ptList)
         {
             List<Polygon> polyList = new List<Polygon>();
             List<List<Point2d>> ptAllnew = new List<List<Point2d>>();
@@ -659,7 +659,7 @@ namespace SpacePlanning
             return cellInfo;
         }
 
-
+        #endregion
 
     }
 }

@@ -9,7 +9,7 @@ namespace SpacePlanning
 {
     public class BubbleChart
     {
-
+        #region - Public Methods
         //makes point grid for bubbles
         public static List<Point2d> ProgramPointGridFromData(List<List<string>> dataStack)
         {
@@ -170,6 +170,6 @@ namespace SpacePlanning
             };
 
         }
-
+        #endregion
     }
 }

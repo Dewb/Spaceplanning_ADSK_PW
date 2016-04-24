@@ -19,7 +19,7 @@ namespace SpacePlanning
         private List<Point2d> _siteBoundingBox = new List<Point2d>();
         private double _dimX;
         private double _dimY;
-
+        #region - Private Methods
         //constructor
         internal GridObject(List<Point2d> siteOutline, List<Point2d> siteBoundingBox, double dimensionX, double dimensionY)
         {
@@ -60,7 +60,8 @@ namespace SpacePlanning
             return pointsGrid;
 
         }
-        
+        #endregion
+        #region - Public Methods
         // make point2d list which are inside the bounding box
         [MultiReturn(new[] { "PointsInsideOutline", "CellsFromPoints" })]
         public static Dictionary<string, object> GridPointsInsideOutline(List<Point2d> bbox, List<Point2d> outlinePoints, double dimXX, double dimYY)
@@ -773,10 +774,10 @@ namespace SpacePlanning
                 { "SortedCells" , (newCellLists) }
             };
         }
+        #endregion
 
 
-        
-      
+
 
 
     }
