@@ -10,6 +10,8 @@
 [Dd]ebug/
 [Rr]elease/
 [Bb]in/
+SpacePlanning/[Bb]in/[Dd]ebug
+
 *_i.c
 *_p.c
 *.ilk
