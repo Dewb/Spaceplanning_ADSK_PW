@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace SpacePlanning
 {
-    /// <summary>
+    ///<summary>
     ///this class creates the SPACE DATA TREE OBJECT
     ///the space data tree is a binary tree where in each node has two children , left and right
     ///this object is created while departments/ programs are allocated on site on the back end.

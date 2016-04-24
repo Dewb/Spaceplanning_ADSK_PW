@@ -14,21 +14,8 @@ namespace SpacePlanning
 {
     public class ReadData
     {
-        //get program list quantity and make new list based on it
-        internal static List<ProgramData> MakeProgramListBasedOnQuantity(List<ProgramData> progData)
-        {
-            List<ProgramData> progQuantityBasedList = new List<ProgramData>();
-            for(int i=0; i < progData.Count; i++)
-            {
-                ProgramData progItem = progData[i]; 
-                int quantity = progItem.Quantity;
-                for (int j = 0; j < quantity; j++)
-                {
-                    progQuantityBasedList.Add(progItem);
-                }
-            }
-            return progQuantityBasedList;
-        }
+       
+        #region - Public Methods
 
         //read embedded .csv file and make data stack
         //arrange depts on site, till all depts have not been satisfied
@@ -45,7 +32,7 @@ namespace SpacePlanning
         /// <search>
         /// make data stack, embedded data
         /// </search>
-        [MultiReturn(new[] { "DataStackArray", "ProgramDataObject","DeptDataObject" })]
+        [MultiReturn(new[] { "DataStackArray", "ProgramDataObject", "DeptDataObject" })]
         public static Dictionary<string, IEnumerable<object>> AutoMakeDataStack([ArbitraryDimensionArrayImport]double dimX, [ArbitraryDimensionArrayImport]double dimY, double circulationFactor = 1)
         {
 
@@ -65,8 +52,8 @@ namespace SpacePlanning
             string[] csvText = Properties.Resources.PROGRAMCSV.Split('\n');
             //Properties.Resources.PROGRAMCSV.Split('\n');
             // convert stream to string
-            
-           
+
+
             Stream res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.01 FEB PROGRAM.csv");
             StreamReader reader = new StreamReader(res);
             //string[] csvText = new[] { reader.ReadLine() };
@@ -130,12 +117,8 @@ namespace SpacePlanning
             };
 
         }
-        
-        //read embedded .csv file and make data stack
-        internal static Dictionary<string, IEnumerable<object>> AutoMakeDataStackSingleOut([ArbitraryDimensionArrayImport]double dimX, [ArbitraryDimensionArrayImport]double dimY, double factor = 1)
-        {
-            return AutoMakeDataStack(dimX, dimY, factor);
-        }
+
+
 
         //read embedded .sat file and make building outline
         /// <summary>
@@ -161,7 +144,7 @@ namespace SpacePlanning
                 bytesRead = res.Read(buffer, 0, Length);
             }
             writeStream.Close();
-            return Geometry.ImportFromSAT(saveTo); 
+            return Geometry.ImportFromSAT(saveTo);
         }
 
         //read provided .csv file and make data stack
@@ -179,7 +162,7 @@ namespace SpacePlanning
         /// make data stack, embedded data
         /// </search>
         [MultiReturn(new[] { "DataStackArray", "ProgramDataObject", "DeptNames", "DeptDataObject" })]
-        public static Dictionary<string, IEnumerable<object>> MakeDataStack([ArbitraryDimensionArrayImport]string path, [ArbitraryDimensionArrayImport]double dimX, [ArbitraryDimensionArrayImport]double dimY, double factor=1)
+        public static Dictionary<string, IEnumerable<object>> MakeDataStack([ArbitraryDimensionArrayImport]string path, [ArbitraryDimensionArrayImport]double dimX, [ArbitraryDimensionArrayImport]double dimY, double factor = 1)
         {
 
             var reader = new StreamReader(File.OpenRead(@path));
@@ -213,27 +196,27 @@ namespace SpacePlanning
                 prefValProgList.Add(values[5]);
                 progAdjList.Add(values[6]);
 
-                Cell dummyC = new Cell(Point2d.ByCoordinates(0, 0), 0, 0,true);
+                Cell dummyC = new Cell(Point2d.ByCoordinates(0, 0), 0, 0, true);
                 List<Cell> dummyCell = new List<Cell>();
                 dummyCell.Add(dummyC);
                 List<string> adjList = new List<string>();
                 adjList.Add(values[6]);
                 ProgramData progData = new ProgramData(Convert.ToInt16(values[0]), values[1], values[2], Convert.ToInt16(values[3]),
-                    Convert.ToDouble(values[4])*factor, Convert.ToInt16(values[5]), adjList, dummyCell,dimX,dimY);
+                    Convert.ToDouble(values[4]) * factor, Convert.ToInt16(values[5]), adjList, dummyCell, dimX, dimY);
                 programDataStack.Add(progData);
             }
 
             List<string> deptNames = GetDeptNames(deptNameList);
             List<DeptData> deptDataStack = new List<DeptData>();
 
-            for (int i=0; i < deptNames.Count; i++)
+            for (int i = 0; i < deptNames.Count; i++)
             {
                 List<ProgramData> progInDept = new List<ProgramData>();
                 for (int j = 0; j < programDataStack.Count; j++)
                 {
-                    if(deptNames[i] == programDataStack[j].DeptName) progInDept.Add(programDataStack[j]);
+                    if (deptNames[i] == programDataStack[j].DeptName) progInDept.Add(programDataStack[j]);
                 }
-                DeptData deptD = new DeptData(deptNames[i], progInDept,dimX,dimY);
+                DeptData deptD = new DeptData(deptNames[i], progInDept, dimX, dimY);
                 deptDataStack.Add(deptD);
             }
 
@@ -255,13 +238,6 @@ namespace SpacePlanning
 
         }
 
-        //returns the dept names
-        internal static List<string> GetDeptNames(List<string> deptNameList)
-        {
-            List<string> uniqueItemsList = deptNameList.Distinct().ToList();
-            return uniqueItemsList;
-        }
-
         //reads .sat file and returns geometry
         /// <summary>
         /// It arranges the dept on the site based on input from program document
@@ -273,8 +249,8 @@ namespace SpacePlanning
         /// make nurbs curve, site outline
         /// </search>
         public static Geometry[] ReadBuildingOutline(string path)
-        {           
-            return Geometry.ImportFromSAT(path);           
+        {
+            return Geometry.ImportFromSAT(path);
         }
 
         //get point information from outline
@@ -328,6 +304,37 @@ namespace SpacePlanning
             pointCoordList.Add(Point2d.ByCoordinates(xMax, yMin));
             return pointCoordList;
         }
+        #endregion
+
+        #region-Private Methods
+        //get program list quantity and make new list based on it
+        internal static List<ProgramData> MakeProgramListBasedOnQuantity(List<ProgramData> progData)
+        {
+            List<ProgramData> progQuantityBasedList = new List<ProgramData>();
+            for (int i = 0; i < progData.Count; i++)
+            {
+                ProgramData progItem = progData[i];
+                int quantity = progItem.Quantity;
+                for (int j = 0; j < quantity; j++)
+                {
+                    progQuantityBasedList.Add(progItem);
+                }
+            }
+            return progQuantityBasedList;
+        }
+        
+        //returns the dept names
+        internal static List<string> GetDeptNames(List<string> deptNameList)
+        {
+            List<string> uniqueItemsList = deptNameList.Distinct().ToList();
+            return uniqueItemsList;
+        }
+        //read embedded .csv file and make data stack
+        internal static Dictionary<string, IEnumerable<object>> AutoMakeDataStackSingleOut([ArbitraryDimensionArrayImport]double dimX, [ArbitraryDimensionArrayImport]double dimY, double factor = 1)
+        {
+            return AutoMakeDataStack(dimX, dimY, factor);
+        }
+        #endregion
 
 
     }
