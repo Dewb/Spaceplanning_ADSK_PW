@@ -707,10 +707,12 @@ namespace SpacePlanning
                 midPtsOffsets.Add(LineUtility.NudgeLineMidPt(allSplitLines[i], poly, patientRoomDepth));
             }
 
+            List<Line2d> offsetSortedLines = new List<Line2d>();
+            for(int i = 0; i < offsetLines.Count; i++) offsetSortedLines.Add(offsetLines[sortedIndices[i]]);
             return new Dictionary<string, object>
             {
                 { "SplittableLines", (allSplitLines) },
-                { "OffsetLines", (offsetLines) },
+                { "OffsetLines", (offsetSortedLines) },
                 { "SortedIndices", (sortedIndices) },
                 { "OffsetMidPts", (midPtsOffsets) }
             };
@@ -745,15 +747,22 @@ namespace SpacePlanning
             Stack<Polygon2d> splitablePolys = new Stack<Polygon2d>();
             splitablePolys.Push(poly);
       
-            while (splitablePolys .Count > 0 && count < maxTry)
+            while (splitablePolys.Count > 0 && count < recompute)
             {                
                 Polygon2d currentPoly = splitablePolys.Pop();
-                Dictionary<string, object> outerLineObj = FindOuterLinesAndOffsets(currentPoly, patientRoomDepth,1500, count);
+                Dictionary<string, object> outerLineObj = FindOuterLinesAndOffsets(currentPoly, patientRoomDepth,100, count);
                 List<Line2d> allSplitLines = (List<Line2d>)outerLineObj["SplittableLines"];
                 List<Line2d> offsetLines = (List<Line2d>)outerLineObj["OffsetLines"];
+                List<Line2d> offsetCleanedLines = new List<Line2d>();
                 sortedIndices = (List<int>)outerLineObj["SortedIndices"];
+                Trace.WriteLine("Before cleaning offset lines length : " + offsetLines.Count);
+                Trace.WriteLine("UsedLineList length is : " + usedLineList.Count);
+                if (usedLineList.Count > 0) offsetCleanedLines = GraphicsUtility.RemoveDuplicateLinesFromAnotherList(offsetLines, usedLineList);
+                else offsetCleanedLines = offsetLines;
+                Trace.WriteLine("After cleaning offset lines length : " + offsetCleanedLines.Count);
                 int selectLineNum = (int)Math.Floor(BasicUtility.RandomBetweenNumbers(ran, allSplitLines.Count, 0));
-                Line2d splitLine = offsetLines[selectLineNum];
+
+                Line2d splitLine = offsetCleanedLines[0]; // pick the longest Line
                 //splitLine = LineUtility.Move(splitLine, 0.05);
                 Dictionary<string, object> splitPolys = SplitByLine(currentPoly, splitLine, 0); //{ "PolyAfterSplit", "SplitLine" })]
                 List<Polygon2d> polyAfterSplit = (List<Polygon2d>)splitPolys["PolyAfterSplit"];
