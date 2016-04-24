@@ -13,8 +13,7 @@ namespace SpacePlanning
         //makes point grid for bubbles
         public static List<Point2d> ProgramPointGridFromData(List<List<string>> dataStack)
         {
-            int lenPointLists = dataStack[0].Count;
-            int count = 0;
+            int lenPointLists = dataStack[0].Count, count = 0;
             double x = 0, y = 0;
             double addX = 10, addY = 10;
             List<Point2d> ptList = new List<Point2d>();
