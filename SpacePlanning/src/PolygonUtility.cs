@@ -245,7 +245,7 @@ namespace SpacePlanning
             squarePts.Add(Point2d.ByCoordinates(ptA.X + threshold, ptA.Y - threshold));//LR
             squarePts.Add(Point2d.ByCoordinates(ptA.X + threshold, ptA.Y + threshold));//UR
             squarePts.Add(Point2d.ByCoordinates(ptA.X - threshold, ptA.Y + threshold));//UL
-            squarePts.Add(Point2d.ByCoordinates(ptA.X - threshold, ptA.Y - threshold));//LL
+            squarePts.Add(Point2d.ByCoordinates(ptA.X - threshold, ptA.Y - threshold));//LLl
             Polygon2d squarePoly = Polygon2d.ByPoints(squarePts);
             return GraphicsUtility.PointInsidePolygonTest(squarePoly, ptB);
         }
