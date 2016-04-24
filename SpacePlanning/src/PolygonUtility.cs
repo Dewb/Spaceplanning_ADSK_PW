@@ -238,6 +238,17 @@ namespace SpacePlanning
             return sortedPolys;
         }
      
+        //checks if two points are within a certain threshold region
+        public static bool CheckPointsWithinRange(Point2d ptA, Point2d ptB, double threshold = 2)
+        {
+            List<Point2d> squarePts = new List<Point2d>();
+            squarePts.Add(Point2d.ByCoordinates(ptA.X + threshold, ptA.Y - threshold));//LR
+            squarePts.Add(Point2d.ByCoordinates(ptA.X + threshold, ptA.Y + threshold));//UR
+            squarePts.Add(Point2d.ByCoordinates(ptA.X - threshold, ptA.Y + threshold));//UL
+            squarePts.Add(Point2d.ByCoordinates(ptA.X - threshold, ptA.Y - threshold));//LL
+            Polygon2d squarePoly = Polygon2d.ByPoints(squarePts);
+            return GraphicsUtility.PointInsidePolygonTest(squarePoly, ptB);
+        }
 
         //get a poly and find rectangular polys inside. then merge them together to form a big poly
         public static Dictionary<string, object> MakeWholesomeBlockInPoly(Polygon2d poly, double recompute = 5)

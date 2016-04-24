@@ -647,7 +647,7 @@ namespace SpacePlanning
 
         //get a poly and find rectangular polys inside. then merge them together to form a big poly
         [MultiReturn(new[] { "SplittableLines", "OffsetLines","SortedIndices", "OffsetMidPts" })]
-        public static Dictionary<string, object> FindOuterLinesAndOffsets(Polygon2d poly, double patientRoomDepth = 16, double extension = 1500,double recompute = 5)
+        public static Dictionary<string, object> FindOuterLinesAndOffsets(Polygon2d poly, double patientRoomDepth = 16, double extension = 8000,double recompute = 5)
         {
             if (!PolygonUtility.CheckPoly(poly)) return null;
             Polygon2d polyReg = new Polygon2d(poly.Points);
@@ -666,13 +666,13 @@ namespace SpacePlanning
                     if (lineType == 0)
                     {
                         Line2d extendedLine = LineUtility.ExtendLine(line, extension);
-                        hLines.Add(extendedLine);
+                        hLines.Add(line);
                         hMidPt.Add(LineUtility.LineMidPoint(line));
                     }
                     if (lineType == 1)
                     {
                         Line2d extendedLine = LineUtility.ExtendLine(line, extension);
-                        vLines.Add(extendedLine);
+                        vLines.Add(line);
                         vMidPt.Add(LineUtility.LineMidPoint(line));
                     }
                 }
@@ -720,7 +720,7 @@ namespace SpacePlanning
         
 
         //get a poly and find rectangular polys inside. then merge them together to form a big poly
-        [MultiReturn(new[] { "InpatientPolys", "SplitablePolys", "LeftOverPolys", "SplittableLines","OffsetLines","Count","SplitLineLast","SplitDone","UsedLines"})]
+        [MultiReturn(new[] { "InpatientPolys", "SplitablePolys", "LeftOverPolys", "SplittableLines","OffsetLines","Count","SplitLineLast", "CleanedOffsetLines", "UsedLines"})]
         public static Dictionary<string, object> MakeInpatientBlocks(Polygon2d poly, double patientRoomDepth = 16, double recompute = 5)
         {
             //---------------pseudo code
@@ -736,7 +736,8 @@ namespace SpacePlanning
             List<Polygon2d> inPatientPolyList = new List<Polygon2d>();
             List<Polygon2d> leftOverPolyList = new List<Polygon2d>();
             List<Line2d> allSplitLinesOut = new List<Line2d>();
-            List<Line2d> offsetLinesOut = new List<Line2d>();
+            List<List<Line2d>> offsetLinesOut = new List<List<Line2d>>();
+            List<List<Line2d>> offsetLinesCleanedOut = new List<List<Line2d>>();
             List<Line2d> usedLineList = new List<Line2d>();
             List<int> sortedIndices = new List<int>();
             bool splitDone = false;
@@ -750,14 +751,14 @@ namespace SpacePlanning
             while (splitablePolys.Count > 0 && count < recompute)
             {                
                 Polygon2d currentPoly = splitablePolys.Pop();
-                Dictionary<string, object> outerLineObj = FindOuterLinesAndOffsets(currentPoly, patientRoomDepth,100, count);
+                Dictionary<string, object> outerLineObj = FindOuterLinesAndOffsets(currentPoly, patientRoomDepth,1500, count);
                 List<Line2d> allSplitLines = (List<Line2d>)outerLineObj["SplittableLines"];
                 List<Line2d> offsetLines = (List<Line2d>)outerLineObj["OffsetLines"];
                 List<Line2d> offsetCleanedLines = new List<Line2d>();
                 sortedIndices = (List<int>)outerLineObj["SortedIndices"];
                 Trace.WriteLine("Before cleaning offset lines length : " + offsetLines.Count);
                 Trace.WriteLine("UsedLineList length is : " + usedLineList.Count);
-                if (usedLineList.Count > 0) offsetCleanedLines = GraphicsUtility.RemoveDuplicateLinesFromAnotherList(offsetLines, usedLineList);
+                if (usedLineList.Count > 0) offsetCleanedLines = GraphicsUtility.RemoveDuplicateLinesBasedOnMidPt(offsetLines, usedLineList);
                 else offsetCleanedLines = offsetLines;
                 Trace.WriteLine("After cleaning offset lines length : " + offsetCleanedLines.Count);
                 int selectLineNum = (int)Math.Floor(BasicUtility.RandomBetweenNumbers(ran, allSplitLines.Count, 0));
@@ -780,9 +781,10 @@ namespace SpacePlanning
                 }
                 count += 1;
                 usedLineList.Add(splitLine);
-                allSplitLinesOut.Add(splitLine);
+                //allSplitLinesOut.Add(splitLine);
                 allSplitLinesOut.AddRange(allSplitLines);
-                offsetLinesOut.AddRange(offsetLines);
+                offsetLinesOut.Add(offsetLines);
+                offsetLinesCleanedOut.Add(offsetCleanedLines);
 
             }//end of while loop
             
@@ -795,8 +797,8 @@ namespace SpacePlanning
                 { "OffsetLines", (offsetLinesOut) },
                 { "Count", (count) },
                 { "SplitLineLast", (allSplitLinesOut[0]) },
-                { "SplitDone", (splitDone) },
-                { "UsedLines", (usedLineList) },
+                { "CleanedOffsetLines", (offsetLinesCleanedOut) },
+                { "UsedLines", (usedLineList) }
             };
         }
 

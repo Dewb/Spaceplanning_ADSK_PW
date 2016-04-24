@@ -32,13 +32,35 @@ namespace SpacePlanning
             return new Point2d(midPt.X + vecScaled.X, midPt.Y + vecScaled.Y); 
         }
 
+        
         //offsets an input line by a given distance towards the centroid of given poly
-        internal static Line2d Offset(Line2d lineInp,Polygon2d poly, double distance)
+        public static Line2d Offset(Line2d lineInp, Polygon2d poly, double distance)
         {
             if (lineInp == null || !PolygonUtility.CheckPoly(poly)) return null;
-            //Line2d line = Extend(lineInp);
-            Line2d line = lineInp;
-            return Move(line, NudgeLineMidPt(line, poly, distance));
+            Point2d center = PolygonUtility.CentroidFromPoly(poly);
+
+            double newStartX = 0, newStartY = 0, newEndX = 0, newEndY = 0;
+            Vector2d vecToCen = new Vector2d(LineMidPoint(lineInp), center);
+            Vector2d vecNorm = vecToCen.Normalize();
+            Vector2d vecScaled = vecNorm.Scale(distance);
+            if (GraphicsUtility.CheckLineOrient(lineInp) == 0)
+            {
+                vecScaled.X = 0;
+                newStartX = lineInp.StartPoint.X;
+                newStartY = lineInp.StartPoint.Y + vecScaled.Y;
+                newEndX = lineInp.EndPoint.X;
+                newEndY = lineInp.EndPoint.Y + vecScaled.Y;
+            }
+            else
+            {
+                vecScaled.Y = 0;
+                newStartX = lineInp.StartPoint.X + vecScaled.X;
+                newStartY = lineInp.StartPoint.Y;
+                newEndX = lineInp.EndPoint.X + vecScaled.X;
+                newEndY = lineInp.EndPoint.Y;
+            }
+            return new Line2d(new Point2d(newStartX, newStartY), new Point2d(newEndX, newEndY));
+
         }
 
         //moves a line from its midpoint to a given point
