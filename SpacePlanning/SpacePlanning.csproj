@@ -68,11 +68,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
     <Compile Include="src\BasicUtility.cs" />
     <Compile Include="src\Bubble Chart.cs" />
     <Compile Include="src\Cell.cs" />
@@ -130,10 +125,6 @@
     <Compile Include="src\Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
     <EmbeddedResource Include="src\Properties\Resources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <SubType>Designer</SubType>
@@ -143,9 +134,7 @@
     <EmbeddedResource Include="src\Asset\OUTLINESCALEDDK.sat" />
     <EmbeddedResource Include="src\Asset\01 FEB PROGRAM.csv" />
     <EmbeddedResource Include="src\Asset\ATORIGINDK.sat" />
-    <None Include="src\Properties\Resources\01 FEB PROGRAM.csv" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

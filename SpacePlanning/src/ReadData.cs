@@ -59,11 +59,7 @@ namespace SpacePlanning
             {
                 if (s.Length == 0) continue;              
                 var values = s.Split(',');
-                if (readCount == 0)
-                {
-                    readCount += 1;
-                    continue;
-                }
+                if (readCount == 0) { readCount += 1; continue; }
                 progIdList.Add(values[0]);
                 programList.Add(values[1]);
                 deptNameList.Add(values[2]);
