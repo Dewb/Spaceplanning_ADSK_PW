@@ -1,9 +1,6 @@
 ﻿using System.Collections.Generic;
 using Autodesk.DesignScript.Runtime;
-using Autodesk.DesignScript.Interfaces;
 using Autodesk.DesignScript.Geometry;
-using Autodesk;
-using ProtoScript;
 using System;
 using System.Diagnostics;
 
@@ -20,16 +17,10 @@ namespace stuffer
 
 
 
-
-
-
-
-
-
-
+            
 
         //convert point to point2dList
-        internal static List<Point2d> PointtoPoint2Da(List<Point> pointList)
+        internal static List<Point2d> PointtoPoint2D(List<Point> pointList)
         {
             List<Point2d> point2dList = new List<Point2d>();
 
@@ -42,11 +33,7 @@ namespace stuffer
             return point2dList;
         }
 
-
-
-
-
-
+        
 
         [MultiReturn(new[] { "aVal", "rVal", "gVal", "bVal" })]
         public static Dictionary<string, object> ARGBValues(List<List<Point2d>> ptLists)
@@ -214,9 +201,7 @@ namespace stuffer
 
         }
 
-
-
-
+        
 
         //ADDED CODE : SUBHAJIT DAS++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

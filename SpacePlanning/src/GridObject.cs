@@ -7,11 +7,6 @@ using System.Collections;
 using System.Diagnostics;
 using System.Linq;
 
-///////////////////////////////////////////////////////////////////
-/// NOTE: This project requires references to the ProtoInterface
-/// and ProtoGeometry DLLs. These are found in the Dynamo install
-/// directory.
-///////////////////////////////////////////////////////////////////
 
 namespace SpacePlanning
 {

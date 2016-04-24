@@ -14,8 +14,6 @@ namespace SpacePlanning
 {
     public class ReadData
     {
-   
-    
         //get program list quantity and make new list based on it
         internal static List<ProgramData> MakeProgramListBasedOnQuantity(List<ProgramData> progData)
         {

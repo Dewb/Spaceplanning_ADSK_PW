@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using stuffer;
 using Autodesk.DesignScript.Runtime;
 using System.Diagnostics;
@@ -11,7 +9,6 @@ namespace SpacePlanning
 {
     public class PolygonUtility
     {
-
         //checks a polygon2d to have min Area and min dimensions
         internal static bool CheckPolyDimension(Polygon2d poly, double minArea = 6, double side = 2)
         {

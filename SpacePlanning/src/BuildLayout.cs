@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using stuffer;
 using Autodesk.DesignScript.Runtime;
 using System.Diagnostics;
@@ -11,8 +8,6 @@ using Autodesk.DesignScript.Geometry;
 
 namespace SpacePlanning
 {
-        
-
     public class BuildLayout
     {      
         internal static double spacingSet = 10; //higher value makes code faster, 6 was good too

@@ -12,7 +12,6 @@ namespace SpacePlanning
 {
     public class LineUtility
     {
-
         //returns the midPt of a line
         internal static Point2d LineMidPoint(Line2d line)
         {

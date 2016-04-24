@@ -1,14 +1,6 @@
 ﻿
 using stuffer;
-using System;
 using System.Collections.Generic;
-
-
-///////////////////////////////////////////////////////////////////
-/// NOTE: This project requires references to the ProtoInterface
-/// and ProtoGeometry DLLs. These are found in the Dynamo install
-/// directory.
-///////////////////////////////////////////////////////////////////
 
 namespace SpacePlanning
 {
@@ -33,8 +25,8 @@ namespace SpacePlanning
         private double _areaGiven;
         private bool _IsAreaSatsifed;
         private Polygon2d _polyProgs;
-        // We make the constructor for this object internal because the 
-        // Dynamo user should construct an object through a static method
+
+
         public ProgramData(int programID,string programName,string programDept,
             int programQuant,double programUnitArea, int programPrefValue, List<string> programAdjList,List<Cell> programCell, double dimX, double dimY)
         {

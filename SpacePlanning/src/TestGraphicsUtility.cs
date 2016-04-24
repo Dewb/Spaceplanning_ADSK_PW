@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using stuffer;
 using Autodesk.DesignScript.Geometry;
 using Autodesk.DesignScript.Runtime;
@@ -15,8 +13,6 @@ namespace SpacePlanning
         //this class stores methods realted to GraphicsUtility class which needs to be tested further for reliability
         //################################################################################################################
         
-
-
         // checks if two lines are collinear - not using
         public static bool CheckLineCollinear(Line2d lineA, Line2d lineB)
         {
