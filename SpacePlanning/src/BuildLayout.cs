@@ -338,7 +338,7 @@ namespace SpacePlanning
 
         //get a poly and find rectangular polys inside. then merge them together to form a big poly
         [MultiReturn(new[] { "InpatientPolys", "SplitablePolys", "LeftOverPolys", "SplittableLines","OffsetLines","Count","SplitLineLast", "CleanedOffsetLines", "UsedLines"})]
-        public static Dictionary<string, object> MakeInpatientBlocks(Polygon2d poly, double patientRoomDepth = 16, double recompute = 5)
+        public static Dictionary<string, object> MakeInpatientBlocks(Polygon2d poly, List<Cell> cellList, double patientRoomDepth = 16, double recompute = 5)
         {
             if (!PolygonUtility.CheckPoly(poly)) return null;
             List<Polygon2d> inPatientPolyList = new List<Polygon2d>();
@@ -350,6 +350,7 @@ namespace SpacePlanning
             List<int> sortedIndices = new List<int>();
             bool splitDone = false;
             int maxTry = 500, count = 0;
+            double dim = cellList[0].DimX;
             Random ran = new Random();
             
             
@@ -378,10 +379,21 @@ namespace SpacePlanning
                 if (PolygonUtility.CheckPolyList(polyAfterSplit))
                 {
                     List<Polygon2d> sortedPolys = PolygonUtility.SortPolygonList(polyAfterSplit);
-                    if (PolygonUtility.NumberofSidesPoly(sortedPolys[0]) < 5) inPatientPolyList.Add(sortedPolys[0]);
-                    else splitablePolys.Push(sortedPolys[0]);
-                    splitablePolys.Push(sortedPolys[1]);
-                    leftOverPolyList.Add(sortedPolys[1]);
+                    if (PolygonUtility.NumberofSidesPoly(sortedPolys[0]) < 5)
+                    {
+                        inPatientPolyList.Add(sortedPolys[0]);
+                        splitablePolys.Push(sortedPolys[1]);
+                        leftOverPolyList.Add(sortedPolys[1]);
+                    }
+                    else
+                    {
+                        List<Cell> cellInsideList = GridObject.CellsInsidePoly(currentPoly.Points, dim);
+                        Dictionary<string, object> mergeObj = GridObject.MergePoly(sortedPolys, cellInsideList);
+                        Polygon2d mergedPoly = (Polygon2d)mergeObj["MergedPoly"];
+                        splitablePolys.Push(mergedPoly);
+                    }
+                    
+                    
                 }
                 else
                 {
