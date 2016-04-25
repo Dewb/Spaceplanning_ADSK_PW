@@ -177,8 +177,10 @@ namespace SpacePlanning
         //removes duplicate lines from a list, based on the lines from another list
         public static List<Line2d> RemoveDuplicateLinesFromAnotherList(List<Line2d> lineListOrig, List<Line2d> otherLineList)
         {
-            List<Line2d> lineEditedList = new List<Line2d>();
-            for (int i = 0; i < lineListOrig.Count; i++) lineEditedList.Add(lineListOrig[i]);
+            //List<Line2d> lineEditedList = new List<Line2d>();
+            //for (int i = 0; i < lineListOrig.Count; i++) lineEditedList.Add(lineListOrig[i]);
+            List<Line2d> lineEditedList = lineListOrig.Select(x => new Line2d(x.StartPoint,x.EndPoint)).ToList(); // example of deep copy
+
             List<bool> duplicateTagList = new List<bool>();
             for (int i = 0; i < lineListOrig.Count; i++)
             {
@@ -232,6 +234,34 @@ namespace SpacePlanning
             return lineEditedList;
         }
 
+        //removes duplicate lines from a list, based on line adjacency check
+        public static List<Line2d> RemoveDuplicateLinesBasedOnAdjacency(List<Line2d> lineListOrig, List<Line2d> otherLineList)
+        {
+            List<Line2d> lineEditedList = new List<Line2d>();
+            for (int i = 0; i < lineListOrig.Count; i++) lineEditedList.Add(lineListOrig[i]);
+            List<bool> duplicateTagList = new List<bool>();
+            for (int i = 0; i < lineListOrig.Count; i++)
+            {
+                bool duplicate = false;
+                for (int j = 0; j < otherLineList.Count; j++)
+                {
+                    Point2d midPtOrig = LineUtility.LineMidPoint(lineListOrig[i]);
+                    Point2d midPtOther = LineUtility.LineMidPoint(otherLineList[j]);
+                    if (LineAdjacencyCheck(lineListOrig[i],otherLineList[j])) { duplicate = true; break; }
+                }
+                duplicateTagList.Add(duplicate);
+            }
+            int count = 0;
+            for (int i = 0; i < duplicateTagList.Count; i++)
+            {
+                if (duplicateTagList[i])
+                {
+                    lineEditedList.RemoveAt(i - count);
+                    count += 1;
+                }
+            }
+            return lineEditedList;
+        }
 
         // Removes the lines which are on the poly lines
         internal static List<Line2d> RemoveDuplicateslinesWithPoly(Polygon2d poly, List<Line2d> lineList)

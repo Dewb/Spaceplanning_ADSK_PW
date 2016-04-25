@@ -272,6 +272,7 @@ namespace SpacePlanning
             List<Line2d> vLines = new List<Line2d>();
             List<Point2d> hMidPt = new List<Point2d>();
             List<Point2d> vMidPt = new List<Point2d>();
+            int countOrtho = 0, countNonOrtho = 0;
             for (int i = 0; i < polyReg.Points.Count; i++)
             {
                 int a = i, b = i + 1;
@@ -292,16 +293,25 @@ namespace SpacePlanning
                         vLines.Add(line);
                         vMidPt.Add(LineUtility.LineMidPoint(line));
                     }
+                    countOrtho += 1;
+                }
+                else
+                {
+                    countNonOrtho += 1;
                 }
             }
+            Trace.WriteLine("Orhto lines are : " + countOrtho + "Non ortho lines are : " + countNonOrtho);
             List<Line2d> selectedHLines = new List<Line2d>();
             List<Line2d> selectedVLines = new List<Line2d>();
             int hIndLow = TestGraphicsUtility.ReturnLowestPointFromList(hMidPt);
             int hIndHigh = TestGraphicsUtility.ReturnHighestPointFromList(hMidPt);
             int vIndLow = GraphicsUtility.ReturnLowestPointFromListNew(vMidPt);
             int vIndHigh = GraphicsUtility.ReturnHighestPointFromListNew(vMidPt);
-            selectedHLines.Add(hLines[hIndLow]); selectedHLines.Add(hLines[hIndHigh]);
-            selectedVLines.Add(vLines[vIndLow]); selectedVLines.Add(vLines[vIndHigh]);
+            if (hIndLow > -1) selectedHLines.Add(hLines[hIndLow]);
+            if (hIndHigh > -1) selectedHLines.Add(hLines[hIndHigh]);
+            if (vIndLow > -1) selectedVLines.Add(vLines[vIndLow]);
+            if (vIndHigh > -1) selectedVLines.Add(vLines[vIndHigh]);
+
             List<Line2d> allSplitLines = new List<Line2d>();
             allSplitLines.AddRange(selectedHLines);
             allSplitLines.AddRange(selectedVLines);
@@ -314,7 +324,7 @@ namespace SpacePlanning
                 unsortedIndices[i] = i;
             }
             List<int> sortedIndices = BasicUtility.Quicksort(splitLineLength, unsortedIndices, 0, allSplitLines.Count - 1);
-            sortedIndices.Reverse();
+            if(sortedIndices != null) sortedIndices.Reverse();
 
             List<Line2d> offsetLines = new List<Line2d>();
             List<Point2d> midPtsOffsets = new List<Point2d>();
@@ -337,17 +347,18 @@ namespace SpacePlanning
         
 
         //get a poly and find rectangular polys inside. then merge them together to form a big poly
-        [MultiReturn(new[] { "InpatientPolys", "SplitablePolys", "LeftOverPolys", "SplittableLines","OffsetLines","Count","SplitLineLast", "CleanedOffsetLines", "UsedLines"})]
+        [MultiReturn(new[] { "InpatientPolys", "SplitablePolys", "LeftOverpolys", "SplittableLines","OffsetLines","Count","SplitLineLast", "CleanedOffsetLines", "UsedLines"})]
         public static Dictionary<string, object> MakeInpatientBlocks(Polygon2d poly, List<Cell> cellList, double patientRoomDepth = 16, double recompute = 5)
         {
             if (!PolygonUtility.CheckPoly(poly)) return null;
             List<Polygon2d> inPatientPolyList = new List<Polygon2d>();
             List<Polygon2d> leftOverPolyList = new List<Polygon2d>();
             List<Line2d> allSplitLinesOut = new List<Line2d>();
-            List<List<Line2d>> offsetLinesOut = new List<List<Line2d>>();
+            List<Line2d> offsetLinesOut = new List<Line2d>();
             List<List<Line2d>> offsetLinesCleanedOut = new List<List<Line2d>>();
             List<Line2d> usedLineList = new List<Line2d>();
             List<int> sortedIndices = new List<int>();
+            List<Cell> latestMergedCells = new List<Cell>();
             bool splitDone = false;
             int maxTry = 500, count = 0;
             double dim = cellList[0].DimX;
@@ -367,12 +378,20 @@ namespace SpacePlanning
                 sortedIndices = (List<int>)outerLineObj["SortedIndices"];
                 Trace.WriteLine("Before cleaning offset lines length : " + offsetLines.Count);
                 Trace.WriteLine("UsedLineList length is : " + usedLineList.Count);
-                if (usedLineList.Count > 0) offsetCleanedLines = GraphicsUtility.RemoveDuplicateLinesBasedOnMidPt(offsetLines, usedLineList);
-                else offsetCleanedLines = offsetLines;
+                if (usedLineList.Count > 0)
+                {
+                    offsetCleanedLines = GraphicsUtility.RemoveDuplicateLinesFromAnotherList(offsetLines, usedLineList);
+                    Trace.WriteLine("Tried cleaning");
+                }
+                else
+                {
+                    offsetCleanedLines = offsetLines;
+                    Trace.WriteLine("No need cleaning");
+                }
                 Trace.WriteLine("After cleaning offset lines length : " + offsetCleanedLines.Count);
-                int selectLineNum = (int)Math.Floor(BasicUtility.RandomBetweenNumbers(ran, allSplitLines.Count, 0));
+                int selectLineNum = (int)Math.Floor(BasicUtility.RandomBetweenNumbers(ran, offsetCleanedLines.Count, 0));
 
-                Line2d splitLine = offsetCleanedLines[0]; // pick the longest Line
+                Line2d splitLine = offsetCleanedLines[selectLineNum]; // pick any Line
                 //splitLine = LineUtility.Move(splitLine, 0.05);
                 Dictionary<string, object> splitPolys = SplitByLine(currentPoly, splitLine, 0); //{ "PolyAfterSplit", "SplitLine" })]
                 List<Polygon2d> polyAfterSplit = (List<Polygon2d>)splitPolys["PolyAfterSplit"];
@@ -381,29 +400,28 @@ namespace SpacePlanning
                     List<Polygon2d> sortedPolys = PolygonUtility.SortPolygonList(polyAfterSplit);
                     if (PolygonUtility.NumberofSidesPoly(sortedPolys[0]) < 5)
                     {
+                        Trace.WriteLine("4 sided found");
                         inPatientPolyList.Add(sortedPolys[0]);
                         splitablePolys.Push(sortedPolys[1]);
                         leftOverPolyList.Add(sortedPolys[1]);
                     }
                     else
                     {
-                        List<Cell> cellInsideList = GridObject.CellsInsidePoly(currentPoly.Points, dim);
-                        Dictionary<string, object> mergeObj = GridObject.MergePoly(sortedPolys, cellInsideList);
-                        Polygon2d mergedPoly = (Polygon2d)mergeObj["MergedPoly"];
-                        splitablePolys.Push(mergedPoly);
+                        Trace.WriteLine("Merging polys now");
+                        splitablePolys.Push(sortedPolys[0]);
+                        splitablePolys.Push(sortedPolys[1]);
                     }
-                    
-                    
+                    usedLineList.Add(splitLine);
                 }
                 else
                 {
-                    continue;
+                    Trace.WriteLine("Split went wrong");
+                    //continue;
                 }
-                count += 1;
-                usedLineList.Add(splitLine);
+                count += 1;                
                 //allSplitLinesOut.Add(splitLine);
                 allSplitLinesOut.AddRange(allSplitLines);
-                offsetLinesOut.Add(offsetLines);
+                offsetLinesOut.AddRange(offsetLines);
                 offsetLinesCleanedOut.Add(offsetCleanedLines);
 
             }//end of while loop
@@ -412,7 +430,7 @@ namespace SpacePlanning
             {
                 { "InpatientPolys", (inPatientPolyList) },
                 { "SplitablePolys", (splitablePolys) },
-                { "LeftOverPolys", (leftOverPolyList) },
+                { "LeftOverpolys", (leftOverPolyList) },
                 { "SplittableLines", (allSplitLinesOut) },
                 { "OffsetLines", (offsetLinesOut) },
                 { "Count", (count) },
