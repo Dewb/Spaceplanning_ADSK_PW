@@ -212,30 +212,8 @@ namespace SpacePlanning
                     for(int i = 0; i < deptAllPolys.Count; i++)
                     {
                         List<Polygon2d> eachDeptPoly = deptAllPolys[i];
-                        if(eachDeptPoly != null)
-                        {                        
-                            for(int j = 0; j < eachDeptPoly.Count; j++)
-                            {
-                                Polygon2d polyItem = eachDeptPoly[j];
-                                if(polyItem == null || polyItem.Points == null)
-                                {
-                                    deptPlaced = false;
-                                    break;
-                                } else if (polyItem.Points.Count == 0)
-                                {
-                                    deptPlaced = false;
-                                    break;
-                                } else
-                                {
-                                    deptPlaced = true;
-                                }     
-                            }
-                        }
-                        else
-                        {
-                            deptPlaced = false;
-                            break;
-                        }
+                        if (PolygonUtility.CheckPolyList(eachDeptPoly)) deptPlaced = true;
+                        else { deptPlaced = false; break; }
                     }
                 }
                 count += 1;
@@ -926,7 +904,7 @@ namespace SpacePlanning
 
                     List<double> spanA = PolygonUtility.GetSpansXYFromPolygon2d(polyAfterSplit[0].Points);
                     List<double> spanB = PolygonUtility.GetSpansXYFromPolygon2d(polyAfterSplit[1].Points);
-                    Trace.WriteLine("Recurse is : " + recurse);
+                    //Trace.WriteLine("Recurse is : " + recurse);
                     if (recurse < 1500)
                     {
                         if ((spanA[0] > 0 && spanA[1] > 0) || (spanB[0] > 0 && spanB[1] > 0))

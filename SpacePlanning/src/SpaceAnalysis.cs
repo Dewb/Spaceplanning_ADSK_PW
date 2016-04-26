@@ -13,7 +13,7 @@ namespace SpacePlanning
         public static Dictionary<string, object> DeptAnalytics(List<DeptData> deptData)
         {
 
-            if (deptData == null) throw new ArgumentNullException("deptData", "You must supply valid Department Data.");
+            if (deptData == null) return null; // throw new ArgumentNullException("deptData", "You must supply valid Department Data.");
             List<string> deptNameList = new List<string>();
             List<int> numCellsList = new List<int>();
             List<bool> areaSatisfiedList = new List<bool>();
@@ -47,7 +47,7 @@ namespace SpacePlanning
         [MultiReturn(new[] { "ProgramNames", "NumCellsTaken", "AreaSatisfied", "AreaNeeded", "AreaProvided", "Quantity", "PolyAssignedProgs" })]
         public static Dictionary<string, object> ProgramAnalytics(List<ProgramData> progData)
         {
-            if (progData == null) throw new ArgumentNullException("progData", "You must supply valid Program Data.");
+            if (progData == null) return null;// throw new ArgumentNullException("progData", "You must supply valid Program Data.");
 
             List<string> progNameList = new List<string>();
             List<int> numCellsList = new List<int>();

@@ -30,6 +30,7 @@ namespace SpacePlanning
         //checks a polygonlist if any poly is null then return false
         internal static bool CheckPolyList(List<Polygon2d> polyList)
         {
+            if (polyList == null || polyList.Count == 0) return false;
             bool check = true;
             for(int i = 0; i < polyList.Count; i++) if (!CheckPoly(polyList[i])) check = false;
             return check;            
