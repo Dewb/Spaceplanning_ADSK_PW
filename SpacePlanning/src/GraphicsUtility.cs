@@ -579,16 +579,9 @@ namespace SpacePlanning
             List<Point2d> sortedPtList = new List<Point2d>();
             List<double> distanceList = new List<double>();
             List<int> indexList = new List<int>();
-            for (int i = 0; i < ptList.Count; i++)
-            {
-                distanceList.Add(DistanceBetweenPoints(ptList[i], testPoint));
-            }
-
+            for (int i = 0; i < ptList.Count; i++) distanceList.Add(DistanceBetweenPoints(ptList[i], testPoint));
             indexList = BasicUtility.SortIndex(distanceList);           
-            for(int i = 0; i < indexList.Count; i++)
-            {
-                sortedPtList.Add(ptList[indexList[i]]);
-            }
+            for(int i = 0; i < indexList.Count; i++) sortedPtList.Add(ptList[indexList[i]]);
             return sortedPtList;
         }
 

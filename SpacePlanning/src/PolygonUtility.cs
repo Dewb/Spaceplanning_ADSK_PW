@@ -188,7 +188,6 @@ namespace SpacePlanning
    
             List<Point2d> pt = new List<Point2d>();
             bool added = false;
-
             int a = 0, b = 1;
             for (int i = 0; i < pIndex.Count - 1; i++)
             {
@@ -211,7 +210,6 @@ namespace SpacePlanning
                     pt.Add(intersNewList[b]);
                     added = true;
                 }
-
                 else if (i == (pIndex.Count - 2) && added == true) pt.Add(poly[pIndex[i + 1]]);
             }
             return pt;
@@ -555,6 +553,7 @@ namespace SpacePlanning
         //smoothens a polygon2d by adding point2d in between
         internal static List<Point2d> SmoothPolygon(List<Point2d> pointList, double spacingProvided = 1)
         {
+            //return pointList;
             int threshValue = 50;
             if (pointList == null || pointList.Count == 0) return null;
             if (pointList.Count > threshValue) return pointList;

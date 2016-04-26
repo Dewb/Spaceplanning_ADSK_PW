@@ -375,7 +375,7 @@ namespace SpacePlanning
             for (int i = 0; i < cellList.Count; i++) cenPtBorderCells.Add(cellList[i].CenterPoint);
             int lowestCellId = GraphicsUtility.ReturnLowestPointFromListNew(cenPtBorderCells);
             Cell currentCell = cellList[lowestCellId];
-            Point2d currentCellPoint = currentCell.LeftDownCorner;
+            Point2d currentCellPoint = currentCell.RightDownCorner;// currentCell.LeftDownCorner;
             int currentIndex = lowestCellId;
             bool downMode = false;
             int num = 0;

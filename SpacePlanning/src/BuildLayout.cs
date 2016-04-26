@@ -11,7 +11,7 @@ namespace SpacePlanning
     public class BuildLayout
     {
         
-        internal static double spacingSet = 6; //higher value makes code faster, 6, 10 was good too
+        internal static double spacingSet = 8; //higher value makes code faster, 6, 10 was good too
         internal static double spacingSet2 = 1;
         internal static Random ranGenerate = new Random();
         internal static double recurse = 0;
@@ -691,7 +691,7 @@ namespace SpacePlanning
 
         //splits a polygon based on distance and random direction
         [MultiReturn(new[] { "PolyAfterSplit", "SplitLine", "IntersectedPoints" })]
-        internal static Dictionary<string, object> SplitByDistance(Polygon2d polyOutline, Random ran, double distance = 10, int dir = 0, double spacing = 0)
+        public static Dictionary<string, object> SplitByDistance(Polygon2d polyOutline, Random ran, double distance = 10, int dir = 0, double spacing = 0)
         {
             if (!PolygonUtility.CheckPoly(polyOutline)) return null;
             double extents = 5000, spacingProvided;
@@ -725,7 +725,7 @@ namespace SpacePlanning
 
         //splits a polygon into two based on direction and distance from the lowest pt in the poly
         [MultiReturn(new[] { "PolyAfterSplit", "SplitLine", "IntersectedPoints" })]
-        internal static Dictionary<string, object> SplitByDistanceFromPoint(Polygon2d polyOutline, double distance = 10, int dir = 0)
+        public static Dictionary<string, object> SplitByDistanceFromPoint(Polygon2d polyOutline, double distance = 10, int dir = 0)
         {
             if (polyOutline == null || polyOutline.Points == null || polyOutline.Points.Count == 0) return null;
             double extents = 5000;
@@ -758,7 +758,7 @@ namespace SpacePlanning
         }
 
         //makes intersections and returns the two polygon2ds after intersection
-        internal static Dictionary<string, object> MakeIntersections(List<Point2d> poly, Line2d splitLine, double space)
+        public static Dictionary<string, object> MakeIntersections(List<Point2d> poly, Line2d splitLine, double space)
         {
             List<Point2d> intersectedPoints = GraphicsUtility.LinePolygonIntersection(poly, splitLine);
             //List<Point2d> intersectedPoints = TestGraphicsUtility.LinePolygonIntersectionIndex(poly, splitLine);
@@ -825,7 +825,7 @@ namespace SpacePlanning
 
         //used to split Depts into Program Spaces based on cell grids
         [MultiReturn(new[] { "PolyAfterSplit", "BigPolysAfterSplit", "UpdatedProgramData" })]
-        internal static Dictionary<string, object> RecursivePlaceProgramsGridCells(List<Polygon2d> polyInputList,
+        public static Dictionary<string, object> RecursivePlaceProgramsGridCells(List<Polygon2d> polyInputList,
             List<ProgramData> progData, double dimX = 3, double dimY = 3)
         {
 
@@ -946,7 +946,7 @@ namespace SpacePlanning
         }// end of function
 
         //uses makepolysofproportion function to split one big poly into sub components
-        internal static Dictionary<string, object> SplitBigPolys(List<Polygon2d> polyInputList, double acceptableWidth, double factor = 4)
+        public static Dictionary<string, object> SplitBigPolys(List<Polygon2d> polyInputList, double acceptableWidth, double factor = 4)
         {
             List<Polygon2d> polyOrganizedList = new List<Polygon2d>(), polyCoverList = new List<Polygon2d>();
             int count = 0;
@@ -981,7 +981,7 @@ namespace SpacePlanning
 
         //splits a polygon into two based on ratio and dir
         [MultiReturn(new[] { "PolyAfterSplit", "SplitLine", "IntersectedPoints" })]
-        internal static Dictionary<string, object> SplitByRatio(Polygon2d polyOutline, double ratio = 0.5, int dir = 0)
+        public static Dictionary<string, object> SplitByRatio(Polygon2d polyOutline, double ratio = 0.5, int dir = 0)
         {
             if (polyOutline == null) return null;
             if (polyOutline != null && polyOutline.Points == null) return null;
@@ -1022,7 +1022,7 @@ namespace SpacePlanning
         }
         //places dept and updates dept data with the added area and polys to each dept - ORIGINAL
         [MultiReturn(new[] { "DeptPolys", "LeftOverPolys", "CentralStation", "UpdatedDeptData", "SpaceDataTree" })]
-        internal static Dictionary<string, object> DeptSplitRefinedO(Polygon2d poly, List<DeptData> deptData, List<Cell> cellInside, double offset, int recompute = 1)
+        internal static Dictionary<string, object> DeptSplitRefined(Polygon2d poly, List<DeptData> deptData, List<Cell> cellInside, double offset, int recompute = 1)
         {
 
             List<List<Polygon2d>> AllDeptPolys = new List<List<Polygon2d>>();
@@ -1307,7 +1307,7 @@ namespace SpacePlanning
 
         //places dept and updates dept data with the added area and polys to each dept -  NEW
         [MultiReturn(new[] { "DeptPolys", "LeftOverPolys", "CentralStation", "UpdatedDeptData", "SpaceDataTree" })]
-        internal static Dictionary<string, object> DeptSplitRefined(Polygon2d poly, List<DeptData> deptData, List<Cell> cellInside, double offset, int recompute = 1)
+        internal static Dictionary<string, object> DeptSplitRefinedn(Polygon2d poly, List<DeptData> deptData, List<Cell> cellInside, double offset, int recompute = 1)
         {
 
             List<List<Polygon2d>> AllDeptPolys = new List<List<Polygon2d>>();
@@ -1474,7 +1474,7 @@ namespace SpacePlanning
             }// end of for loop
             double minArea = 10, areaMoreCheck = 0;
             //adding left over polys to inpatient blocks, commented out now to reMove inconsistent blocks
-            /*
+            ///*
             Random ran2 = new Random();
             double num = ran2.NextDouble();
             if (recompute > 3)
@@ -1524,7 +1524,7 @@ namespace SpacePlanning
             }
 
 
-            */
+            //*/
             AllDeptAreaAdded[0] += areaMoreCheck;
             // adding the left over polys to the 2nd highest dept after inpatient
             if (leftOverPoly.Count > 0)

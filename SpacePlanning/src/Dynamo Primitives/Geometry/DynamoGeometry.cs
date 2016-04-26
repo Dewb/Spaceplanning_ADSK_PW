@@ -399,7 +399,7 @@ namespace stuffer
 
         }
 
-        public static Polygon PolygonByPolygon2d(Polygon2d polygon, double height)
+        public static Polygon PolygonByPolygon2d(Polygon2d polygon,double height, double recompute = 5)
         {
             List<Point> pt = new List<Point>();
             pt.Add(Point.ByCoordinates(0, 0));
@@ -431,6 +431,9 @@ namespace stuffer
 
             if (polyFormed) return pol;
             else { pol.Dispose(); pt.Clear(); return null; }
+
+
+
 
         }
 
