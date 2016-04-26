@@ -80,6 +80,7 @@ namespace SpacePlanning
         [MultiReturn(new[] { "ProgTopologyList", "ProgNeighborNameList", "ProgAllPolygons", "SharedEdge" })]
         public static Dictionary<string, object> MakeCirculationTopology(Polygon2d polyOutline, List<Polygon2d> polyA = null, List<Polygon2d> polyB = null, List<Polygon2d> polyC = null)
         {
+            if (!PolygonUtility.CheckPoly(polyOutline)) return null;
             List<Polygon2d> polygonsAllProgList = new List<Polygon2d>();
             List<DeptData> deptDataAllDeptList = new List<DeptData>();
             List<List<Line2d>> lineCollection = new List<List<Line2d>>();
@@ -146,7 +147,7 @@ namespace SpacePlanning
         [MultiReturn(new[] { "CirculationPolygons", "UpdatedDeptPolygons" })]
         public static Dictionary<string, object> MakeDeptCirculation(List<DeptData> deptData, List<List<Line2d>> lineList, double width = 8)
         {
-            if (deptData == null || deptData.Count == 0 || lineList == null) return null;
+            if (deptData == null || deptData.Count == 0 || lineList == null || lineList.Count == null) return null;
             List<Line2d> cleanLineList = GraphicsUtility.FlattenLine2dList(lineList);
             List<Polygon2d> allDeptPolyList = new List<Polygon2d>();
             List<Polygon2d> circulationPolyList = new List<Polygon2d>();
@@ -220,6 +221,8 @@ namespace SpacePlanning
         [MultiReturn(new[] { "CirculationPolygons", "UpdatedProgPolygons" })]
         public static Dictionary<string, object> MakeProgramCirculation(List<Polygon2d> polyProgList, List<Line2d> lineList, double width = 8, double allowedCircRatio = 3, double frequencyCorridor = 0.5)
         {
+            if (!PolygonUtility.CheckPolyList(polyProgList)) return null;
+            if (lineList == null || lineList.Count == 0) return null;
             List<Line2d> flatLineList = new List<Line2d>();
             List<bool> IsDuplicateList = new List<bool>();
 
@@ -263,7 +266,7 @@ namespace SpacePlanning
                     {
                         Dictionary<string, object> splitResult = BuildLayout.SplitByLine(progPoly, splitter, width);
                         List<Polygon2d> polyAfterSplit = (List<Polygon2d>)(splitResult["PolyAfterSplit"]);
-                        if (polyAfterSplit != null)
+                        if (PolygonUtility.CheckPolyList(polyAfterSplit))
                         {
                             double areaA = GraphicsUtility.AreaPolygon2d(polyAfterSplit[0].Points);
                             double areaB = GraphicsUtility.AreaPolygon2d(polyAfterSplit[1].Points);
@@ -288,7 +291,7 @@ namespace SpacePlanning
 
 
 
-                        }
+                        }// end of if loop checking polylist
                     } // end of check inside
 
 

@@ -462,6 +462,8 @@ namespace SpacePlanning
         [MultiReturn(new[] { "PolyAfterSplit", "UpdatedProgramData" })]
         public static Dictionary<string, object> RecursiveSplitProgramsOneDirByDistance(List<Polygon2d> polyInputList, List<ProgramData> progData, double distance, int recompute = 1)
         {
+            if (!PolygonUtility.CheckPolyList(polyInputList)) return null;
+            if (progData == null || progData.Count == 0) return null;
             int dir = 0;
             List<Polygon2d> polyList = new List<Polygon2d>();
             List<double> areaList = new List<double>();
@@ -566,6 +568,8 @@ namespace SpacePlanning
         public static Dictionary<string, object> RecursivePlaceProgramsSeries(List<Polygon2d> PolyInputList, 
             List<ProgramData> ProgData, double AcceptableMinDim, int factor = 4, int recompute = 0)
         {
+            if (!PolygonUtility.CheckPolyList(PolyInputList)) return null;
+            if (ProgData == null || ProgData.Count == 0) return null;
             int fac = 5;
             Random ran = new Random();
             List<List<Polygon2d>> polyList = new List<List<Polygon2d>>();
@@ -913,44 +917,48 @@ namespace SpacePlanning
                 }
 
                 List<Polygon2d> polyAfterSplit = (List<Polygon2d>)splitResult["PolyAfterSplit"];
-                double areaPolA = PolygonUtility.AreaCheckPolygon(polyAfterSplit[0]);
-                double areaPolB = PolygonUtility.AreaCheckPolygon(polyAfterSplit[1]);
-                if (areaPolA > targetArea) polycoverList.Add(polyAfterSplit[0]);
-                if (areaPolB > targetArea) polycoverList.Add(polyAfterSplit[1]);
-
-                List<double> spanA = PolygonUtility.GetSpansXYFromPolygon2d(polyAfterSplit[0].Points);
-                List<double> spanB = PolygonUtility.GetSpansXYFromPolygon2d(polyAfterSplit[1].Points);
-                Trace.WriteLine("Recurse is : " + recurse);
-                if (recurse < 1500)
+                if (PolygonUtility.CheckPolyList(polyAfterSplit))
                 {
-                    if ((spanA[0] > 0 && spanA[1] > 0) || (spanB[0] > 0 && spanB[1] > 0))
+                    double areaPolA = PolygonUtility.AreaCheckPolygon(polyAfterSplit[0]);
+                    double areaPolB = PolygonUtility.AreaCheckPolygon(polyAfterSplit[1]);
+                    if (areaPolA > targetArea) polycoverList.Add(polyAfterSplit[0]);
+                    if (areaPolB > targetArea) polycoverList.Add(polyAfterSplit[1]);
+
+                    List<double> spanA = PolygonUtility.GetSpansXYFromPolygon2d(polyAfterSplit[0].Points);
+                    List<double> spanB = PolygonUtility.GetSpansXYFromPolygon2d(polyAfterSplit[1].Points);
+                    Trace.WriteLine("Recurse is : " + recurse);
+                    if (recurse < 1500)
                     {
-                        if (spanA[0] > acceptableWidth && spanA[1] > acceptableWidth)
+                        if ((spanA[0] > 0 && spanA[1] > 0) || (spanB[0] > 0 && spanB[1] > 0))
                         {
-                            MakePolysOfProportion(polyAfterSplit[0], polyOrganizedList, polycoverList, acceptableWidth, targetArea);
+                            if (spanA[0] > acceptableWidth && spanA[1] > acceptableWidth)
+                            {
+                                MakePolysOfProportion(polyAfterSplit[0], polyOrganizedList, polycoverList, acceptableWidth, targetArea);
+                            }
+                            else
+                            {
+                                polyOrganizedList.Add(polyAfterSplit[0]);
+                                double areaPoly = PolygonUtility.AreaCheckPolygon(polyAfterSplit[0]);
+                            }
+                            //end of 1st if
+                            if (spanB[0] > acceptableWidth && spanB[1] > acceptableWidth)
+                            {
+                                MakePolysOfProportion(polyAfterSplit[1], polyOrganizedList, polycoverList, acceptableWidth, targetArea);
+                            }
+                            else
+                            {
+                                polyOrganizedList.Add(polyAfterSplit[1]);
+                            }
+                            //end of 2nd if                        
                         }
                         else
                         {
                             polyOrganizedList.Add(polyAfterSplit[0]);
-                            double areaPoly = PolygonUtility.AreaCheckPolygon(polyAfterSplit[0]);
-                        }
-                        //end of 1st if
-                        if (spanB[0] > acceptableWidth && spanB[1] > acceptableWidth)
-                        {
-                            MakePolysOfProportion(polyAfterSplit[1], polyOrganizedList, polycoverList, acceptableWidth, targetArea);
-                        }
-                        else
-                        {
                             polyOrganizedList.Add(polyAfterSplit[1]);
                         }
-                        //end of 2nd if                        
                     }
-                    else
-                    {
-                        polyOrganizedList.Add(polyAfterSplit[0]);
-                        polyOrganizedList.Add(polyAfterSplit[1]);
-                    }
-                }
+                }// end of if loop , checkingpolylists              
+               
             }
         }// end of function
 

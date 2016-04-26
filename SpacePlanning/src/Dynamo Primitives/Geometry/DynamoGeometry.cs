@@ -208,7 +208,7 @@ namespace stuffer
 
         //makes surface patch for closed polylines
         public static List<Surface> MakeSurfaceForPolygon2d(List<Polygon2d> poly, double height = 3)
-        {
+        {            
             List<Surface> surfaceList = new List<Surface>();
             for (int i = 0; i < poly.Count; i++)
             {
