@@ -712,9 +712,12 @@ namespace SpacePlanning
 
             Dictionary<string, object> intersectionReturn = MakeIntersections(poly, splitLine, spacingProvided);
             List<Point2d> intersectedPoints = (List<Point2d>)intersectionReturn["IntersectedPoints"];
-            List<Polygon2d> splittedPoly = (List<Polygon2d>)intersectionReturn["PolyAfterSplit"];
+            //List<Polygon2d> splittedPoly = (List<Polygon2d>)intersectionReturn["PolyAfterSplit"];
             List<Point2d> ptA = (List<Point2d>)intersectionReturn["PointASide"];
             List<Point2d> ptB = (List<Point2d>)intersectionReturn["PointBSide"];
+            Polygon2d polyA = new Polygon2d(ptA, 0), polyB = new Polygon2d(ptB, 0);
+            List<Polygon2d> splittedPoly = new List<Polygon2d>();
+            splittedPoly.Add(polyA); splittedPoly.Add(polyB);
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (splittedPoly) },
