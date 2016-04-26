@@ -11,7 +11,7 @@ namespace SpacePlanning
     public class BuildLayout
     {
         
-        internal static double spacingSet = 8; //higher value makes code faster, 6, 10 was good too
+        internal static double spacingSet = 6; //higher value makes code faster, 6, 10 was good too
         internal static double spacingSet2 = 1;
         internal static Random ranGenerate = new Random();
         internal static double recurse = 0;
@@ -690,7 +690,7 @@ namespace SpacePlanning
 
 
         //splits a polygon based on distance and random direction
-        [MultiReturn(new[] { "PolyAfterSplit", "SplitLine", "IntersectedPoints" })]
+        [MultiReturn(new[] { "PolyAfterSplit", "SplitLine", "IntersectedPoints", "PointASide", "PointBSide" })]
         public static Dictionary<string, object> SplitByDistance(Polygon2d polyOutline, Random ran, double distance = 10, int dir = 0, double spacing = 0)
         {
             if (!PolygonUtility.CheckPoly(polyOutline)) return null;
@@ -713,18 +713,21 @@ namespace SpacePlanning
             Dictionary<string, object> intersectionReturn = MakeIntersections(poly, splitLine, spacingProvided);
             List<Point2d> intersectedPoints = (List<Point2d>)intersectionReturn["IntersectedPoints"];
             List<Polygon2d> splittedPoly = (List<Polygon2d>)intersectionReturn["PolyAfterSplit"];
-
+            List<Point2d> ptA = (List<Point2d>)intersectionReturn["PointASide"];
+            List<Point2d> ptB = (List<Point2d>)intersectionReturn["PointBSide"];
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (splittedPoly) },
                 { "SplitLine", (splitLine) },
-                { "IntersectedPoints", (intersectedPoints) }
+                { "IntersectedPoints", (intersectedPoints) },
+                { "PointASide", (ptA) },
+                { "PointBSide", (ptB) }
             };
 
         }
 
         //splits a polygon into two based on direction and distance from the lowest pt in the poly
-        [MultiReturn(new[] { "PolyAfterSplit", "SplitLine", "IntersectedPoints" })]
+        [MultiReturn(new[] { "PolyAfterSplit", "SplitLine", "IntersectedPoints","PointASide","PointBSide" })]
         public static Dictionary<string, object> SplitByDistanceFromPoint(Polygon2d polyOutline, double distance = 10, int dir = 0)
         {
             if (polyOutline == null || polyOutline.Points == null || polyOutline.Points.Count == 0) return null;
@@ -747,12 +750,15 @@ namespace SpacePlanning
             Dictionary<string, object> intersectionReturn = MakeIntersections(poly, splitLine, spacingSet2);
             List<Point2d> intersectedPoints = (List<Point2d>)intersectionReturn["IntersectedPoints"];
             List<Polygon2d> splittedPoly = (List<Polygon2d>)intersectionReturn["PolyAfterSplit"];
-
+            List<Point2d> ptA = (List<Point2d>)intersectionReturn["PointASide"];
+            List<Point2d> ptB = (List<Point2d>)intersectionReturn["PointBSide"];
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (splittedPoly) },
                 { "SplitLine", (splitLine) },
-                { "IntersectedPoints", (intersectedPoints) }
+                { "IntersectedPoints", (intersectedPoints) },
+                { "PointASide", (ptA) },
+                { "PointBSide", (ptB) }
             };
 
         }
@@ -775,12 +781,14 @@ namespace SpacePlanning
             //organize the points to make closed poly
             List<Point2d> sortedA = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexA);
             List<Point2d> sortedB = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexB);
-            List<Polygon2d> splittedPoly = PolygonUtility.OptimizePolyPoints(sortedA, sortedB, true, space);
-
+            //List<Polygon2d> splittedPoly = PolygonUtility.OptimizePolyPoints(sortedA, sortedB, true, space);
+            List<Polygon2d> splittedPoly = new List<Polygon2d> { new Polygon2d(sortedA), new Polygon2d(sortedB) };
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (splittedPoly) },
-                { "IntersectedPoints", (intersectedPoints) }
+                { "IntersectedPoints", (intersectedPoints) },
+                { "PointASide", (sortedA) },
+                { "PointBSide", (sortedB) }
             };
 
         }

@@ -424,7 +424,7 @@ namespace SpacePlanning
             return new Polygon2d(borderPolyPoints);
         }
 
-        //get the cells and make an orthogonal outline poly - not using now
+        //get the cells and make an orthogonal outline poly - not using now, but works best
         public static Polygon2d CreateBorder(List<List<int>> cellNeighborMatrix, List<Cell> cellList)
         {
             if (cellList == null || cellList.Count == 0) return null;
