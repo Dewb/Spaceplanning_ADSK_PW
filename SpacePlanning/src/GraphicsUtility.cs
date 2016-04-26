@@ -76,6 +76,7 @@ namespace SpacePlanning
         //checks a line if horizontal or vertical 0 for horizontal, 1 for vertical
         internal static int CheckLineOrient(Line2d line)
         {
+            if (line == null) return -1;
             double x = line.StartPoint.X - line.EndPoint.X;
             double y = line.StartPoint.Y - line.EndPoint.Y;       
             if (x == 0) return 1;
@@ -180,6 +181,7 @@ namespace SpacePlanning
             //List<Line2d> lineEditedList = new List<Line2d>();
             //for (int i = 0; i < lineListOrig.Count; i++) lineEditedList.Add(lineListOrig[i]);
             List<Line2d> lineEditedList = lineListOrig.Select(x => new Line2d(x.StartPoint,x.EndPoint)).ToList(); // example of deep copy
+            if (otherLineList == null || otherLineList.Count == 0) return lineEditedList;
 
             List<bool> duplicateTagList = new List<bool>();
             for (int i = 0; i < lineListOrig.Count; i++)
@@ -203,6 +205,39 @@ namespace SpacePlanning
             return lineEditedList;
         }
 
+        //removes duplicate lines from a list, based on the lines from another list
+        public static List<Line2d> RemoveDuplicateLinesFromAnotherListTry(List<Line2d> lineListOrig, List<Line2d> otherLineList)
+        {
+            //List<Line2d> lineEditedList = new List<Line2d>();
+            //for (int i = 0; i < lineListOrig.Count; i++) lineEditedList.Add(lineListOrig[i]);
+            List<Line2d> lineEditedList = lineListOrig.Select(x => new Line2d(x.StartPoint, x.EndPoint)).ToList(); // example of deep copy
+            if (otherLineList == null || otherLineList.Count == 0) return lineEditedList;
+
+            List<bool> duplicateTagList = new List<bool>();
+            for (int i = 0; i < lineListOrig.Count; i++)
+            {
+                bool duplicate = false;
+                for (int j = 0; j < otherLineList.Count; j++)
+                {
+                    //if (lineListOrig[i].Compare(otherLineList[j])) { duplicate = true; break; }
+                    Line2d lineA = lineListOrig[i], lineB = otherLineList[j];
+                    double lineALen = lineA.Length, lineBLen = lineB.Length;
+                    int lineAOrient = CheckLineOrient(lineA), lineBOrient = CheckLineOrient(lineB);
+                    if(lineAOrient == lineBOrient && lineALen == lineBLen) { duplicate = true;  break; }
+                }
+                duplicateTagList.Add(duplicate);
+            }
+            int count = 0;
+            for (int i = 0; i < duplicateTagList.Count; i++)
+            {
+                if (duplicateTagList[i])
+                {
+                    lineEditedList.RemoveAt(i - count);
+                    count += 1;
+                }
+            }
+            return lineEditedList;
+        }
 
         //removes duplicate lines from a list, based on the lines from another list
         public static List<Line2d> RemoveDuplicateLinesBasedOnMidPt(List<Line2d> lineListOrig, List<Line2d> otherLineList)

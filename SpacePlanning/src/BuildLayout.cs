@@ -284,13 +284,13 @@ namespace SpacePlanning
                     if (lineType == 0)
                     {
                         Line2d extendedLine = LineUtility.ExtendLine(line, extension);
-                        hLines.Add(extendedLine);
+                        hLines.Add(line);
                         hMidPt.Add(LineUtility.LineMidPoint(line));
                     }
                     if (lineType == 1)
                     {
                         Line2d extendedLine = LineUtility.ExtendLine(line, extension);
-                        vLines.Add(extendedLine);
+                        vLines.Add(line);
                         vMidPt.Add(LineUtility.LineMidPoint(line));
                     }
                     countOrtho += 1;
@@ -355,23 +355,23 @@ namespace SpacePlanning
             List<Polygon2d> leftOverPolyList = new List<Polygon2d>();
             List<Line2d> allSplitLinesOut = new List<Line2d>();
             List<Line2d> offsetLinesOut = new List<Line2d>();
-            List<List<Line2d>> offsetLinesCleanedOut = new List<List<Line2d>>();
+            List<Line2d> offsetLinesCleanedOut = new List<Line2d>();
             List<Line2d> usedLineList = new List<Line2d>();
             List<int> sortedIndices = new List<int>();
             List<Cell> latestMergedCells = new List<Cell>();
             bool splitDone = false;
-            int maxTry = 500, count = 0;
+            int maxTry = 500, count = 0, selectLineNum = 0;
             double dim = cellList[0].DimX, threshArea = 500;
             Random ran = new Random();
             List<Line2d> offsetLines = new List<Line2d>();
             List<Line2d> offsetCleanedLines = new List<Line2d>();
 
-
             Stack<Polygon2d> splitablePolys = new Stack<Polygon2d>();
             splitablePolys.Push(poly);
       
-            while (splitablePolys.Count > 0 && count < maxTry)
-            {                
+            while (splitablePolys.Count > 0 && count < recompute)
+            {
+                Trace.WriteLine("Starting iteration ++++++++++++++++++++++++++++++ : " + count);
                 Polygon2d currentPoly = splitablePolys.Pop();
                 if(PolygonUtility.AreaCheckPolygon(currentPoly) < threshArea)
                 {   count += 1;
@@ -385,22 +385,14 @@ namespace SpacePlanning
                     
                
                 sortedIndices = (List<int>)outerLineObj["SortedIndices"];
-                Trace.WriteLine("Before cleaning offset lines length : " + offsetLines.Count);
                 Trace.WriteLine("UsedLineList length is : " + usedLineList.Count);
-                if (usedLineList.Count > 0)
-                {
-                    offsetCleanedLines = GraphicsUtility.RemoveDuplicateLinesFromAnotherList(offsetLines, usedLineList);
-                    Trace.WriteLine("Tried cleaning with usedlinelist length : " + usedLineList.Count);
-                }
-                else
-                {
-                    offsetCleanedLines = offsetLines;
-                    Trace.WriteLine("No need cleaning with usedlinelist length : " + usedLineList.Count);
-                }
-                Trace.WriteLine("After cleaning offset lines length : " + offsetCleanedLines.Count);
-                int selectLineNum = (int)Math.Floor(BasicUtility.RandomBetweenNumbers(ran, offsetCleanedLines.Count, 0));
+                Trace.WriteLine("Before cleaning offset lines length : " + offsetLines.Count);
+                List<Line2d> newLines = GraphicsUtility.RemoveDuplicateLinesFromAnotherListTry(offsetLines, usedLineList);
+                selectLineNum = (int)Math.Floor(BasicUtility.RandomBetweenNumbers(ran, newLines.Count, 0));
+                Trace.WriteLine("After cleaning offset lines length : " + newLines.Count);
+             
 
-                Line2d splitLine = offsetCleanedLines[selectLineNum]; // pick any Line
+                Line2d splitLine = newLines[selectLineNum]; // pick any Line
                 //splitLine = LineUtility.Move(splitLine, 0.05);
                 Dictionary<string, object> splitPolys = SplitByLine(currentPoly, splitLine, 0); //{ "PolyAfterSplit", "SplitLine" })]
                 List<Polygon2d> polyAfterSplit = (List<Polygon2d>)splitPolys["PolyAfterSplit"];
@@ -413,14 +405,15 @@ namespace SpacePlanning
                         inPatientPolyList.Add(sortedPolys[0]);
                         splitablePolys.Push(sortedPolys[1]);
                         leftOverPolyList.Add(sortedPolys[1]);
+                        usedLineList.Add(splitLine);
                     }
                     else
                     {
-                        Trace.WriteLine("Merging polys now");
+                        Trace.WriteLine("Not rect or square");
                         splitablePolys.Push(sortedPolys[0]);
                         splitablePolys.Push(sortedPolys[1]);
                     }
-                    usedLineList.Add(splitLine);
+                    
                 }
                 else
                 {
@@ -431,7 +424,8 @@ namespace SpacePlanning
                 //allSplitLinesOut.Add(splitLine);
                 allSplitLinesOut.AddRange(allSplitLines);
                 offsetLinesOut.AddRange(offsetLines);
-                offsetLinesCleanedOut.Add(offsetCleanedLines);
+                //offsetLinesCleanedOut.AddRange(offsetCleanedLines);
+                offsetLinesCleanedOut = newLines;
 
             }//end of while loop
             
