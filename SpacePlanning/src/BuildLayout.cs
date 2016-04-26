@@ -11,7 +11,7 @@ namespace SpacePlanning
     public class BuildLayout
     {
         
-        internal static double spacingSet = 10; //higher value makes code faster, 6 was good too
+        internal static double spacingSet = 6; //higher value makes code faster, 6, 10 was good too
         internal static double spacingSet2 = 1;
         internal static Random ranGenerate = new Random();
         internal static double recurse = 0;
@@ -284,13 +284,13 @@ namespace SpacePlanning
                     if (lineType == 0)
                     {
                         Line2d extendedLine = LineUtility.ExtendLine(line, extension);
-                        hLines.Add(line);
+                        hLines.Add(extendedLine);
                         hMidPt.Add(LineUtility.LineMidPoint(line));
                     }
                     if (lineType == 1)
                     {
                         Line2d extendedLine = LineUtility.ExtendLine(line, extension);
-                        vLines.Add(line);
+                        vLines.Add(extendedLine);
                         vMidPt.Add(LineUtility.LineMidPoint(line));
                     }
                     countOrtho += 1;
@@ -300,7 +300,7 @@ namespace SpacePlanning
                     countNonOrtho += 1;
                 }
             }
-            Trace.WriteLine("Orhto lines are : " + countOrtho + "Non ortho lines are : " + countNonOrtho);
+            Trace.WriteLine("Orhto lines are : " + countOrtho + "   Non ortho lines are : " + countNonOrtho);
             List<Line2d> selectedHLines = new List<Line2d>();
             List<Line2d> selectedVLines = new List<Line2d>();
             int hIndLow = TestGraphicsUtility.ReturnLowestPointFromList(hMidPt);
@@ -361,32 +361,41 @@ namespace SpacePlanning
             List<Cell> latestMergedCells = new List<Cell>();
             bool splitDone = false;
             int maxTry = 500, count = 0;
-            double dim = cellList[0].DimX;
+            double dim = cellList[0].DimX, threshArea = 500;
             Random ran = new Random();
-            
-            
+            List<Line2d> offsetLines = new List<Line2d>();
+            List<Line2d> offsetCleanedLines = new List<Line2d>();
+
+
             Stack<Polygon2d> splitablePolys = new Stack<Polygon2d>();
             splitablePolys.Push(poly);
       
-            while (splitablePolys.Count > 0 && count < recompute)
+            while (splitablePolys.Count > 0 && count < maxTry)
             {                
                 Polygon2d currentPoly = splitablePolys.Pop();
+                if(PolygonUtility.AreaCheckPolygon(currentPoly) < threshArea)
+                {   count += 1;
+                    Trace.WriteLine("Well the area was not enough!");
+                    continue;
+                }
                 Dictionary<string, object> outerLineObj = FindOuterLinesAndOffsets(currentPoly, patientRoomDepth,1500, count);
                 List<Line2d> allSplitLines = (List<Line2d>)outerLineObj["SplittableLines"];
-                List<Line2d> offsetLines = (List<Line2d>)outerLineObj["OffsetLines"];
-                List<Line2d> offsetCleanedLines = new List<Line2d>();
+                offsetLines = (List<Line2d>)outerLineObj["OffsetLines"];
+                if (offsetLines == null || offsetLines.Count == 0) { count += 1; continue; }
+                    
+               
                 sortedIndices = (List<int>)outerLineObj["SortedIndices"];
                 Trace.WriteLine("Before cleaning offset lines length : " + offsetLines.Count);
                 Trace.WriteLine("UsedLineList length is : " + usedLineList.Count);
                 if (usedLineList.Count > 0)
                 {
                     offsetCleanedLines = GraphicsUtility.RemoveDuplicateLinesFromAnotherList(offsetLines, usedLineList);
-                    Trace.WriteLine("Tried cleaning");
+                    Trace.WriteLine("Tried cleaning with usedlinelist length : " + usedLineList.Count);
                 }
                 else
                 {
                     offsetCleanedLines = offsetLines;
-                    Trace.WriteLine("No need cleaning");
+                    Trace.WriteLine("No need cleaning with usedlinelist length : " + usedLineList.Count);
                 }
                 Trace.WriteLine("After cleaning offset lines length : " + offsetCleanedLines.Count);
                 int selectLineNum = (int)Math.Floor(BasicUtility.RandomBetweenNumbers(ran, offsetCleanedLines.Count, 0));
