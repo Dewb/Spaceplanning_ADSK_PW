@@ -11,12 +11,12 @@ namespace SpacePlanning
     public class BuildLayout
     {
         
-        internal static double spacingSet = 6; //higher value makes code faster, 6, 10 was good too
-        internal static double spacingSet2 = 1;
+        internal static double spacingSet = 10; //higher value makes code faster, 6, 10 was good too
+        internal static double spacingSet2 = 10;
         internal static Random ranGenerate = new Random();
         internal static double recurse = 0;
         internal static Point2d reference = new Point2d(0,0);
-        internal static int maxCount = 20, maxRound = 50;
+        internal static int maxCount = 200, maxRound = 50;
 
       
 
@@ -712,12 +712,12 @@ namespace SpacePlanning
 
             Dictionary<string, object> intersectionReturn = MakeIntersections(poly, splitLine, spacingProvided);
             List<Point2d> intersectedPoints = (List<Point2d>)intersectionReturn["IntersectedPoints"];
-            //List<Polygon2d> splittedPoly = (List<Polygon2d>)intersectionReturn["PolyAfterSplit"];
+            List<Polygon2d> splittedPoly = (List<Polygon2d>)intersectionReturn["PolyAfterSplit"];
             List<Point2d> ptA = (List<Point2d>)intersectionReturn["PointASide"];
             List<Point2d> ptB = (List<Point2d>)intersectionReturn["PointBSide"];
             Polygon2d polyA = new Polygon2d(ptA, 0), polyB = new Polygon2d(ptB, 0);
-            List<Polygon2d> splittedPoly = new List<Polygon2d>();
-            splittedPoly.Add(polyA); splittedPoly.Add(polyB);
+            //List<Polygon2d> splittedPoly = new List<Polygon2d>();
+            //splittedPoly.Add(polyA); splittedPoly.Add(polyB);
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (splittedPoly) },
@@ -785,7 +785,7 @@ namespace SpacePlanning
             List<Point2d> sortedA = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexA);
             List<Point2d> sortedB = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexB);
             //List<Polygon2d> splittedPoly = PolygonUtility.OptimizePolyPoints(sortedA, sortedB, true, space);
-            List<Polygon2d> splittedPoly = new List<Polygon2d> { new Polygon2d(sortedA), new Polygon2d(sortedB) };
+            List<Polygon2d> splittedPoly = new List<Polygon2d> { new Polygon2d(sortedA,0), new Polygon2d(sortedB,0) };
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (splittedPoly) },
