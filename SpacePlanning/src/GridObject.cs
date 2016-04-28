@@ -425,19 +425,20 @@ namespace SpacePlanning
         }
 
         //get the cells and make an orthogonal outline poly - not using now, but works best
-        public static Polygon2d CreateBorder(List<List<int>> cellNeighborMatrix, List<Cell> cellList)
+        [MultiReturn(new[] { "BorderPolyLine", "BorderCellsFound" })]
+        public static Dictionary<string,object> CreateBorder(List<List<int>> cellNeighborMatrix, List<Cell> cellList)
         {
             if (cellList == null || cellList.Count == 0) return null;
             //get the id of the lowest left cell centroid from all the boundary cells
             List<Point2d> cenPtBorderCells = new List<Point2d>();
             List<Point2d> borderPolyPoints = new List<Point2d>();
+            List<Point2d> borderPolyThroughCenter = new List<Point2d>();
             for (int i = 0; i < cellList.Count; i++) cenPtBorderCells.Add(cellList[i].CenterPoint);
             int lowestCellId = GraphicsUtility.ReturnLowestPointFromListNew(cenPtBorderCells);
             Cell currentCell = cellList[lowestCellId];
             Point2d currentCellPoint = currentCell.LeftDownCorner;
-            int currentIndex = lowestCellId;
-            bool downMode = false;
-            int num = 0;
+            Point2d currentCellCenter = currentCell.CenterPoint;
+            int currentIndex = lowestCellId, num = 0;
             List<List<int>> cellNeighborMatrixCopy = new List<List<int>>();
             for (int i = 0; i < cellNeighborMatrix.Count; i++)
             {
@@ -454,9 +455,10 @@ namespace SpacePlanning
             for (int i = 0; i < borderCellIdList.Count; i++) isBorderCellList[borderCellIdList[i]] = true;
 
             //order of neighbors : right , up , left , down
-            while (num < 200)
+            while (num < borderCellIdList.Count)
             {
                 borderPolyPoints.Add(currentCellPoint);
+                borderPolyThroughCenter.Add(currentCellCenter);
                 if (cellNeighborMatrix[currentIndex][0] > -1 &&
                     cellList[cellNeighborMatrix[currentIndex][0]].CellAvailable && isBorderCellList[cellNeighborMatrix[currentIndex][0]])
                 {
@@ -492,10 +494,19 @@ namespace SpacePlanning
                 currentCell = cellList[currentIndex];
                 currentCell.CellAvailable = false;
                 currentCellPoint = currentCell.LeftDownCorner;
+                currentCellCenter = currentCell.CenterPoint;
+                //Trace.WriteLine( + num + "  iteration +++++++++++++++++++++++++++++++++++++");
                 num += 1;
             }
 
-            return new Polygon2d(borderPolyPoints);
+            //return new Polygon2d(borderPolyPoints);
+            List<Point> ptList = DynamoGeometry.pointFromPoint2dList(borderPolyThroughCenter);
+            List<Polygon2d> cellFound = MakeCellsFromGridPoints(ptList, cellList[0].DimX, cellList[0].DimY);        
+            return new Dictionary<string, object>
+            {
+                { "BorderPolyLine", (new Polygon2d(borderPolyPoints)) },
+                { "BorderCellsFound", (cellFound) }
+            };
         }
 
         //make cells and then make ortho border
