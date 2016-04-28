@@ -426,7 +426,7 @@ namespace SpacePlanning
 
         //get the cells and make an orthogonal outline poly - not using now, but works best
         [MultiReturn(new[] { "BorderPolyLine", "BorderCellsFound" })]
-        public static Dictionary<string,object> CreateBorder(List<List<int>> cellNeighborMatrix, List<Cell> cellList)
+        public static Dictionary<string,object> CreateBorder(List<List<int>> cellNeighborMatrix, List<Cell> cellList, bool tag = true)
         {
             if (cellList == null || cellList.Count == 0) return null;
             //get the id of the lowest left cell centroid from all the boundary cells
@@ -463,37 +463,54 @@ namespace SpacePlanning
                     cellList[cellNeighborMatrix[currentIndex][0]].CellAvailable && isBorderCellList[cellNeighborMatrix[currentIndex][0]])
                 {
                     currentIndex = cellNeighborMatrix[currentIndex][0]; // right
-                    //currentCell = cellList[currentIndex];
-                    //currentCell.CellAvailable = false;
-                    //currentCellPoint = currentCell.RightDownCorner;
+                    if (!tag)
+                    {
+                        currentCell = cellList[currentIndex];
+                        currentCell.CellAvailable = false;
+                        currentCellPoint = currentCell.RightDownCorner;
+                    }
+                  
                 }
                 else if (cellNeighborMatrix[currentIndex][1] > -1 &&
                     cellList[cellNeighborMatrix[currentIndex][1]].CellAvailable && isBorderCellList[cellNeighborMatrix[currentIndex][1]])
                 {
                     currentIndex = cellNeighborMatrix[currentIndex][1]; // up
-                    //currentCell = cellList[currentIndex];
-                    //currentCell.CellAvailable = false;
-                    //currentCellPoint = currentCell.RightUpCorner;
+                    if (!tag)
+                    {
+                        currentCell = cellList[currentIndex];
+                        currentCell.CellAvailable = false;
+                        currentCellPoint = currentCell.RightUpCorner;
+                    }
                 }
                 else if (cellNeighborMatrix[currentIndex][2] > -1 &&
                     cellList[cellNeighborMatrix[currentIndex][2]].CellAvailable && isBorderCellList[cellNeighborMatrix[currentIndex][2]])
                 {
                     currentIndex = cellNeighborMatrix[currentIndex][2]; // left
-                    //currentCell = cellList[currentIndex];
-                    //currentCell.CellAvailable = false;
-                    //currentCellPoint = currentCell.LeftUpCorner;
+                    if (!tag)
+                    {
+                        currentCell = cellList[currentIndex];
+                        currentCell.CellAvailable = false;
+                        currentCellPoint = currentCell.LeftUpCorner;
+                    }
                 }
                 else if (cellNeighborMatrix[currentIndex][3] > -1 &&
                     cellList[cellNeighborMatrix[currentIndex][3]].CellAvailable && isBorderCellList[cellNeighborMatrix[currentIndex][3]])
                 {
                     currentIndex = cellNeighborMatrix[currentIndex][3]; // down
-                    //currentCell = cellList[currentIndex];
-                    //currentCell.CellAvailable = false;
-                    //currentCellPoint = currentCell.LeftDownCorner;
+                    if (!tag)
+                    {
+                        currentCell = cellList[currentIndex];
+                        currentCell.CellAvailable = false;
+                        currentCellPoint = currentCell.LeftDownCorner;
+                    }
                 }
-                currentCell = cellList[currentIndex];
-                currentCell.CellAvailable = false;
-                currentCellPoint = currentCell.LeftDownCorner;
+                if (tag)
+                {
+                    currentCell = cellList[currentIndex];
+                    currentCell.CellAvailable = false;
+                    currentCellPoint = currentCell.LeftDownCorner;
+                }
+
                 currentCellCenter = currentCell.CenterPoint;
                 //Trace.WriteLine( + num + "  iteration +++++++++++++++++++++++++++++++++++++");
                 num += 1;
@@ -501,13 +518,39 @@ namespace SpacePlanning
 
             //return new Polygon2d(borderPolyPoints);
             List<Point> ptList = DynamoGeometry.pointFromPoint2dList(borderPolyThroughCenter);
-            List<Polygon2d> cellFound = MakeCellsFromGridPoints(ptList, cellList[0].DimX, cellList[0].DimY);        
+            List<Polygon2d> cellFound = MakeCellsFromGridPoints(ptList, cellList[0].DimX, cellList[0].DimY);
+            Polygon2d borderPoly = PolygonUtility.EditToMakeOrthoPoly(new Polygon2d(borderPolyPoints));
             return new Dictionary<string, object>
             {
-                { "BorderPolyLine", (new Polygon2d(borderPolyPoints)) },
+                { "BorderPolyLine", (borderPoly) },
                 { "BorderCellsFound", (cellFound) }
             };
         }
+
+
+        //get the cells and make an orthogonal outline poly - not using now, but works best
+        [MultiReturn(new[] { "BorderPolyLine", "BorderCellsFound", "SortedCells"})]
+        public static Dictionary<string, object> BorderAndCellNeighborMatrix(Polygon2d poly, double dim, bool tag = true)
+        {
+            if (!PolygonUtility.CheckPoly(poly)) return null;
+            List<Cell> cellsInside = CellsInsidePoly(poly.Points, dim);
+            Dictionary<string, object> neighborObject = FormsCellNeighborMatrix(cellsInside);
+            List<List<int>> cellNeighborMatrix = (List<List<int>>)neighborObject["CellNeighborMatrix"];
+            List<Cell> sortedCells = (List<Cell>)neighborObject["SortedCells"];
+            Dictionary<string, object> borderObject = CreateBorder(cellNeighborMatrix, cellsInside, true);
+            Polygon2d borderPoly = (Polygon2d)borderObject["BorderPolyLine"];
+            List<Polygon2d> cellsFound = (List<Polygon2d>)borderObject["BorderCellsFound"];
+            return new Dictionary<string, object>
+            {
+                { "BorderPolyLine", (borderPoly) },
+                { "BorderCellsFound", (cellsFound) },
+                { "SortedCells", (sortedCells) }
+            };
+        }
+
+
+
+
 
         //make cells and then make ortho border
         [MultiReturn(new[] { "OrthoBorderOutline", "CellLists" })]

@@ -535,6 +535,30 @@ namespace SpacePlanning
             Range2d ran2D = new Range2d(ran1X, ran1Y);
             return ran2D;
         }
+        
+
+        //checks all lines of a polyline, if orthogonal or not, if not makes the polyline orthogonal
+        public static Polygon2d EditToMakeOrthoPoly(Polygon2d nonOrthoPoly)
+        {
+            if (!CheckPoly(nonOrthoPoly)) return null;
+            List<Point2d> pointFoundList = new List<Point2d>();
+            for(int i = 0; i < nonOrthoPoly.Points.Count; i++)
+            {
+                int a = i, b = i + 1;
+                double x = 0, y = 0;
+                if (i == nonOrthoPoly.Points.Count - 1) b = 0;
+                Line2d line = new Line2d(nonOrthoPoly.Points[a], nonOrthoPoly.Points[b]);
+                if (GraphicsUtility.CheckLineOrient(line)  == -1) // found non ortho
+                {
+                    nonOrthoPoly.Points[b] = new Point2d(nonOrthoPoly.Points[a].X, nonOrthoPoly.Points[b].Y);
+                    pointFoundList.Add(nonOrthoPoly.Points[b]);
+                }
+                pointFoundList.Add(nonOrthoPoly.Points[b]);
+            }
+
+            Polygon2d orthoPoly = new Polygon2d(pointFoundList,0);
+            return orthoPoly;
+        }
 
         // reduces points in polygon2d list
         internal static List<Polygon2d> PolyReducePoints(List<Polygon2d> polyList)
