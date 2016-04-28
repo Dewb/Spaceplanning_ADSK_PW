@@ -540,10 +540,15 @@ namespace SpacePlanning
                     }
                 }
             }
-            //form the cell neighbor matrix
+            //needs fix , currenly making cell neighbor matrix twice
+            //Dictionary<string, object> sortCellObject = SortCellList(cellsInsideList);
+            //List<Cell> sortedCells = (List<Cell>)sortCellObject["SortedCells"];
             Dictionary<string, object> cellNeighborData = FormsCellNeighborMatrix(cellsInsideList);
             List<List<int>> cellNeighborMatrix = (List<List<int>>)cellNeighborData["CellNeighborMatrix"];//---
             List<Cell> sortedCells = (List<Cell>)cellNeighborData["SortedCells"];
+           
+
+
             Dictionary<string, object> cellNeighborData2 = FormsCellNeighborMatrix(sortedCells);
             List<List<int>> cellNeighborMatrix2 = (List<List<int>>)cellNeighborData2["CellNeighborMatrix"];//---
             Dictionary<string, object> borderObject = CreateBorder(cellNeighborMatrix2, sortedCells);
@@ -647,55 +652,7 @@ namespace SpacePlanning
             List<Cell> newCellLists = (List<Cell>)sortedObject["SortedCells"];
             List<Point2d> cellCenterPtLists = (List<Point2d>)sortedObject["CellCenterPoints"];
             List<double> XYEquationLists = (List<double>)sortedObject["XYEqualtionList"];
-            /*
-            List<Cell> newCellLists = new List<Cell>();
-            for (int i = 0; i < cellLists.Count; i++)
-            {
-                Cell cellItem = new Cell(cellLists[i]);
-                newCellLists.Add(cellItem);
-            }
-            List<Point2d> cellCenterPtLists = new List<Point2d>();
-            for (int i = 0; i < newCellLists.Count; i++)
-            {
-                cellCenterPtLists.Add(newCellLists[i].CenterPoint);
-            }
-
-            double[] XYEquationList = new double[cellCenterPtLists.Count];
-            
-            double A = 100.0;
-            double B = 1.0;
-            int[] UnsortedIndices = new int[cellCenterPtLists.Count];
-            double[] XCordCenterPt = new double[cellCenterPtLists.Count];
-            double[] YCordCenterPt = new double[cellCenterPtLists.Count];
-           
-            for (int i = 0; i < cellCenterPtLists.Count; i++)
-            {
-
-                UnsortedIndices[i] = i;
-                XCordCenterPt[i] = cellCenterPtLists[i].X;
-                YCordCenterPt[i] = cellCenterPtLists[i].Y;
-                double value = EquationforXYLocation(cellCenterPtLists[i].X, cellCenterPtLists[i].Y);
-                XYEquationList[i] = value;
-           
-            }
-            List<int> SortedIndicesX = new List<int>();
-            List<int> SortedIndicesY = new List<int>();
-            List<int> SortedXYEquationIndices = new List<int>();
-            SortedXYEquationIndices = BasicUtility.Quicksort(XYEquationList, UnsortedIndices, 0, UnsortedIndices.Length - 1);
-           
-            
-            List<double> SortedXYEquationValues = new List<double>();
-            for (int i = 0; i < SortedXYEquationIndices.Count; i++)
-            {
-                SortedXYEquationValues.Add(XYEquationList[SortedXYEquationIndices[i]]);
-            }
-
-            List<double> XYEquationLists = new List<double>();
-            for (int k = 0; k < cellCenterPtLists.Count; k++)
-            {
-                XYEquationLists.Add(XYEquationList[k]);
-            }
-            */
+    
             
 
             for (int i = 0; i < cellCenterPtLists.Count; i++)
