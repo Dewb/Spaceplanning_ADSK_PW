@@ -573,19 +573,20 @@ namespace SpacePlanning
         }
 
         //make wholesome polys inside till it meets certain area cover
-        [MultiReturn(new[] { "WholesomePolys", "SiteArea" , "BuildingOutlineArea", "GroundCoverAchieved" })]
-        public static Dictionary<string, object> FormMakerInSite(Polygon2d poly, Polygon2d origSitePoly, double groundCover = 0.5)
+        [MultiReturn(new[] { "BuildingOutline","WholesomePolys", "SiteArea" , "BuildingOutlineArea", "GroundCoverAchieved" })]
+        public static Dictionary<string, object> FormMakerInSite(Polygon2d borderPoly, Polygon2d origSitePoly, List<Cell> cellList, double groundCoverage = 0.5)
         {
+            if (!PolygonUtility.CheckPoly(borderPoly)) return null;
             bool blockPlaced = false;
             int count = 0, maxTry = 50;
             double areaSite = PolygonUtility.AreaCheckPolygon(origSitePoly), eps = 0.05, areaPlaced = 0;
-            if (groundCover < eps) groundCover = 2 * eps;
-            if (groundCover > 0.8) groundCover = 0.8;
-            double groundCoverLow = groundCover - eps, groundCoverHigh = groundCover + eps;
-            Dictionary<string, object> wholeSomeData = PolygonUtility.MakeWholesomeBlockInPoly(poly, groundCover);
+            if (groundCoverage < eps) groundCoverage = 2 * eps;
+            if (groundCoverage > 0.8) groundCoverage = 0.8;
+            double groundCoverLow = groundCoverage - eps, groundCoverHigh = groundCoverage + eps;
+            Dictionary<string, object> wholeSomeData = PolygonUtility.MakeWholesomeBlockInPoly(borderPoly, groundCoverage);
             while (blockPlaced == false && count < maxTry)
             {
-                wholeSomeData = PolygonUtility.MakeWholesomeBlockInPoly(poly, groundCover);
+                wholeSomeData = PolygonUtility.MakeWholesomeBlockInPoly(borderPoly, groundCoverage);
                 List<Polygon2d> polysWhole = (List<Polygon2d>)wholeSomeData["WholesomePolys"];
                 areaPlaced = 0;
                 for (int i = 0; i < polysWhole.Count; i++) areaPlaced += PolygonUtility.AreaCheckPolygon(polysWhole[i]);
@@ -595,8 +596,11 @@ namespace SpacePlanning
                 //Trace.WriteLine("Trying forming up for : " + count);
             }
             List<Polygon2d> cleanWholesomePolyList = (List<Polygon2d>)wholeSomeData["WholesomePolys"];
+            Dictionary<string, object> mergeObject = MergePoly(cleanWholesomePolyList, cellList);
+            Polygon2d mergedPoly = (Polygon2d)mergeObject["MergedPoly"];
             return new Dictionary<string, object>
             {
+                { "BuildingOutline", (mergedPoly) },
                 { "WholesomePolys", (cleanWholesomePolyList) },
                 { "SiteArea", (areaSite) },
                 { "BuildingOutlineArea", (areaPlaced) },
@@ -617,7 +621,7 @@ namespace SpacePlanning
                     if (GraphicsUtility.PointInsidePolygonTest(polyList[i], cellList[j].CenterPoint) && cellList[j].CellAvailable)
                     {
                         cellsInsideList.Add(cellList[j]);
-                        cellList[j].CellAvailable = false;
+                        cellList[j].CellAvailable = true;
                     }                        
                 }
             }
