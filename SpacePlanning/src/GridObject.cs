@@ -357,73 +357,6 @@ namespace SpacePlanning
             }
 
    
-        //get the cells and make an orthogonal outline poly
-        public static Polygon2d OrthoMaker(List<List<int>> cellNeighborMatrixCopy, List<Cell> cellListInp)
-        {
-            List<List<int>> cellNeighborMatrix = new List<List<int>>();
-            for (int i = 0; i < cellNeighborMatrixCopy.Count; i++)
-            {
-                List<int> idsList = new List<int>();
-                for (int j = 0; j < cellNeighborMatrixCopy[i].Count; j++) idsList.Add(cellNeighborMatrixCopy[i][j]);
-                cellNeighborMatrix.Add(idsList);
-            }
-            if (cellListInp == null || cellListInp.Count == 0) return null;
-            List<Cell> cellList = cellListInp.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy
-            //get the id of the lowest left cell centroid from all the boundary cells
-            List<Point2d> cenPtBorderCells = new List<Point2d>();
-            List<Point2d> borderPolyPoints = new List<Point2d>();
-            for (int i = 0; i < cellList.Count; i++) cenPtBorderCells.Add(cellList[i].CenterPoint);
-            int lowestCellId = GraphicsUtility.ReturnLowestPointFromListNew(cenPtBorderCells);
-            Cell currentCell = cellList[lowestCellId];
-            Point2d currentCellPoint = currentCell.RightDownCorner;// currentCell.LeftDownCorner;
-            int currentIndex = lowestCellId;
-            bool downMode = false;
-            int num = 0;
-            //order of neighbors : right , up , left , down
-            while (num < 200)
-            {
-                borderPolyPoints.Add(currentCellPoint);
-                if (cellNeighborMatrix[currentIndex][0] > -1 && 
-                    cellList[cellNeighborMatrix[currentIndex][0]].CellAvailable && downMode == false)
-                {
-                    currentIndex = cellNeighborMatrix[currentIndex][0]; // right
-                    //currentCell = cellList[currentIndex];
-                    //currentCell.CellAvailable = false;
-                    //currentCellPoint = currentCell.RightDownCorner;
-                }
-                else if (cellNeighborMatrix[currentIndex][1] > -1 && 
-                    cellList[cellNeighborMatrix[currentIndex][1]].CellAvailable && downMode == false)
-                {
-                    currentIndex = cellNeighborMatrix[currentIndex][1]; // up
-                    //currentCell = cellList[currentIndex];
-                    //currentCell.CellAvailable = false;
-                    //currentCellPoint = currentCell.RightUpCorner;
-                }
-                else if (cellNeighborMatrix[currentIndex][2] > -1 && 
-                    cellList[cellNeighborMatrix[currentIndex][2]].CellAvailable)
-                {
-                    currentIndex = cellNeighborMatrix[currentIndex][2]; // left
-                    //currentCell = cellList[currentIndex];
-                    //currentCell.CellAvailable = false;
-                    //currentCellPoint = currentCell.LeftUpCorner;
-                }
-                else if (cellNeighborMatrix[currentIndex][3] > -1 && 
-                    cellList[cellNeighborMatrix[currentIndex][3]].CellAvailable)
-                {
-                    currentIndex = cellNeighborMatrix[currentIndex][3]; // down
-                    //currentCell = cellList[currentIndex];
-                    //currentCell.CellAvailable = false;
-                    //currentCellPoint = currentCell.LeftDownCorner;
-                    downMode = true;
-                }
-                currentCell = cellList[currentIndex];
-                currentCell.CellAvailable = false;
-                currentCellPoint = currentCell.LeftDownCorner;
-                num += 1;
-            }
-            return new Polygon2d(borderPolyPoints);
-        }
-
         //get the cells and make an orthogonal outline poly - not using now, but works best
         [MultiReturn(new[] { "BorderPolyLine", "BorderCellsFound" })]
         public static Dictionary<string,object> CreateBorder(List<List<int>> cellNeighborMatrix, List<Cell> cellList, bool tag = true)
@@ -529,7 +462,7 @@ namespace SpacePlanning
 
 
         //get the cells and make an orthogonal outline poly - not using now, but works best
-        [MultiReturn(new[] { "BorderPolyLine", "BorderCellsFound", "SortedCells"})]
+        [MultiReturn(new[] { "BorderPolyLine", "BorderCellsFound","CellNeighborMatrix", "SortedCells"})]
         public static Dictionary<string, object> BorderAndCellNeighborMatrix(Polygon2d poly, double dim, bool tag = true)
         {
             if (!PolygonUtility.CheckPoly(poly)) return null;
@@ -544,6 +477,7 @@ namespace SpacePlanning
             {
                 { "BorderPolyLine", (borderPoly) },
                 { "BorderCellsFound", (cellsFound) },
+                { "CellNeighborMatrix", (cellNeighborMatrix) },
                 { "SortedCells", (sortedCells) }
             };
         }
@@ -552,29 +486,10 @@ namespace SpacePlanning
 
 
 
-        //make cells and then make ortho border
-        [MultiReturn(new[] { "OrthoBorderOutline", "CellLists" })]
-        public static Dictionary<string, object> CreateBorderOrtho(List<Point2d> outlinePoints, double dim)
-        {
-            List<Point2d> bboxPoints = ReadData.FromPointsGetBoundingPoly(outlinePoints);
-            Dictionary<string, object> cellInformation = GridPointsInsideOutline(bboxPoints, outlinePoints, dim, dim);
-            List<Cell> cellList1 = (List<Cell>)cellInformation["CellsFromPoints"];
-            List<Cell> cellList2 = cellList1.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy
-            List<Cell> cellList3 = cellList1.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy
-            List<Point2d> pointsInsideOutline = (List<Point2d>)cellInformation["PointsInsideOutline"];
-            Dictionary<string, object> cellNeighborData = FormsCellNeighborMatrix(cellList1);
-            List<List<int>> cellNeighborMatrix = (List<List<int>>)cellNeighborData["CellNeighborMatrix"];
-            Polygon2d orthoBorder = OrthoMaker(cellNeighborMatrix, cellList2);
-            return new Dictionary<string, object>
-            {
-                { "OrthoBorderOutline", (orthoBorder) },
-                { "CellLists", ( cellList3) }
-            };
-        }
-
         //make wholesome polys inside till it meets certain area cover
         [MultiReturn(new[] { "BuildingOutline","WholesomePolys", "SiteArea" , "BuildingOutlineArea", "GroundCoverAchieved" })]
-        public static Dictionary<string, object> FormMakerInSite(Polygon2d borderPoly, Polygon2d origSitePoly, List<Cell> cellList, double groundCoverage = 0.5)
+        public static Dictionary<string, object> FormMakerInSite(Polygon2d borderPoly, Polygon2d origSitePoly, 
+            List<Cell> cellList,double groundCoverage = 0.5)
         {
             if (!PolygonUtility.CheckPoly(borderPoly)) return null;
             bool blockPlaced = false;
@@ -609,8 +524,8 @@ namespace SpacePlanning
         }
 
         //get list of poly and merge them to make one big poly
-        [MultiReturn(new[] { "MergedPoly", "SortedCells"})]
-        public static Dictionary<string,object> MergePoly(List<Polygon2d> polyList, List<Cell> cellListInput)
+        [MultiReturn(new[] { "MergedPoly", "SortedCells" })]
+        public static Dictionary<string, object> MergePoly(List<Polygon2d> polyList, List<Cell> cellListInput)
         {
             List<Cell> cellList = cellListInput.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy
             List<Cell> cellsInsideList = new List<Cell>();
@@ -621,8 +536,8 @@ namespace SpacePlanning
                     if (GraphicsUtility.PointInsidePolygonTest(polyList[i], cellList[j].CenterPoint) && cellList[j].CellAvailable)
                     {
                         cellsInsideList.Add(cellList[j]);
-                        cellList[j].CellAvailable = true;
-                    }                        
+                        cellList[j].CellAvailable = false;
+                    }
                 }
             }
             //form the cell neighbor matrix
@@ -631,7 +546,8 @@ namespace SpacePlanning
             List<Cell> sortedCells = (List<Cell>)cellNeighborData["SortedCells"];
             Dictionary<string, object> cellNeighborData2 = FormsCellNeighborMatrix(sortedCells);
             List<List<int>> cellNeighborMatrix2 = (List<List<int>>)cellNeighborData2["CellNeighborMatrix"];//---
-            Polygon2d mergePoly = OrthoMaker(cellNeighborMatrix2, sortedCells);
+            Dictionary<string, object> borderObject = CreateBorder(cellNeighborMatrix2, sortedCells);
+            Polygon2d mergePoly = (Polygon2d)borderObject["BorderPolyLine"];
             return new Dictionary<string, object>
             {
                 { "MergedPoly", (mergePoly) },
