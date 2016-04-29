@@ -481,10 +481,7 @@ namespace SpacePlanning
                 { "SortedCells", (sortedCells) }
             };
         }
-
-
-
-
+        
 
         //make wholesome polys inside till it meets certain area cover
         [MultiReturn(new[] { "BuildingOutline","WholesomePolys", "SiteArea" , "BuildingOutlineArea", "GroundCoverAchieved" })]
