@@ -368,7 +368,45 @@ namespace SpacePlanning
                 { "NonOrthoLines", (nonOrthoLines) }
             };
         }
-        
+
+        //get a poly and find rectangular polys inside. then merge them together to form a big poly
+        [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly"})]
+        public static Dictionary<string, object> AssignBlocksBasedOnDistance(Polygon2d poly, double distance = 16,double area = 0, double recompute = 5)
+        {
+            if (!PolygonUtility.CheckPoly(poly)) return null;
+            if (distance < 1) return null;
+            int count = 0, index = 0;
+            poly = new Polygon2d(poly.Points);
+            if (area == 0) area = 0.8 * PolygonUtility.AreaCheckPolygon(poly);
+            Stack<Polygon2d> polyLeftList = new Stack<Polygon2d>();
+            double areaAdded = 0;
+            polyLeftList.Push(poly);
+            List<Polygon2d> blockPolyList = new List<Polygon2d>();
+            List<Polygon2d> leftoverPolyList = new List<Polygon2d>();
+            while (polyLeftList.Count > 0 && areaAdded < area && count < recompute)
+            {
+                Polygon2d currentPoly = polyLeftList.Pop();
+                index = count;
+                if (index > currentPoly.Lines.Count) index = 0;
+                Dictionary<string, object> splitObject = SplitByOffsetPoint(currentPoly, distance, index);
+                Polygon2d blockPoly = (Polygon2d)splitObject["PolyAfterSplit"];
+                Polygon2d leftPoly = (Polygon2d)splitObject["LeftOverPoly"];
+                areaAdded += PolygonUtility.AreaCheckPolygon(blockPoly);
+                polyLeftList.Push(leftPoly);
+                blockPolyList.Add(blockPoly);
+                
+                count += 1;
+                Trace.WriteLine("iterating : " + count + " Area added so far : " + areaAdded);
+                Trace.WriteLine("Poly left : " + leftoverPolyList.Count);
+            }
+            leftoverPolyList.AddRange(polyLeftList);
+            return new Dictionary<string, object>
+            {
+                { "PolyAfterSplit", (blockPolyList) },
+                { "LeftOverPoly", (leftoverPolyList) }
+            };
+        }
+
 
         //get a poly and find rectangular polys inside. then merge them together to form a big poly
         [MultiReturn(new[] { "InpatientPolys", "SplitablePolys", "LeftOverpolys", "SplittableLines","OffsetLines","Count","SplitLineLast", "CleanedOffsetLines", "UsedLines"})]
@@ -736,7 +774,7 @@ namespace SpacePlanning
 
         //splits a polygon based on distance and random direction
         [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly"  })]
-        public static Dictionary<string, object> SplitByOffsetPoint(Polygon2d polyOutline,double distance = 10)
+        public static Dictionary<string, object> SplitByOffsetPoint(Polygon2d polyOutline,double distance = 10, int index = -1)
         {
             if (!PolygonUtility.CheckPoly(polyOutline)) return null;
             double extents = 5000, spacingProvided;
@@ -768,7 +806,9 @@ namespace SpacePlanning
             }
             List<int> sortedIndices = BasicUtility.Quicksort(lineLengthArray, unsortedIndices, 0, lineLength.Count - 1);
             if (sortedIndices != null) sortedIndices.Reverse();
-            int indexSelected = sortedIndices[0];
+            int indexSelected = 0;
+            if (index > -1 && index < sortedIndices.Count) indexSelected = sortedIndices[index];
+            else indexSelected = sortedIndices[0];
             List<Point2d> pointForBlock = new List<Point2d>();
             for (int i = 0; i < poly.Points.Count; i++)
             {
