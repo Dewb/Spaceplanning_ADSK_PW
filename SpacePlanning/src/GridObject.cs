@@ -113,7 +113,7 @@ namespace SpacePlanning
             return GridPointsInsideOutline(bbox, outlinePoints, dimXX, dimYY);
         }
 
-        //make cells on the grids
+        //make cells on the grids poit
         public static List<Polygon2d> MakeCellsFromGridPoints(List<Point> pointsgrid, double dimX, double dimY)
         {
             List<Point2d> pt2dList = new List<Point2d>();
