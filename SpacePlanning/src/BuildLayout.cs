@@ -239,8 +239,9 @@ namespace SpacePlanning
             return deptArrangement;
 
         }
+        
         //get a poly and find rectangular polys inside. then merge them together to form a big poly
-        [MultiReturn(new[] { "SplittableLines", "OffsetLines", "SortedIndices", "OffsetMidPts", "NonOrthoLines" })]
+        [MultiReturn(new[] { "SplittableLines", "OffsetLines", "SortedIndices", "OffsetMidPts" })]
         public static Dictionary<string, object> ExtLinesAndOffsetsFromBBox(Polygon2d poly, double patientRoomDepth = 16, double recompute = 5)
         {
             if (!PolygonUtility.CheckPoly(poly)) return null;
@@ -370,7 +371,7 @@ namespace SpacePlanning
         
 
         //get a poly and find rectangular polys inside. then merge them together to form a big poly
-        [MultiReturn(new[] { "InpatientPolys", "SplitablePolys", "LeftOverpolys", "SplittableLines","OffsetLines","Count","SplitLineLast", "CleanedOffsetLines", "UsedLines", "NonOrthoLines"})]
+        [MultiReturn(new[] { "InpatientPolys", "SplitablePolys", "LeftOverpolys", "SplittableLines","OffsetLines","Count","SplitLineLast", "CleanedOffsetLines", "UsedLines"})]
         public static Dictionary<string, object> MakeInpatientBlocks(Polygon2d poly,  double patientRoomDepth = 16, double recompute = 5)
         {
             if (!PolygonUtility.CheckPoly(poly)) return null;
@@ -380,7 +381,6 @@ namespace SpacePlanning
             List<Line2d> offsetLinesOut = new List<Line2d>();
             List<Line2d> offsetLinesCleanedOut = new List<Line2d>();
             List<Line2d> usedLineList = new List<Line2d>();
-            List<Line2d> nonOrthoLines = new List<Line2d>();
             List<int> sortedIndices = new List<int>();
             List<Cell> latestMergedCells = new List<Cell>();
             bool splitDone = false;
@@ -402,10 +402,9 @@ namespace SpacePlanning
                     Trace.WriteLine("Well the area was not enough!");
                     continue;
                 }
-                Dictionary<string, object> outerLineObj = FindOuterLinesAndOffsets(currentPoly, patientRoomDepth,1500, count);
+                Dictionary<string, object> outerLineObj = ExtLinesAndOffsetsFromBBox(currentPoly, patientRoomDepth,count);
                 List<Line2d> allSplitLines = (List<Line2d>)outerLineObj["SplittableLines"];
                 offsetLines = (List<Line2d>)outerLineObj["OffsetLines"];
-                nonOrthoLines = (List<Line2d>)outerLineObj["NonOrthoLines"];
                 if (offsetLines == null || offsetLines.Count == 0) { count += 1; continue; }
                     
                
@@ -469,8 +468,7 @@ namespace SpacePlanning
                 { "Count", (count) },
                 { "SplitLineLast", (allSplitLinesOut[0]) },
                 { "CleanedOffsetLines", (offsetLinesCleanedOut) },
-                { "UsedLines", (usedLineList) },
-                { "NonOrthoLines", (nonOrthoLines) }
+                { "UsedLines", (usedLineList) }
             };
         }
 
@@ -736,10 +734,71 @@ namespace SpacePlanning
 
         }
 
+        //splits a polygon based on distance and random direction
+        [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly"  })]
+        public static Dictionary<string, object> SplitByOffsetPoint(Polygon2d polyOutline,double distance = 10)
+        {
+            if (!PolygonUtility.CheckPoly(polyOutline)) return null;
+            double extents = 5000, spacingProvided;
+            List<Point2d> polyOrig = polyOutline.Points;
+            List<bool> offsetAble = new List<bool>();
+            Polygon2d poly = new Polygon2d(polyOutline.Points);
+            List<Line2d> linesPoly = poly.Lines;
+            List<double> lineLength = new List<double>();
+
+            for(int i = 0; i < poly.Points.Count; i++)
+            {
+                bool offsetAllow = false;
+                int a = i, b = i + 1;
+                if (i == poly.Points.Count - 1) b = 0;
+                Line2d line = linesPoly[i];
+                Point2d testPt = LineUtility.LineMidPoint(line);
+                Point2d offsetMidPt = LineUtility.OffsetAPoint(line, testPt, poly, distance);
+                if (GraphicsUtility.PointInsidePolygonTest(poly, offsetMidPt)) offsetAllow = true;
+                offsetAble.Add(offsetAllow);
+                lineLength.Add(line.Length);
+            }
+           
+            double[] lineLengthArray = new double[lineLength.Count];
+            int[] unsortedIndices = new int[lineLength.Count];
+            for (int i = 0; i < lineLength.Count; i++)
+            {
+                lineLengthArray[i] = lineLength[i];
+                unsortedIndices[i] = i;
+            }
+            List<int> sortedIndices = BasicUtility.Quicksort(lineLengthArray, unsortedIndices, 0, lineLength.Count - 1);
+            if (sortedIndices != null) sortedIndices.Reverse();
+            int indexSelected = sortedIndices[0];
+            List<Point2d> pointForBlock = new List<Point2d>();
+            for (int i = 0; i < poly.Points.Count; i++)
+            {
+                int a = i, b = i + 1;
+                if (i == poly.Points.Count - 1) b = 0;
+                if (i == indexSelected)
+                {
+                    Line2d offsetLine = LineUtility.Offset(linesPoly[i], poly, distance);
+                    pointForBlock.Add(poly.Points[a]);
+                    pointForBlock.Add(poly.Points[b]);
+                    pointForBlock.Add(offsetLine.EndPoint);
+                    pointForBlock.Add(offsetLine.StartPoint);
+                    poly.Points[a] = offsetLine.StartPoint;
+                    poly.Points[b] = offsetLine.EndPoint;
+                }
+            }
+            Polygon2d polyBlock = new Polygon2d(pointForBlock);
+            Polygon2d polyNew = new Polygon2d(poly.Points);
+            return new Dictionary<string, object>
+            {
+                { "PolyAfterSplit", (polyBlock) },
+                { "LeftOverPoly", (polyNew) }            
+            };
+
+        }
+
 
         //splits a polygon based on distance and random direction
         [MultiReturn(new[] { "PolyAfterSplit", "SplitLine", "IntersectedPoints", "PointASide", "PointBSide" })]
-        public static Dictionary<string, object> SplitByDistance(Polygon2d polyOutline, Random ran, double distance = 10, int dir = 0, double spacing = 0)
+        internal static Dictionary<string, object> SplitByDistance(Polygon2d polyOutline, Random ran, double distance = 10, int dir = 0, double spacing = 0)
         {
             if (!PolygonUtility.CheckPoly(polyOutline)) return null;
             double extents = 5000, spacingProvided;
@@ -779,7 +838,7 @@ namespace SpacePlanning
 
         //splits a polygon into two based on direction and distance from the lowest pt in the poly
         [MultiReturn(new[] { "PolyAfterSplit", "SplitLine", "IntersectedPoints","PointASide","PointBSide" })]
-        public static Dictionary<string, object> SplitByDistanceFromPoint(Polygon2d polyOutline, double distance = 10, int dir = 0)
+        internal static Dictionary<string, object> SplitByDistanceFromPoint(Polygon2d polyOutline, double distance = 10, int dir = 0)
         {
             if (polyOutline == null || polyOutline.Points == null || polyOutline.Points.Count == 0) return null;
             double extents = 5000;
@@ -1005,7 +1064,7 @@ namespace SpacePlanning
         }// end of function
 
         //uses makepolysofproportion function to split one big poly into sub components
-        public static Dictionary<string, object> SplitBigPolys(List<Polygon2d> polyInputList, double acceptableWidth, double factor = 4)
+        internal static Dictionary<string, object> SplitBigPolys(List<Polygon2d> polyInputList, double acceptableWidth, double factor = 4)
         {
             List<Polygon2d> polyOrganizedList = new List<Polygon2d>(), polyCoverList = new List<Polygon2d>();
             int count = 0;
