@@ -77,8 +77,8 @@ namespace SpacePlanning
         internal static int CheckLineOrient(Line2d line)
         {
             if (line == null) return -1;
-            double x = line.StartPoint.X - line.EndPoint.X;
-            double y = line.StartPoint.Y - line.EndPoint.Y;       
+            double x = Math.Round((line.StartPoint.X - line.EndPoint.X),2);
+            double y = Math.Round((line.StartPoint.Y - line.EndPoint.Y),2);       
             if (x == 0) return 1;
             else if ( y==0) return 0;
             else return -1; // was 0 prev
@@ -221,7 +221,7 @@ namespace SpacePlanning
                 {
                     //if (lineListOrig[i].Compare(otherLineList[j])) { duplicate = true; break; }
                     Line2d lineA = lineListOrig[i], lineB = otherLineList[j];
-                    double lineALen = lineA.Length, lineBLen = lineB.Length;
+                    double lineALen = Math.Round(lineA.Length, 3), lineBLen = Math.Round(lineB.Length, 3);
                     int lineAOrient = CheckLineOrient(lineA), lineBOrient = CheckLineOrient(lineB);
                     if(lineAOrient == lineBOrient && lineALen == lineBLen) { duplicate = true;  break; }
                 }

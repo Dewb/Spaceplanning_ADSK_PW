@@ -109,6 +109,11 @@
     <Compile Include="src\Dynamo Primitives\Utility\Int\Rect2i.cs" />
     <Compile Include="src\Dynamo Primitives\Utility\StringUtil.cs" />
     <Compile Include="src\LineUtility.cs" />
+    <Compile Include="src\Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="src\SpaceAnalysis.cs" />
     <Compile Include="src\PolygonUtility.cs" />
     <Compile Include="src\CustomVariables.cs" />
@@ -128,6 +133,7 @@
     <EmbeddedResource Include="src\Properties\Resources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

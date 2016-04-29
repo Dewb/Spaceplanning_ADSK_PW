@@ -399,7 +399,7 @@ namespace stuffer
 
         }
 
-        public static Polygon PolygonByPolygon2d(Polygon2d polygon,double height, double recompute = 5)
+        public static Polygon PolygonByPolygon2d(Polygon2d polygon,double height)
         {
             List<Point> pt = new List<Point>();
             pt.Add(Point.ByCoordinates(0, 0));

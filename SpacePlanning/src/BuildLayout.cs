@@ -239,9 +239,47 @@ namespace SpacePlanning
             return deptArrangement;
 
         }
-        
         //get a poly and find rectangular polys inside. then merge them together to form a big poly
-        [MultiReturn(new[] { "SplittableLines", "OffsetLines","SortedIndices", "OffsetMidPts" })]
+        [MultiReturn(new[] { "SplittableLines", "OffsetLines", "SortedIndices", "OffsetMidPts", "NonOrthoLines" })]
+        public static Dictionary<string, object> ExtLinesAndOffsetsFromBBox(Polygon2d poly, double patientRoomDepth = 16, double recompute = 5)
+        {
+            if (!PolygonUtility.CheckPoly(poly)) return null;
+            Polygon2d polyReg = new Polygon2d(poly.Points);
+            List<Line2d> allSplitLines = new List<Line2d>();
+            Polygon2d polyBBox = Polygon2d.ByPoints(ReadData.FromPointsGetBoundingPoly(polyReg.Points));
+            allSplitLines = polyBBox.Lines;
+            double[] splitLineLength = new double[allSplitLines.Count];
+            int[] unsortedIndices = new int[allSplitLines.Count];
+            for (int i = 0; i < allSplitLines.Count; i++)
+            {
+                splitLineLength[i] = allSplitLines[i].Length;
+                unsortedIndices[i] = i;
+            }
+            List<int> sortedIndices = BasicUtility.Quicksort(splitLineLength, unsortedIndices, 0, allSplitLines.Count - 1);
+            if (sortedIndices != null) sortedIndices.Reverse();
+
+            List<Line2d> offsetLines = new List<Line2d>();
+            List<Point2d> midPtsOffsets = new List<Point2d>();
+            for (int i = 0; i < allSplitLines.Count; i++)
+            {
+                offsetLines.Add(LineUtility.Offset(allSplitLines[i], poly, patientRoomDepth));
+                midPtsOffsets.Add(LineUtility.NudgeLineMidPt(allSplitLines[i], poly, patientRoomDepth));
+            }
+
+            List<Line2d> offsetSortedLines = new List<Line2d>();
+            for (int i = 0; i < offsetLines.Count; i++) offsetSortedLines.Add(offsetLines[sortedIndices[i]]);
+            return new Dictionary<string, object>
+            {
+                { "SplittableLines", (allSplitLines) },
+                { "OffsetLines", (offsetSortedLines) },
+                { "SortedIndices", (sortedIndices) },
+                { "OffsetMidPts", (midPtsOffsets) }          
+            };
+        }
+
+
+        //get a poly and find rectangular polys inside. then merge them together to form a big poly
+        [MultiReturn(new[] { "SplittableLines", "OffsetLines","SortedIndices", "OffsetMidPts", "NonOrthoLines" })]
         public static Dictionary<string, object> FindOuterLinesAndOffsets(Polygon2d poly, double patientRoomDepth = 16, double extension = 8000,double recompute = 5)
         {
             if (!PolygonUtility.CheckPoly(poly)) return null;
@@ -250,6 +288,7 @@ namespace SpacePlanning
             List<Line2d> vLines = new List<Line2d>();
             List<Point2d> hMidPt = new List<Point2d>();
             List<Point2d> vMidPt = new List<Point2d>();
+            List<Line2d> nonOrthoLines = new List<Line2d>();
             int countOrtho = 0, countNonOrtho = 0;
             for (int i = 0; i < polyReg.Points.Count; i++)
             {
@@ -257,25 +296,30 @@ namespace SpacePlanning
                 if (i == polyReg.Points.Count - 1) b = 0;
                 Line2d line = new Line2d(polyReg.Points[a], polyReg.Points[b]);
                 int lineType = GraphicsUtility.CheckLineOrient(line);
-                if (lineType != -1)
+                if (lineType > -1)
                 {
                     if (lineType == 0)
                     {
                         Line2d extendedLine = LineUtility.ExtendLine(line, extension);
-                        hLines.Add(line);
+                        hLines.Add(extendedLine);
                         hMidPt.Add(LineUtility.LineMidPoint(line));
                     }
                     if (lineType == 1)
                     {
                         Line2d extendedLine = LineUtility.ExtendLine(line, extension);
-                        vLines.Add(line);
+                        vLines.Add(extendedLine);
                         vMidPt.Add(LineUtility.LineMidPoint(line));
                     }
                     countOrtho += 1;
                 }
                 else
                 {
+                    Trace.WriteLine("----------------");
+                    Trace.WriteLine("NonOrhto Start Point X : " + line.StartPoint.X + "   NonOrhto Start Point Y : " + line.StartPoint.Y);
+                    Trace.WriteLine("NonOrhto End Point X : " + line.EndPoint.X + "   NonOrhto End Point Y : " + line.EndPoint.Y);
+                    Trace.WriteLine("----------------");
                     countNonOrtho += 1;
+                    nonOrthoLines.Add(line);
                 }
             }
             Trace.WriteLine("Orhto lines are : " + countOrtho + "   Non ortho lines are : " + countNonOrtho);
@@ -319,13 +363,14 @@ namespace SpacePlanning
                 { "SplittableLines", (allSplitLines) },
                 { "OffsetLines", (offsetSortedLines) },
                 { "SortedIndices", (sortedIndices) },
-                { "OffsetMidPts", (midPtsOffsets) }
+                { "OffsetMidPts", (midPtsOffsets) },
+                { "NonOrthoLines", (nonOrthoLines) }
             };
         }
         
 
         //get a poly and find rectangular polys inside. then merge them together to form a big poly
-        [MultiReturn(new[] { "InpatientPolys", "SplitablePolys", "LeftOverpolys", "SplittableLines","OffsetLines","Count","SplitLineLast", "CleanedOffsetLines", "UsedLines"})]
+        [MultiReturn(new[] { "InpatientPolys", "SplitablePolys", "LeftOverpolys", "SplittableLines","OffsetLines","Count","SplitLineLast", "CleanedOffsetLines", "UsedLines", "NonOrthoLines"})]
         public static Dictionary<string, object> MakeInpatientBlocks(Polygon2d poly,  double patientRoomDepth = 16, double recompute = 5)
         {
             if (!PolygonUtility.CheckPoly(poly)) return null;
@@ -335,6 +380,7 @@ namespace SpacePlanning
             List<Line2d> offsetLinesOut = new List<Line2d>();
             List<Line2d> offsetLinesCleanedOut = new List<Line2d>();
             List<Line2d> usedLineList = new List<Line2d>();
+            List<Line2d> nonOrthoLines = new List<Line2d>();
             List<int> sortedIndices = new List<int>();
             List<Cell> latestMergedCells = new List<Cell>();
             bool splitDone = false;
@@ -359,6 +405,7 @@ namespace SpacePlanning
                 Dictionary<string, object> outerLineObj = FindOuterLinesAndOffsets(currentPoly, patientRoomDepth,1500, count);
                 List<Line2d> allSplitLines = (List<Line2d>)outerLineObj["SplittableLines"];
                 offsetLines = (List<Line2d>)outerLineObj["OffsetLines"];
+                nonOrthoLines = (List<Line2d>)outerLineObj["NonOrthoLines"];
                 if (offsetLines == null || offsetLines.Count == 0) { count += 1; continue; }
                     
                
@@ -422,7 +469,8 @@ namespace SpacePlanning
                 { "Count", (count) },
                 { "SplitLineLast", (allSplitLinesOut[0]) },
                 { "CleanedOffsetLines", (offsetLinesCleanedOut) },
-                { "UsedLines", (usedLineList) }
+                { "UsedLines", (usedLineList) },
+                { "NonOrthoLines", (nonOrthoLines) }
             };
         }
 

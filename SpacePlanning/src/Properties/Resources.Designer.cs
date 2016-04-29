@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SpacePlanning.Properties {
+namespace SpacePlanning.src.Properties {
     using System;
     
     
@@ -22,7 +22,7 @@ namespace SpacePlanning.Properties {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
+    public class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,10 +36,10 @@ namespace SpacePlanning.Properties {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("SpacePlanning.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("SpacePlanning.src.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -51,12 +51,29 @@ namespace SpacePlanning.Properties {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PROGRAM ID,PROGRAM NAME,ZONE/ DEPARTMENT,QUANTITY,AREA,PREFERENCE VALUE,ADJACENT PROGRAMS
+        ///0,Family Lounge,Family Public Support,48,15,3,3..4..5..8
+        ///1,Public Toilet,Family Public Support,2,160,1,2..4..6..15
+        ///2,Conference,Family Public Support,1,225,3,3..2
+        ///3,Patient Room,Inpatient Area,26,340,10,12..11.5..6..8
+        ///4,Patient Room Isolation,Inpatient Area,2,340,8,2..3..5..7..8
+        ///5,Patient Room VIP,Inpatient Area,2,340,9,1..3..2..4..5
+        ///6,Alcove Charting Room,Inpatient Area,16,35,8,0..4..6
+        ///7,Team Work station,Clin [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string PROGRAMCSV {
+            get {
+                return ResourceManager.GetString("PROGRAMCSV", resourceCulture);
             }
         }
     }
