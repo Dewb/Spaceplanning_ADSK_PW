@@ -4,7 +4,7 @@ using stuffer;
 using Autodesk.DesignScript.Runtime;
 using System.Diagnostics;
 using Autodesk.DesignScript.Geometry;
-
+using System.Linq;
 
 namespace SpacePlanning
 {
@@ -370,8 +370,8 @@ namespace SpacePlanning
         }
 
         //get a poly and find rectangular polys inside. then merge them together to form a big poly
-        [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly"})]
-        public static Dictionary<string, object> AssignBlocksBasedOnDistance(Polygon2d poly, double distance = 16,double area = 0, double recompute = 5)
+        [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly", "AreaAssignedToBlock" })]
+        public static Dictionary<string, object> AssignBlocksBasedOnDistance(Polygon2d poly, double distance = 16, double area = 0, double thresDistance = 10, double recompute = 5)
         {
             if (!PolygonUtility.CheckPoly(poly)) return null;
             if (distance < 1) return null;
@@ -388,13 +388,13 @@ namespace SpacePlanning
                 Polygon2d currentPoly = polyLeftList.Pop();
                 index = count;
                 if (index > currentPoly.Lines.Count) index = 0;
-                Dictionary<string, object> splitObject = SplitByOffsetPoint(currentPoly, distance, index);
+                Dictionary<string, object> splitObject = SplitByOffsetPoint(currentPoly, distance, index, thresDistance);
+                if(splitObject == null) { count += 1; continue; }
                 Polygon2d blockPoly = (Polygon2d)splitObject["PolyAfterSplit"];
                 Polygon2d leftPoly = (Polygon2d)splitObject["LeftOverPoly"];
                 areaAdded += PolygonUtility.AreaCheckPolygon(blockPoly);
                 polyLeftList.Push(leftPoly);
-                blockPolyList.Add(blockPoly);
-                
+                blockPolyList.Add(blockPoly);                
                 count += 1;
                 Trace.WriteLine("iterating : " + count + " Area added so far : " + areaAdded);
                 Trace.WriteLine("Poly left : " + leftoverPolyList.Count);
@@ -403,7 +403,8 @@ namespace SpacePlanning
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (blockPolyList) },
-                { "LeftOverPoly", (leftoverPolyList) }
+                { "LeftOverPoly", (leftoverPolyList) },
+                { "AreaAssignedToBlock", (areaAdded)}
             };
         }
 
@@ -774,10 +775,9 @@ namespace SpacePlanning
 
         //splits a polygon based on distance and random direction
         [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly"  })]
-        public static Dictionary<string, object> SplitByOffsetPoint(Polygon2d polyOutline,double distance = 10, int index = -1)
+        public static Dictionary<string, object> SplitByOffsetPoint(Polygon2d polyOutline,double distance = 10, int index = -1, double minDist = 20)
         {
             if (!PolygonUtility.CheckPoly(polyOutline)) return null;
-            double extents = 5000, spacingProvided;
             List<Point2d> polyOrig = polyOutline.Points;
             List<bool> offsetAble = new List<bool>();
             Polygon2d poly = new Polygon2d(polyOutline.Points);
@@ -789,11 +789,11 @@ namespace SpacePlanning
                 bool offsetAllow = false;
                 int a = i, b = i + 1;
                 if (i == poly.Points.Count - 1) b = 0;
-                Line2d line = linesPoly[i];
-                Point2d testPt = LineUtility.LineMidPoint(line);
-                Point2d offsetMidPt = LineUtility.OffsetAPoint(line, testPt, poly, distance);
-                if (GraphicsUtility.PointInsidePolygonTest(poly, offsetMidPt)) offsetAllow = true;
-                offsetAble.Add(offsetAllow);
+                Line2d line = linesPoly[i];               
+                //Point2d testPt = LineUtility.LineMidPoint(line);
+                //Point2d offsetMidPt = LineUtility.OffsetAPoint(line, testPt, poly, distance);
+                //if (GraphicsUtility.PointInsidePolygonTest(poly, offsetMidPt)) offsetAllow = true;
+                //offsetAble.Add(offsetAllow);
                 lineLength.Add(line.Length);
             }
            
@@ -810,23 +810,29 @@ namespace SpacePlanning
             if (index > -1 && index < sortedIndices.Count) indexSelected = sortedIndices[index];
             else indexSelected = sortedIndices[0];
             List<Point2d> pointForBlock = new List<Point2d>();
+            List<Point2d> polyPtsCopy = poly.Points.Select(pt => new Point2d(pt.X, pt.Y)).ToList();//deep copy
             for (int i = 0; i < poly.Points.Count; i++)
             {
                 int a = i, b = i + 1;
                 if (i == poly.Points.Count - 1) b = 0;
                 if (i == indexSelected)
                 {
+                    //if (linesPoly[i].Length < minDist) return null;
                     Line2d offsetLine = LineUtility.Offset(linesPoly[i], poly, distance);
+                    //Point2d ptStart = LineUtility.OffsetAPoint(linesPoly[i], linesPoly[i].StartPoint, poly, distance);
+                    //Point2d ptEnd = LineUtility.OffsetAPoint(linesPoly[i], linesPoly[i].EndPoint, poly, distance);
+                    //Line2d offsetLine =  new Line2d(ptStart, ptEnd);
                     pointForBlock.Add(poly.Points[a]);
                     pointForBlock.Add(poly.Points[b]);
                     pointForBlock.Add(offsetLine.EndPoint);
                     pointForBlock.Add(offsetLine.StartPoint);
-                    poly.Points[a] = offsetLine.StartPoint;
-                    poly.Points[b] = offsetLine.EndPoint;
+
+                    polyPtsCopy[a] = offsetLine.StartPoint;
+                    polyPtsCopy[b] = offsetLine.EndPoint;
                 }
             }
             Polygon2d polyBlock = new Polygon2d(pointForBlock);
-            Polygon2d polyNew = new Polygon2d(poly.Points);
+            Polygon2d polyNew = new Polygon2d(polyPtsCopy);
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (polyBlock) },
