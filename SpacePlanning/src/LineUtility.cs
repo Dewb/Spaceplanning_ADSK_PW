@@ -69,23 +69,32 @@ namespace SpacePlanning
             Point2d center = PolygonUtility.CentroidFromPoly(poly);
 
             //Point2d testPoint = LineMidPoint(lineInp);
-            double newX = 0, newY = 0;
+            double newX1 = 0, newY1 = 0, newX2 = 0, newY2 = 0;
             Vector2d vecToCen = new Vector2d(testPoint, center);
             Vector2d vecNorm = vecToCen.Normalize();
             Vector2d vecScaled = vecNorm.Scale(distance);
             if (GraphicsUtility.CheckLineOrient(lineInp) == 0)
             {
                 vecScaled.X = 0;
-                newX = testPoint.X;
-                newY = testPoint.Y + vecScaled.Y;           
+                newX1 = testPoint.X;
+                newY1 = testPoint.Y + vecScaled.Y;
+
+                newX2 = testPoint.X;
+                newY2 = testPoint.Y - vecScaled.Y;
             }
             else
             {
                 vecScaled.Y = 0;
-                newX = testPoint.X + vecScaled.X;
-                newY = testPoint.Y;
+                newX1 = testPoint.X + vecScaled.X;
+                newY1 = testPoint.Y;
+                newX2 = testPoint.X - vecScaled.X;
+                newY2 = testPoint.Y;
             }
-            return new Point2d(newX, newY);
+
+            Point2d pt1 = new Point2d(newX1, newY1);
+            Point2d pt2 = new Point2d(newX2, newY2);
+            if (GraphicsUtility.PointInsidePolygonTest(poly.Points, pt1)) return pt1;
+            else return pt2;
         }
 
         //moves a line from its midpoint to a given point
