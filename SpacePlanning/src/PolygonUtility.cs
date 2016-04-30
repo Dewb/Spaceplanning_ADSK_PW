@@ -516,21 +516,32 @@ namespace SpacePlanning
                 }
                 else check = true;
             }
-            double eps = 100;
+            double eps = 100, num = BasicUtility.RandomBetweenNumbers(new Random(), 0, 1);
             Point2d ptStart = poly.Points[startIndex];
             Point2d ptEnd = poly.Points[endIndex];
+            Vector2d vecStartEnd = new Vector2d(ptStart, ptEnd);
             Line2d line = new Line2d(ptStart, ptEnd);
 
             Point2d midPt = LineUtility.LineMidPoint(line);
             Line2d vertLine = LineUtility.ExtendLine(new Line2d(midPt, new Point2d(midPt.X, midPt.Y + eps)), 1000);           
             Line2d horzLine = LineUtility.ExtendLine(new Line2d(midPt, new Point2d(midPt.X+eps, midPt.Y)),1000);
             List<Line2d> lineFormed = new List<Line2d> { line, vertLine, horzLine };
+            
+            Point2d projPtStart = new Point2d(0,0);
+            Point2d projPtEnd = new Point2d(0,0);
+            if (vecStartEnd.Y>vecStartEnd.X) // pick vertLine
+            {
+                 projPtStart = new Point2d(midPt.X, ptStart.Y);
+                 projPtEnd = new Point2d(midPt.X, ptEnd.Y);
+            }
+            else // pick horzLine
+            {
+                 projPtStart = new Point2d(ptStart.X, midPt.Y);
+                 projPtEnd = new Point2d(ptEnd.X, midPt.Y);
+            }          
 
-            Point2d projPtStart = new Point2d(midPt.X, ptStart.Y);
-            Point2d projPtEnd = new Point2d(midPt.X, ptEnd.Y);
+
             List<Point2d> ptFormed = new List<Point2d> { projPtStart, projPtEnd };
-            //poly.Points[startIndex] = projPtStart;
-            //poly.Points[endIndex] = projPtEnd;
             List<Point2d> ptList = new List<Point2d>();
             for (int i = 0; i < poly.Points.Count; i++)
             {
