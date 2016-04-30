@@ -814,18 +814,15 @@ namespace SpacePlanning
             {
                 int a = i, b = i + 1;
                 if (i == poly.Points.Count - 1) b = 0;
-                if (i == indexSelected && offsetAble[i])
+                if (i == indexSelected) //&& offsetAble[i]
                 {
-                    if (linesPoly[i].Length < minDist) continue;
-                    Line2d offsetLine = LineUtility.OffsetLineInsidePoly(linesPoly[i], poly, distance);
-                    //Point2d ptStart = LineUtility.OffsetAPoint(linesPoly[i], linesPoly[i].StartPoint, poly, distance);
-                    //Point2d ptEnd = LineUtility.OffsetAPoint(linesPoly[i], linesPoly[i].EndPoint, poly, distance);
-                    //Line2d offsetLine =  new Line2d(ptStart, ptEnd);
+                    Line2d line = new Line2d(poly.Points[a], poly.Points[b]);
+                    if (line.Length < minDist) continue;
+                    Line2d offsetLine = LineUtility.OffsetLineInsidePoly(line, poly, distance);
                     pointForBlock.Add(poly.Points[a]);
                     pointForBlock.Add(poly.Points[b]);
                     pointForBlock.Add(offsetLine.EndPoint);
                     pointForBlock.Add(offsetLine.StartPoint);
-
                     poly.Points[a] = offsetLine.StartPoint;
                     poly.Points[b] = offsetLine.EndPoint;
                 }

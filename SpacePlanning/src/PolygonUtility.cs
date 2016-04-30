@@ -480,15 +480,15 @@ namespace SpacePlanning
                 if (dir == 0) return null;
                 if(dir == 1)
                 {
-                    Point2d ptA = LineUtility.OffsetPoint(line, line.StartPoint, poly, -1 * distance);
-                    Point2d ptB = LineUtility.OffsetPoint(line, line.EndPoint, poly, -1 * distance);
+                    Point2d ptA = LineUtility.OffsetPoint(line, line.StartPoint, -1 * distance);
+                    Point2d ptB = LineUtility.OffsetPoint(line, line.EndPoint, -1 * distance);
                     poly.Points[a] = ptA;
                     poly.Points[b] = ptB;
                 }
                 else
                 {
-                    Point2d ptA = LineUtility.OffsetPoint(line, line.StartPoint, poly, distance);
-                    Point2d ptB = LineUtility.OffsetPoint(line, line.EndPoint, poly, distance);
+                    Point2d ptA = LineUtility.OffsetPoint(line, line.StartPoint, distance);
+                    Point2d ptB = LineUtility.OffsetPoint(line, line.EndPoint, distance);
                     poly.Points[a] = ptA;
                     poly.Points[b] = ptB;
                 }                

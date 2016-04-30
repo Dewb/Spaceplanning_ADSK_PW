@@ -36,7 +36,7 @@ namespace SpacePlanning
         public static Line2d Offset(Line2d lineInp, Polygon2d poly, double distance)
         {
             if (lineInp == null || !PolygonUtility.CheckPoly(poly)) return null;
-            Point2d ptStart = OffsetPoint(lineInp, lineInp.StartPoint, poly, distance);
+            Point2d ptStart = OffsetPoint(lineInp, lineInp.StartPoint, distance);
             Vector2d vec = new Vector2d(lineInp.StartPoint, ptStart);
             Point2d ptEnd = VectorUtility.VectorAddToPoint(lineInp.EndPoint, vec);
             return new Line2d(ptStart, ptEnd);
@@ -54,9 +54,8 @@ namespace SpacePlanning
 
 
         //offsets an input line by a given distance 
-        public static Point2d OffsetPoint(Line2d lineInp, Point2d testPoint, Polygon2d poly, double distance)
+        public static Point2d OffsetPoint(Line2d lineInp, Point2d testPoint, double distance)
         {
-            if (lineInp == null || !PolygonUtility.CheckPoly(poly)) return null;
             double newX1 = 0, newY1 = 0;
             if (GraphicsUtility.CheckLineOrient(lineInp) == 0)
             {
@@ -77,7 +76,7 @@ namespace SpacePlanning
             if (lineInp == null || !PolygonUtility.CheckPoly(poly)) return null;
             int dir = DirectionForPointInPoly(lineInp, poly, distance);
             if (dir == 0) return null;
-            return OffsetPoint(lineInp, testPoint, poly, dir*distance);
+            return OffsetPoint(lineInp, testPoint, dir*distance);
         }
 
         //offsets an input line by a given distance 
@@ -85,8 +84,8 @@ namespace SpacePlanning
         {
             if (lineInp == null || !PolygonUtility.CheckPoly(poly)) return 0;
             Point2d midPt = LineMidPoint(lineInp);
-            Point2d pt1 = OffsetPoint(lineInp, midPt, poly, distance);
-            Point2d pt2 = OffsetPoint(lineInp, midPt, poly, -1 * distance);
+            Point2d pt1 = OffsetPoint(lineInp, midPt, distance);
+            Point2d pt2 = OffsetPoint(lineInp, midPt, -1 * distance);
             if (GraphicsUtility.PointInsidePolygonTest(poly.Points, pt1)) return 1;
             else return -1;
         }
