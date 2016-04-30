@@ -774,7 +774,7 @@ namespace SpacePlanning
         }
 
         //splits a polygon based on distance and random direction
-        [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly"  })]
+        [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly","Offsetable"  })]
         public static Dictionary<string, object> SplitByOffsetPoint(Polygon2d polyOutline,double distance = 10, int index = -1, double minDist = 20)
         {
             if (!PolygonUtility.CheckPoly(polyOutline)) return null;
@@ -783,16 +783,17 @@ namespace SpacePlanning
             List<Line2d> linesPoly = poly.Lines;
             List<double> lineLength = new List<double>();
 
-            for(int i = 0; i < poly.Points.Count; i++)
+            Polygon2d oPoly = PolygonUtility.OffsetPoly(poly, 2);
+            for(int i = 0; i < oPoly.Points.Count; i++)
             {
                 bool offsetAllow = false;
                 int a = i, b = i + 1;
-                if (i == poly.Points.Count - 1) b = 0;
-                Line2d line = linesPoly[i];
-                Point2d offStartPt = LineUtility.OffsetPointInsidePoly(line, line.StartPoint, poly, distance);
-                Point2d offEndPt = LineUtility.OffsetPointInsidePoly(line, line.EndPoint, poly, distance);
-                if (GraphicsUtility.PointInsidePolygonTest(poly, offStartPt) &&
-                    GraphicsUtility.PointInsidePolygonTest(poly, offEndPt)) offsetAllow = true;
+                if (i == oPoly.Points.Count - 1) b = 0;
+                Line2d line = new Line2d(poly.Points[a], poly.Points[b]);
+                Point2d offStartPt = LineUtility.OffsetPointInsidePoly(line, line.StartPoint, oPoly, distance);
+                Point2d offEndPt = LineUtility.OffsetPointInsidePoly(line, line.EndPoint, oPoly, distance);
+                if (GraphicsUtility.PointInsidePolygonTest(oPoly, offStartPt) &&
+                    GraphicsUtility.PointInsidePolygonTest(oPoly, offEndPt)) offsetAllow = true;
                 offsetAble.Add(offsetAllow);
                 lineLength.Add(line.Length);
             }
@@ -817,8 +818,9 @@ namespace SpacePlanning
                 if (i == poly.Points.Count - 1) b = 0;
                 if (i == indexSelected && offsetAble[i])
                 {
-                    if (linesPoly[i].Length < minDist) return null;
-                    Line2d offsetLine = LineUtility.OffsetLineInsidePoly(linesPoly[i], poly, distance);
+                    Line2d lineSelected = new Line2d(poly.Points[a], poly.Points[b]);
+                    if (lineSelected.Length < minDist) { continue; }
+                    Line2d offsetLine = LineUtility.OffsetLineInsidePoly(lineSelected, poly, distance);
                     //Point2d ptStart = LineUtility.OffsetAPoint(linesPoly[i], linesPoly[i].StartPoint, poly, distance);
                     //Point2d ptEnd = LineUtility.OffsetAPoint(linesPoly[i], linesPoly[i].EndPoint, poly, distance);
                     //Line2d offsetLine =  new Line2d(ptStart, ptEnd);
@@ -832,7 +834,8 @@ namespace SpacePlanning
                 }
                 else
                 {
-                    return null;
+                    continue;
+                    //return null;
                 }
             }
             Polygon2d polyBlock = new Polygon2d(pointForBlock);
@@ -840,7 +843,8 @@ namespace SpacePlanning
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (polyBlock) },
-                { "LeftOverPoly", (polyNew) }            
+                { "LeftOverPoly", (polyNew) },
+                { "Offsetable" , (offsetAble) }         
             };
 
         }
