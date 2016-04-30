@@ -818,7 +818,7 @@ namespace SpacePlanning
                 if (i == indexSelected)
                 {
                     //if (linesPoly[i].Length < minDist) return null;
-                    Line2d offsetLine = LineUtility.Offset(linesPoly[i], poly, distance);
+                    Line2d offsetLine = LineUtility.OffsetLineInsidePoly(linesPoly[i], poly, distance);
                     //Point2d ptStart = LineUtility.OffsetAPoint(linesPoly[i], linesPoly[i].StartPoint, poly, distance);
                     //Point2d ptEnd = LineUtility.OffsetAPoint(linesPoly[i], linesPoly[i].EndPoint, poly, distance);
                     //Line2d offsetLine =  new Line2d(ptStart, ptEnd);

@@ -36,18 +36,27 @@ namespace SpacePlanning
         public static Line2d Offset(Line2d lineInp, Polygon2d poly, double distance)
         {
             if (lineInp == null || !PolygonUtility.CheckPoly(poly)) return null;
-            Point2d ptStart = OffsetAPoint(lineInp, lineInp.StartPoint, poly, distance);
+            Point2d ptStart = OffsetPoint(lineInp, lineInp.StartPoint, poly, distance);
             Vector2d vec = new Vector2d(lineInp.StartPoint, ptStart);
             Point2d ptEnd = VectorUtility.VectorAddToPoint(lineInp.EndPoint, vec);
-            //Point2d ptEnd = OffsetAPoint(lineInp, lineInp.EndPoint, poly, distance);
             return new Line2d(ptStart, ptEnd);
         }
 
         //offsets an input line by a given distance 
-        public static Point2d OffsetAPointBoth(Line2d lineInp, Point2d testPoint, Polygon2d poly, double distance)
+        public static Line2d OffsetLineInsidePoly(Line2d lineInp, Polygon2d poly, double distance)
         {
             if (lineInp == null || !PolygonUtility.CheckPoly(poly)) return null;
-            //Point2d testPoint = LineMidPoint(lineInp);
+            Point2d ptStart = OffsetPointInsidePoly(lineInp, lineInp.StartPoint, poly, distance);
+            Vector2d vec = new Vector2d(lineInp.StartPoint, ptStart);
+            Point2d ptEnd = VectorUtility.VectorAddToPoint(lineInp.EndPoint, vec);
+            return new Line2d(ptStart, ptEnd);
+        }
+
+
+        //offsets an input line by a given distance 
+        public static Point2d OffsetPoint(Line2d lineInp, Point2d testPoint, Polygon2d poly, double distance)
+        {
+            if (lineInp == null || !PolygonUtility.CheckPoly(poly)) return null;
             double newX1 = 0, newY1 = 0;
             if (GraphicsUtility.CheckLineOrient(lineInp) == 0)
             {
@@ -59,32 +68,15 @@ namespace SpacePlanning
                 newX1 = testPoint.X + distance;
                 newY1 = testPoint.Y;
             }
-            Point2d pt1 = new Point2d(newX1, newY1);
-            return pt1;
+            return new Point2d(newX1, newY1);
         }
 
         //offsets an input line by a given distance 
-        public static Point2d OffsetAPoint(Line2d lineInp, Point2d testPoint, Polygon2d poly, double distance)
+        public static Point2d OffsetPointInsidePoly(Line2d lineInp, Point2d testPoint, Polygon2d poly, double distance)
         {
             if (lineInp == null || !PolygonUtility.CheckPoly(poly)) return null;
-            //Point2d testPoint = LineMidPoint(lineInp);
-            double newX1 = 0, newY1 = 0, newX2 = 0, newY2 = 0;
-            if (GraphicsUtility.CheckLineOrient(lineInp) == 0)
-            {
-                newX1 = testPoint.X;
-                newY1 = testPoint.Y + distance;
-                newX2 = testPoint.X;
-                newY2 = testPoint.Y - distance;
-            }
-            else
-            {
-                newX1 = testPoint.X + distance;
-                newY1 = testPoint.Y;
-                newX2 = testPoint.X - distance;
-                newY2 = testPoint.Y;
-            }
-            Point2d pt1 = new Point2d(newX1, newY1);
-            Point2d pt2 = new Point2d(newX2, newY2);
+            Point2d pt1 = OffsetPoint(lineInp, testPoint, poly, distance);
+            Point2d pt2 = OffsetPoint(lineInp, testPoint, poly, -1*distance);
             if (GraphicsUtility.PointInsidePolygonTest(poly.Points, pt1)) return pt1;
             else return pt2;
         }
