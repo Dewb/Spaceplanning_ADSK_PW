@@ -778,7 +778,6 @@ namespace SpacePlanning
         public static Dictionary<string, object> SplitByOffsetPoint(Polygon2d polyOutline,double distance = 10, int index = -1, double minDist = 20)
         {
             if (!PolygonUtility.CheckPoly(polyOutline)) return null;
-            List<Point2d> polyOrig = polyOutline.Points;
             List<bool> offsetAble = new List<bool>();
             Polygon2d poly = new Polygon2d(polyOutline.Points);
             List<Line2d> linesPoly = poly.Lines;
@@ -789,11 +788,12 @@ namespace SpacePlanning
                 bool offsetAllow = false;
                 int a = i, b = i + 1;
                 if (i == poly.Points.Count - 1) b = 0;
-                Line2d line = linesPoly[i];               
-                //Point2d testPt = LineUtility.LineMidPoint(line);
-                //Point2d offsetMidPt = LineUtility.OffsetAPoint(line, testPt, poly, distance);
-                //if (GraphicsUtility.PointInsidePolygonTest(poly, offsetMidPt)) offsetAllow = true;
-                //offsetAble.Add(offsetAllow);
+                Line2d line = linesPoly[i];
+                Point2d offStartPt = LineUtility.OffsetPointInsidePoly(line, line.StartPoint, poly, distance);
+                Point2d offEndPt = LineUtility.OffsetPointInsidePoly(line, line.EndPoint, poly, distance);
+                if (GraphicsUtility.PointInsidePolygonTest(poly, offStartPt) &&
+                    GraphicsUtility.PointInsidePolygonTest(poly, offEndPt)) offsetAllow = true;
+                offsetAble.Add(offsetAllow);
                 lineLength.Add(line.Length);
             }
            
@@ -815,7 +815,7 @@ namespace SpacePlanning
             {
                 int a = i, b = i + 1;
                 if (i == poly.Points.Count - 1) b = 0;
-                if (i == indexSelected)
+                if (i == indexSelected && offsetAble[i])
                 {
                     if (linesPoly[i].Length < minDist) return null;
                     Line2d offsetLine = LineUtility.OffsetLineInsidePoly(linesPoly[i], poly, distance);
@@ -829,6 +829,10 @@ namespace SpacePlanning
 
                     poly.Points[a] = offsetLine.StartPoint;
                     poly.Points[b] = offsetLine.EndPoint;
+                }
+                else
+                {
+                    return null;
                 }
             }
             Polygon2d polyBlock = new Polygon2d(pointForBlock);

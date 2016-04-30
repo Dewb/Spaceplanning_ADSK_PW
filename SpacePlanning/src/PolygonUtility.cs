@@ -463,6 +463,40 @@ namespace SpacePlanning
 
             return spanList;
         }
+
+        //offsets a poly to the outside
+        public static Polygon2d OffsetPoly(Polygon2d polyOutline, double distance = 0.5)
+        {
+            if (!PolygonUtility.CheckPoly(polyOutline)) return null;
+            List<bool> offsetAble = new List<bool>();
+            Polygon2d poly = new Polygon2d(polyOutline.Points);
+            List<Line2d> linesPoly = poly.Lines;
+            for (int i = 0; i < poly.Points.Count; i++)
+            {
+                int a = i, b = i + 1;
+                if (i == poly.Points.Count - 1) b = 0;
+                Line2d line = new Line2d(poly.Points[a], poly.Points[b]);
+                int dir = LineUtility.DirectionForPointInPoly(line, poly, distance);
+                if (dir == 0) return null;
+                if(dir == 1)
+                {
+                    Point2d ptA = LineUtility.OffsetPoint(line, line.StartPoint, poly, -1 * distance);
+                    Point2d ptB = LineUtility.OffsetPoint(line, line.EndPoint, poly, -1 * distance);
+                    poly.Points[a] = ptA;
+                    poly.Points[b] = ptB;
+                }
+                else
+                {
+                    Point2d ptA = LineUtility.OffsetPoint(line, line.StartPoint, poly, distance);
+                    Point2d ptB = LineUtility.OffsetPoint(line, line.EndPoint, poly, distance);
+                    poly.Points[a] = ptA;
+                    poly.Points[b] = ptB;
+                }                
+            }
+            return new Polygon2d(poly.Points);
+        }
+
+
         
         //calc centroid of a closed polygon2d
         public static Point2d CentroidFromPoly(Polygon2d poly)
