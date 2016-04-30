@@ -75,10 +75,20 @@ namespace SpacePlanning
         public static Point2d OffsetPointInsidePoly(Line2d lineInp, Point2d testPoint, Polygon2d poly, double distance)
         {
             if (lineInp == null || !PolygonUtility.CheckPoly(poly)) return null;
-            Point2d pt1 = OffsetPoint(lineInp, testPoint, poly, distance);
-            Point2d pt2 = OffsetPoint(lineInp, testPoint, poly, -1*distance);
-            if (GraphicsUtility.PointInsidePolygonTest(poly.Points, pt1)) return pt1;
-            else return pt2;
+            int dir = DirectionForPointInPoly(lineInp, poly, distance);
+            if (dir == 0) return null;
+            return OffsetPoint(lineInp, testPoint, poly, dir*distance);
+        }
+
+        //offsets an input line by a given distance 
+        public static int DirectionForPointInPoly(Line2d lineInp, Polygon2d poly, double distance)
+        {
+            if (lineInp == null || !PolygonUtility.CheckPoly(poly)) return 0;
+            Point2d midPt = LineMidPoint(lineInp);
+            Point2d pt1 = OffsetPoint(lineInp, midPt, poly, distance);
+            Point2d pt2 = OffsetPoint(lineInp, midPt, poly, -1 * distance);
+            if (GraphicsUtility.PointInsidePolygonTest(poly.Points, pt1)) return 1;
+            else return -1;
         }
 
         //moves a line from its midpoint to a given point
