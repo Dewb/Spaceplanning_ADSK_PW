@@ -37,7 +37,9 @@ namespace SpacePlanning
         {
             if (lineInp == null || !PolygonUtility.CheckPoly(poly)) return null;
             Point2d ptStart = OffsetAPoint(lineInp, lineInp.StartPoint, poly, distance);
-            Point2d ptEnd = OffsetAPoint(lineInp, lineInp.EndPoint, poly, distance);
+            Vector2d vec = new Vector2d(lineInp.StartPoint, ptStart);
+            Point2d ptEnd = VectorUtility.VectorAddToPoint(lineInp.EndPoint, vec);
+            //Point2d ptEnd = OffsetAPoint(lineInp, lineInp.EndPoint, poly, distance);
             return new Line2d(ptStart, ptEnd);
         }
 

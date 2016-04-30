@@ -827,12 +827,12 @@ namespace SpacePlanning
                     pointForBlock.Add(offsetLine.EndPoint);
                     pointForBlock.Add(offsetLine.StartPoint);
 
-                    polyPtsCopy[a] = offsetLine.StartPoint;
-                    polyPtsCopy[b] = offsetLine.EndPoint;
+                    poly.Points[a] = offsetLine.StartPoint;
+                    poly.Points[b] = offsetLine.EndPoint;
                 }
             }
             Polygon2d polyBlock = new Polygon2d(pointForBlock);
-            Polygon2d polyNew = new Polygon2d(polyPtsCopy);
+            Polygon2d polyNew = new Polygon2d(poly.Points);
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (polyBlock) },
