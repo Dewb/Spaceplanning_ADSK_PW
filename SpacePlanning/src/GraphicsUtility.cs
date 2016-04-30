@@ -739,28 +739,14 @@ namespace SpacePlanning
             return false;
         }
 
-        
-        //find perp projection on a line from a point
-        public static Point2d PerpProjectionPointOnLine(Line line, Point2d C)
-        {
-            Line2d testLine = new Line2d(Point2d.ByCoordinates(line.StartPoint.X,line.StartPoint.Y), Point2d.ByCoordinates(line.EndPoint.X, line.EndPoint.Y));
-            Point2d A = testLine.StartPoint;
-            Point2d B = testLine.EndPoint;
-            Vector2d b = new Vector2d(A, B);
-            Vector2d a = new Vector2d(A, C);
-            double a1 = a.Dot(b) / b.Length;
-            Vector2d bScaled = b.Scale(a1);
-            return new Point2d(A.X + bScaled.X, A.Y + bScaled.Y);
-
-        }
+    
         
 
-        // find closest point to a line - correct
+        // find closest point to a line- ( has some problem needs revision )
         public static Point2d ProjectedPointOnLine(Line2d testline, Point2d P)
         {
-
             Line2d line = new Line2d(Point2d.ByCoordinates(testline.StartPoint.X, testline.StartPoint.Y), 
-                Point2d.ByCoordinates(testline.EndPoint.X, testline.EndPoint.Y));
+            Point2d.ByCoordinates(testline.EndPoint.X, testline.EndPoint.Y));
             Point2d A = line.StartPoint;
             Point2d B = line.EndPoint;
             Vector2d vVector1 = new Vector2d(A, P);

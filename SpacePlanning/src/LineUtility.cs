@@ -138,18 +138,6 @@ namespace SpacePlanning
         }
 
 
-        //extends both of the ends of a line
-        public static Line2d Extend(Line2d line, double extend =0)
-        {
-            double eps = 1000;
-            if(extend == 0) extend = 100000;
-            Line2d lineReturn = new Line2d(line);
-            if (GraphicsUtility.CheckLineOrient(line) == 0) lineReturn = Move(line, 0, extend); //vertical
-            else lineReturn = Move(line, extend, 0); //horizontal
-            return lineReturn;
-        }
-
-
         //extends both of the ends of a line - correct implementation
         public static Line2d ExtendLine(Line2d line, double extend = 0)
         {

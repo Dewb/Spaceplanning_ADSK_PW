@@ -383,7 +383,7 @@ namespace SpacePlanning
             polyLeftList.Push(poly);
             List<Polygon2d> blockPolyList = new List<Polygon2d>();
             List<Polygon2d> leftoverPolyList = new List<Polygon2d>();
-            while (polyLeftList.Count > 0 && areaAdded < area) //count<recompute
+            while (polyLeftList.Count > 0 && areaAdded < area && count < recompute) //count<recompute
             {
                 Polygon2d currentPoly = polyLeftList.Pop();
                 index = count;

@@ -497,6 +497,60 @@ namespace SpacePlanning
         }
 
 
+        //gets a poly and removes small notches based on agiven min distance
+        [MultiReturn(new[] { "PointStart", "PointEnd", "ConnectingLine", "PointsProjected", "PolyReduced"})]
+        public static Dictionary<string,object> RemoveNotches(Polygon2d poly, double distance = 10)
+        {
+            if (!CheckPoly(poly)) return null;
+            int startIndex = 0, endIndex = 0;
+            bool check = false;
+
+            for(int i = 0; i < poly.Points.Count; i++)
+            {
+                int a = 9, b = i + 1;
+                if (i == poly.Points.Count - 1) b = 0;
+                if(poly.Lines[i].Length < distance && !check)
+                {
+                    if (startIndex > a) startIndex = a;
+                    endIndex = b;
+                }
+                else check = true;
+            }
+            double eps = 100;
+            Point2d ptStart = poly.Points[startIndex];
+            Point2d ptEnd = poly.Points[endIndex];
+            Line2d line = new Line2d(ptStart, ptEnd);
+
+            Point2d midPt = LineUtility.LineMidPoint(line);
+            Line2d vertLine = LineUtility.ExtendLine(new Line2d(midPt, new Point2d(midPt.X, midPt.Y + eps)), 1000);           
+            Line2d horzLine = LineUtility.ExtendLine(new Line2d(midPt, new Point2d(midPt.X+eps, midPt.Y)),1000);
+            List<Line2d> lineFormed = new List<Line2d> { line, vertLine, horzLine };
+
+            Point2d projPtStart = new Point2d(midPt.X, ptStart.Y);
+            Point2d projPtEnd = new Point2d(midPt.X, ptEnd.Y);
+            List<Point2d> ptFormed = new List<Point2d> { projPtStart, projPtEnd };
+            //poly.Points[startIndex] = projPtStart;
+            //poly.Points[endIndex] = projPtEnd;
+            List<Point2d> ptList = new List<Point2d>();
+            for (int i = 0; i < poly.Points.Count; i++)
+            {
+                if (i == startIndex) { ptList.Add(ptStart); ptList.Add(projPtStart); }
+                else if (i == endIndex) { ptList.Add(projPtEnd); ptList.Add(ptEnd); }
+                else if (i > startIndex && i < endIndex) continue;
+                else ptList.Add(poly.Points[i]);               
+            }
+            Polygon2d polyReduced = new Polygon2d(ptList,0);
+            return new Dictionary<string, object>
+            {
+                { "PointStart", (ptStart) },
+                { "PointEnd", (ptEnd) },
+                { "ConnectingLine", (lineFormed) },
+                { "PointsProjected", (ptFormed) },
+                { "PolyReduced" , (polyReduced) }
+            };
+
+        }
+
         
         //calc centroid of a closed polygon2d
         public static Point2d CentroidFromPoly(Polygon2d poly)
