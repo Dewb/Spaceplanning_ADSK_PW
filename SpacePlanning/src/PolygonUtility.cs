@@ -497,7 +497,8 @@ namespace SpacePlanning
         }
 
         //iterate multiple times till theres is no notches in the poly
-        public static Polygon2d CheckPolyNotches(Polygon2d poly, double distance = 10)
+        [MultiReturn(new[] { "PolyReduced","HasNotches", "Trials"  })]
+        public static Dictionary<string,object> CheckPolyNotches(Polygon2d poly, double distance = 10)
         {
             if (!CheckPoly(poly)) return null;
             bool hasNotches = true;
@@ -510,24 +511,81 @@ namespace SpacePlanning
                 currentPoly = (Polygon2d)notchObject["PolyReduced"];
                 for(int i = 0; i < poly.Lines.Count; i++)
                 {
-                    if (poly.Lines[i].Length < distance) { hasNotches = true; break; }
+                    int a = i, b = i + 1;
+                    if (i == poly.Points.Count - 1) b = 0;
+                    if (poly.Lines[a].Length < distance && poly.Lines[b].Length < distance) { hasNotches = true; break; }
                     else hasNotches = false;
                 }
                 count += 1;
             }
-            return currentPoly;
+            return new Dictionary<string, object>
+            {
+                { "PolyReduced", (currentPoly) },
+                { "HasNotches", (hasNotches) },
+                { "Trials", (count) }
+            };
+        }
+
+
+        //gets a poly and removes small notches based on agiven min distance
+        [MultiReturn(new[] {  "PolyReduced", "FoundSmall" })]
+        public static Dictionary<string,object> RemoveSingleNotch(Polygon2d polyInp, double distance = 10, int recompute = 2)
+        {
+            if (!CheckPoly(polyInp)) return null;
+            Polygon2d poly = new Polygon2d(polyInp.Points);
+            int startIndex = poly.Points.Count - 1, endIndex = 0, inititalIndex = startIndex;
+            bool check = false, found = false;
+            int count = 0;
+
+            for(int i = 0; i < poly.Points.Count; i++)
+            {
+                int a = i, b = i + 1;
+                if (i == poly.Points.Count - 1) b = 0;
+                if (poly.Lines[a].Length < distance && count<recompute)
+                {
+                    Point2d midPtLLine = LineUtility.LineMidPoint(poly.Lines[a]);
+                    int c = i - 1;
+                    int d = b + 1;
+                    if (i == 0) c = poly.Points.Count - 1;                
+                    if(GraphicsUtility.CheckLineOrient(poly.Lines[c]) == 0) // horizontal
+                    {
+                        poly.Points[a] = midPtLLine;
+                        poly.Points[c] = new Point2d(poly.Points[c].X, midPtLLine.Y);
+                        poly.Points[b] = midPtLLine;
+                        poly.Points[d] = new Point2d(poly.Points[d].X, midPtLLine.Y);
+                    }
+                    else //vertical
+                    {
+                        poly.Points[a] = midPtLLine;
+                        poly.Points[c] = new Point2d(midPtLLine.X, poly.Points[c].Y);
+                        poly.Points[b] = midPtLLine;
+                        poly.Points[d] = new Point2d(midPtLLine.X, poly.Points[d].Y);
+                    }
+                    found = true;
+                    count += 1;
+                }// end of if loop        
+            }
+
+
+            Polygon2d polyReduced = EditToMakeOrthoPoly(new Polygon2d(poly.Points));
+            return new Dictionary<string, object>
+            {
+                { "PolyReduced" , (polyReduced) },
+                { "FoundSmall" , (found) }
+            };
+
         }
 
 
         //gets a poly and removes small notches based on agiven min distance
         [MultiReturn(new[] { "PointStart", "PointEnd", "ConnectingLine", "PointsProjected", "PolyReduced", "FoundSmall" })]
-        public static Dictionary<string,object> RemoveNotches(Polygon2d poly, double distance = 10)
+        public static Dictionary<string, object> RemoveNotches(Polygon2d poly, double distance = 10)
         {
             if (!CheckPoly(poly)) return null;
             int startIndex = poly.Points.Count - 1, endIndex = 0, inititalIndex = startIndex;
-            bool check = false,  found = false;      
+            bool check = false, found = false;
 
-            for(int i = 0; i < poly.Points.Count; i++)
+            for (int i = 0; i < poly.Points.Count; i++)
             {
                 int a = i, b = i + 1;
                 if (i == poly.Points.Count - 1) b = 0;
@@ -536,85 +594,10 @@ namespace SpacePlanning
                     if (startIndex > a) startIndex = a;
                     endIndex = b;
                     found = true;
-                    //check = true;
                 }
-                else
-                {
-                   if (found) check = true;
-                }
-               
+                else if (found) check = true;
             }
 
-            //check = false;
-            double eps = 100, num = 1000;
-            Point2d ptStart = poly.Points[startIndex];
-            Point2d ptEnd = poly.Points[endIndex];
-            Vector2d vecStartEnd = new Vector2d(ptStart, ptEnd);
-            Line2d line = new Line2d(ptStart, ptEnd);
-
-            Point2d midPt = LineUtility.LineMidPoint(line);
-            Line2d vertLine = LineUtility.ExtendLine(new Line2d(midPt, new Point2d(midPt.X, midPt.Y + eps)), num);           
-            Line2d horzLine = LineUtility.ExtendLine(new Line2d(midPt, new Point2d(midPt.X+eps, midPt.Y)), num);
-            List<Line2d> lineFormed = new List<Line2d> { line, vertLine, horzLine };
-            
-            Point2d projPtStart = new Point2d(0,0);
-            Point2d projPtEnd = new Point2d(0,0);
-            if (vecStartEnd.Y>vecStartEnd.X) // pick vertLine
-            {
-                 projPtStart = new Point2d(midPt.X, ptStart.Y);
-                 projPtEnd = new Point2d(midPt.X, ptEnd.Y);
-            }
-            else // pick horzLine
-            {
-                 projPtStart = new Point2d(ptStart.X, midPt.Y);
-                 projPtEnd = new Point2d(ptEnd.X, midPt.Y);
-            }
-
-            List<Point2d> ptFormed = new List<Point2d> { projPtStart, projPtEnd };
-            List<Point2d> ptList = new List<Point2d>();
-            for (int i = 0; i < poly.Points.Count; i++)
-            {
-                if (i == startIndex) { ptList.Add(ptStart); ptList.Add(projPtStart); }
-                else if (i == endIndex) { ptList.Add(projPtEnd); ptList.Add(ptEnd); }
-                else if (i > startIndex && i < endIndex) continue;
-                else ptList.Add(poly.Points[i]);               
-            }
-            Polygon2d polyReduced = new Polygon2d(ptList);
-
-            List<int> indices = new List<int> { startIndex, endIndex , inititalIndex };
-
-
-            return new Dictionary<string, object>
-            {
-                { "PointStart", (ptStart) },
-                { "PointEnd", (ptEnd) },
-                { "ConnectingLine", (check) },
-                { "PointsProjected", (indices) },
-                { "PolyReduced" , (polyReduced) },
-                { "FoundSmall" , (found) }
-            };
-
-        }
-
-        //gets a poly and removes small notches based on agiven min distance - ORIG
-        [MultiReturn(new[] { "PointStart", "PointEnd", "ConnectingLine", "PointsProjected", "PolyReduced" })]
-        public static Dictionary<string, object> RemoveNotchesO(Polygon2d poly, double distance = 10)
-        {
-            if (!CheckPoly(poly)) return null;
-            int startIndex = 100000000, endIndex = 0;
-            bool check = false;
-
-            for (int i = 0; i < poly.Points.Count; i++)
-            {
-                int a = 0, b = i + 1;
-                if (i == poly.Points.Count - 1) b = 0;
-                if (poly.Lines[i].Length < distance && !check)
-                {
-                    if (startIndex > a) startIndex = a;
-                    endIndex = b;
-                }
-                else check = true;
-            }
             double eps = 100, num = 1000;
             Point2d ptStart = poly.Points[startIndex];
             Point2d ptEnd = poly.Points[endIndex];
@@ -649,18 +632,20 @@ namespace SpacePlanning
                 else ptList.Add(poly.Points[i]);
             }
             Polygon2d polyReduced = new Polygon2d(ptList);
-
-
+            List<int> indices = new List<int> { startIndex, endIndex, inititalIndex };
             return new Dictionary<string, object>
             {
                 { "PointStart", (ptStart) },
-                { "PointEnd", (ptEnd) },
+                { "PointEnd", (check) },
                 { "ConnectingLine", (lineFormed) },
-                { "PointsProjected", (ptFormed) },
-                { "PolyReduced" , (polyReduced) }
+                { "PointsProjected", (indices) },
+                { "PolyReduced" , (polyReduced) },
+                { "FoundSmall" , (found) }
             };
 
         }
+
+
         //calc centroid of a closed polygon2d
         public static Point2d CentroidFromPoly(Polygon2d poly)
         {
