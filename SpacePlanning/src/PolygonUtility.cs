@@ -502,7 +502,7 @@ namespace SpacePlanning
         {
             if (!CheckPoly(poly)) return null;
             bool hasNotches = true;
-            int count = 0, maxTry = 100;
+            int count = 0, maxTry = 2*poly.Points.Count;
             Polygon2d currentPoly = new Polygon2d(poly.Points);
             while (hasNotches && count < maxTry)
             {
@@ -518,9 +518,13 @@ namespace SpacePlanning
                 }
                 count += 1;
             }
+
+
+            Dictionary<string,object> singleNotchObj = RemoveSingleNotch(currentPoly, distance, currentPoly.Points.Count);
+            Polygon2d polyRed = (Polygon2d)singleNotchObj["PolyReduced"];
             return new Dictionary<string, object>
             {
-                { "PolyReduced", (currentPoly) },
+                { "PolyReduced", (polyRed) },
                 { "HasNotches", (hasNotches) },
                 { "Trials", (count) }
             };
