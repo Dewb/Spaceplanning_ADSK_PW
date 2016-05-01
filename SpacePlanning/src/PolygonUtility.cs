@@ -528,9 +528,23 @@ namespace SpacePlanning
                 { "Trials", (count) }
             };
         }
+
+        //polygon list cleaner
+        internal static List<Polygon2d> CleanPolygonList(List<Polygon2d> polyList)
+        {
+            if (!CheckPolyList(polyList)) return null;
+            List<Polygon2d> polyNewList = new List<Polygon2d>();
+            for (int i = 0; i < polyList.Count; i++)
+            {
+                if (CheckPoly(polyList[i])) polyNewList.Add(polyList[i]);
+            }
+            return polyNewList;
+        }
+
+
         //find lines which will not be inside the poly when offset by a distance
         [MultiReturn(new[] { "LinesFalse", "Offsetables"})]
-        public static Dictionary<string, object> CheckLinesOffsetInPoly(Polygon2d poly, double distance = 10)
+        public static Dictionary<string, object> CheckLinesOffsetInPoly(Polygon2d poly, double distance = 10, double threshDistance = 20)
         {
             if (!CheckPoly(poly)) return null;
             Polygon2d oPoly = OffsetPoly(poly, 1);
@@ -552,8 +566,8 @@ namespace SpacePlanning
                 }
                 else
                 {
-                    linesNotOffset.Add(line);
-                    offsetAllow = false;
+                        linesNotOffset.Add(line);
+                        offsetAllow = false;               
                 }
                 offsetAble.Add(offsetAllow);
             }

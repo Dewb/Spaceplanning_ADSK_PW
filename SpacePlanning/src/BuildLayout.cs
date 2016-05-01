@@ -375,7 +375,7 @@ namespace SpacePlanning
         {
             if (!PolygonUtility.CheckPoly(poly)) return null;
             if (distance < 1) return null;
-            int count = 0, index = 0;
+            int count = 0, index = 0, maxTry = 100;
             poly = new Polygon2d(poly.Points);
             if (area == 0) area = 0.8 * PolygonUtility.AreaCheckPolygon(poly);
             Stack<Polygon2d> polyLeftList = new Stack<Polygon2d>();
@@ -383,15 +383,30 @@ namespace SpacePlanning
             polyLeftList.Push(poly);
             List<Polygon2d> blockPolyList = new List<Polygon2d>();
             List<Polygon2d> leftoverPolyList = new List<Polygon2d>();
-            while (polyLeftList.Count > 0 && areaAdded < area && count < recompute) //count<recompute
+            bool error = false;
+            while (polyLeftList.Count > 0 && areaAdded < area && count < maxTry && !error) //count<recompute
             {
                 Polygon2d currentPoly = polyLeftList.Pop();
+                Polygon2d tempPoly = new Polygon2d(currentPoly.Points);
                 index = count;
                 if (index > currentPoly.Lines.Count) index = 0;
                 Dictionary<string, object> splitObject = SplitByOffsetPoint(currentPoly, distance, index, thresDistance);
                 if(splitObject == null) { count += 1; continue; }
                 Polygon2d blockPoly = (Polygon2d)splitObject["PolyAfterSplit"];
                 Polygon2d leftPoly = (Polygon2d)splitObject["LeftOverPoly"];
+                Polygon leftPolytest = DynamoGeometry.PolygonByPolygon2d(leftPoly, 0);
+                try
+                {
+                    Surface srf = Surface.ByPatch(leftPolytest);
+                }
+                catch
+                {
+                    Trace.WriteLine("Well errored for " + count);
+                    leftPoly = tempPoly;
+                    polyLeftList.Push(tempPoly);
+                    error = true;
+                    break;
+                }
                 areaAdded += PolygonUtility.AreaCheckPolygon(blockPoly);
                 polyLeftList.Push(leftPoly);
                 blockPolyList.Add(blockPoly);                
@@ -399,7 +414,10 @@ namespace SpacePlanning
                 Trace.WriteLine("iterating : " + count + " Area added so far : " + areaAdded);
                 Trace.WriteLine("Poly left : " + leftoverPolyList.Count);
             }
+            Trace.WriteLine("Adding : What is left ");
             leftoverPolyList.AddRange(polyLeftList);
+            //blockPolyList = PolygonUtility.CleanPolygonList(blockPolyList);
+            leftoverPolyList = PolygonUtility.CleanPolygonList(leftoverPolyList);
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (blockPolyList) },
@@ -777,28 +795,17 @@ namespace SpacePlanning
         public static Dictionary<string, object> SplitByOffsetPoint(Polygon2d polyOutline,double distance = 10, int index = -1, double minDist = 20)
         {
             if (!PolygonUtility.CheckPoly(polyOutline)) return null;
-            List<bool> offsetAble = new List<bool>();
             Polygon2d poly = new Polygon2d(polyOutline.Points);
-            List<Line2d> linesPoly = poly.Lines;
             List<double> lineLength = new List<double>();
-            Polygon2d oPoly = PolygonUtility.OffsetPoly(poly, 2);
-            for(int i = 0; i < poly.Points.Count; i++)
-            {
-                bool offsetAllow = false;
-                int a = i, b = i + 1;
-                if (i == poly.Points.Count - 1) b = 0;
-                Line2d line = linesPoly[i];
-                Point2d offStartPt = LineUtility.OffsetPointInsidePoly(line, line.StartPoint, oPoly, distance);
-                Point2d offEndPt = LineUtility.OffsetPointInsidePoly(line, line.EndPoint, oPoly, distance);
-                if (GraphicsUtility.PointInsidePolygonTest(oPoly, offStartPt) &&
-                    GraphicsUtility.PointInsidePolygonTest(oPoly, offEndPt)) offsetAllow = true;
-                offsetAble.Add(offsetAllow);
 
-                //add a func which is called when offsetAllow is false
-                //it adds two points to the lines such that the point can be offset
-                lineLength.Add(line.Length);
-            }
-           
+            Dictionary<string, object> checkLineOffsetObject = PolygonUtility.CheckLinesOffsetInPoly(poly, distance, minDist);
+            List<bool> offsetAble = (List<bool>)checkLineOffsetObject["Offsetables"];
+
+            for (int i = 0; i < poly.Points.Count; i++)
+            {
+                if (offsetAble[i] == true) lineLength.Add(poly.Lines[i].Length);
+                else lineLength.Add(0);
+            }           
             double[] lineLengthArray = new double[lineLength.Count];
             int[] unsortedIndices = new int[lineLength.Count];
             for (int i = 0; i < lineLength.Count; i++)
@@ -811,13 +818,14 @@ namespace SpacePlanning
             int indexSelected = 0;
             if (index > -1 && index < sortedIndices.Count) indexSelected = sortedIndices[index];
             else indexSelected = sortedIndices[0];
+
             List<Point2d> pointForBlock = new List<Point2d>();
             List<Point2d> polyPtsCopy = poly.Points.Select(pt => new Point2d(pt.X, pt.Y)).ToList();//deep copy
             for (int i = 0; i < poly.Points.Count; i++)
             {
                 int a = i, b = i + 1;
                 if (i == poly.Points.Count - 1) b = 0;
-                if (i == indexSelected && offsetAble[i])
+                if (i == indexSelected) // && offsetAble[i]
                 {
                     Line2d line = new Line2d(poly.Points[a], poly.Points[b]);
                     if (line.Length < minDist) continue;
@@ -828,10 +836,6 @@ namespace SpacePlanning
                     pointForBlock.Add(offsetLine.StartPoint);
                     poly.Points[a] = offsetLine.StartPoint;
                     poly.Points[b] = offsetLine.EndPoint;
-                }
-                else
-                {
-                    //return null;
                 }
             }
             Polygon2d polyBlock = new Polygon2d(pointForBlock);
