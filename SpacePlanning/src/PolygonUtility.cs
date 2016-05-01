@@ -518,8 +518,7 @@ namespace SpacePlanning
                 }
                 count += 1;
             }
-
-
+            
             Dictionary<string,object> singleNotchObj = RemoveSingleNotch(currentPoly, distance, currentPoly.Points.Count);
             Polygon2d polyRed = (Polygon2d)singleNotchObj["PolyReduced"];
             return new Dictionary<string, object>
@@ -529,7 +528,41 @@ namespace SpacePlanning
                 { "Trials", (count) }
             };
         }
-
+        //find lines which will not be inside the poly when offset by a distance
+        [MultiReturn(new[] { "LinesFalse", "Offsetables"})]
+        public static Dictionary<string, object> CheckLinesOffsetInPoly(Polygon2d poly, double distance = 10)
+        {
+            if (!CheckPoly(poly)) return null;
+            Polygon2d oPoly = OffsetPoly(poly, 1);
+            List<bool> offsetAble = new List<bool>();
+            List<Line2d> linesNotOffset = new List<Line2d>();
+            for (int i = 0; i < poly.Points.Count; i++)
+            {
+                bool offsetAllow = false;
+                int a = i, b = i + 1;
+                if (i == poly.Points.Count - 1) b = 0;
+                Line2d line = poly.Lines[i];
+                Point2d offStartPt = LineUtility.OffsetPointInsidePoly(line, line.StartPoint, oPoly, distance);
+                Point2d offEndPt = LineUtility.OffsetPointInsidePoly(line, line.EndPoint, oPoly, distance);
+                if (GraphicsUtility.PointInsidePolygonTest(oPoly, offStartPt) &&
+                    GraphicsUtility.PointInsidePolygonTest(oPoly, offEndPt))
+                {
+                    
+                    offsetAllow = true;
+                }
+                else
+                {
+                    linesNotOffset.Add(line);
+                    offsetAllow = false;
+                }
+                offsetAble.Add(offsetAllow);
+            }
+            return new Dictionary<string, object>
+            {
+                { "LinesFalse", (linesNotOffset) },
+                { "Offsetables", (offsetAble) }
+            };
+        }
 
         //gets a poly and removes small notches based on agiven min distance
         [MultiReturn(new[] {  "PolyReduced", "FoundSmall" })]

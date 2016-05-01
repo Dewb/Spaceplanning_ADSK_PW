@@ -793,6 +793,9 @@ namespace SpacePlanning
                 if (GraphicsUtility.PointInsidePolygonTest(oPoly, offStartPt) &&
                     GraphicsUtility.PointInsidePolygonTest(oPoly, offEndPt)) offsetAllow = true;
                 offsetAble.Add(offsetAllow);
+
+                //add a func which is called when offsetAllow is false
+                //it adds two points to the lines such that the point can be offset
                 lineLength.Add(line.Length);
             }
            
@@ -814,7 +817,7 @@ namespace SpacePlanning
             {
                 int a = i, b = i + 1;
                 if (i == poly.Points.Count - 1) b = 0;
-                if (i == indexSelected) //&& offsetAble[i]
+                if (i == indexSelected && offsetAble[i])
                 {
                     Line2d line = new Line2d(poly.Points[a], poly.Points[b]);
                     if (line.Length < minDist) continue;
