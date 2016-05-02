@@ -401,7 +401,7 @@ namespace SpacePlanning
             List<Polygon2d> blockPolyList = new List<Polygon2d>();
             List<Polygon2d> leftoverPolyList = new List<Polygon2d>();
             bool error = false;
-            while (polyLeftList.Count > 0 && areaAdded < area && count < maxTry && !error) //count<recompute
+            while (polyLeftList.Count > 0 && areaAdded < area && count < recompute && !error) //count<recompute
             {
                 Polygon2d currentPoly = polyLeftList.Pop();
                 Polygon2d tempPoly = new Polygon2d(currentPoly.Points);
@@ -421,8 +421,8 @@ namespace SpacePlanning
                     Trace.WriteLine("Well errored for " + count);
                     leftPoly = tempPoly;
                     polyLeftList.Push(tempPoly);
-                    error = true;
-                    break;
+                    //error = true;
+                    //break;
                 }
                 areaAdded += PolygonUtility.AreaCheckPolygon(blockPoly);
                 polyLeftList.Push(leftPoly);
@@ -445,7 +445,7 @@ namespace SpacePlanning
 
 
         //adds a point to a line of a poly, such that offsetting places offset line inside the poly
-        [MultiReturn(new[] { "PolyAddedPts", "ProblemPoint", "IsAdded","PointAdded", "Trials", "FinalRatio","ProblemLine", "ProblemPtsList" })]
+        [MultiReturn(new[] { "PolyAddedPts", "ProblemPoint", "IsAdded","PointAdded", "Trials", "FinalRatio","ProblemLine", "ProblemPtsList", "FalseLineList" })]
         public static Dictionary<string, object> AddPointToFitPoly(Polygon2d poly, Polygon2d containerPoly, double distance = 16, double area = 0, double thresDistance = 10, double recompute = 5)
         {
             if (!PolygonUtility.CheckPoly(poly)) return null;
@@ -456,6 +456,7 @@ namespace SpacePlanning
             List<List<Point2d>> pointsFalse = (List<List<Point2d>>)lineOffsetCheckObj["PointsOutside"];
             List<Point2d> probPointList = new List<Point2d>();
             List<Point2d> polyNewPoints = new List<Point2d>();
+            List<Line2d> falseLines = new List<Line2d>();
             Point2d ptNewEnd = new Point2d(0, 0);
             Point2d otherPt = new Point2d(0, 0);
             Point2d probPt = new Point2d(0, 0);
@@ -468,8 +469,9 @@ namespace SpacePlanning
                 int a = i, b = i + 1;
                 if (i == poly.Points.Count - 1) b = 0;
                 polyNewPoints.Add(poly.Points[a]);
+                if (indicesFalse[i] < -1) falseLines.Add(poly.Lines[i]);
                 if (poly.Lines[i].Length > thresDistance && 
-                    indicesFalse[i] > -1 && pointsFalse[i] != null && pointsFalse[i].Count == 1 && !added)
+                    indicesFalse[i] > -1 && pointsFalse[i] != null && pointsFalse[i].Count == 1 && !added && CheckLineGetsExternalWall(poly.Lines[i],containerPoly))
                 {
                     probPointList.AddRange(pointsFalse[i]);
                     probPt = pointsFalse[i][0];
@@ -500,7 +502,8 @@ namespace SpacePlanning
                 { "Trials", (count) },
                 { "FinalRatio", (ratio) },
                 { "ProblemLine", (line)},
-                { "ProblemPtsList", ( probPointList) }
+                { "ProblemPtsList", ( probPointList) },
+                { "FalseLineList", (falseLines) }
             };
         }
 
