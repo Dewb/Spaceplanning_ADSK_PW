@@ -414,11 +414,11 @@ namespace SpacePlanning
             }
             Trace.WriteLine("Adding : What is left ");
             leftoverPolyList.AddRange(polyLeftList);
-            List<Polygon2d> cleanBlockList = PolygonUtility.CleanPolygonList(blockPolyList);
+            blockPolyList = PolygonUtility.CleanPolygonList(blockPolyList);
             leftoverPolyList = PolygonUtility.CleanPolygonList(leftoverPolyList);
             return new Dictionary<string, object>
             {
-                { "PolyAfterSplit", (cleanBlockList) },
+                { "PolyAfterSplit", (blockPolyList) },
                 { "LeftOverPoly", (leftoverPolyList) },
                 { "AreaAssignedToBlock", (areaAdded)}
             };
