@@ -297,7 +297,7 @@ namespace SpacePlanning
             //Polygon2d currentPoly = polyReg;
             splittedPolys.Push(currentPoly);
             Random ran = new Random();
-            int countBig = 0, maxRounds = 200;
+            int countBig = 0, maxRounds = 50;
             List<int> numSidesList = new List<int>();
             List<Polygon2d> allPolyAfterSplit = new List<Polygon2d>();
             while (splittedPolys.Count > 0 && countBig < maxRounds && allSplitLines.Count > 0)

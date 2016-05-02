@@ -490,7 +490,7 @@ namespace SpacePlanning
         {
             if (!PolygonUtility.CheckPoly(borderPoly)) return null;
             bool blockPlaced = false;
-            int count = 0, maxTry = 50;
+            int count = 0, maxTry = 10;
             double areaSite = PolygonUtility.AreaCheckPolygon(origSitePoly), eps = 0.05, areaPlaced = 0;
             if (groundCoverage < eps) groundCoverage = 2 * eps;
             if (groundCoverage > 0.8) groundCoverage = 0.8;

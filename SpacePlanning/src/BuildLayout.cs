@@ -426,7 +426,7 @@ namespace SpacePlanning
 
 
         //adds a point to a line of a poly, such that offsetting places offset line inside the poly
-        [MultiReturn(new[] { "PolyAddedPts", "PolyPoints" })]
+        [MultiReturn(new[] { "PolyAddedPts", "PolyPoints", "PointAdded" })]
         public static Dictionary<string, object> AddPointToFitPoly(Polygon2d poly, double distance = 16, double area = 0, double thresDistance = 10, double recompute = 5)
         {
             if (!PolygonUtility.CheckPoly(poly)) return null;
@@ -445,7 +445,8 @@ namespace SpacePlanning
                 if (i == poly.Points.Count - 1) b = 0;
                 polyNewPoints.Add(poly.Points[a]);
                 Point2d otherPt = new Point2d(0, 0);
-                if (poly.Lines[i].Length > thresDistance && indicesFalse[i] > -1 && !added)
+                if (poly.Lines[i].Length > thresDistance && 
+                    indicesFalse[i] > -1 && pointsFalse[i] != null && pointsFalse[i].Count == 1 && !added)
                 {
                     Line2d line = poly.Lines[i];
                     Point2d offStartPt = LineUtility.OffsetPointInsidePoly(line, line.StartPoint, poly, distance);
@@ -453,7 +454,7 @@ namespace SpacePlanning
                     if (!checkStartPt) otherPt = line.StartPoint;
                     else otherPt = line.EndPoint;
                     Point2d midPt = LineUtility.LineMidPoint(line);
-                    Vector2d vecToMidPt = new Vector2d(midPt, poly.Points[b]);
+                    Vector2d vecToMidPt = new Vector2d(midPt, pointsFalse[i][0]);
                     //Vector2d vecToMidNorm = vecToMidPt.Normalize();
                     //Vector2d vecToMidScaled = vecToMidPt.Scale(ratio);
                     Point2d ptNewEnd = VectorUtility.VectorAddToPoint(midPt, vecToMidPt, ratio);
@@ -465,7 +466,8 @@ namespace SpacePlanning
             return new Dictionary<string, object>
             {
                 { "PolyAddedPts", (polyAdded) },
-                { "PolyPoints", (polyNewPoints)}
+                { "PolyPoints", (polyNewPoints)},
+                { "PointAdded" , (added) }
             };
         }
 
