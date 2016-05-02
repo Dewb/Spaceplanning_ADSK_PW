@@ -1280,7 +1280,7 @@ namespace SpacePlanning
 
 
         //dept assignment new way
-        [MultiReturn(new[] { "DeptPolys", "LeftOverPolys", "AreaAdded", })]
+        [MultiReturn(new[] { "DeptPolys", "LeftOverPolys", "OtherDeptMainPoly", "UpdatedDeptData", })]
         public static Dictionary<string, object> DeptPlacer(List<DeptData> deptData, Polygon2d poly, double offset, double recompute = 5)
         {
             if (deptData == null) return null;
@@ -1288,33 +1288,31 @@ namespace SpacePlanning
             List<double> AllDeptAreaAdded = new List<double>();
             List<List<Polygon2d>> AllDeptPolys = new List<List<Polygon2d>>();
             Stack<Polygon2d> leftOverPoly = new Stack<Polygon2d>();
+            List<Polygon2d> otherDeptPoly = new List<Polygon2d>();
             for (int i = 0; i < sortedDeptData.Count; i++)
             {
             
                 double areaAssigned = 0;
+                DeptData deptItem = sortedDeptData[i];
                 if (i == 0) // inpatient dept
                 {
-                    double areaNeeded = sortedDeptData[i].DeptAreaNeeded;
+                    double areaNeeded = deptItem.DeptAreaNeeded;
                     Dictionary<string, object> inpatientObject = AssignBlocksBasedOnDistance(poly, offset, areaNeeded, 20, recompute);
                     List<Polygon2d> inpatienBlocks = (List<Polygon2d>)inpatientObject["PolyAfterSplit"];
                     List<Polygon2d> leftOverBlocks = (List<Polygon2d>)inpatientObject["LeftOverPoly"];
                     areaAssigned = (double)inpatientObject["AreaAssignedToBlock"];
                     AllDeptPolys.Add(inpatienBlocks);
                     AllDeptAreaAdded.Add(areaAssigned);
-                    for (int j = 0; j < leftOverBlocks.Count; j++) leftOverPoly.Push(leftOverBlocks[j]);
-
-                    /*
-                    return new Dictionary<string, object>
+                    for (int j = 0; j < leftOverBlocks.Count; j++)
                     {
-                        { "DeptPolys", (inpatienBlocks) },
-                        { "LeftOverPolys", (leftOverBlocks) },
-                        { "AreaAdded", (areaAssigned) }
-                    };
-                    */
+                        otherDeptPoly.Add(new Polygon2d(leftOverBlocks[j].Points));
+                        leftOverPoly.Push(leftOverBlocks[j]);
+                    }
+              
                 }
                 else // other depts
                 {
-                    DeptData deptItem = sortedDeptData[i];
+                  
                     Dictionary<string, object> assignedByRatioObj = AssignBlocksBasedOnRatio(deptItem, leftOverPoly, i);
                     List<Polygon2d> everyDeptPoly = (List<Polygon2d>)assignedByRatioObj["EveryDeptPoly"];
                     leftOverPoly = (Stack<Polygon2d>)assignedByRatioObj["LeftOverPoly"];
@@ -1340,6 +1338,7 @@ namespace SpacePlanning
             {
                 { "DeptPolys", (AllDeptPolys) },
                 { "LeftOverPolys", (leftOverPoly) },
+                { "OtherDeptMainPoly", (otherDeptPoly) },
                 { "UpdatedDeptData", (UpdatedDeptData) }
             };
         }
