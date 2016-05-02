@@ -16,9 +16,7 @@ namespace SpacePlanning
         internal static Random ranGenerate = new Random();
         internal static double recurse = 0;
         internal static Point2d reference = new Point2d(0,0);
-        internal static int maxCount = 200, maxRound = 50;
-
-      
+        internal static int maxCount = 200, maxRound = 50;      
 
         #region - Public Methods
 
@@ -369,7 +367,7 @@ namespace SpacePlanning
             };
         }
 
-        //get a poly and find rectangular polys inside. then merge them together to form a big poly
+        //blocks are assigne based on offset distance, used for inpatient blocks
         [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly", "AreaAssignedToBlock" })]
         public static Dictionary<string, object> AssignBlocksBasedOnDistance(Polygon2d poly, double distance = 16, double area = 0, double thresDistance = 10, double recompute = 5)
         {
@@ -425,6 +423,82 @@ namespace SpacePlanning
                 { "AreaAssignedToBlock", (areaAdded)}
             };
         }
+
+
+        //blocks are assigned based on ratio of split, used for assigning other depts
+        [MultiReturn(new[] { "EveryDeptPoly", "LeftOverPoly", "AreaAdded", "AllNodes" })]
+        public static Dictionary<string, object> AssignBlocksBasedOnRatio(DeptData deptItem, Stack<Polygon2d> leftOverPoly,int index)
+        {
+
+            Random rn = new Random();
+            int count2 = 0, dir = 0;
+            double areaCurrentPoly = 0, areaPlaced = 0;
+            List<Node> AllNodesList = new List<Node>();
+            List<Polygon2d> everyDeptPoly = new List<Polygon2d>();
+            
+                    
+            double areaDeptNeeds = deptItem.DeptAreaNeeded;
+            double areaAddedToDept = 0;
+            double areaLeftOverToAdd = areaDeptNeeds - areaAddedToDept;
+            double perc = 0.2;
+            double limit = areaDeptNeeds * perc;
+
+            while (areaLeftOverToAdd > limit && leftOverPoly.Count > 0 && count2 < maxRound)
+            {
+                double ratio = BasicUtility.RandomBetweenNumbers(rn, 0.85, 0.15);
+                Polygon2d currentPolyObj = leftOverPoly.Pop();
+                areaCurrentPoly = PolygonUtility.AreaCheckPolygon(currentPolyObj);
+                dir = BasicUtility.ToggleInputInt(dir);
+                if (areaLeftOverToAdd > areaCurrentPoly)
+                {
+                    everyDeptPoly.Add(currentPolyObj);
+                    areaLeftOverToAdd = areaLeftOverToAdd - areaCurrentPoly;
+                    areaPlaced += areaCurrentPoly;
+                    //Trace.WriteLine("Area left over after assigning when area is greater than current : " + areaLeftOverToAdd);
+                }
+                else
+                {
+                    Dictionary<string, object> basicSplit = SplitByRatio(currentPolyObj, ratio, dir);
+                    if (basicSplit == null)
+                    {
+                        Trace.WriteLine("Returning as splitbyratio did not work : ");
+                        return null;
+                    }
+                    List<Polygon2d> polyS = (List<Polygon2d>)basicSplit["PolyAfterSplit"];
+                    double areaA = PolygonUtility.AreaCheckPolygon(polyS[0]);
+                    double areaB = PolygonUtility.AreaCheckPolygon(polyS[1]);
+                    if (areaA < areaB)
+                    {
+                        everyDeptPoly.Add(polyS[0]);
+                        areaLeftOverToAdd = areaLeftOverToAdd - areaA;
+                        areaPlaced += areaA;
+                        leftOverPoly.Push(polyS[1]);
+                    }
+                    else
+                    {
+                        everyDeptPoly.Add(polyS[1]);
+                        areaLeftOverToAdd = areaLeftOverToAdd - areaB;
+                        areaPlaced += areaB;
+                        leftOverPoly.Push(polyS[0]);
+                    }
+                    Node spaceNode = new Node(index, NodeType.Space);
+                    Node containerNode = new Node(index, NodeType.Container);
+                    AllNodesList.Add(spaceNode);
+                    AllNodesList.Add(containerNode);
+                }
+                count2 += 1;
+            } // end of while loop
+            
+
+            return new Dictionary<string, object>
+            {
+                { "EveryDeptPoly", (everyDeptPoly) },
+                { "LeftOverPoly", (leftOverPoly) },
+                { "AreaAdded", (areaPlaced) },              
+                { "AllNodes", (AllNodesList)}
+            };
+        }
+
 
 
         //get a poly and find rectangular polys inside. then merge them together to form a big poly
@@ -1211,8 +1285,12 @@ namespace SpacePlanning
         {
             if (deptData == null) return null;
             List<DeptData> sortedDeptData = SortDeptData(deptData);
+            List<double> AllDeptAreaAdded = new List<double>();
+            List<List<Polygon2d>> AllDeptPolys = new List<List<Polygon2d>>();
+            Stack<Polygon2d> leftOverPoly = new Stack<Polygon2d>();
             for (int i = 0; i < sortedDeptData.Count; i++)
             {
+            
                 double areaAssigned = 0;
                 if (i == 0) // inpatient dept
                 {
@@ -1221,29 +1299,55 @@ namespace SpacePlanning
                     List<Polygon2d> inpatienBlocks = (List<Polygon2d>)inpatientObject["PolyAfterSplit"];
                     List<Polygon2d> leftOverBlocks = (List<Polygon2d>)inpatientObject["LeftOverPoly"];
                     areaAssigned = (double)inpatientObject["AreaAssignedToBlock"];
+                    AllDeptPolys.Add(inpatienBlocks);
+                    AllDeptAreaAdded.Add(areaAssigned);
+                    for (int j = 0; j < leftOverBlocks.Count; j++) leftOverPoly.Push(leftOverBlocks[j]);
 
-                     return new Dictionary<string, object>
+                    /*
+                    return new Dictionary<string, object>
                     {
                         { "DeptPolys", (inpatienBlocks) },
                         { "LeftOverPolys", (leftOverBlocks) },
                         { "AreaAdded", (areaAssigned) }
                     };
+                    */
                 }
                 else // other depts
                 {
-                    return null;
+                    DeptData deptItem = sortedDeptData[i];
+                    Dictionary<string, object> assignedByRatioObj = AssignBlocksBasedOnRatio(deptItem, leftOverPoly, i);
+                    List<Polygon2d> everyDeptPoly = (List<Polygon2d>)assignedByRatioObj["EveryDeptPoly"];
+                    leftOverPoly = (Stack<Polygon2d>)assignedByRatioObj["LeftOverPoly"];
+                    areaAssigned = (double)assignedByRatioObj["AreaAdded"];
+                    List<Node> AllNodesList = (List<Node>)assignedByRatioObj["AllNodes"];
+                    AllDeptAreaAdded.Add(areaAssigned);
+                    AllDeptPolys.Add(everyDeptPoly);
+
                 }
-            
             }
 
-            return null;
+
+            List<DeptData> UpdatedDeptData = new List<DeptData>();
+            //make the sorted dept data
+            for (int i = 0; i < sortedDeptData.Count; i++)
+            {
+                DeptData newDeptData = new DeptData(sortedDeptData[i]);
+                newDeptData.AreaProvided = AllDeptAreaAdded[i];
+                newDeptData.PolyDeptAssigned = AllDeptPolys[i];
+                UpdatedDeptData.Add(newDeptData);
+            }
+            return new Dictionary<string, object>
+            {
+                { "DeptPolys", (AllDeptPolys) },
+                { "LeftOverPolys", (leftOverPoly) },
+                { "UpdatedDeptData", (UpdatedDeptData) }
+            };
         }
 
         //places dept and updates dept data with the added area and polys to each dept - ORIGINAL
         [MultiReturn(new[] { "DeptPolys", "LeftOverPolys", "CentralStation", "UpdatedDeptData", "SpaceDataTree" })]
         internal static Dictionary<string, object> DeptSplitRefinedo(Polygon2d poly, List<DeptData> deptData, List<Cell> cellInside, double offset, int recompute = 1)
         {
-
             List<List<Polygon2d>> AllDeptPolys = new List<List<Polygon2d>>();
             List<string> AllDepartmentNames = new List<string>();
             List<double> AllDeptAreaAdded = new List<double>();
