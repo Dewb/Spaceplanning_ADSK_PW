@@ -414,11 +414,11 @@ namespace SpacePlanning
             }
             Trace.WriteLine("Adding : What is left ");
             leftoverPolyList.AddRange(polyLeftList);
-            //blockPolyList = PolygonUtility.CleanPolygonList(blockPolyList);
+            List<Polygon2d> cleanBlockList = PolygonUtility.CleanPolygonList(blockPolyList);
             leftoverPolyList = PolygonUtility.CleanPolygonList(leftoverPolyList);
             return new Dictionary<string, object>
             {
-                { "PolyAfterSplit", (blockPolyList) },
+                { "PolyAfterSplit", (cleanBlockList) },
                 { "LeftOverPoly", (leftoverPolyList) },
                 { "AreaAssignedToBlock", (areaAdded)}
             };
@@ -1290,8 +1290,7 @@ namespace SpacePlanning
             Stack<Polygon2d> leftOverPoly = new Stack<Polygon2d>();
             List<Polygon2d> otherDeptPoly = new List<Polygon2d>();
             for (int i = 0; i < sortedDeptData.Count; i++)
-            {
-            
+            {            
                 double areaAssigned = 0;
                 DeptData deptItem = sortedDeptData[i];
                 if (i == 0) // inpatient dept
@@ -1307,12 +1306,10 @@ namespace SpacePlanning
                     {
                         otherDeptPoly.Add(new Polygon2d(leftOverBlocks[j].Points));
                         leftOverPoly.Push(leftOverBlocks[j]);
-                    }
-              
+                    }              
                 }
                 else // other depts
-                {
-                  
+                {                  
                     Dictionary<string, object> assignedByRatioObj = AssignBlocksBasedOnRatio(deptItem, leftOverPoly, i);
                     List<Polygon2d> everyDeptPoly = (List<Polygon2d>)assignedByRatioObj["EveryDeptPoly"];
                     leftOverPoly = (Stack<Polygon2d>)assignedByRatioObj["LeftOverPoly"];
@@ -1320,11 +1317,8 @@ namespace SpacePlanning
                     List<Node> AllNodesList = (List<Node>)assignedByRatioObj["AllNodes"];
                     AllDeptAreaAdded.Add(areaAssigned);
                     AllDeptPolys.Add(everyDeptPoly);
-
                 }
             }
-
-
             List<DeptData> UpdatedDeptData = new List<DeptData>();
             //make the sorted dept data
             for (int i = 0; i < sortedDeptData.Count; i++)
@@ -1334,6 +1328,7 @@ namespace SpacePlanning
                 newDeptData.PolyDeptAssigned = AllDeptPolys[i];
                 UpdatedDeptData.Add(newDeptData);
             }
+
             return new Dictionary<string, object>
             {
                 { "DeptPolys", (AllDeptPolys) },

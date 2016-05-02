@@ -532,13 +532,20 @@ namespace SpacePlanning
         //polygon list cleaner
         internal static List<Polygon2d> CleanPolygonList(List<Polygon2d> polyList)
         {
-            if (!CheckPolyList(polyList)) return null;
+           // if (!CheckPolyList(polyList)) return null;
             List<Polygon2d> polyNewList = new List<Polygon2d>();
+            bool added = false;
             for (int i = 0; i < polyList.Count; i++)
             {
-                if (CheckPoly(polyList[i])) polyNewList.Add(polyList[i]);
+                if (CheckPoly(polyList[i]))
+                {
+                    polyNewList.Add(polyList[i]);
+                    added = true;
+                }
+
             }
-            return polyNewList;
+            if (added) return polyNewList;
+            else return null;
         }
 
 
