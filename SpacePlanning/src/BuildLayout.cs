@@ -476,6 +476,23 @@ namespace SpacePlanning
                 leftPoly = (Polygon2d)addPtObj["PolyAddedPts"];
                 falseLines = (List<Line2d>)addPtObj["FalseLineList"];
                 Polygon leftPolytest = DynamoGeometry.PolygonByPolygon2d(leftPoly, 0);
+
+                if (lineOptions.Count == 0) error = true;
+                else
+                {
+                    for(int i = 0; i < lineOptions.Count; i++)
+                    {
+                        if (lineOptions[i].Length > thresDistance) { error = false; break; }
+                        else error = true;
+                    }
+                }
+                if (error)
+                {
+                    leftPoly = tempPoly;
+                    polyLeftList.Push(tempPoly);
+                    break;
+                }
+                /*
                 try
                 {
                     Surface srf = Surface.ByPatch(leftPolytest);
@@ -487,6 +504,7 @@ namespace SpacePlanning
                     polyLeftList.Push(tempPoly);
                     //break;
                 }
+                */
                 areaAdded += PolygonUtility.AreaCheckPolygon(blockPoly);
                 polyLeftList.Push(leftPoly);
                 blockPolyList.Add(blockPoly);
@@ -546,7 +564,7 @@ namespace SpacePlanning
                     Vector2d vecToOther = new Vector2d(probPt, otherPt);
                     while (!checkOffPtNew && count < maxTry && ratio < 0.9)
                     {
-                        ratio += 0.02;
+                        ratio += .1;
                         ptNewEnd = VectorUtility.VectorAddToPoint(probPt, vecToOther, ratio);
                         Point2d offPtNew = LineUtility.OffsetPointInsidePoly(line, ptNewEnd, poly, distance);
                         checkOffPtNew = GraphicsUtility.PointInsidePolygonTest(poly, offPtNew);
@@ -1024,7 +1042,7 @@ namespace SpacePlanning
 
             for (int i = 0; i < poly.Points.Count; i++)
             {
-                if (offsetAble[i] == true) { lineLength.Add(poly.Lines[i].Length); lineOptions.Add(poly.Lines[i]); }
+                if (offsetAble[i] == true) { lineLength.Add(poly.Lines[i].Length); }//lineOptions.Add(poly.Lines[i]);
                 else lineLength.Add(0);
             }           
             double[] lineLengthArray = new double[lineLength.Count];
@@ -1036,11 +1054,14 @@ namespace SpacePlanning
             }
             List<int> sortedIndices = BasicUtility.Quicksort(lineLengthArray, unsortedIndices, 0, lineLength.Count - 1);
             if (sortedIndices != null) sortedIndices.Reverse();
-            //int indexSelected = 0;
-            //if (index > -1 && index < sortedIndices.Count) indexSelected = sortedIndices[index];
-            //else indexSelected = sortedIndices[0];
 
             int indexSelected = sortedIndices[0];
+
+            for (int i = 0; i < poly.Points.Count; i++)
+            {
+                if (lineLength[i] > 0 && i != indexSelected) { lineOptions.Add(poly.Lines[i]); }               
+            }
+
             List<Point2d> pointForBlock = new List<Point2d>();
             List<Point2d> polyPtsCopy = poly.Points.Select(pt => new Point2d(pt.X, pt.Y)).ToList();//deep copy
             for (int i = 0; i < poly.Points.Count; i++)
