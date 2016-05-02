@@ -443,6 +443,64 @@ namespace SpacePlanning
             };
         }
 
+        //blocks are assigne based on offset distance, used for inpatient blocks
+        [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly", "AreaAssignedToBlock" })]
+        public static Dictionary<string, object> AssignBlocksBasedOnDistAddPts(Polygon2d poly, double distance = 16, double area = 0, double thresDistance = 10, double recompute = 5)
+        {
+            if (!PolygonUtility.CheckPoly(poly)) return null;
+            if (distance < 1) return null;
+            int count = 0, index = 0, maxTry = 100;
+            poly = new Polygon2d(poly.Points);
+            if (area == 0) area = 0.8 * PolygonUtility.AreaCheckPolygon(poly);
+            Stack<Polygon2d> polyLeftList = new Stack<Polygon2d>();
+            double areaAdded = 0;
+            polyLeftList.Push(poly);
+            List<Polygon2d> blockPolyList = new List<Polygon2d>();
+            List<Polygon2d> leftoverPolyList = new List<Polygon2d>();
+            bool error = false;
+            while (polyLeftList.Count > 0 && areaAdded < area && count < maxTry && !error) //count<recompute
+            {
+                Polygon2d currentPoly = polyLeftList.Pop();
+                Polygon2d tempPoly = new Polygon2d(currentPoly.Points);
+                index = count;
+                if (index > currentPoly.Lines.Count) index = 0;
+                Dictionary<string, object> splitObject = SplitByOffsetPoint(currentPoly, poly, distance, index, thresDistance);
+                if (splitObject == null) { count += 1; continue; }
+                Polygon2d blockPoly = (Polygon2d)splitObject["PolyAfterSplit"];
+                Polygon2d leftPoly = (Polygon2d)splitObject["LeftOverPoly"];
+                Dictionary<string,object> addPtObj =  AddPointToFitPoly(leftPoly, poly, distance, thresDistance, recompute);
+                leftPoly = (Polygon2d)addPtObj["PolyAddedPts"];
+                Polygon leftPolytest = DynamoGeometry.PolygonByPolygon2d(leftPoly, 0);
+                try
+                {
+                    Surface srf = Surface.ByPatch(leftPolytest);
+                }
+                catch
+                {
+                    Trace.WriteLine("Well errored for " + count);
+                    leftPoly = tempPoly;
+                    polyLeftList.Push(tempPoly);
+                    error = true;
+                    break;
+                }
+                areaAdded += PolygonUtility.AreaCheckPolygon(blockPoly);
+                polyLeftList.Push(leftPoly);
+                blockPolyList.Add(blockPoly);
+                count += 1;
+                Trace.WriteLine("iterating : " + count + " Area added so far : " + areaAdded);
+                Trace.WriteLine("Poly left : " + leftoverPolyList.Count);
+            }
+            Trace.WriteLine("Adding : What is left ");
+            leftoverPolyList.AddRange(polyLeftList);
+            blockPolyList = PolygonUtility.CleanPolygonList(blockPolyList);
+            leftoverPolyList = PolygonUtility.CleanPolygonList(leftoverPolyList);
+            return new Dictionary<string, object>
+            {
+                { "PolyAfterSplit", (blockPolyList) },
+                { "LeftOverPoly", (leftoverPolyList) },
+                { "AreaAssignedToBlock", (areaAdded)}
+            };
+        }
 
         //adds a point to a line of a poly, such that offsetting places offset line inside the poly
         [MultiReturn(new[] { "PolyAddedPts", "ProblemPoint", "IsAdded","PointAdded", "Trials", "FinalRatio","ProblemLine", "ProblemPtsList", "FalseLineList" })]
@@ -469,7 +527,7 @@ namespace SpacePlanning
                 int a = i, b = i + 1;
                 if (i == poly.Points.Count - 1) b = 0;
                 polyNewPoints.Add(poly.Points[a]);
-                if (indicesFalse[i] < -1) falseLines.Add(poly.Lines[i]);
+                if (indicesFalse[i] > -1) falseLines.Add(poly.Lines[i]);
                 if (poly.Lines[i].Length > thresDistance && 
                     indicesFalse[i] > -1 && pointsFalse[i] != null && pointsFalse[i].Count == 1 && !added && CheckLineGetsExternalWall(poly.Lines[i],containerPoly))
                 {
