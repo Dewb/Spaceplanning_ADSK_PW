@@ -426,38 +426,47 @@ namespace SpacePlanning
 
 
         //adds a point to a line of a poly, such that offsetting places offset line inside the poly
-        [MultiReturn(new[] { "PolyAddedPts", "PolyPoints", "PointAdded" })]
+        [MultiReturn(new[] { "PolyAddedPts", "ProblemPoint", "IsAdded","PointAdded", "Trials", "FinalRatio","ProblemLine" })]
         public static Dictionary<string, object> AddPointToFitPoly(Polygon2d poly, double distance = 16, double area = 0, double thresDistance = 10, double recompute = 5)
         {
             if (!PolygonUtility.CheckPoly(poly)) return null;
-            if (distance < 1) return null;
-           
+            if (distance < 1) return null;           
 
             Dictionary<string, object> lineOffsetCheckObj = PolygonUtility.CheckLinesOffsetInPoly(poly, distance);
             List<int> indicesFalse = (List<int>)lineOffsetCheckObj["IndicesFalse"];
             List<List<Point2d>> pointsFalse = (List<List<Point2d>>)lineOffsetCheckObj["PointsOutside"];
             List<Point2d> polyNewPoints = new List<Point2d>();
-            bool added = false;
+            Point2d ptNewEnd = new Point2d(0, 0);
+            Point2d otherPt = new Point2d(0, 0);
+            Point2d probPt = new Point2d(0, 0);
+            Line2d line = new Line2d(ptNewEnd, otherPt);
+            int count = 0, maxTry = 50;
+            double ratio = 0;
+            bool added = false, checkOffPtNew = false;
             for (int i = 0; i < poly.Points.Count; i++)
-            {
-                double ratio = 0.8;                
+            {                               
                 int a = i, b = i + 1;
                 if (i == poly.Points.Count - 1) b = 0;
                 polyNewPoints.Add(poly.Points[a]);
-                Point2d otherPt = new Point2d(0, 0);
                 if (poly.Lines[i].Length > thresDistance && 
                     indicesFalse[i] > -1 && pointsFalse[i] != null && pointsFalse[i].Count == 1 && !added)
                 {
-                    Line2d line = poly.Lines[i];
-                    Point2d offStartPt = LineUtility.OffsetPointInsidePoly(line, line.StartPoint, poly, distance);
-                    bool checkStartPt = GraphicsUtility.PointInsidePolygonTest(poly, offStartPt);
-                    if (!checkStartPt) otherPt = line.StartPoint;
-                    else otherPt = line.EndPoint;
+                    //----------------------------------------------------------
+                    probPt = pointsFalse[i][0];
+                    line = poly.Lines[i];
                     Point2d midPt = LineUtility.LineMidPoint(line);
-                    Vector2d vecToMidPt = new Vector2d(midPt, pointsFalse[i][0]);
-                    //Vector2d vecToMidNorm = vecToMidPt.Normalize();
-                    //Vector2d vecToMidScaled = vecToMidPt.Scale(ratio);
-                    Point2d ptNewEnd = VectorUtility.VectorAddToPoint(midPt, vecToMidPt, ratio);
+                    if (line.StartPoint.Compare(probPt)) otherPt = line.EndPoint;
+                    else otherPt = line.StartPoint;
+                    Vector2d vecToOther = new Vector2d(probPt, otherPt);
+                    while (!checkOffPtNew && count < maxTry && ratio < 0.9)
+                    {
+                        ratio += 0.02;
+                        ptNewEnd = VectorUtility.VectorAddToPoint(probPt, vecToOther, ratio);
+                        Point2d offPtNew = LineUtility.OffsetPointInsidePoly(line, ptNewEnd, poly, distance);
+                        checkOffPtNew = GraphicsUtility.PointInsidePolygonTest(poly, offPtNew);
+                        count += 1;
+                    }                  
+                    //----------------------------------------------------------
                     polyNewPoints.Add(ptNewEnd);
                     added = true;                     
                 }
@@ -466,8 +475,12 @@ namespace SpacePlanning
             return new Dictionary<string, object>
             {
                 { "PolyAddedPts", (polyAdded) },
-                { "PolyPoints", (polyNewPoints)},
-                { "PointAdded" , (added) }
+                { "ProblemPoint", (probPt)},
+                { "IsAdded" , (added) },
+                { "PointAdded", (ptNewEnd) },
+                { "Trials", (count) },
+                { "FinalRatio", (ratio) },
+                { "ProblemLine", (line)}
             };
         }
 

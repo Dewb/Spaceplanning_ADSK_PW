@@ -554,7 +554,7 @@ namespace SpacePlanning
         public static Dictionary<string, object> CheckLinesOffsetInPoly(Polygon2d poly, double distance = 10)
         {
             if (!CheckPoly(poly)) return null;
-            Polygon2d oPoly = OffsetPoly(poly, 1);
+            Polygon2d oPoly = OffsetPoly(poly, 0.2);
             List<bool> offsetAble = new List<bool>();
             List<List<Point2d>> pointsOutsideList = new List<List<Point2d>>();
             List<Line2d> linesNotOffset = new List<Line2d>();
