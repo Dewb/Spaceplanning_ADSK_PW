@@ -387,17 +387,18 @@ namespace SpacePlanning
         }
 
          //blocks are assigne based on offset distance, used for inpatient blocks
-        [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly", "AreaAssignedToBlock","FalseLines", "LineOptions" })]
+        [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly", "AreaAssignedToBlock","FalseLines", "LineOptions","PointAdded" })]
         public static Dictionary<string, object> AssignBlocksBasedOnDistance(Polygon2d poly, double distance = 16, double area = 0, double thresDistance = 10, double recompute = 5)
         {
             if (!PolygonUtility.CheckPoly(poly)) return null;
             if (distance < 1) return null;
-            int count = 0, index = 0, maxTry = 100;
+            int count = 0, maxTry = 100;
             poly = new Polygon2d(poly.Points);
             if (area == 0) area = 0.8 * PolygonUtility.AreaCheckPolygon(poly);
             Stack<Polygon2d> polyLeftList = new Stack<Polygon2d>();
             double areaAdded = 0;
             polyLeftList.Push(poly);
+            Point2d pointAdd = new Point2d(0, 0);
             List<Polygon2d> blockPolyList = new List<Polygon2d>();
             List<Polygon2d> leftoverPolyList = new List<Polygon2d>();
             List<Line2d> falseLines = new List<Line2d>();
@@ -406,34 +407,33 @@ namespace SpacePlanning
             while (polyLeftList.Count > 0 && areaAdded < area && count < maxTry) //count<recompute
             {
                 Polygon2d currentPoly = polyLeftList.Pop();
-                Polygon2d tempPoly = new Polygon2d(currentPoly.Points);
-                index = count;
-                if (index > currentPoly.Lines.Count) index = 0;
+                Polygon2d tempPoly = new Polygon2d(currentPoly.Points,0);
                 Dictionary<string, object> splitObject = SplitByOffsetPoint(currentPoly, poly, distance, thresDistance);
                 if (splitObject == null) { count += 1; Trace.WriteLine("Split errored");  continue; }
                 Polygon2d blockPoly = (Polygon2d)splitObject["PolyAfterSplit"];
                 Polygon2d leftPoly = (Polygon2d)splitObject["LeftOverPoly"];
                 lineOptions = (List<Line2d>)splitObject["LineOptions"];
-                Dictionary<string,object> addPtObj =  AddPointToFitPoly(leftPoly, poly, distance, thresDistance, recompute);
+                Dictionary<string, object> addPtObj = AddPointToFitPoly(leftPoly, poly, distance, thresDistance, recompute);
                 leftPoly = (Polygon2d)addPtObj["PolyAddedPts"];
                 falseLines = (List<Line2d>)addPtObj["FalseLineList"];
-                Polygon leftPolytest = DynamoGeometry.PolygonByPolygon2d(leftPoly, 0);
-
+                pointAdd = (Point2d)addPtObj["PointAdded"];
                 if (lineOptions.Count == 0) error = true;
                 else
                 {
-                    for(int i = 0; i < lineOptions.Count; i++)
+                    for (int i = 0; i < lineOptions.Count; i++)
                     {
                         if (lineOptions[i].Length > thresDistance) { error = false; break; }
                         else error = true;
                     }
                 }
-                if (error)
-                {
-                    leftPoly = tempPoly;
-                    polyLeftList.Push(tempPoly);
+                if (error) {
+                    polyLeftList.Push(leftPoly);
                     break;
                 }
+
+
+                
+               
                 areaAdded += PolygonUtility.AreaCheckPolygon(blockPoly);
                 polyLeftList.Push(leftPoly);
                 blockPolyList.Add(blockPoly);
@@ -448,7 +448,8 @@ namespace SpacePlanning
                 { "LeftOverPoly", (leftoverPolyList) },
                 { "AreaAssignedToBlock", (areaAdded)},
                 { "FalseLines", (falseLines) },
-                { "LineOptions", (lineOptions) }
+                { "LineOptions", (lineOptions) },
+                { "PointAdded" , (pointAdd)}
             };
         }
 
@@ -472,7 +473,7 @@ namespace SpacePlanning
             Point2d probPt = new Point2d(0, 0);
             Line2d line = new Line2d(ptNewEnd, otherPt);
             int count = 0, maxTry = 50;
-            double ratio = 0;
+            double ratio = 0, increment = .25;
             bool added = false, checkOffPtNew = false;
             for (int i = 0; i < poly.Points.Count; i++)
             {                               
@@ -492,7 +493,7 @@ namespace SpacePlanning
                     Vector2d vecToOther = new Vector2d(probPt, otherPt);
                     while (!checkOffPtNew && count < maxTry && ratio < 0.9)
                     {
-                        ratio += .15;
+                        ratio += increment;
                         ptNewEnd = VectorUtility.VectorAddToPoint(probPt, vecToOther, ratio);
                         Point2d offPtNew = LineUtility.OffsetPointInsidePoly(line, ptNewEnd, poly, distance);
                         checkOffPtNew = GraphicsUtility.PointInsidePolygonTest(poly, offPtNew);
