@@ -426,7 +426,7 @@ namespace SpacePlanning
 
 
         //adds a point to a line of a poly, such that offsetting places offset line inside the poly
-        [MultiReturn(new[] { "PolyAfterSplit" })]
+        [MultiReturn(new[] { "PolyAddedPts", "PolyPoints" })]
         public static Dictionary<string, object> AddPointToFitPoly(Polygon2d poly, double distance = 16, double area = 0, double thresDistance = 10, double recompute = 5)
         {
             if (!PolygonUtility.CheckPoly(poly)) return null;
@@ -444,10 +444,16 @@ namespace SpacePlanning
                 int a = i, b = i + 1;
                 if (i == poly.Points.Count - 1) b = 0;
                 polyNewPoints.Add(poly.Points[a]);
-                if (poly.Lines[i].Length > thresDistance && indicesFalse[i] > -1 && pointsFalse[i] != null && !added)
+                Point2d otherPt = new Point2d(0, 0);
+                if (poly.Lines[i].Length > thresDistance && indicesFalse[i] > -1 && !added)
                 {
-                    Point2d midPt = LineUtility.LineMidPoint(poly.Lines[i]);
-                    Vector2d vecToMidPt = new Vector2d(midPt, pointsFalse[i][0]);
+                    Line2d line = poly.Lines[i];
+                    Point2d offStartPt = LineUtility.OffsetPointInsidePoly(line, line.StartPoint, poly, distance);
+                    bool checkStartPt = GraphicsUtility.PointInsidePolygonTest(poly, offStartPt);
+                    if (!checkStartPt) otherPt = line.StartPoint;
+                    else otherPt = line.EndPoint;
+                    Point2d midPt = LineUtility.LineMidPoint(line);
+                    Vector2d vecToMidPt = new Vector2d(midPt, poly.Points[b]);
                     //Vector2d vecToMidNorm = vecToMidPt.Normalize();
                     //Vector2d vecToMidScaled = vecToMidPt.Scale(ratio);
                     Point2d ptNewEnd = VectorUtility.VectorAddToPoint(midPt, vecToMidPt, ratio);
@@ -458,7 +464,8 @@ namespace SpacePlanning
             Polygon2d polyAdded = new Polygon2d(polyNewPoints, 0);
             return new Dictionary<string, object>
             {
-                { "PolyAddedPts", (polyAdded) }
+                { "PolyAddedPts", (polyAdded) },
+                { "PolyPoints", (polyNewPoints)}
             };
         }
 

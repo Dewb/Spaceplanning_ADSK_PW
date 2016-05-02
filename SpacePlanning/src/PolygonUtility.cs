@@ -577,8 +577,7 @@ namespace SpacePlanning
                     pointsDefault.Add(null);
                 }
                 else
-                {
-                    
+                {                    
                     if (!checkStartPt) pointsDefault.Add(line.StartPoint);
                     if (!checkEndPt) pointsDefault.Add(line.EndPoint);                    
                     linesNotOffset.Add(line);
