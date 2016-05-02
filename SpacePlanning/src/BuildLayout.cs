@@ -401,7 +401,7 @@ namespace SpacePlanning
             List<Polygon2d> blockPolyList = new List<Polygon2d>();
             List<Polygon2d> leftoverPolyList = new List<Polygon2d>();
             bool error = false, splitReturn = false;
-            while (polyLeftList.Count > 0 && areaAdded < area && count < recompute && !error) //count<recompute
+            while (polyLeftList.Count > 0 && areaAdded < area && count < recompute) //count<recompute
             {
                 Polygon2d currentPoly = polyLeftList.Pop();
                 Polygon2d tempPoly = new Polygon2d(currentPoly.Points);
@@ -422,8 +422,7 @@ namespace SpacePlanning
                     Trace.WriteLine("Well errored for " + count);
                     leftPoly = tempPoly;
                     polyLeftList.Push(tempPoly);
-                    //error = true;
-                    //break;
+                    break;
                 }
                 areaAdded += PolygonUtility.AreaCheckPolygon(blockPoly);
                 polyLeftList.Push(leftPoly);
@@ -462,7 +461,7 @@ namespace SpacePlanning
             List<Line2d> falseLines = new List<Line2d>();
             List<Line2d> lineOptions = new List<Line2d>();
             bool error = false;
-            while (polyLeftList.Count > 0 && areaAdded < area && count < recompute && !error) //count<recompute
+            while (polyLeftList.Count > 0 && areaAdded < area && count < recompute) //count<recompute
             {
                 Polygon2d currentPoly = polyLeftList.Pop();
                 Polygon2d tempPoly = new Polygon2d(currentPoly.Points);
@@ -486,7 +485,6 @@ namespace SpacePlanning
                     Trace.WriteLine("Well errored for " + count);
                     leftPoly = tempPoly;
                     polyLeftList.Push(tempPoly);
-                    //error = true;
                     //break;
                 }
                 areaAdded += PolygonUtility.AreaCheckPolygon(blockPoly);
