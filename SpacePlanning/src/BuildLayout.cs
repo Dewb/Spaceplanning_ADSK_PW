@@ -387,7 +387,7 @@ namespace SpacePlanning
         }
 
         //blocks are assigne based on offset distance, used for inpatient blocks
-        [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly", "AreaAssignedToBlock" })]
+        [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly", "AreaAssignedToBlock", "SplitReturn" })]
         public static Dictionary<string, object> AssignBlocksBasedOnDistance(Polygon2d poly, double distance = 16, double area = 0, double thresDistance = 10, double recompute = 5)
         {
             if (!PolygonUtility.CheckPoly(poly)) return null;
@@ -400,15 +400,16 @@ namespace SpacePlanning
             polyLeftList.Push(poly);
             List<Polygon2d> blockPolyList = new List<Polygon2d>();
             List<Polygon2d> leftoverPolyList = new List<Polygon2d>();
-            bool error = false;
+            bool error = false, splitReturn = false;
             while (polyLeftList.Count > 0 && areaAdded < area && count < recompute && !error) //count<recompute
             {
                 Polygon2d currentPoly = polyLeftList.Pop();
                 Polygon2d tempPoly = new Polygon2d(currentPoly.Points);
                 index = count;
                 if (index > currentPoly.Lines.Count) index = 0;
-                Dictionary<string, object> splitObject = SplitByOffsetPoint(currentPoly, poly, distance, index, thresDistance);
-                if(splitObject == null) { count += 1; continue; }
+                Dictionary<string, object> splitObject = SplitByOffsetPoint(currentPoly, poly, distance, thresDistance);
+                if(splitObject == null) { count += 1; splitReturn = true;  continue; }
+                else { splitReturn = false; }
                 Polygon2d blockPoly = (Polygon2d)splitObject["PolyAfterSplit"];
                 Polygon2d leftPoly = (Polygon2d)splitObject["LeftOverPoly"];
                 Polygon leftPolytest = DynamoGeometry.PolygonByPolygon2d(leftPoly, 0);
@@ -439,12 +440,13 @@ namespace SpacePlanning
             {
                 { "PolyAfterSplit", (blockPolyList) },
                 { "LeftOverPoly", (leftoverPolyList) },
-                { "AreaAssignedToBlock", (areaAdded)}
+                { "AreaAssignedToBlock", (areaAdded)},
+                { "SplitReturn" , (splitReturn)}
             };
         }
 
         //blocks are assigne based on offset distance, used for inpatient blocks
-        [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly", "AreaAssignedToBlock" })]
+        [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly", "AreaAssignedToBlock","FalseLines", "LineOptions" })]
         public static Dictionary<string, object> AssignBlocksBasedOnDistAddPts(Polygon2d poly, double distance = 16, double area = 0, double thresDistance = 10, double recompute = 5)
         {
             if (!PolygonUtility.CheckPoly(poly)) return null;
@@ -457,19 +459,23 @@ namespace SpacePlanning
             polyLeftList.Push(poly);
             List<Polygon2d> blockPolyList = new List<Polygon2d>();
             List<Polygon2d> leftoverPolyList = new List<Polygon2d>();
+            List<Line2d> falseLines = new List<Line2d>();
+            List<Line2d> lineOptions = new List<Line2d>();
             bool error = false;
-            while (polyLeftList.Count > 0 && areaAdded < area && count < maxTry && !error) //count<recompute
+            while (polyLeftList.Count > 0 && areaAdded < area && count < recompute && !error) //count<recompute
             {
                 Polygon2d currentPoly = polyLeftList.Pop();
                 Polygon2d tempPoly = new Polygon2d(currentPoly.Points);
                 index = count;
                 if (index > currentPoly.Lines.Count) index = 0;
-                Dictionary<string, object> splitObject = SplitByOffsetPoint(currentPoly, poly, distance, index, thresDistance);
-                if (splitObject == null) { count += 1; continue; }
+                Dictionary<string, object> splitObject = SplitByOffsetPoint(currentPoly, poly, distance, thresDistance);
+                if (splitObject == null) { count += 1; Trace.WriteLine("Split errored");  continue; }
                 Polygon2d blockPoly = (Polygon2d)splitObject["PolyAfterSplit"];
                 Polygon2d leftPoly = (Polygon2d)splitObject["LeftOverPoly"];
+                lineOptions = (List<Line2d>)splitObject["LineOptions"];
                 Dictionary<string,object> addPtObj =  AddPointToFitPoly(leftPoly, poly, distance, thresDistance, recompute);
                 leftPoly = (Polygon2d)addPtObj["PolyAddedPts"];
+                falseLines = (List<Line2d>)addPtObj["FalseLineList"];
                 Polygon leftPolytest = DynamoGeometry.PolygonByPolygon2d(leftPoly, 0);
                 try
                 {
@@ -480,8 +486,8 @@ namespace SpacePlanning
                     Trace.WriteLine("Well errored for " + count);
                     leftPoly = tempPoly;
                     polyLeftList.Push(tempPoly);
-                    error = true;
-                    break;
+                    //error = true;
+                    //break;
                 }
                 areaAdded += PolygonUtility.AreaCheckPolygon(blockPoly);
                 polyLeftList.Push(leftPoly);
@@ -498,7 +504,9 @@ namespace SpacePlanning
             {
                 { "PolyAfterSplit", (blockPolyList) },
                 { "LeftOverPoly", (leftoverPolyList) },
-                { "AreaAssignedToBlock", (areaAdded)}
+                { "AreaAssignedToBlock", (areaAdded)},
+                { "FalseLines", (falseLines) },
+                { "LineOptions", (lineOptions) }
             };
         }
 
@@ -1005,19 +1013,20 @@ namespace SpacePlanning
         }
 
         //splits a polygon based on distance and random direction
-        [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly"  })]
-        public static Dictionary<string, object> SplitByOffsetPoint(Polygon2d polyOutline, Polygon2d containerPoly, double distance = 10, int index = -1, double minDist = 20)
+        [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly", "LineOptions", "SortedLengths" })]
+        public static Dictionary<string, object> SplitByOffsetPoint(Polygon2d polyOutline, Polygon2d containerPoly, double distance = 10, double minDist = 20)
         {
             if (!PolygonUtility.CheckPoly(polyOutline)) return null;
-            Polygon2d poly = new Polygon2d(polyOutline.Points);
+            Polygon2d poly = new Polygon2d(polyOutline.Points,0);
             List<double> lineLength = new List<double>();
+            List<Line2d> lineOptions = new List<Line2d>();
 
             Dictionary<string, object> checkLineOffsetObject = PolygonUtility.CheckLinesOffsetInPoly(poly, containerPoly, distance);
             List<bool> offsetAble = (List<bool>)checkLineOffsetObject["Offsetables"];
 
             for (int i = 0; i < poly.Points.Count; i++)
             {
-                if (offsetAble[i] == true) lineLength.Add(poly.Lines[i].Length);
+                if (offsetAble[i] == true) { lineLength.Add(poly.Lines[i].Length); lineOptions.Add(poly.Lines[i]); }
                 else lineLength.Add(0);
             }           
             double[] lineLengthArray = new double[lineLength.Count];
@@ -1029,10 +1038,11 @@ namespace SpacePlanning
             }
             List<int> sortedIndices = BasicUtility.Quicksort(lineLengthArray, unsortedIndices, 0, lineLength.Count - 1);
             if (sortedIndices != null) sortedIndices.Reverse();
-            int indexSelected = 0;
-            if (index > -1 && index < sortedIndices.Count) indexSelected = sortedIndices[index];
-            else indexSelected = sortedIndices[0];
+            //int indexSelected = 0;
+            //if (index > -1 && index < sortedIndices.Count) indexSelected = sortedIndices[index];
+            //else indexSelected = sortedIndices[0];
 
+            int indexSelected = sortedIndices[0];
             List<Point2d> pointForBlock = new List<Point2d>();
             List<Point2d> polyPtsCopy = poly.Points.Select(pt => new Point2d(pt.X, pt.Y)).ToList();//deep copy
             for (int i = 0; i < poly.Points.Count; i++)
@@ -1057,7 +1067,9 @@ namespace SpacePlanning
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (polyBlock) },
-                { "LeftOverPoly", (polyNew) }            
+                { "LeftOverPoly", (polyNew) },
+                { "LineOptions" , (lineOptions) },
+                { "SortedLengths", (sortedIndices) }           
             };
 
         }
