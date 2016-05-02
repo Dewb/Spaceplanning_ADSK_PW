@@ -550,13 +550,14 @@ namespace SpacePlanning
 
 
         //find lines which will not be inside the poly when offset by a distance
-        [MultiReturn(new[] { "LinesFalse", "Offsetables"})]
-        public static Dictionary<string, object> CheckLinesOffsetInPoly(Polygon2d poly, double distance = 10, double threshDistance = 20)
+        [MultiReturn(new[] { "LinesFalse", "Offsetables", "IndicesFalse"})]
+        public static Dictionary<string, object> CheckLinesOffsetInPoly(Polygon2d poly, double distance = 10)
         {
             if (!CheckPoly(poly)) return null;
             Polygon2d oPoly = OffsetPoly(poly, 1);
             List<bool> offsetAble = new List<bool>();
             List<Line2d> linesNotOffset = new List<Line2d>();
+            List<int> indicesFalse = new List<int>();
             for (int i = 0; i < poly.Points.Count; i++)
             {
                 bool offsetAllow = false;
@@ -570,10 +571,12 @@ namespace SpacePlanning
                 {
                     
                     offsetAllow = true;
+                    indicesFalse.Add(-1);
                 }
                 else
                 {
                         linesNotOffset.Add(line);
+                        indicesFalse.Add(i);
                         offsetAllow = false;               
                 }
                 offsetAble.Add(offsetAllow);
@@ -581,7 +584,8 @@ namespace SpacePlanning
             return new Dictionary<string, object>
             {
                 { "LinesFalse", (linesNotOffset) },
-                { "Offsetables", (offsetAble) }
+                { "Offsetables", (offsetAble) },
+                { "IndicesFalse", (indicesFalse) }
             };
         }
 

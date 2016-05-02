@@ -425,6 +425,43 @@ namespace SpacePlanning
         }
 
 
+        //adds a point to a line of a poly, such that offsetting places offset line inside the poly
+        [MultiReturn(new[] { "PolyAfterSplit" })]
+        public static Dictionary<string, object> AddPointToFitPoly(Polygon2d poly, double distance = 16, double area = 0, double thresDistance = 10, double recompute = 5)
+        {
+            if (!PolygonUtility.CheckPoly(poly)) return null;
+            if (distance < 1) return null;
+           
+
+            Dictionary<string, object> lineOffsetCheckObj = PolygonUtility.CheckLinesOffsetInPoly(poly, distance);
+            List<int> indicesFalse = (List<int>)lineOffsetCheckObj["IndicesFalse"];
+
+            List<Point2d> polyNewPoints = new List<Point2d>();
+            bool added = false;
+            for (int i = 0; i < poly.Points.Count; i++)
+            {
+                double ratio = 0.8;                
+                int a = i, b = i + 1;
+                if (i == poly.Points.Count - 1) b = 0;
+                polyNewPoints.Add(poly.Points[a]);
+                if (poly.Lines[i].Length > thresDistance && indicesFalse[i] > -1 && !added)
+                {
+                    Point2d midPt = LineUtility.LineMidPoint(poly.Lines[i]);
+                    Vector2d vecToMidPt = new Vector2d(midPt, poly.Points[b]);
+                    //Vector2d vecToMidNorm = vecToMidPt.Normalize();
+                    //Vector2d vecToMidScaled = vecToMidPt.Scale(ratio);
+                    Point2d ptNewEnd = VectorUtility.VectorAddToPoint(midPt, vecToMidPt, ratio);
+                    polyNewPoints.Add(ptNewEnd);
+                    added = true;                     
+                }
+            }
+            Polygon2d polyAdded = new Polygon2d(polyNewPoints, 0);
+            return new Dictionary<string, object>
+            {
+                { "PolyAddedPts", (polyAdded) }
+            };
+        }
+
         //blocks are assigned based on ratio of split, used for assigning other depts
         [MultiReturn(new[] { "EveryDeptPoly", "LeftOverPoly", "AreaAdded", "AllNodes" })]
         public static Dictionary<string, object> AssignBlocksBasedOnRatio(DeptData deptItem, Stack<Polygon2d> leftOverPoly,int index)
@@ -872,7 +909,7 @@ namespace SpacePlanning
             Polygon2d poly = new Polygon2d(polyOutline.Points);
             List<double> lineLength = new List<double>();
 
-            Dictionary<string, object> checkLineOffsetObject = PolygonUtility.CheckLinesOffsetInPoly(poly, distance, minDist);
+            Dictionary<string, object> checkLineOffsetObject = PolygonUtility.CheckLinesOffsetInPoly(poly, distance);
             List<bool> offsetAble = (List<bool>)checkLineOffsetObject["Offsetables"];
 
             for (int i = 0; i < poly.Points.Count; i++)
