@@ -142,12 +142,14 @@ namespace SpacePlanning
         }
 
         //check if a given polygon2d has any of its longer edges aligned with any edge of the containerpolygon2d
-        public static bool CheckPolyGetsExternalWall(Polygon2d poly, Polygon2d containerPoly, double shortEdgeDist = 16)
+        public static bool CheckPolyGetsExternalWall(Polygon2d poly, Polygon2d containerPoly, double shortEdgeDist = 16, bool tag = true)
         {
             bool check = false;
             if (!PolygonUtility.CheckPoly(poly)) return check;
+            Polygon2d polyReg = new Polygon2d(null);
             //make given polys reduce number of points
-            Polygon2d polyReg = new Polygon2d(poly.Points);
+            if (tag) polyReg = new Polygon2d(poly.Points);
+            else polyReg = poly;
             Polygon2d containerPolyReg = new Polygon2d(containerPoly.Points);
             for(int i = 0; i < polyReg.Points.Count; i++)
             {
@@ -168,11 +170,28 @@ namespace SpacePlanning
                 }
                 if (check) break;
             }
-            //Trace.WriteLine("Well lines are found to be adjacent ? ++++++++++++++++++++   " + check);
             return check;
         }
 
- 
+
+        //check if a given polygon2d has any of its longer edges aligned with any edge of the containerpolygon2d
+        public static bool CheckLineGetsExternalWall(Line2d lineA, Polygon2d containerPoly)
+        {
+            bool check = false;
+            if (!PolygonUtility.CheckPoly(containerPoly)) return check;      
+            Polygon2d containerPolyReg = new Polygon2d(containerPoly.Points);
+            for (int i = 0; i < containerPoly.Points.Count; i++)
+            {
+                int a = i, b = i + 1;
+                if (i == containerPolyReg.Points.Count - 1) b = 0;
+                Line2d lineB = Line2d.ByStartPointEndPoint(containerPolyReg.Points[a], containerPolyReg.Points[b]);
+                check = GraphicsUtility.LineAdjacencyCheck(lineA, lineB);
+                if (check) break;
+            }
+            return check;
+        }
+
+
         //arrange depts on site, till all depts have not been satisfied
         /// <summary>
         /// It arranges the dept on the site based on input from program document
@@ -388,7 +407,7 @@ namespace SpacePlanning
                 Polygon2d tempPoly = new Polygon2d(currentPoly.Points);
                 index = count;
                 if (index > currentPoly.Lines.Count) index = 0;
-                Dictionary<string, object> splitObject = SplitByOffsetPoint(currentPoly, distance, index, thresDistance);
+                Dictionary<string, object> splitObject = SplitByOffsetPoint(currentPoly, poly, distance, index, thresDistance);
                 if(splitObject == null) { count += 1; continue; }
                 Polygon2d blockPoly = (Polygon2d)splitObject["PolyAfterSplit"];
                 Polygon2d leftPoly = (Polygon2d)splitObject["LeftOverPoly"];
@@ -426,15 +445,16 @@ namespace SpacePlanning
 
 
         //adds a point to a line of a poly, such that offsetting places offset line inside the poly
-        [MultiReturn(new[] { "PolyAddedPts", "ProblemPoint", "IsAdded","PointAdded", "Trials", "FinalRatio","ProblemLine" })]
-        public static Dictionary<string, object> AddPointToFitPoly(Polygon2d poly, double distance = 16, double area = 0, double thresDistance = 10, double recompute = 5)
+        [MultiReturn(new[] { "PolyAddedPts", "ProblemPoint", "IsAdded","PointAdded", "Trials", "FinalRatio","ProblemLine", "ProblemPtsList" })]
+        public static Dictionary<string, object> AddPointToFitPoly(Polygon2d poly, Polygon2d containerPoly, double distance = 16, double area = 0, double thresDistance = 10, double recompute = 5)
         {
             if (!PolygonUtility.CheckPoly(poly)) return null;
-            if (distance < 1) return null;           
+            if (distance < 1) return null;         
 
-            Dictionary<string, object> lineOffsetCheckObj = PolygonUtility.CheckLinesOffsetInPoly(poly, distance);
+            Dictionary<string, object> lineOffsetCheckObj = PolygonUtility.CheckLinesOffsetInPoly(poly, containerPoly, distance);
             List<int> indicesFalse = (List<int>)lineOffsetCheckObj["IndicesFalse"];
             List<List<Point2d>> pointsFalse = (List<List<Point2d>>)lineOffsetCheckObj["PointsOutside"];
+            List<Point2d> probPointList = new List<Point2d>();
             List<Point2d> polyNewPoints = new List<Point2d>();
             Point2d ptNewEnd = new Point2d(0, 0);
             Point2d otherPt = new Point2d(0, 0);
@@ -451,7 +471,7 @@ namespace SpacePlanning
                 if (poly.Lines[i].Length > thresDistance && 
                     indicesFalse[i] > -1 && pointsFalse[i] != null && pointsFalse[i].Count == 1 && !added)
                 {
-                    //----------------------------------------------------------
+                    probPointList.AddRange(pointsFalse[i]);
                     probPt = pointsFalse[i][0];
                     line = poly.Lines[i];
                     Point2d midPt = LineUtility.LineMidPoint(line);
@@ -466,7 +486,6 @@ namespace SpacePlanning
                         checkOffPtNew = GraphicsUtility.PointInsidePolygonTest(poly, offPtNew);
                         count += 1;
                     }                  
-                    //----------------------------------------------------------
                     polyNewPoints.Add(ptNewEnd);
                     added = true;                     
                 }
@@ -480,7 +499,8 @@ namespace SpacePlanning
                 { "PointAdded", (ptNewEnd) },
                 { "Trials", (count) },
                 { "FinalRatio", (ratio) },
-                { "ProblemLine", (line)}
+                { "ProblemLine", (line)},
+                { "ProblemPtsList", ( probPointList) }
             };
         }
 
@@ -925,13 +945,13 @@ namespace SpacePlanning
 
         //splits a polygon based on distance and random direction
         [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly"  })]
-        public static Dictionary<string, object> SplitByOffsetPoint(Polygon2d polyOutline,double distance = 10, int index = -1, double minDist = 20)
+        public static Dictionary<string, object> SplitByOffsetPoint(Polygon2d polyOutline, Polygon2d containerPoly, double distance = 10, int index = -1, double minDist = 20)
         {
             if (!PolygonUtility.CheckPoly(polyOutline)) return null;
             Polygon2d poly = new Polygon2d(polyOutline.Points);
             List<double> lineLength = new List<double>();
 
-            Dictionary<string, object> checkLineOffsetObject = PolygonUtility.CheckLinesOffsetInPoly(poly, distance);
+            Dictionary<string, object> checkLineOffsetObject = PolygonUtility.CheckLinesOffsetInPoly(poly, containerPoly, distance);
             List<bool> offsetAble = (List<bool>)checkLineOffsetObject["Offsetables"];
 
             for (int i = 0; i < poly.Points.Count; i++)
@@ -958,7 +978,7 @@ namespace SpacePlanning
             {
                 int a = i, b = i + 1;
                 if (i == poly.Points.Count - 1) b = 0;
-                if (i == indexSelected) // && offsetAble[i]
+                if (i == indexSelected) 
                 {
                     Line2d line = new Line2d(poly.Points[a], poly.Points[b]);
                     if (line.Length < minDist) continue;
