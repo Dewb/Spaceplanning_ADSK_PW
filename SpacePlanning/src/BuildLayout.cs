@@ -435,7 +435,7 @@ namespace SpacePlanning
 
             Dictionary<string, object> lineOffsetCheckObj = PolygonUtility.CheckLinesOffsetInPoly(poly, distance);
             List<int> indicesFalse = (List<int>)lineOffsetCheckObj["IndicesFalse"];
-
+            List<List<Point2d>> pointsFalse = (List<List<Point2d>>)lineOffsetCheckObj["PointsOutside"];
             List<Point2d> polyNewPoints = new List<Point2d>();
             bool added = false;
             for (int i = 0; i < poly.Points.Count; i++)
@@ -444,10 +444,10 @@ namespace SpacePlanning
                 int a = i, b = i + 1;
                 if (i == poly.Points.Count - 1) b = 0;
                 polyNewPoints.Add(poly.Points[a]);
-                if (poly.Lines[i].Length > thresDistance && indicesFalse[i] > -1 && !added)
+                if (poly.Lines[i].Length > thresDistance && indicesFalse[i] > -1 && pointsFalse[i] != null && !added)
                 {
                     Point2d midPt = LineUtility.LineMidPoint(poly.Lines[i]);
-                    Vector2d vecToMidPt = new Vector2d(midPt, poly.Points[b]);
+                    Vector2d vecToMidPt = new Vector2d(midPt, pointsFalse[i][0]);
                     //Vector2d vecToMidNorm = vecToMidPt.Normalize();
                     //Vector2d vecToMidScaled = vecToMidPt.Scale(ratio);
                     Point2d ptNewEnd = VectorUtility.VectorAddToPoint(midPt, vecToMidPt, ratio);

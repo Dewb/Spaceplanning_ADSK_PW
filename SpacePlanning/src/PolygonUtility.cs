@@ -550,12 +550,13 @@ namespace SpacePlanning
 
 
         //find lines which will not be inside the poly when offset by a distance
-        [MultiReturn(new[] { "LinesFalse", "Offsetables", "IndicesFalse"})]
+        [MultiReturn(new[] { "LinesFalse", "Offsetables", "IndicesFalse", "PointsOutside"})]
         public static Dictionary<string, object> CheckLinesOffsetInPoly(Polygon2d poly, double distance = 10)
         {
             if (!CheckPoly(poly)) return null;
             Polygon2d oPoly = OffsetPoly(poly, 1);
             List<bool> offsetAble = new List<bool>();
+            List<List<Point2d>> pointsOutsideList = new List<List<Point2d>>();
             List<Line2d> linesNotOffset = new List<Line2d>();
             List<int> indicesFalse = new List<int>();
             for (int i = 0; i < poly.Points.Count; i++)
@@ -566,26 +567,33 @@ namespace SpacePlanning
                 Line2d line = poly.Lines[i];
                 Point2d offStartPt = LineUtility.OffsetPointInsidePoly(line, line.StartPoint, oPoly, distance);
                 Point2d offEndPt = LineUtility.OffsetPointInsidePoly(line, line.EndPoint, oPoly, distance);
-                if (GraphicsUtility.PointInsidePolygonTest(oPoly, offStartPt) &&
-                    GraphicsUtility.PointInsidePolygonTest(oPoly, offEndPt))
-                {
-                    
+                bool checkStartPt = GraphicsUtility.PointInsidePolygonTest(oPoly, offStartPt);
+                bool checkEndPt = GraphicsUtility.PointInsidePolygonTest(oPoly, offEndPt);
+                List<Point2d> pointsDefault = new List<Point2d>();
+                if (checkStartPt && checkEndPt)
+                {                    
                     offsetAllow = true;
                     indicesFalse.Add(-1);
+                    pointsDefault.Add(null);
                 }
                 else
                 {
-                        linesNotOffset.Add(line);
-                        indicesFalse.Add(i);
-                        offsetAllow = false;               
+                    
+                    if (!checkStartPt) pointsDefault.Add(line.StartPoint);
+                    if (!checkEndPt) pointsDefault.Add(line.EndPoint);                    
+                    linesNotOffset.Add(line);
+                    indicesFalse.Add(i);
+                    offsetAllow = false;                                   
                 }
+                pointsOutsideList.Add(pointsDefault);
                 offsetAble.Add(offsetAllow);
             }
             return new Dictionary<string, object>
             {
                 { "LinesFalse", (linesNotOffset) },
                 { "Offsetables", (offsetAble) },
-                { "IndicesFalse", (indicesFalse) }
+                { "IndicesFalse", (indicesFalse) },
+                { "PointsOutside", (pointsOutsideList) }
             };
         }
 
