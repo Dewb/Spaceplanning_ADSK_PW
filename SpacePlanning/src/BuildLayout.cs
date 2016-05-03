@@ -408,7 +408,7 @@ namespace SpacePlanning
             {
                 Polygon2d currentPoly = polyLeftList.Pop();
                 Polygon2d tempPoly = new Polygon2d(currentPoly.Points,0);
-                Dictionary<string, object> splitObject = SplitByOffsetPoint(currentPoly, poly, distance, thresDistance);
+                Dictionary<string, object> splitObject = CreateBlocksByLines(currentPoly, poly, distance, thresDistance);
                 if (splitObject == null) { count += 1; Trace.WriteLine("Split errored");  continue; }
                 Polygon2d blockPoly = (Polygon2d)splitObject["PolyAfterSplit"];
                 Polygon2d leftPoly = (Polygon2d)splitObject["LeftOverPoly"];
@@ -686,6 +686,77 @@ namespace SpacePlanning
             };
         }
 
+        [MultiReturn(new[] { "PolyAfterSplit", "UpdatedProgramData", "RoomsAdded" })]
+        public static Dictionary<string, object> PlaceInpatientPrograms(List<Polygon2d> polyInputList, List<ProgramData> progData, double distance, int recompute = 1)
+        {
+            
+            if (!PolygonUtility.CheckPolyList(polyInputList)) return null;
+            if (progData == null || progData.Count == 0) return null;
+
+
+            int roomCount = 0;
+            List<Polygon2d> polyList = new List<Polygon2d>();
+            List<double> areaList = new List<double>();
+            List<Point2d> pointsList = new List<Point2d>();
+            Stack<ProgramData> programDataRetrieved = new Stack<ProgramData>();
+
+            for (int i = 0; i < progData.Count; i++) programDataRetrieved.Push(progData[i]);
+
+            for (int i = 0; i < polyInputList.Count; i++)
+            {
+                Polygon2d poly = polyInputList[i];
+                if (!PolygonUtility.CheckPoly(poly)) continue;
+                int lineId = 0, count = 0;
+                if (poly.Lines[0].Length > poly.Lines[1].Length) lineId = 1;
+                else lineId = 1;
+                List<double> spans = PolygonUtility.GetSpansXYFromPolygon2d(poly.Points);
+                double setSpan = 1000000000000, fac = 1.5;
+                if (spans[0] > spans[1]) setSpan = spans[0];
+                else setSpan = spans[1];
+                Polygon2d currentPoly = poly;
+                Polygon2d polyAfterSplitting = new Polygon2d(null), leftOverPoly = new Polygon2d(null);
+                while (setSpan > distance) //programDataRetrieved.Count > 0
+                {
+                    double dist = 0;
+                    if (setSpan > fac * distance) dist = distance;
+                    else dist = setSpan;
+                    Dictionary<string, object> splitReturn = SplitByOffsetFromLine(currentPoly,lineId, dist);
+                    polyAfterSplitting = (Polygon2d)splitReturn["PolyAfterSplit"];
+                    leftOverPoly = (Polygon2d)splitReturn["LeftOverPoly"];
+                    count += 1;
+                    if (PolygonUtility.CheckPoly(leftOverPoly))
+                    {
+                        ProgramData progItem = programDataRetrieved.Pop();
+                        double area = GraphicsUtility.AreaPolygon2d(polyAfterSplitting.Points);
+                        currentPoly = leftOverPoly;
+                        polyList.Add(polyAfterSplitting);
+                        progItem.AreaProvided = area;
+                        areaList.Add(area);
+                        setSpan -= dist;                                            
+                    }
+                    else break;
+                }// end of while loop
+                roomCount += count;
+                polyList.Add(leftOverPoly);
+
+            }// end of for loop
+            List<ProgramData> UpdatedProgramDataList = new List<ProgramData>();
+            for (int i = 0; i < progData.Count; i++)
+            {
+                ProgramData progItem = progData[i];
+                ProgramData progNew = new ProgramData(progItem);
+                if (i < polyList.Count) progNew.PolyProgAssigned = polyList[i];
+                else progNew.PolyProgAssigned = null;
+                UpdatedProgramDataList.Add(progNew);
+            }
+            return new Dictionary<string, object>
+            {
+                { "PolyAfterSplit", (polyList) },
+                { "UpdatedProgramData",(UpdatedProgramDataList) },
+                { "RoomsAdded" , (roomCount) }
+            };
+        }
+
 
 
         //splits a big poly in a single direction
@@ -947,43 +1018,15 @@ namespace SpacePlanning
             };
         }
 
-        //splits a polygon based on distance and random direction
-        [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly", "LineOptions", "SortedLengths" })]
-        public static Dictionary<string, object> SplitByOffsetPoint(Polygon2d polyOutline, Polygon2d containerPoly, double distance = 10, double minDist = 20)
+        //splits a polygon based on offset direction and from a given line id
+        [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly" })]
+        public static Dictionary<string, object> SplitByOffsetFromLine(Polygon2d polyOutline,int lineId, double distance = 10, double minDist = 0)
         {
             if (!PolygonUtility.CheckPoly(polyOutline)) return null;
-            Polygon2d poly = new Polygon2d(polyOutline.Points,0);
-            List<double> lineLength = new List<double>();
-            List<Line2d> lineOptions = new List<Line2d>();
-
-            Dictionary<string, object> checkLineOffsetObject = PolygonUtility.CheckLinesOffsetInPoly(poly, containerPoly, distance);
-            List<bool> offsetAble = (List<bool>)checkLineOffsetObject["Offsetables"];
-
-            for (int i = 0; i < poly.Points.Count; i++)
-            {
-                if (offsetAble[i] == true) { lineLength.Add(poly.Lines[i].Length); }//lineOptions.Add(poly.Lines[i]);
-                else lineLength.Add(0);
-            }           
-            double[] lineLengthArray = new double[lineLength.Count];
-            int[] unsortedIndices = new int[lineLength.Count];
-            for (int i = 0; i < lineLength.Count; i++)
-            {
-                lineLengthArray[i] = lineLength[i];
-                unsortedIndices[i] = i;
-            }
-            List<int> sortedIndices = BasicUtility.Quicksort(lineLengthArray, unsortedIndices, 0, lineLength.Count - 1);
-            if (sortedIndices != null) sortedIndices.Reverse();
-
-            int indexSelected = sortedIndices[0];
-
-            for (int i = 0; i < poly.Points.Count; i++)
-            {
-                if (lineLength[i] > 0 && i != indexSelected) { lineOptions.Add(poly.Lines[i]); }               
-            }
+            Polygon2d poly = new Polygon2d(polyOutline.Points, 0);   
 
             List<Point2d> pointForBlock = new List<Point2d>();
             List<Point2d> polyPtsCopy = poly.Points.Select(pt => new Point2d(pt.X, pt.Y)).ToList();//deep copy
-            Point2d ptA = new Point2d(0, 0), ptB = new Point2d(0, 0);
             for (int i = 0; i < poly.Points.Count; i++)
             {
                 int a = i, b = i + 1, c = i - 1;
@@ -992,7 +1035,7 @@ namespace SpacePlanning
                 Line2d prevLine = poly.Lines[c];
                 Line2d currLine = poly.Lines[a];
                 Line2d nextLine = poly.Lines[b];
-                if (i == indexSelected) 
+                if (i == lineId)
                 {
                     Line2d line = new Line2d(poly.Points[a], poly.Points[b]);
                     if (line.Length < minDist) continue;
@@ -1004,9 +1047,9 @@ namespace SpacePlanning
                     int orientPrev = GraphicsUtility.CheckLineOrient(prevLine);
                     int orientCurr = GraphicsUtility.CheckLineOrient(currLine);
                     int orientNext = GraphicsUtility.CheckLineOrient(nextLine);
-            
+
                     // case 1
-                    if (orientPrev == orientCurr && orientCurr == orientNext) 
+                    if (orientPrev == orientCurr && orientCurr == orientNext)
                     {
                         polyPtsCopy.Insert(b, offsetLine.EndPoint);
                         polyPtsCopy.Insert(b, offsetLine.StartPoint);
@@ -1014,18 +1057,18 @@ namespace SpacePlanning
                     }
 
                     // case 2
-                    if (orientPrev != orientCurr && orientCurr == orientNext) 
+                    if (orientPrev != orientCurr && orientCurr == orientNext)
                     {
                         polyPtsCopy[a] = offsetLine.StartPoint;
-                        polyPtsCopy.Insert(b, offsetLine.EndPoint);                        
+                        polyPtsCopy.Insert(b, offsetLine.EndPoint);
                         //Trace.WriteLine("Case 2 : inserted 1 pt, replaced 1 pt----------------");
                     }
 
                     // case 3
                     if (orientPrev == orientCurr && orientCurr != orientNext)
-                    {      
+                    {
                         polyPtsCopy.Insert(b, offsetLine.StartPoint);
-                        polyPtsCopy[b+1] = offsetLine.EndPoint;
+                        polyPtsCopy[b + 1] = offsetLine.EndPoint;
                         //Trace.WriteLine("Case 3 : inserted 1 pt, replaced 1 pt");
                     }
 
@@ -1036,16 +1079,52 @@ namespace SpacePlanning
                         polyPtsCopy[b] = offsetLine.EndPoint;
                         //Trace.WriteLine("Case 4 : replaced 2 pts");
                     }
-
                 }
             }
-            Polygon2d polyBlock = new Polygon2d(pointForBlock,0);
-            Polygon2d polyNew = new Polygon2d(polyPtsCopy,0); //poly.Points
+            Polygon2d polySplit = new Polygon2d(pointForBlock, 0);
+            Polygon2d leftPoly = new Polygon2d(polyPtsCopy, 0); //poly.Points
             //Trace.WriteLine("Ret ++++++++++++++++++++++++++++++++++++++++++++");
             return new Dictionary<string, object>
             {
+                { "PolyAfterSplit", (polySplit) },
+                { "LeftOverPoly", (leftPoly) },
+            };
+
+        }
+
+
+        //splits a polygon based on offset direction
+        [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly", "LineOptions", "SortedLengths" })]
+        public static Dictionary<string, object> CreateBlocksByLines(Polygon2d polyOutline, Polygon2d containerPoly, double distance = 10, double minDist = 20)
+        {
+            if (!PolygonUtility.CheckPoly(polyOutline)) return null;
+            Polygon2d poly = new Polygon2d(polyOutline.Points,0);
+            List<double> lineLength = new List<double>();
+            List<Line2d> lineOptions = new List<Line2d>();
+            Dictionary<string, object> checkLineOffsetObject = PolygonUtility.CheckLinesOffsetInPoly(poly, containerPoly, distance);
+            List<bool> offsetAble = (List<bool>)checkLineOffsetObject["Offsetables"];
+            for (int i = 0; i < poly.Points.Count; i++)
+            {
+                if (offsetAble[i] == true) { lineLength.Add(poly.Lines[i].Length); }
+                else lineLength.Add(0);
+            }           
+            double[] lineLengthArray = new double[lineLength.Count];
+            int[] unsortedIndices = new int[lineLength.Count];
+            for (int i = 0; i < lineLength.Count; i++)
+            {
+                lineLengthArray[i] = lineLength[i];
+                unsortedIndices[i] = i;
+            }
+            List<int> sortedIndices = BasicUtility.Quicksort(lineLengthArray, unsortedIndices, 0, lineLength.Count - 1);
+            if (sortedIndices != null) sortedIndices.Reverse();
+            for (int i = 0; i < poly.Points.Count; i++) if (lineLength[i] > 0 && i != sortedIndices[0]) { lineOptions.Add(poly.Lines[i]); }
+            Dictionary<string, object> splitObj = SplitByOffsetFromLine(poly, sortedIndices[0], distance, minDist);
+            Polygon2d polyBlock = (Polygon2d)splitObj["PolyAfterSplit"];
+            Polygon2d leftPoly = (Polygon2d)splitObj["LeftOverPoly"];
+            return new Dictionary<string, object>
+            {
                 { "PolyAfterSplit", (polyBlock) },
-                { "LeftOverPoly", (polyNew) },
+                { "LeftOverPoly", (leftPoly) },
                 { "LineOptions" , (lineOptions) },
                 { "SortedLengths", (sortedIndices) }           
             };
