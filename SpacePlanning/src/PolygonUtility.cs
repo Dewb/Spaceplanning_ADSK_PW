@@ -291,7 +291,7 @@ namespace SpacePlanning
             allSplitLines.AddRange(hLines);
             allSplitLines.AddRange(vLines);
 
-
+            // can replace the allsplitlines with gridlines
             bool splitDone = false;
             Stack<Polygon2d> splittedPolys = new Stack<Polygon2d>();
             Polygon2d currentPoly = new Polygon2d(SmoothPolygon(polyReg.Points, BuildLayout.spacingSet));
@@ -309,13 +309,9 @@ namespace SpacePlanning
                 //CHECK sides-------------------------------------------------------------------------------
                 if (numSides < 5)
                 {
-                    //ADD to wholesomeblocklist
                     wholesomePolyList.Add(currentPoly);
                     currentPoly = splittedPolys.Pop();
-                    //Trace.WriteLine("WholeSomeBlock Found " + wholesomePolyList.Count);
-                    //continue;
                 }
-                //Trace.WriteLine("================Current Number side Number is  " + numSides);            
                     
                 //SPLIT blocks-----------------------------------------------------------------------------                
                 while (splitDone == false && count < maxTry && allSplitLines.Count > 0)
@@ -324,33 +320,24 @@ namespace SpacePlanning
                     int selectLineNum = (int)Math.Floor(BasicUtility.RandomBetweenNumbers(ran, allSplitLines.Count, 0));
                     Line2d splitLine = allSplitLines[selectLineNum];
                     splitLine = LineUtility.Move(splitLine, 0.05);
-                    Dictionary<string, object> splitPolys = BuildLayout.SplitByLine(currentPoly, splitLine, 0); //{ "PolyAfterSplit", "SplitLine" })]
+                    Dictionary<string, object> splitPolys = BuildLayout.SplitByLine(currentPoly, splitLine, 0); 
                     List<Polygon2d> polyAfterSplit = (List<Polygon2d>)splitPolys["PolyAfterSplit"];
                     if (polyAfterSplit == null || polyAfterSplit.Count < 2 || 
                         polyAfterSplit[0] == null || polyAfterSplit[0].Points == null || polyAfterSplit[0].Points.Count == 0 ||
-                        polyAfterSplit[1] == null || polyAfterSplit[1].Points == null || polyAfterSplit[1].Points.Count == 0)
-                    {
-                        //Trace.WriteLine("!!!!!!!!!!!!!!!!!!! Drat !!!!!!!!!!!!!!!!");
-                        splitDone = false;
-                    }
+                        polyAfterSplit[1] == null || polyAfterSplit[1].Points == null || polyAfterSplit[1].Points.Count == 0) splitDone = false;
                     else
                     {
                         allSplitLines.RemoveAt(selectLineNum);
                         currentPoly = polyAfterSplit[0];
-                        //splittedPolys.Push(polyAfterSplit[0]);
                         splittedPolys.Push(polyAfterSplit[1]);
                         allPolyAfterSplit.AddRange(polyAfterSplit);
                         splitDone = true;
-                        //Trace.WriteLine("SplitWorked well");
                     }
                     count += 1;                   
 
-                } // end of second while loop      
-                //Trace.WriteLine("++++Still this many blocks left++++++++++ : " + splittedPolys.Count);
-              
+                } // end of second while loop                    
                 splitDone = false;
                 countBig += 1;
-                //Trace.WriteLine("===============Whiles are going for : " + countBig);
             }// end of 1st while loop
 
             List<Polygon2d> cleanWholesomePolyList = new List<Polygon2d>();

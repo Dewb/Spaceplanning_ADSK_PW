@@ -356,7 +356,61 @@ namespace SpacePlanning
             return cellIdList;
             }
 
-   
+        //gets the cell and forms grid line based on distance provided
+        [MultiReturn(new[] { "LowerPoint", "HigherPoint", "GridXLines", "GridYLines", "PointXList", "PointYList" })]
+        public static Dictionary<string, object> CreateGridLines(Polygon2d poly, List<Cell> cellList, int mul = 1)
+        {
+            if (cellList == null || cellList.Count == 0) return null;
+            if (mul < 1) mul = 1;
+            double eps = 50, extension = 450;
+            double distanceX = mul * cellList[0].DimX, distanceY = mul * cellList[0].DimY;          
+
+            Range2d range = PolygonUtility.GetRang2DFromBBox(ReadData.FromPointsGetBoundingPoly(poly.Points));
+            double minX = range.Xrange.Min;
+            double maxX = range.Xrange.Max;
+            double minY = range.Yrange.Min;
+            double maxY = range.Yrange.Max;
+            Point2d lowPt = new Point2d(minX, minY), hipt = new Point2d(maxX, maxY);
+            List<Point2d> pointXList = new List<Point2d>(), pointYList = new List<Point2d>();
+            double currentXPos = minY + distanceY;
+            while(currentXPos <= maxY - distanceY)
+            {
+                pointXList.Add(new Point2d(minX, currentXPos));
+                currentXPos += distanceY;
+            }
+            double currentYPos = minX + distanceX;
+            while (currentYPos <= maxX - distanceX)
+            {
+                pointYList.Add(new Point2d(currentYPos,minY));
+                currentYPos += distanceX;
+            }
+            List<Line2d> gridXLines = new List<Line2d>(), gridYLines = new List<Line2d>();
+            for(int i=0; i < pointYList.Count; i++)
+            {
+                Line2d line = new Line2d(pointYList[i], new Point2d(pointYList[i].X, pointYList[i].Y + eps));
+                line = LineUtility.ExtendLine(line, extension);
+                gridXLines.Add(line);
+            }
+
+            for (int i = 0; i < pointXList.Count; i++)
+            {
+                Line2d line = new Line2d(pointXList[i], new Point2d(pointXList[i].X+ eps, pointXList[i].Y));
+                line = LineUtility.ExtendLine(line, extension);
+                gridYLines.Add(line);
+            }
+
+            return new Dictionary<string, object>
+            {
+                { "LowerPoint", (lowPt) },
+                { "HigherPoint", (hipt) },
+                { "GridXLines", (gridXLines) },
+                { "GridYLines", (gridYLines) },
+                { "PointXList", (pointXList) },
+                { "PointYList", (pointYList) }
+            };
+        }
+
+
         //get the cells and make an orthogonal outline poly - not using now, but works best
         [MultiReturn(new[] { "BorderPolyLine", "BorderCellsFound" })]
         public static Dictionary<string,object> CreateBorder(List<List<int>> cellNeighborMatrix, List<Cell> cellList, bool tag = true)
@@ -484,7 +538,7 @@ namespace SpacePlanning
         
 
         //make wholesome polys inside till it meets certain area cover
-        [MultiReturn(new[] { "BuildingOutline","WholesomePolys", "SiteArea" , "BuildingOutlineArea", "GroundCoverAchieved" })]
+        [MultiReturn(new[] { "BuildingOutline","WholesomePolys", "SiteArea" , "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells" })]
         public static Dictionary<string, object> FormMakerInSite(Polygon2d borderPoly, Polygon2d origSitePoly, 
             List<Cell> cellList,double groundCoverage = 0.5)
         {
@@ -505,18 +559,19 @@ namespace SpacePlanning
                 if (areaPlaced < areaSite * groundCoverLow || areaPlaced > areaSite * groundCoverHigh) blockPlaced = false;
                 else blockPlaced = true;
                 count += 1;
-                //Trace.WriteLine("Trying forming up for : " + count);
             }
             List<Polygon2d> cleanWholesomePolyList = (List<Polygon2d>)wholeSomeData["WholesomePolys"];
             Dictionary<string, object> mergeObject = MergePoly(cleanWholesomePolyList, cellList);
             Polygon2d mergedPoly = (Polygon2d)mergeObject["MergedPoly"];
+            List<Cell> sortedCells = (List<Cell>)mergeObject["SortedCells"];
             return new Dictionary<string, object>
             {
                 { "BuildingOutline", (mergedPoly) },
                 { "WholesomePolys", (cleanWholesomePolyList) },
                 { "SiteArea", (areaSite) },
                 { "BuildingOutlineArea", (areaPlaced) },
-                { "GroundCoverAchieved", (areaPlaced/areaSite) }
+                { "GroundCoverAchieved", (areaPlaced/areaSite) },
+                { "SortedCells", (sortedCells)}
             };
         }
 
