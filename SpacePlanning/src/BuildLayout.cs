@@ -1009,30 +1009,23 @@ namespace SpacePlanning
                     pointForBlock.Add(poly.Points[b]);
                     pointForBlock.Add(offsetLine.EndPoint);
                     pointForBlock.Add(offsetLine.StartPoint);
-
-
-                    int aNew = 0, bNew = 0;
-                    if (countIndex1 == 0) aNew = poly.Points.Count - 1;
-                    else aNew = countIndex1 - 1;
-                    if (countIndex2 == 0) bNew = poly.Points.Count - 1;
-                    else bNew = countIndex2 - 1;
-                    //ptA = poly.Points[a]; ptB = poly.Points[b];
                     //--poly.Points[a] = offsetLine.StartPoint;
-                    polyPtsCopy.Insert(b, offsetLine.EndPoint);
-                    //countIndex1 += 1;
-                    //--poly.Points[b] = offsetLine.EndPoint;
-                    polyPtsCopy.Insert(b, offsetLine.StartPoint);
-                    //countIndex2 += 1;
+                    //--poly.Points[b] = offsetLine.EndPoint;                  
+                    // find prev line and next line
+                    // get the orientation compare with current line
+                    // if different orient caseA else caseB
+                    if (true) // caseB
+                    {
+                        polyPtsCopy.Insert(b, offsetLine.EndPoint);
+                        polyPtsCopy.Insert(b, offsetLine.StartPoint);
+                    }
+                    else // caseA
+                    {
+                        polyPtsCopy[a] = offsetLine.StartPoint;
+                        polyPtsCopy[b] = offsetLine.EndPoint;
+                    }
                 }
             }
-            /*int aNew = 0, bNew = 0;
-            if (countIndex1 == 0) aNew = poly.Points.Count - 1;
-            else aNew = countIndex1 - 1;
-            if (countIndex2 == 0) bNew = poly.Points.Count - 1;
-            else bNew = countIndex2 - 1;
-            poly.Points.Insert(aNew, ptA);
-            poly.Points.Insert(bNew, ptB);
-            */
             Polygon2d polyBlock = new Polygon2d(pointForBlock,0);
             Polygon2d polyNew = new Polygon2d(polyPtsCopy); //poly.Points
             return new Dictionary<string, object>
