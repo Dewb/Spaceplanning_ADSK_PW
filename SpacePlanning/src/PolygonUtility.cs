@@ -23,7 +23,8 @@ namespace SpacePlanning
         //check if a polygon is null then return false
         internal static bool CheckPoly(Polygon2d poly)
         {
-            if (poly == null || poly.Points == null || poly.Points.Count == 0) return false;
+            if (poly == null || poly.Points == null
+                || poly.Points.Count == 0 || poly.Lines == null || poly.Lines.Count < 3) return false;
             else return true;
         }
 

@@ -983,7 +983,6 @@ namespace SpacePlanning
 
             List<Point2d> pointForBlock = new List<Point2d>();
             List<Point2d> polyPtsCopy = poly.Points.Select(pt => new Point2d(pt.X, pt.Y)).ToList();//deep copy
-            int countIndex1 = 0, countIndex2 = 0;
             Point2d ptA = new Point2d(0, 0), ptB = new Point2d(0, 0);
             for (int i = 0; i < poly.Points.Count; i++)
             {
@@ -995,7 +994,6 @@ namespace SpacePlanning
                 Line2d nextLine = poly.Lines[b];
                 if (i == indexSelected) 
                 {
-                    countIndex1 = a; countIndex2 = b;
                     Line2d line = new Line2d(poly.Points[a], poly.Points[b]);
                     if (line.Length < minDist) continue;
                     Line2d offsetLine = LineUtility.OffsetLineInsidePoly(line, poly, distance);
@@ -1003,11 +1001,6 @@ namespace SpacePlanning
                     pointForBlock.Add(poly.Points[b]);
                     pointForBlock.Add(offsetLine.EndPoint);
                     pointForBlock.Add(offsetLine.StartPoint);
-                    //--poly.Points[a] = offsetLine.StartPoint;
-                    //--poly.Points[b] = offsetLine.EndPoint;                  
-                    // find prev line and next line
-                    // get the orientation compare with current line
-                    // if different orient caseA else caseB
                     int orientPrev = GraphicsUtility.CheckLineOrient(prevLine);
                     int orientCurr = GraphicsUtility.CheckLineOrient(currLine);
                     int orientNext = GraphicsUtility.CheckLineOrient(nextLine);
@@ -1017,23 +1010,23 @@ namespace SpacePlanning
                     {
                         polyPtsCopy.Insert(b, offsetLine.EndPoint);
                         polyPtsCopy.Insert(b, offsetLine.StartPoint);
-                        Trace.WriteLine("Case 1 : inserted two pts");
+                        //Trace.WriteLine("Case 1 : inserted two pts");
                     }
 
                     // case 2
                     if (orientPrev != orientCurr && orientCurr == orientNext) 
                     {
-                        polyPtsCopy.Insert(b, offsetLine.StartPoint);
-                        polyPtsCopy[b] = offsetLine.EndPoint;
-                        Trace.WriteLine("Case 2 : inserted 1 pt, replaced 1 pt");
+                        polyPtsCopy[a] = offsetLine.StartPoint;
+                        polyPtsCopy.Insert(b, offsetLine.EndPoint);                        
+                        //Trace.WriteLine("Case 2 : inserted 1 pt, replaced 1 pt----------------");
                     }
 
                     // case 3
                     if (orientPrev == orientCurr && orientCurr != orientNext)
                     {      
-                        polyPtsCopy.Insert(b, offsetLine.EndPoint);
-                        polyPtsCopy[a] = offsetLine.StartPoint;
-                        Trace.WriteLine("Case 3 : inserted 1 pt, replaced 1 pt");
+                        polyPtsCopy.Insert(b, offsetLine.StartPoint);
+                        polyPtsCopy[b+1] = offsetLine.EndPoint;
+                        //Trace.WriteLine("Case 3 : inserted 1 pt, replaced 1 pt");
                     }
 
                     // case 4
@@ -1041,13 +1034,14 @@ namespace SpacePlanning
                     {
                         polyPtsCopy[a] = offsetLine.StartPoint;
                         polyPtsCopy[b] = offsetLine.EndPoint;
-                        Trace.WriteLine("Case 4 : replaced 2 pts");
+                        //Trace.WriteLine("Case 4 : replaced 2 pts");
                     }
 
                 }
             }
             Polygon2d polyBlock = new Polygon2d(pointForBlock,0);
             Polygon2d polyNew = new Polygon2d(polyPtsCopy,0); //poly.Points
+            //Trace.WriteLine("Ret ++++++++++++++++++++++++++++++++++++++++++++");
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (polyBlock) },
