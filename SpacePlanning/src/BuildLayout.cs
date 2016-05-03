@@ -404,7 +404,7 @@ namespace SpacePlanning
             List<Line2d> falseLines = new List<Line2d>();
             List<Line2d> lineOptions = new List<Line2d>();
             bool error = false;
-            while (polyLeftList.Count > 0 && areaAdded < area && count < maxTry) //count<recompute
+            while (polyLeftList.Count > 0 && areaAdded < area && count < recompute) //count<recompute
             {
                 Polygon2d currentPoly = polyLeftList.Pop();
                 Polygon2d tempPoly = new Polygon2d(currentPoly.Points,0);
@@ -993,12 +993,15 @@ namespace SpacePlanning
 
             List<Point2d> pointForBlock = new List<Point2d>();
             List<Point2d> polyPtsCopy = poly.Points.Select(pt => new Point2d(pt.X, pt.Y)).ToList();//deep copy
+            int countIndex1 = 0, countIndex2 = 0;
+            Point2d ptA = new Point2d(0, 0), ptB = new Point2d(0, 0);
             for (int i = 0; i < poly.Points.Count; i++)
             {
                 int a = i, b = i + 1;
                 if (i == poly.Points.Count - 1) b = 0;
                 if (i == indexSelected) 
                 {
+                    countIndex1 = a; countIndex2 = b;
                     Line2d line = new Line2d(poly.Points[a], poly.Points[b]);
                     if (line.Length < minDist) continue;
                     Line2d offsetLine = LineUtility.OffsetLineInsidePoly(line, poly, distance);
@@ -1006,12 +1009,32 @@ namespace SpacePlanning
                     pointForBlock.Add(poly.Points[b]);
                     pointForBlock.Add(offsetLine.EndPoint);
                     pointForBlock.Add(offsetLine.StartPoint);
-                    poly.Points[a] = offsetLine.StartPoint;
-                    poly.Points[b] = offsetLine.EndPoint;
+
+
+                    int aNew = 0, bNew = 0;
+                    if (countIndex1 == 0) aNew = poly.Points.Count - 1;
+                    else aNew = countIndex1 - 1;
+                    if (countIndex2 == 0) bNew = poly.Points.Count - 1;
+                    else bNew = countIndex2 - 1;
+                    //ptA = poly.Points[a]; ptB = poly.Points[b];
+                    //--poly.Points[a] = offsetLine.StartPoint;
+                    polyPtsCopy.Insert(b, offsetLine.EndPoint);
+                    //countIndex1 += 1;
+                    //--poly.Points[b] = offsetLine.EndPoint;
+                    polyPtsCopy.Insert(b, offsetLine.StartPoint);
+                    //countIndex2 += 1;
                 }
             }
-            Polygon2d polyBlock = new Polygon2d(pointForBlock);
-            Polygon2d polyNew = new Polygon2d(poly.Points);
+            /*int aNew = 0, bNew = 0;
+            if (countIndex1 == 0) aNew = poly.Points.Count - 1;
+            else aNew = countIndex1 - 1;
+            if (countIndex2 == 0) bNew = poly.Points.Count - 1;
+            else bNew = countIndex2 - 1;
+            poly.Points.Insert(aNew, ptA);
+            poly.Points.Insert(bNew, ptB);
+            */
+            Polygon2d polyBlock = new Polygon2d(pointForBlock,0);
+            Polygon2d polyNew = new Polygon2d(polyPtsCopy); //poly.Points
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (polyBlock) },
