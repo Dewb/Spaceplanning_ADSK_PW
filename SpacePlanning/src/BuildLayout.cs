@@ -416,7 +416,11 @@ namespace SpacePlanning
                 Dictionary<string, object> addPtObj = AddPointToFitPoly(leftPoly, poly, distance, thresDistance, recompute);
                 leftPoly = (Polygon2d)addPtObj["PolyAddedPts"];
                 falseLines = (List<Line2d>)addPtObj["FalseLineList"];
-                pointAdd = (Point2d)addPtObj["PointAdded"];
+                pointAdd = (Point2d)addPtObj["PointAdded"];             
+                areaAdded += PolygonUtility.AreaCheckPolygon(blockPoly);
+                polyLeftList.Push(leftPoly);
+                blockPolyList.Add(blockPoly);
+                count += 1;
                 if (lineOptions.Count == 0) error = true;
                 else
                 {
@@ -425,19 +429,8 @@ namespace SpacePlanning
                         if (lineOptions[i].Length > thresDistance) { error = false; break; }
                         else error = true;
                     }
-                }
-                if (error) {
-                    polyLeftList.Push(leftPoly);
-                    break;
-                }
-
-
-                
-               
-                areaAdded += PolygonUtility.AreaCheckPolygon(blockPoly);
-                polyLeftList.Push(leftPoly);
-                blockPolyList.Add(blockPoly);
-                count += 1;
+                } 
+                if (error) break;
             }
             leftoverPolyList.AddRange(polyLeftList);
             blockPolyList = PolygonUtility.CleanPolygonList(blockPolyList);
