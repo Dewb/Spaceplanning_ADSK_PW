@@ -99,6 +99,11 @@ namespace SpacePlanning
             dataStack.Add(areaEachProgList);
             dataStack.Add(prefValProgList);
             dataStack.Add(progAdjList);
+
+            //added to compute area percentage for each dept
+            double totalDeptArea = 0;
+            for(int i = 0; i < deptDataStack.Count; i++) totalDeptArea += deptDataStack[i].DeptAreaNeeded;
+            for (int i = 0; i < deptDataStack.Count; i++) deptDataStack[i].DeptAreaProportion = Math.Round((deptDataStack[i].DeptAreaNeeded / totalDeptArea), 3);
             return new Dictionary<string, IEnumerable<object>>
             {
                 { "DataStackArray", (dataStack) },
@@ -217,6 +222,13 @@ namespace SpacePlanning
             dataStack.Add(areaEachProgList);
             dataStack.Add(prefValProgList);
             dataStack.Add(progAdjList);
+
+            //added to compute area percentage for each dept
+            double totalDeptArea = 0;
+            for (int i = 0; i < deptDataStack.Count; i++) totalDeptArea += deptDataStack[i].DeptAreaNeeded;
+            for (int i = 0; i < deptDataStack.Count; i++) deptDataStack[i].DeptAreaProportion = Math.Round((deptDataStack[i].DeptAreaNeeded / totalDeptArea),3);
+
+
             return new Dictionary<string, IEnumerable<object>>
             {
                 { "DataStackArray", (dataStack) },

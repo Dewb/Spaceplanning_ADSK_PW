@@ -1,5 +1,6 @@
 ﻿
 using stuffer;
+using System;
 using System.Collections.Generic;
 
 
@@ -21,7 +22,9 @@ namespace SpacePlanning
         private double _gridX;
         private double _gridY;
         private List<Polygon2d> _polyDepts;
-        
+        private double _deptAreaProportion;
+        private double _deptAreaProportionAchieved;
+
 
         // We make the constructor for this object internal because the 
         // Dynamo user should construct an object through a static method
@@ -39,6 +42,8 @@ namespace SpacePlanning
             _gridY = dimY;
 
             _polyDepts = null;
+            _deptAreaProportion = 0;
+            _deptAreaProportionAchieved = 0;
 
 
 
@@ -56,6 +61,8 @@ namespace SpacePlanning
             _CellsAssigned = other.DepartmentCells;
             _gridX = other.GridX;
             _gridY = other.GridY;
+            _deptAreaProportion = other.DeptAreaProportion;
+            _deptAreaProportionAchieved = other.DeptAreaProportionAchieved;
 
             if (other.PolyDeptAssigned != null && other.PolyDeptAssigned.Count > 0)
             {
@@ -65,10 +72,27 @@ namespace SpacePlanning
             {
                 _polyDepts = null;
             }
-
-
         }
 
+        public double DeptAreaProportionAchieved
+        {
+            get { return _deptAreaProportionAchieved; }
+            set { _deptAreaProportionAchieved = value; }
+        }
+
+        public double DeptAreaProportion
+        {
+            get { return _deptAreaProportion; }
+            set { _deptAreaProportion = value; }
+        }
+
+
+        public double AreaPercentageAchieved
+        {
+            get { return Math.Round(AreaProvided/DeptAreaNeeded,3); }
+        }
+
+      
         public List<Polygon2d> PolyDeptAssigned
         {
             get { return _polyDepts; }

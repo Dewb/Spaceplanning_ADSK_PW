@@ -521,9 +521,12 @@ namespace SpacePlanning
             double areaCurrentPoly = 0, areaPlaced = 0;
             List<Node> AllNodesList = new List<Node>();
             List<Polygon2d> everyDeptPoly = new List<Polygon2d>();
-            
-                    
-            double areaDeptNeeds = deptItem.DeptAreaNeeded;
+            List<Polygon2d> leftPolyList = leftOverPoly.ToList();
+            double areaAvailable = 0;
+            for(int i = 0; i < leftPolyList.Count; i++) areaAvailable += PolygonUtility.AreaCheckPolygon(leftPolyList[i]);
+
+            double areaDeptNeeds = deptItem.DeptAreaProportion * areaAvailable;        
+            //double areaDeptNeeds = deptItem.DeptAreaNeeded;
             double areaAddedToDept = 0;
             double areaLeftOverToAdd = areaDeptNeeds - areaAddedToDept;
             double perc = 0.2;
@@ -540,16 +543,11 @@ namespace SpacePlanning
                     everyDeptPoly.Add(currentPolyObj);
                     areaLeftOverToAdd = areaLeftOverToAdd - areaCurrentPoly;
                     areaPlaced += areaCurrentPoly;
-                    //Trace.WriteLine("Area left over after assigning when area is greater than current : " + areaLeftOverToAdd);
                 }
                 else
                 {
                     Dictionary<string, object> basicSplit = SplitByRatio(currentPolyObj, ratio, dir);
-                    if (basicSplit == null)
-                    {
-                        Trace.WriteLine("Returning as splitbyratio did not work : ");
-                        return null;
-                    }
+                    if (basicSplit == null) return null;
                     List<Polygon2d> polyS = (List<Polygon2d>)basicSplit["PolyAfterSplit"];
                     double areaA = PolygonUtility.AreaCheckPolygon(polyS[0]);
                     double areaB = PolygonUtility.AreaCheckPolygon(polyS[1]);
@@ -573,8 +571,7 @@ namespace SpacePlanning
                     AllNodesList.Add(containerNode);
                 }
                 count2 += 1;
-            } // end of while loop
-            
+            } // end of while loop            
 
             return new Dictionary<string, object>
             {
@@ -1463,6 +1460,13 @@ namespace SpacePlanning
                 newDeptData.PolyDeptAssigned = AllDeptPolys[i];
                 UpdatedDeptData.Add(newDeptData);
             }
+
+
+            //added to compute area percentage for each dept
+            double totalDeptArea = 0;
+            for (int i = 0; i < UpdatedDeptData.Count; i++) totalDeptArea += UpdatedDeptData[i].DeptAreaNeeded;
+            for (int i = 0; i < UpdatedDeptData.Count; i++) UpdatedDeptData[i].DeptAreaProportionAchieved = Math.Round((UpdatedDeptData[i].AreaProvided / totalDeptArea), 3);
+
 
             return new Dictionary<string, object>
             {
