@@ -997,8 +997,12 @@ namespace SpacePlanning
             Point2d ptA = new Point2d(0, 0), ptB = new Point2d(0, 0);
             for (int i = 0; i < poly.Points.Count; i++)
             {
-                int a = i, b = i + 1;
+                int a = i, b = i + 1, c = i - 1;
+                if (c < 0) c = poly.Points.Count - 1;
                 if (i == poly.Points.Count - 1) b = 0;
+                Line2d prevLine = poly.Lines[c];
+                Line2d currLine = poly.Lines[a];
+                Line2d nextLine = poly.Lines[b];
                 if (i == indexSelected) 
                 {
                     countIndex1 = a; countIndex2 = b;
@@ -1014,16 +1018,38 @@ namespace SpacePlanning
                     // find prev line and next line
                     // get the orientation compare with current line
                     // if different orient caseA else caseB
-                    if (true) // caseB
+                    int orientPrev = GraphicsUtility.CheckLineOrient(prevLine);
+                    int orientCurr = GraphicsUtility.CheckLineOrient(currLine);
+                    int orientNext = GraphicsUtility.CheckLineOrient(nextLine);
+            
+                    // case 1
+                    if (orientPrev == orientCurr && orientCurr == orientNext) 
                     {
                         polyPtsCopy.Insert(b, offsetLine.EndPoint);
                         polyPtsCopy.Insert(b, offsetLine.StartPoint);
                     }
-                    else // caseA
+
+                    // case 2
+                    if (orientPrev != orientCurr && orientCurr == orientNext) 
+                    {
+                        polyPtsCopy.Insert(b, offsetLine.EndPoint);
+                        polyPtsCopy[a] = offsetLine.StartPoint;
+                    }
+
+                    // case 3
+                    if (orientPrev == orientCurr && orientCurr != orientNext)
+                    {
+                        polyPtsCopy.Insert(b, offsetLine.StartPoint);
+                        polyPtsCopy[b] = offsetLine.EndPoint;
+                    }
+
+                    // case 4
+                    if (orientPrev != orientCurr && orientCurr != orientNext)
                     {
                         polyPtsCopy[a] = offsetLine.StartPoint;
                         polyPtsCopy[b] = offsetLine.EndPoint;
                     }
+
                 }
             }
             Polygon2d polyBlock = new Polygon2d(pointForBlock,0);
