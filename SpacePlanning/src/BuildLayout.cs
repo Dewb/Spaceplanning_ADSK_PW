@@ -1017,20 +1017,23 @@ namespace SpacePlanning
                     {
                         polyPtsCopy.Insert(b, offsetLine.EndPoint);
                         polyPtsCopy.Insert(b, offsetLine.StartPoint);
+                        Trace.WriteLine("Case 1 : inserted two pts");
                     }
 
                     // case 2
                     if (orientPrev != orientCurr && orientCurr == orientNext) 
                     {
-                        polyPtsCopy.Insert(b, offsetLine.EndPoint);
-                        polyPtsCopy[a] = offsetLine.StartPoint;
+                        polyPtsCopy.Insert(b, offsetLine.StartPoint);
+                        polyPtsCopy[b] = offsetLine.EndPoint;
+                        Trace.WriteLine("Case 2 : inserted 1 pt, replaced 1 pt");
                     }
 
                     // case 3
                     if (orientPrev == orientCurr && orientCurr != orientNext)
-                    {
-                        polyPtsCopy.Insert(b, offsetLine.StartPoint);
-                        polyPtsCopy[b] = offsetLine.EndPoint;
+                    {      
+                        polyPtsCopy.Insert(b, offsetLine.EndPoint);
+                        polyPtsCopy[a] = offsetLine.StartPoint;
+                        Trace.WriteLine("Case 3 : inserted 1 pt, replaced 1 pt");
                     }
 
                     // case 4
@@ -1038,12 +1041,13 @@ namespace SpacePlanning
                     {
                         polyPtsCopy[a] = offsetLine.StartPoint;
                         polyPtsCopy[b] = offsetLine.EndPoint;
+                        Trace.WriteLine("Case 4 : replaced 2 pts");
                     }
 
                 }
             }
             Polygon2d polyBlock = new Polygon2d(pointForBlock,0);
-            Polygon2d polyNew = new Polygon2d(polyPtsCopy); //poly.Points
+            Polygon2d polyNew = new Polygon2d(polyPtsCopy,0); //poly.Points
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (polyBlock) },
