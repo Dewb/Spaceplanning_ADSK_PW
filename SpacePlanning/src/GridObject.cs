@@ -358,28 +358,26 @@ namespace SpacePlanning
 
         //gets the cell and forms grid line based on distance provided
         [MultiReturn(new[] { "LowerPoint", "HigherPoint", "GridXLines", "GridYLines", "PointXList", "PointYList" })]
-        public static Dictionary<string, object> CreateGridLines(Polygon2d poly, List<Cell> cellList, int mul = 1)
+        public static Dictionary<string, object> CreateGridLines(Polygon2d poly, double dim = 10, int mul = 1)
         {
-            if (cellList == null || cellList.Count == 0) return null;
-            if (mul < 1) mul = 1;
+            if (mul < 0.5) mul = 1;
             double eps = 50, extension = 450;
-            double distanceX = mul * cellList[0].DimX, distanceY = mul * cellList[0].DimY;          
+            double distanceX = mul * dim, distanceY = mul * dim;          
 
-            Range2d range = PolygonUtility.GetRang2DFromBBox(ReadData.FromPointsGetBoundingPoly(poly.Points));
-            double minX = range.Xrange.Min;
-            double maxX = range.Xrange.Max;
-            double minY = range.Yrange.Min;
-            double maxY = range.Yrange.Max;
-            Point2d lowPt = new Point2d(minX, minY), hipt = new Point2d(maxX, maxY);
+            Dictionary<string, object> lowHighObj = GraphicsUtility.ReturnHighestAndLowestPointofBBox(poly);
+            Point2d lowPt = (Point2d)lowHighObj["LowerPoint"];
+            Point2d hipt = (Point2d)lowHighObj["HigherPoint"];
             List<Point2d> pointXList = new List<Point2d>(), pointYList = new List<Point2d>();
+            double minY = lowPt.Y, minX = lowPt.X, maxY = hipt.Y, maxX = hipt.X;
+
             double currentXPos = minY + distanceY;
-            while(currentXPos <= maxY - distanceY)
+            while(currentXPos <= maxY - distanceY/2)
             {
                 pointXList.Add(new Point2d(minX, currentXPos));
                 currentXPos += distanceY;
             }
             double currentYPos = minX + distanceX;
-            while (currentYPos <= maxX - distanceX)
+            while (currentYPos <= maxX - distanceX/2)
             {
                 pointYList.Add(new Point2d(currentYPos,minY));
                 currentYPos += distanceX;
@@ -391,7 +389,6 @@ namespace SpacePlanning
                 line = LineUtility.ExtendLine(line, extension);
                 gridXLines.Add(line);
             }
-
             for (int i = 0; i < pointXList.Count; i++)
             {
                 Line2d line = new Line2d(pointXList[i], new Point2d(pointXList[i].X+ eps, pointXList[i].Y));
@@ -542,6 +539,7 @@ namespace SpacePlanning
         public static Dictionary<string, object> FormMakerInSite(Polygon2d borderPoly, Polygon2d origSitePoly, 
             List<Cell> cellList,double groundCoverage = 0.5)
         {
+            if (cellList == null) return null;
             if (!PolygonUtility.CheckPoly(borderPoly)) return null;
             bool blockPlaced = false;
             int count = 0, maxTry = 10;
@@ -549,7 +547,8 @@ namespace SpacePlanning
             if (groundCoverage < eps) groundCoverage = 2 * eps;
             if (groundCoverage > 0.8) groundCoverage = 0.8;
             double groundCoverLow = groundCoverage - eps, groundCoverHigh = groundCoverage + eps;
-            Dictionary<string, object> wholeSomeData = PolygonUtility.MakeWholesomeBlockInPoly(borderPoly, groundCoverage);
+            // Dictionary<string, object> wholeSomeData = PolygonUtility.MakeWholesomeBlockInPoly(borderPoly, cellList[0].DimX, groundCoverage);
+            Dictionary<string, object> wholeSomeData = new Dictionary<string, object>();
             while (blockPlaced == false && count < maxTry)
             {
                 wholeSomeData = PolygonUtility.MakeWholesomeBlockInPoly(borderPoly, groundCoverage);

@@ -116,6 +116,22 @@ namespace SpacePlanning
 
         }
 
+
+        //returns the highest and lowest point along with indices from a pointlist
+        internal static Dictionary<string,object> ReturnHighestAndLowestPointofBBox(Polygon2d poly)
+        {
+            Range2d range = PolygonUtility.GetRang2DFromBBox(ReadData.FromPointsGetBoundingPoly(poly.Points));
+            double minX = range.Xrange.Min;
+            double maxX = range.Xrange.Max;
+            double minY = range.Yrange.Min;
+            double maxY = range.Yrange.Max;
+            Point2d lowPt = new Point2d(minX, minY), hipt = new Point2d(maxX, maxY);         
+            return new Dictionary<string, object>
+            {
+                { "LowerPoint", (lowPt) },
+                { "HigherPoint", (hipt) },
+            };
+        }
         //returns the point having highest x,y value from a list - using now
         internal static int ReturnHighestPointFromListNew(List<Point2d> ptList)
         {

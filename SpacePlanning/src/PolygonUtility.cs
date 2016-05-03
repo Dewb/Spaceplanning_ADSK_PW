@@ -247,12 +247,13 @@ namespace SpacePlanning
             return GraphicsUtility.PointInsidePolygonTest(squarePoly, ptB);
         }
 
-        //get a poly and find rectangular polys inside. then merge them together to form a big poly
-        public static Dictionary<string, object> MakeWholesomeBlockInPoly(Polygon2d poly, double recompute = 5)
+        //get a poly and find rectangular polys inside. then merge them together to form a big poly - ORIGINAL
+        public static Dictionary<string, object> MakeWholesomeBlockInPoly(Polygon2d poly, double dim = 10,double recompute = 5)
         {
             if (poly == null || poly.Points == null || poly.Points.Count == 0) return null;
             List<Polygon2d> wholesomePolyList = new List<Polygon2d>();
             Polygon2d polyReg = new Polygon2d(poly.Points);
+            List<Line2d> allSplitLines = new List<Line2d>();
             List<Line2d> hLines = new List<Line2d>();
             List<Line2d> vLines = new List<Line2d>();
             List<Point2d> hMidPt = new List<Point2d>();
@@ -287,9 +288,94 @@ namespace SpacePlanning
             hLines.RemoveAt(hIndHigh);
             vLines.RemoveAt(vIndLow);
             vLines.RemoveAt(vIndHigh);
-            List<Line2d> allSplitLines = new List<Line2d>();
+           
             allSplitLines.AddRange(hLines);
             allSplitLines.AddRange(vLines);
+       
+
+            List<Line2d> allSplitLinesCopy = allSplitLines.Select(x => new Line2d(x.StartPoint, x.EndPoint)).ToList(); // example of deep copy
+
+            // can replace the allsplitlines with gridlines
+            bool splitDone = false;
+            Stack<Polygon2d> splittedPolys = new Stack<Polygon2d>();
+            Polygon2d currentPoly = new Polygon2d(SmoothPolygon(polyReg.Points, BuildLayout.spacingSet));
+            //Polygon2d currentPoly = polyReg;
+            splittedPolys.Push(currentPoly);
+            Random ran = new Random();
+            int countBig = 0, maxRounds = 50;
+            List<int> numSidesList = new List<int>();
+            List<Polygon2d> allPolyAfterSplit = new List<Polygon2d>();
+            while (splittedPolys.Count > 0 && countBig < maxRounds && allSplitLines.Count > 0)
+            {
+                int count = 0, maxTry = 100;
+                int numSides = NumberofSidesPoly(currentPoly);
+                numSidesList.Add(numSides);
+                //CHECK sides-------------------------------------------------------------------------------
+                if (numSides < 5)
+                {
+                    wholesomePolyList.Add(currentPoly);
+                    currentPoly = splittedPolys.Pop();
+                }
+
+                //SPLIT blocks-----------------------------------------------------------------------------                
+                while (splitDone == false && count < maxTry && allSplitLines.Count > 0)
+                {
+                    //randomly get a line
+                    int selectLineNum = (int)Math.Floor(BasicUtility.RandomBetweenNumbers(ran, allSplitLines.Count, 0));
+                    Line2d splitLine = allSplitLines[selectLineNum];
+                    splitLine = LineUtility.Move(splitLine, 0.05);
+                    Dictionary<string, object> splitPolys = BuildLayout.SplitByLine(currentPoly, splitLine, 0);
+                    List<Polygon2d> polyAfterSplit = (List<Polygon2d>)splitPolys["PolyAfterSplit"];
+                    if (polyAfterSplit == null || polyAfterSplit.Count < 2 ||
+                        polyAfterSplit[0] == null || polyAfterSplit[0].Points == null || polyAfterSplit[0].Points.Count == 0 ||
+                        polyAfterSplit[1] == null || polyAfterSplit[1].Points == null || polyAfterSplit[1].Points.Count == 0) splitDone = false;
+                    else
+                    {
+                        allSplitLines.RemoveAt(selectLineNum);
+                        currentPoly = polyAfterSplit[0];
+                        splittedPolys.Push(polyAfterSplit[1]);
+                        allPolyAfterSplit.AddRange(polyAfterSplit);
+                        splitDone = true;
+                    }
+                    count += 1;
+
+                } // end of second while loop                    
+                splitDone = false;
+                countBig += 1;
+            }// end of 1st while loop
+
+            List<Polygon2d> cleanWholesomePolyList = new List<Polygon2d>();
+            //rationalize the wholesome polys
+            for (int i = 0; i < wholesomePolyList.Count; i++)
+            {
+                if (wholesomePolyList[i] == null || wholesomePolyList[i].Points == null ||
+                    wholesomePolyList[i].Points.Count < 4) continue;
+                cleanWholesomePolyList.Add(new Polygon2d(wholesomePolyList[i].Points));
+            }
+
+            return new Dictionary<string, object>
+            {
+                { "WholesomePolys", (cleanWholesomePolyList) },
+                { "PolysAfterSplit", (allPolyAfterSplit) },
+                { "AllSplitLines" , (allSplitLinesCopy) }
+            };
+        }
+
+        //get a poly and find rectangular polys inside. then merge them together to form a big poly
+        public static Dictionary<string, object> MakeWholesomeBlockInPolyTEST(Polygon2d poly, double dim = 10, int mul = 3, double recompute = 5)
+        {
+            if (poly == null || poly.Points == null || poly.Points.Count == 0) return null;
+            List<Polygon2d> wholesomePolyList = new List<Polygon2d>();
+            Polygon2d polyReg = new Polygon2d(poly.Points);
+            List<Line2d> allSplitLines = new List<Line2d>();
+
+            Dictionary<string, object> gridLineObj = GridObject.CreateGridLines(poly, dim, mul);
+            List<Line2d> gridXLines = (List<Line2d>)gridLineObj["GridXLines"];
+            List<Line2d> gridYLines = (List<Line2d>)gridLineObj["GridYLines"];
+            allSplitLines.AddRange(gridXLines);
+            allSplitLines.AddRange(gridYLines);
+
+            List<Line2d> allSplitLinesCopy = allSplitLines.Select(x => new Line2d(x.StartPoint,x.EndPoint)).ToList(); // example of deep copy
 
             // can replace the allsplitlines with gridlines
             bool splitDone = false;
@@ -352,7 +438,8 @@ namespace SpacePlanning
             return new Dictionary<string, object>
             {
                 { "WholesomePolys", (cleanWholesomePolyList) },
-                { "PolysAfterSplit", (allPolyAfterSplit) }
+                { "PolysAfterSplit", (allPolyAfterSplit) },
+                { "AllSplitLines" , (allSplitLinesCopy) }
             };
         }
 
