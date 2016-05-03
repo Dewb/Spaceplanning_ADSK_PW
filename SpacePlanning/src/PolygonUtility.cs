@@ -247,13 +247,9 @@ namespace SpacePlanning
             return GraphicsUtility.PointInsidePolygonTest(squarePoly, ptB);
         }
 
-        //get a poly and find rectangular polys inside. then merge them together to form a big poly - ORIGINAL
-        public static Dictionary<string, object> MakeWholesomeBlockInPoly(Polygon2d poly, double dim = 10,double recompute = 5)
-        {
-            if (poly == null || poly.Points == null || poly.Points.Count == 0) return null;
-            List<Polygon2d> wholesomePolyList = new List<Polygon2d>();
-            Polygon2d polyReg = new Polygon2d(poly.Points);
-            List<Line2d> allSplitLines = new List<Line2d>();
+        //finds the outerlines of a polygon, except the extreme max and min lines in its x and y axis
+        internal static List<Line2d> GetOuterLines(Polygon2d polyReg)
+        {            
             List<Line2d> hLines = new List<Line2d>();
             List<Line2d> vLines = new List<Line2d>();
             List<Point2d> hMidPt = new List<Point2d>();
@@ -288,18 +284,35 @@ namespace SpacePlanning
             hLines.RemoveAt(hIndHigh);
             vLines.RemoveAt(vIndLow);
             vLines.RemoveAt(vIndHigh);
-           
+            List<Line2d> allSplitLines = new List<Line2d>();
             allSplitLines.AddRange(hLines);
             allSplitLines.AddRange(vLines);
-       
+            return allSplitLines;
 
+        }
+
+        //get a poly and find rectangular polys inside. then merge them together to form a big poly - ORIGINAL
+        public static Dictionary<string, object> MakeWholesomeBlockInPoly(Polygon2d poly, double dim = 10,double recompute = 5)
+        {
+            if (poly == null || poly.Points == null || poly.Points.Count == 0) return null;
+            List<Polygon2d> wholesomePolyList = new List<Polygon2d>();
+            Polygon2d polyReg = new Polygon2d(poly.Points);
+            List<Line2d> allSplitLines = new List<Line2d>();
+            if (dim > 18) // splitlines from gridlines
+            {
+                Dictionary<string, object> gridLineObj = GridObject.CreateGridLines(poly, dim, 1);
+                List<Line2d> gridXLines = (List<Line2d>)gridLineObj["GridXLines"];
+                List<Line2d> gridYLines = (List<Line2d>)gridLineObj["GridYLines"];
+                allSplitLines.AddRange(gridXLines);
+                allSplitLines.AddRange(gridYLines);
+            }
+            else allSplitLines = GetOuterLines(polyReg);   // splitlines from poly itself        
             List<Line2d> allSplitLinesCopy = allSplitLines.Select(x => new Line2d(x.StartPoint, x.EndPoint)).ToList(); // example of deep copy
 
             // can replace the allsplitlines with gridlines
             bool splitDone = false;
             Stack<Polygon2d> splittedPolys = new Stack<Polygon2d>();
             Polygon2d currentPoly = new Polygon2d(SmoothPolygon(polyReg.Points, BuildLayout.spacingSet));
-            //Polygon2d currentPoly = polyReg;
             splittedPolys.Push(currentPoly);
             Random ran = new Random();
             int countBig = 0, maxRounds = 50;
@@ -310,14 +323,14 @@ namespace SpacePlanning
                 int count = 0, maxTry = 100;
                 int numSides = NumberofSidesPoly(currentPoly);
                 numSidesList.Add(numSides);
-                //CHECK sides-------------------------------------------------------------------------------
+                //CHECK sides
                 if (numSides < 5)
                 {
                     wholesomePolyList.Add(currentPoly);
                     currentPoly = splittedPolys.Pop();
                 }
 
-                //SPLIT blocks-----------------------------------------------------------------------------                
+                //SPLIT blocks          
                 while (splitDone == false && count < maxTry && allSplitLines.Count > 0)
                 {
                     //randomly get a line
