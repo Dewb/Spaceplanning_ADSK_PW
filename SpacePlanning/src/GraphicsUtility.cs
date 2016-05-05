@@ -125,7 +125,9 @@ namespace SpacePlanning
             double maxX = range.Xrange.Max;
             double minY = range.Yrange.Min;
             double maxY = range.Yrange.Max;
-            Point2d lowPt = new Point2d(minX, minY), hipt = new Point2d(maxX, maxY);         
+            Point2d lowPt = new Point2d(minX, minY), hipt = new Point2d(maxX, maxY);     
+            
+                
             return new Dictionary<string, object>
             {
                 { "LowerPoint", (lowPt) },
@@ -568,7 +570,7 @@ namespace SpacePlanning
             if (ptA == null || ptB == null) return 0;
             double xLen = ptA.X - ptB.X;
             double yLen = ptA.Y - ptB.Y;
-            return xLen * xLen + yLen * yLen;
+            return Math.Sqrt(xLen * xLen + yLen * yLen);
         }
                
         // returns area of a closed polygon, if area is positive, poly points are counter clockwise and vice versa
@@ -877,7 +879,20 @@ namespace SpacePlanning
             }
             return flatLineList;
         }
-        
+
+        //flatten list of polygon2d
+        internal static List<Polygon2d> FlattenPolygon2dList(List<List<Polygon2d>> polyList)
+        {
+            if (polyList == null) return null;            
+            List<Polygon2d> flatPolyList = new List<Polygon2d>();
+            for (int i = 0; i < polyList.Count; i++)
+            {
+                if (polyList[i] != null)
+                    if (polyList[i].Count > 0) flatPolyList.AddRange(polyList[i]);
+            }
+            return flatPolyList;
+        }
+
         //generate points on a circle and then randomize their sequence
         public static List<Point2d> PointGenerator(int tag, int size)
         {
