@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using stuffer;
 using Autodesk.DesignScript.Runtime;
+using Autodesk.DesignScript.Geometry;
 using System;
 
 namespace SpacePlanning
@@ -81,6 +82,51 @@ namespace SpacePlanning
             };
         }
 
+
+        //Pprovides information related to program data
+        [MultiReturn(new[] { "TextToWrite", "Points" })]
+        public static Dictionary<string, object> Visualizer(double totalScore, double programFitScore,
+            double extViewScore, double travelDistScore, double percKPUScore, double x = 0, double y = 0, double spacingX = 10, double spacingY = 10 )
+        {
+            List<string> textList = new List<string>();
+            List<Point> ptList = new List<Point>();
+            int num = 5;
+            double xDim = x - spacingX, yDim = y;
+
+            totalScore = Math.Round(totalScore, 2);
+            programFitScore = Math.Round(programFitScore, 2)*100;
+            extViewScore = Math.Round(extViewScore, 2)*100;
+            travelDistScore = Math.Round(travelDistScore, 2)*100;
+            percKPUScore = Math.Round(percKPUScore, 2)*100;
+
+            for (int i = 0; i < num; i++)
+            {
+                ptList.Add(Point.ByCoordinates(xDim, yDim));
+                yDim += spacingY;
+            }
+            xDim = x; yDim = y;
+            for (int i=0;i< num; i++)
+            {
+                ptList.Add(Point.ByCoordinates(xDim, yDim));
+                yDim += spacingY;
+            }
+            textList.Add("Total Design Score");
+            textList.Add("Program Fitted Score");
+            textList.Add("External View Score");
+            textList.Add("Travel Distance Score");
+            textList.Add("KPU Proportion Score");
+            textList.Add(totalScore.ToString());
+            textList.Add(programFitScore.ToString());
+            textList.Add(extViewScore.ToString());
+            textList.Add(travelDistScore.ToString());
+            textList.Add(percKPUScore.ToString());
+
+            return new Dictionary<string, object>
+            {
+                { "TextToWrite", (textList) },
+                { "Points", (ptList) }
+            };
+        }
 
         [MultiReturn(new[] { "TotalScore", "ProgramFitScore", "ExtViewKPUScore",
             "TravelDistanceScore", "PercentageKPUScore", "TestBorderCells","TestBorderPts",
@@ -191,6 +237,9 @@ namespace SpacePlanning
                 { "PolyCenterPts", (buildingCenter) }
             };
         }
+
+
+
         #endregion
 
     }
