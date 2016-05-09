@@ -699,9 +699,10 @@ namespace SpacePlanning
             List<double> areaList = new List<double>();
             List<Point2d> pointsList = new List<Point2d>();
             Stack<ProgramData> programDataRetrieved = new Stack<ProgramData>();
+            List<ProgramData> progDataAddedList = new List<ProgramData>();
+            ProgramData copyProgData = new ProgramData(progData[0]);
 
             for (int i = 0; i < progData.Count; i++) programDataRetrieved.Push(progData[i]);
-
             for (int i = 0; i < polyInputList.Count; i++)
             {
                 Polygon2d poly = polyInputList[i];
@@ -709,6 +710,7 @@ namespace SpacePlanning
                 int lineId = 0, count = 0;
                 if (poly.Lines[0].Length > poly.Lines[1].Length) lineId = 1;
                 else lineId = 1;
+                
                 List<double> spans = PolygonUtility.GetSpansXYFromPolygon2d(poly.Points);
                 double setSpan = 1000000000000, fac = 1.5;
                 if (spans[0] > spans[1]) setSpan = spans[0];
@@ -723,7 +725,7 @@ namespace SpacePlanning
                     Dictionary<string, object> splitReturn = SplitByOffsetFromLine(currentPoly,lineId, dist);
                     polyAfterSplitting = (Polygon2d)splitReturn["PolyAfterSplit"];
                     leftOverPoly = (Polygon2d)splitReturn["LeftOverPoly"];
-                    count += 1;
+                    
                     if (PolygonUtility.CheckPoly(leftOverPoly))
                     {
                         ProgramData progItem = programDataRetrieved.Pop();
@@ -732,18 +734,24 @@ namespace SpacePlanning
                         polyList.Add(polyAfterSplitting);
                         progItem.AreaProvided = area;
                         areaList.Add(area);
-                        setSpan -= dist;                                            
+                        setSpan -= dist;
+                        progDataAddedList.Add(progItem);
+                        count += 1;
                     }
                     else break;
+                    if (programDataRetrieved.Count == 0) programDataRetrieved.Push(copyProgData);
                 }// end of while loop
+                
+                //polyList.Add(leftOverPoly);
+                //count += 1;
                 roomCount += count;
-                polyList.Add(leftOverPoly);
 
             }// end of for loop
+            roomCount = progDataAddedList.Count;
             List<ProgramData> UpdatedProgramDataList = new List<ProgramData>();
-            for (int i = 0; i < progData.Count; i++)
+            for (int i = 0; i < progDataAddedList.Count; i++) //progData.Count
             {
-                ProgramData progItem = progData[i];
+                ProgramData progItem = progDataAddedList[i];
                 ProgramData progNew = new ProgramData(progItem);
                 if (i < polyList.Count) progNew.PolyProgAssigned = polyList[i];
                 else progNew.PolyProgAssigned = null;

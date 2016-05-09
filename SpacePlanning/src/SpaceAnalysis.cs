@@ -83,32 +83,34 @@ namespace SpacePlanning
         }
 
 
-        //Pprovides information related to program data
+        //Visualizes the scores and displays as text
         [MultiReturn(new[] { "TextToWrite", "Points" })]
         public static Dictionary<string, object> Visualizer(double totalScore, double programFitScore,
             double extViewScore, double travelDistScore, double percKPUScore, double x = 0, double y = 0, double spacingX = 10, double spacingY = 10 )
         {
             List<string> textList = new List<string>();
             List<Point> ptList = new List<Point>();
-            int num = 5;
+            int num = 5, extra = -10;
             double xDim = x - spacingX, yDim = y;
 
             totalScore = Math.Round(totalScore, 2);
-            programFitScore = Math.Round(programFitScore, 2)*100;
-            extViewScore = Math.Round(extViewScore, 2)*100;
-            travelDistScore = Math.Round(travelDistScore, 2)*100;
-            percKPUScore = Math.Round(percKPUScore, 2)*100;
+            programFitScore = Math.Round(programFitScore, 4)*100;
+            extViewScore = Math.Round(extViewScore, 4)*100;
+            travelDistScore = Math.Round(travelDistScore, 4)*100;
+            percKPUScore = Math.Round(percKPUScore, 4)*100;
 
             for (int i = 0; i < num; i++)
             {
                 ptList.Add(Point.ByCoordinates(xDim, yDim));
-                yDim += spacingY;
+                if (i == 0) yDim += spacingY + extra;
+                else yDim += spacingY;
             }
             xDim = x; yDim = y;
             for (int i=0;i< num; i++)
             {
                 ptList.Add(Point.ByCoordinates(xDim, yDim));
-                yDim += spacingY;
+                if (i == 0) yDim += spacingY + extra;
+                else yDim += spacingY;
             }
             textList.Add("Total Design Score");
             textList.Add("Program Fitted Score");
@@ -128,11 +130,14 @@ namespace SpacePlanning
             };
         }
 
+
+        //scores the design, currently there are four individual scores and total score as summation
         [MultiReturn(new[] { "TotalScore", "ProgramFitScore", "ExtViewKPUScore",
             "TravelDistanceScore", "PercentageKPUScore", "TestBorderCells","TestBorderPts",
             "TestData", "InpatientDeptInfo", "ExternalWallCheck", "PolyFlatList", "PolyCenterPts"})]
         public static Dictionary<string, object> ScoreSpacePlan(List<DeptData> deptData, List<List<Polygon2d>> inPatientPoly, 
-            List<Cell> cellList, double siteArea = 0)
+            List<Cell> cellList, double siteArea = 0,  double programFitWeight = 0.6, double extViewWeight = 1, double traveDistWeight = 0.8,
+            double percKPUWeight = 0.70)
         {
             if (deptData == null) return null;
             if (cellList == null) return null;
@@ -199,13 +204,11 @@ namespace SpacePlanning
                 }
                 getsExternalWall.Add(check);
             }
-
-
             
-
-            double programFitWeight = 0.6, extViewWeight = 1, traveDistWeight = 0.8, percKPUWeight = 0.70;
+           
+            //double programFitWeight = 0.6, extViewWeight = 1, traveDistWeight = 0.8, percKPUWeight = 0.70;
             double programFitScore = 1, extViewScore = 1, travelDistScore = 1, percKPUScore = 1;
-
+            
 
             for(int i = 0; i < deptData.Count; i++) programFitScore += deptData[i].DeptAreaProportionAchieved;
 
@@ -215,7 +218,7 @@ namespace SpacePlanning
             percKPUScore = inPatientDeptData.DeptAreaProportionAchieved;
 
             double totalScore = Math.Round(((programFitWeight * programFitScore + extViewWeight * extViewScore +
-                                traveDistWeight * travelDistScore + percKPUWeight * percKPUScore) * 25), 2);
+                                traveDistWeight * travelDistScore + percKPUWeight * percKPUScore) * 40), 2);
 
 
 
