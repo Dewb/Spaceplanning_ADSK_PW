@@ -82,9 +82,7 @@ namespace SpacePlanning
                 _polyProgs = null;
             }
 
-
-
-
+            
         }
         public Polygon2d PolyProgAssigned
         {

@@ -94,8 +94,7 @@ namespace SpacePlanning
         /// <search>
         /// make data stack, embedded data
         /// </search>
-        [MultiReturn(new[] { "ProgramDataObject", "DeptDataObject" })]
-        public static Dictionary<string, IEnumerable<object>> AutoMakeDataStack([ArbitraryDimensionArrayImport]double dimX, [ArbitraryDimensionArrayImport]double dimY, double circulationFactor = 1)
+        public static List<DeptData> AutoMakeDataStack(double dimX, double dimY, double circulationFactor = 1)
         {
 
             List<string> progIdList = new List<string>();
@@ -105,7 +104,6 @@ namespace SpacePlanning
             List<string> areaEachProgList = new List<string>();
             List<string> prefValProgList = new List<string>();
             List<string> progAdjList = new List<string>();
-
 
             List<List<string>> dataStack = new List<List<string>>();
             List<ProgramData> programDataStack = new List<ProgramData>();
@@ -156,13 +154,8 @@ namespace SpacePlanning
             for(int i = 0; i < deptDataStack.Count; i++) totalDeptArea += deptDataStack[i].DeptAreaNeeded;
             for (int i = 0; i < deptDataStack.Count; i++) deptDataStack[i].DeptAreaProportion = Math.Round((deptDataStack[i].DeptAreaNeeded / totalDeptArea), 3);
 
-            List<DeptData> deptDataObject = SortProgramsByPrefInDept(deptDataStack);
-            return new Dictionary<string, IEnumerable<object>>
-            {
-               
-                { "ProgramDataObject", (programDataStack) },
-                { "DeptDataObject", (deptDataObject) }
-            };
+            return SortProgramsByPrefInDept(deptDataStack);
+       
 
         }
 
@@ -381,11 +374,7 @@ namespace SpacePlanning
             List<string> uniqueItemsList = deptNameList.Distinct().ToList();
             return uniqueItemsList;
         }
-        //read embedded .csv file and make data stack
-        internal static Dictionary<string, IEnumerable<object>> AutoMakeDataStackSingleOut([ArbitraryDimensionArrayImport]double dimX, [ArbitraryDimensionArrayImport]double dimY, double factor = 1)
-        {
-            return AutoMakeDataStack(dimX, dimY, factor);
-        }
+   
         #endregion
 
 

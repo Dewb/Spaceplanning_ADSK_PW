@@ -697,11 +697,11 @@ namespace SpacePlanning
             int roomCount = 0;
             List<Polygon2d> polyList = new List<Polygon2d>();
             List<Point2d> pointsList = new List<Point2d>();
-            Stack<ProgramData> programDataRetrieved = new Stack<ProgramData>();
+            Queue<ProgramData> programDataRetrieved = new Queue<ProgramData>();
             List<ProgramData> progDataAddedList = new List<ProgramData>();
             ProgramData copyProgData = new ProgramData(progData[0]);
 
-            for (int i = 0; i < progData.Count; i++) programDataRetrieved.Push(progData[i]);
+            for (int i = 0; i < progData.Count; i++) programDataRetrieved.Enqueue(progData[i]);
             for (int i = 0; i < polyInputList.Count; i++)
             {
                 Polygon2d poly = polyInputList[i];
@@ -728,7 +728,7 @@ namespace SpacePlanning
                     leftOverPoly = (Polygon2d)splitReturn["LeftOverPoly"];                    
                     if (PolygonUtility.CheckPoly(leftOverPoly))
                     {
-                        progItem = programDataRetrieved.Pop();
+                        progItem = programDataRetrieved.Dequeue();
                         currentPoly = leftOverPoly;
                         polyList.Add(polyAfterSplitting);
                         progItem.AreaProvided = GraphicsUtility.AreaPolygon2d(polyAfterSplitting.Points); 
@@ -737,14 +737,14 @@ namespace SpacePlanning
                         count += 1;
                     }
                     else break;
-                    if (programDataRetrieved.Count == 0) programDataRetrieved.Push(copyProgData);
+                    if (programDataRetrieved.Count == 0) programDataRetrieved.Enqueue(copyProgData);
                 }// end of while loop
                 
-                progItem = programDataRetrieved.Pop();
+                progItem = programDataRetrieved.Dequeue();
                 polyList.Add(leftOverPoly);
                 progItem.AreaProvided = GraphicsUtility.AreaPolygon2d(leftOverPoly.Points); 
                 progDataAddedList.Add(progItem);
-                if (programDataRetrieved.Count == 0) programDataRetrieved.Push(copyProgData);
+                if (programDataRetrieved.Count == 0) programDataRetrieved.Enqueue(copyProgData);
                 
             }// end of for loop
 
