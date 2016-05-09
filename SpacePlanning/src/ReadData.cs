@@ -50,7 +50,7 @@ namespace SpacePlanning
 
             int readCount = 0;
             //string[] csvText = Properties.Resources.PROGRAMCSV.Split('\n'); 
-            Stream res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.01 FEB PROGRAM.csv");
+            Stream res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.ProgramDocument.csv");
             StreamReader reader = new StreamReader(res);
             string docInfo = reader.ReadToEnd();
             string[] csvText = docInfo.Split('\n');
@@ -75,7 +75,7 @@ namespace SpacePlanning
                 List<string> adjList = new List<string>();
                 adjList.Add(values[6]);
                 ProgramData progData = new ProgramData(Convert.ToInt16(values[0]), values[1], values[2], Convert.ToInt16(values[3]),
-                    Convert.ToDouble(values[4]) * circulationFactor, Convert.ToInt16(values[5]), adjList, dummyCell, dimX, dimY);
+                    Convert.ToDouble(values[4]) * circulationFactor, Convert.ToInt16(values[6]), adjList, dummyCell, dimX, dimY);
                 programDataStack.Add(progData);
             }// end of for each statement
 
@@ -112,6 +112,10 @@ namespace SpacePlanning
             };
 
         }
+
+
+
+       
 
 
 

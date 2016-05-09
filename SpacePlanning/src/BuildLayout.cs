@@ -725,8 +725,7 @@ namespace SpacePlanning
                     else dist = setSpan;
                     Dictionary<string, object> splitReturn = SplitByOffsetFromLine(currentPoly,lineId, dist);
                     polyAfterSplitting = (Polygon2d)splitReturn["PolyAfterSplit"];
-                    leftOverPoly = (Polygon2d)splitReturn["LeftOverPoly"];
-                    
+                    leftOverPoly = (Polygon2d)splitReturn["LeftOverPoly"];                    
                     if (PolygonUtility.CheckPoly(leftOverPoly))
                     {
                         progItem = programDataRetrieved.Pop();
@@ -1495,6 +1494,45 @@ namespace SpacePlanning
             foreach (KeyValuePair<double, DeptData> p in sortedD) sortedDepartmentData.Add(p.Value);
             sortedDepartmentData.Reverse();
             return sortedDepartmentData;
+        }
+
+        //sorts a program data inside dept data based on preference 
+        [MultiReturn(new[] { "UpdatedDeptData", "KeyList" })]
+        public static Dictionary<string,object> SortProgramsByPrefInDept(List<DeptData> deptDataInp)
+        {
+            if (deptDataInp == null) return null;
+            List<DeptData> deptData = new List<DeptData>();
+            for (int i = 0; i < deptDataInp.Count; i++) deptData.Add(new DeptData(deptDataInp[i]));
+            double eps = 01,inc = 0.01;
+            List<List<double>> keyList = new List<List<double>>();
+            for (int i = 0; i < deptData.Count; i++)
+            {
+                DeptData deptItem = deptData[i];
+                List<ProgramData> sortedProgramData = new List<ProgramData>();
+                List<ProgramData> progItems = deptItem.ProgramsInDept;
+                SortedDictionary<double, ProgramData> sortedPrograms = new SortedDictionary<double, ProgramData>();
+                List<double> keys = new List<double>();
+                for (int j = 0; j < progItems.Count; j++)
+                {
+                    double key = progItems[j].ProgPrefValue + eps;
+                    keys.Add(key);
+                    sortedPrograms.Add(key, progItems[j]);
+                    eps += inc;
+                }
+                eps = 0;                
+                foreach (KeyValuePair<double, ProgramData> p in sortedPrograms) sortedProgramData.Add(p.Value);
+                sortedProgramData.Reverse();
+                deptItem.ProgramsInDept = sortedProgramData;
+                keyList.Add(keys);
+            }
+            List<DeptData> newDept = new List<DeptData>();
+            for(int i = 0; i < deptData.Count; i++) newDept.Add(new DeptData(deptData[i]));
+            //return newDept;
+            return new Dictionary<string, object>
+            {
+                { "UpdatedDeptData", (newDept) },
+                { "KeyList", (keyList) },
+            };
         }
 
 
