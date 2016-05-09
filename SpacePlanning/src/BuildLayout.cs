@@ -696,7 +696,6 @@ namespace SpacePlanning
 
             int roomCount = 0;
             List<Polygon2d> polyList = new List<Polygon2d>();
-            List<double> areaList = new List<double>();
             List<Point2d> pointsList = new List<Point2d>();
             Stack<ProgramData> programDataRetrieved = new Stack<ProgramData>();
             List<ProgramData> progDataAddedList = new List<ProgramData>();
@@ -717,6 +716,8 @@ namespace SpacePlanning
                 else setSpan = spans[1];
                 Polygon2d currentPoly = poly;
                 Polygon2d polyAfterSplitting = new Polygon2d(null), leftOverPoly = new Polygon2d(null);
+                double area = 0;
+                ProgramData progItem = new ProgramData(progData[0]);
                 while (setSpan > distance) //programDataRetrieved.Count > 0
                 {
                     double dist = 0;
@@ -728,12 +729,10 @@ namespace SpacePlanning
                     
                     if (PolygonUtility.CheckPoly(leftOverPoly))
                     {
-                        ProgramData progItem = programDataRetrieved.Pop();
-                        double area = GraphicsUtility.AreaPolygon2d(polyAfterSplitting.Points);
+                        progItem = programDataRetrieved.Pop();
                         currentPoly = leftOverPoly;
                         polyList.Add(polyAfterSplitting);
-                        progItem.AreaProvided = area;
-                        areaList.Add(area);
+                        progItem.AreaProvided = GraphicsUtility.AreaPolygon2d(polyAfterSplitting.Points); 
                         setSpan -= dist;
                         progDataAddedList.Add(progItem);
                         count += 1;
@@ -742,11 +741,14 @@ namespace SpacePlanning
                     if (programDataRetrieved.Count == 0) programDataRetrieved.Push(copyProgData);
                 }// end of while loop
                 
-                //polyList.Add(leftOverPoly);
-                //count += 1;
-                roomCount += count;
-
+                progItem = programDataRetrieved.Pop();
+                polyList.Add(leftOverPoly);
+                progItem.AreaProvided = GraphicsUtility.AreaPolygon2d(leftOverPoly.Points); 
+                progDataAddedList.Add(progItem);
+                if (programDataRetrieved.Count == 0) programDataRetrieved.Push(copyProgData);
+                
             }// end of for loop
+
             roomCount = progDataAddedList.Count;
             List<ProgramData> UpdatedProgramDataList = new List<ProgramData>();
             for (int i = 0; i < progDataAddedList.Count; i++) //progData.Count
