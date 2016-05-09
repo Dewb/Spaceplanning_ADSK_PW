@@ -1484,56 +1484,9 @@ namespace SpacePlanning
 
         }
 
-        //sorts a deptdata based on area 
-        internal static List<DeptData> SortDeptData(List<DeptData> deptData)
-        {
-            SortedDictionary<double, DeptData> sortedD = new SortedDictionary<double, DeptData>();
-            for (int i = 0; i < deptData.Count; i++) sortedD.Add(deptData[i].AreaEachDept(), deptData[i]);
+       
 
-            List<DeptData> sortedDepartmentData = new List<DeptData>();
-            foreach (KeyValuePair<double, DeptData> p in sortedD) sortedDepartmentData.Add(p.Value);
-            sortedDepartmentData.Reverse();
-            return sortedDepartmentData;
-        }
-
-        //sorts a program data inside dept data based on preference 
-        [MultiReturn(new[] { "UpdatedDeptData", "KeyList" })]
-        public static Dictionary<string,object> SortProgramsByPrefInDept(List<DeptData> deptDataInp)
-        {
-            if (deptDataInp == null) return null;
-            List<DeptData> deptData = new List<DeptData>();
-            for (int i = 0; i < deptDataInp.Count; i++) deptData.Add(new DeptData(deptDataInp[i]));
-            double eps = 01,inc = 0.01;
-            List<List<double>> keyList = new List<List<double>>();
-            for (int i = 0; i < deptData.Count; i++)
-            {
-                DeptData deptItem = deptData[i];
-                List<ProgramData> sortedProgramData = new List<ProgramData>();
-                List<ProgramData> progItems = deptItem.ProgramsInDept;
-                SortedDictionary<double, ProgramData> sortedPrograms = new SortedDictionary<double, ProgramData>();
-                List<double> keys = new List<double>();
-                for (int j = 0; j < progItems.Count; j++)
-                {
-                    double key = progItems[j].ProgPrefValue + eps;
-                    keys.Add(key);
-                    sortedPrograms.Add(key, progItems[j]);
-                    eps += inc;
-                }
-                eps = 0;                
-                foreach (KeyValuePair<double, ProgramData> p in sortedPrograms) sortedProgramData.Add(p.Value);
-                sortedProgramData.Reverse();
-                deptItem.ProgramsInDept = sortedProgramData;
-                keyList.Add(keys);
-            }
-            List<DeptData> newDept = new List<DeptData>();
-            for(int i = 0; i < deptData.Count; i++) newDept.Add(new DeptData(deptData[i]));
-            //return newDept;
-            return new Dictionary<string, object>
-            {
-                { "UpdatedDeptData", (newDept) },
-                { "KeyList", (keyList) },
-            };
-        }
+        
 
 
         //dept assignment new way
@@ -1541,15 +1494,15 @@ namespace SpacePlanning
         public static Dictionary<string, object> DeptPlacer(List<DeptData> deptData, Polygon2d poly, double offset, double recompute = 5)
         {
             if (deptData == null) return null;
-            List<DeptData> sortedDeptData = SortDeptData(deptData);
+           // List<DeptData> sortedDeptData = SortDeptData(deptData);
             List<double> AllDeptAreaAdded = new List<double>();
             List<List<Polygon2d>> AllDeptPolys = new List<List<Polygon2d>>();
             Stack<Polygon2d> leftOverPoly = new Stack<Polygon2d>();
             List<Polygon2d> otherDeptPoly = new List<Polygon2d>();
-            for (int i = 0; i < sortedDeptData.Count; i++)
+            for (int i = 0; i < deptData.Count; i++)
             {            
                 double areaAssigned = 0;
-                DeptData deptItem = sortedDeptData[i];
+                DeptData deptItem = deptData[i];
                 if (i == 0) // inpatient dept
                 {
                     //double areaNeeded = deptItem.DeptAreaNeeded;
@@ -1579,9 +1532,9 @@ namespace SpacePlanning
             }
             List<DeptData> UpdatedDeptData = new List<DeptData>();
             //make the sorted dept data
-            for (int i = 0; i < sortedDeptData.Count; i++)
+            for (int i = 0; i < deptData.Count; i++)
             {
-                DeptData newDeptData = new DeptData(sortedDeptData[i]);
+                DeptData newDeptData = new DeptData(deptData[i]);
                 newDeptData.AreaProvided = AllDeptAreaAdded[i];
                 newDeptData.PolyDeptAssigned = AllDeptPolys[i];
                 UpdatedDeptData.Add(newDeptData);

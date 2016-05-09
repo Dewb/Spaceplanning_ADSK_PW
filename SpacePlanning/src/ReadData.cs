@@ -14,8 +14,70 @@ namespace SpacePlanning
 {
     public class ReadData
     {
-       
+
         #region - Public Methods
+
+
+
+
+
+
+        //sorts a program data inside dept data based on preference 
+        //[MultiReturn(new[] { "UpdatedDeptData", "KeyList" })]
+        public static List<DeptData> SortProgramsByPrefInDept(List<DeptData> deptDataInp)
+        {
+            if (deptDataInp == null) return null;
+            List<DeptData> deptData = new List<DeptData>();
+            for (int i = 0; i < deptDataInp.Count; i++) deptData.Add(new DeptData(deptDataInp[i]));
+            double eps = 01, inc = 0.01;
+            for (int i = 0; i < deptData.Count; i++)
+            {
+                DeptData deptItem = deptData[i];
+                List<ProgramData> sortedProgramData = new List<ProgramData>();
+                List<ProgramData> progItems = deptItem.ProgramsInDept;
+                SortedDictionary<double, ProgramData> sortedPrograms = new SortedDictionary<double, ProgramData>();
+                List<double> keys = new List<double>();
+                for (int j = 0; j < progItems.Count; j++)
+                {
+                    double key = progItems[j].ProgPrefValue + eps;
+                    sortedPrograms.Add(key, progItems[j]);
+                    eps += inc;
+                }
+                eps = 0;
+                foreach (KeyValuePair<double, ProgramData> p in sortedPrograms) sortedProgramData.Add(p.Value);
+                sortedProgramData.Reverse();
+                deptItem.ProgramsInDept = sortedProgramData;
+
+            }
+            List<DeptData> newDept = new List<DeptData>();
+            for (int i = 0; i < deptData.Count; i++) newDept.Add(new DeptData(deptData[i]));
+            return newDept;
+        }
+
+
+
+
+
+        //sorts a deptdata based on area 
+        internal static List<DeptData> SortDeptData(List<DeptData> deptData)
+        {
+            SortedDictionary<double, DeptData> sortedD = new SortedDictionary<double, DeptData>();
+            for (int i = 0; i < deptData.Count; i++) sortedD.Add(deptData[i].AreaEachDept(), deptData[i]);
+
+            List<DeptData> sortedDepartmentData = new List<DeptData>();
+            foreach (KeyValuePair<double, DeptData> p in sortedD) sortedDepartmentData.Add(p.Value);
+            sortedDepartmentData.Reverse();
+            return sortedDepartmentData;
+        }
+
+
+
+
+
+
+
+
+
 
         //read embedded .csv file and make data stack
         //arrange depts on site, till all depts have not been satisfied
@@ -32,7 +94,7 @@ namespace SpacePlanning
         /// <search>
         /// make data stack, embedded data
         /// </search>
-        [MultiReturn(new[] { "DataStackArray", "ProgramDataObject", "DeptDataObject" })]
+        [MultiReturn(new[] { "ProgramDataObject", "DeptDataObject" })]
         public static Dictionary<string, IEnumerable<object>> AutoMakeDataStack([ArbitraryDimensionArrayImport]double dimX, [ArbitraryDimensionArrayImport]double dimY, double circulationFactor = 1)
         {
 
@@ -64,14 +126,9 @@ namespace SpacePlanning
                 programList.Add(values[1]);
                 deptNameList.Add(values[2]);
                 progQuantList.Add(values[3]);
-                double areaValue = Convert.ToDouble(values[4]) * circulationFactor;
-                areaEachProgList.Add(areaValue.ToString());
                 prefValProgList.Add(values[5]);
                 progAdjList.Add(values[6]);
-
-                Cell dummyC = new Cell(Point2d.ByCoordinates(0, 0), 0, 0, true);
-                List<Cell> dummyCell = new List<Cell>();
-                dummyCell.Add(dummyC);
+                List<Cell> dummyCell = new List<Cell> { new Cell(Point2d.ByCoordinates(0, 0), 0, 0, true) };
                 List<string> adjList = new List<string>();
                 adjList.Add(values[6]);
                 ProgramData progData = new ProgramData(Convert.ToInt16(values[0]), values[1], values[2], Convert.ToInt16(values[3]),
@@ -86,29 +143,25 @@ namespace SpacePlanning
             {
                 List<ProgramData> progInDept = new List<ProgramData>();
                 for (int j = 0; j < programDataStack.Count; j++)
-                {
                     if (deptNames[i] == programDataStack[j].DeptName) progInDept.Add(programDataStack[j]);
-                }
                 List<ProgramData> programBasedOnQuanity = MakeProgramListBasedOnQuantity(progInDept);
                 deptDataStack.Add(new DeptData(deptNames[i], programBasedOnQuanity, dimX, dimY));
             }// end of for loop statement
-            dataStack.Add(progIdList);
-            dataStack.Add(programList);
-            dataStack.Add(deptNameList);
-            dataStack.Add(progQuantList);
-            dataStack.Add(areaEachProgList);
-            dataStack.Add(prefValProgList);
-            dataStack.Add(progAdjList);
+
+            //sort the depts by high area
+            deptDataStack = SortDeptData(deptDataStack);
 
             //added to compute area percentage for each dept
             double totalDeptArea = 0;
             for(int i = 0; i < deptDataStack.Count; i++) totalDeptArea += deptDataStack[i].DeptAreaNeeded;
             for (int i = 0; i < deptDataStack.Count; i++) deptDataStack[i].DeptAreaProportion = Math.Round((deptDataStack[i].DeptAreaNeeded / totalDeptArea), 3);
+
+            List<DeptData> deptDataObject = SortProgramsByPrefInDept(deptDataStack);
             return new Dictionary<string, IEnumerable<object>>
             {
-                { "DataStackArray", (dataStack) },
+               
                 { "ProgramDataObject", (programDataStack) },
-                { "DeptDataObject", (deptDataStack) }
+                { "DeptDataObject", (deptDataObject) }
             };
 
         }
@@ -318,14 +371,7 @@ namespace SpacePlanning
         {
             List<ProgramData> progQuantityBasedList = new List<ProgramData>();
             for (int i = 0; i < progData.Count; i++)
-            {
-                ProgramData progItem = progData[i];
-                int quantity = progItem.Quantity;
-                for (int j = 0; j < quantity; j++)
-                {
-                    progQuantityBasedList.Add(progItem);
-                }
-            }
+                for (int j = 0; j < progData[i].Quantity; j++) progQuantityBasedList.Add(progData[i]);
             return progQuantityBasedList;
         }
         
