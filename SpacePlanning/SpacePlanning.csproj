@@ -17,12 +17,12 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\debug\</OutputPath>
+    <OutputPath>..\..\..\..\..\AppData\Roaming\Dynamo\Dynamo Core\1.0\packages\SpacePlanningProduction\bin\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
-    <DocumentationFile>bin\debug\SpacePlanning.XML</DocumentationFile>
+    <DocumentationFile>C:\Users\t_dassu\AppData\Roaming\Dynamo\Dynamo Core\1.0\packages\SpacePlanningProduction\bin\debug\SpacePlanning.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -118,6 +118,7 @@
     <Compile Include="src\PolygonUtility.cs" />
     <Compile Include="src\CustomVariables.cs" />
     <Compile Include="src\DeptData.cs" />
+    <Compile Include="src\SplitObject.cs" />
     <Compile Include="src\TestGraphicsUtility.cs" />
     <Compile Include="src\GridObject.cs" />
     <Compile Include="src\Node.cs" />

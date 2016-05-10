@@ -173,7 +173,7 @@ namespace SpacePlanning
                     Point2d nudgedMidPt = LineUtility.NudgeLineMidPt(splitter, deptPoly, 0.5);
                     if (GraphicsUtility.PointInsidePolygonTest(deptPoly, nudgedMidPt))
                     {
-                        Dictionary<string, object> splitResult = BuildLayout.SplitByLine(deptPoly, splitter, width);
+                        Dictionary<string, object> splitResult = SplitObject.SplitByLine(deptPoly, splitter, width);
                         List<Polygon2d> polyAfterSplit = (List<Polygon2d>)(splitResult["PolyAfterSplit"]);
                         if (PolygonUtility.CheckPolyList(polyAfterSplit))
                         {
@@ -264,7 +264,7 @@ namespace SpacePlanning
 
                     if (checkInside)
                     {
-                        Dictionary<string, object> splitResult = BuildLayout.SplitByLine(progPoly, splitter, width);
+                        Dictionary<string, object> splitResult = SplitObject.SplitByLine(progPoly, splitter, width);
                         List<Polygon2d> polyAfterSplit = (List<Polygon2d>)(splitResult["PolyAfterSplit"]);
                         if (PolygonUtility.CheckPolyList(polyAfterSplit))
                         {
