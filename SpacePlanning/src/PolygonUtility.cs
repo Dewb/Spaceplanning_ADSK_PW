@@ -835,6 +835,16 @@ namespace SpacePlanning
             return reducedPolyList;
         }
 
+        //smoothens a polygon2d list
+        public static List<Polygon2d> SmoothPolygon(List<Polygon2d> polyList, double spacingProvided = 1)
+        {
+            if (!CheckPolyList(polyList)) return null;
+            List<Polygon2d> smoothPolyList = new List<Polygon2d>();
+            for(int i = 0; i < polyList.Count; i++)
+                smoothPolyList.Add(new Polygon2d(SmoothPolygon(polyList[i].Points, spacingProvided), 0));
+            return smoothPolyList;
+        }
+
 
         //smoothens a polygon2d by adding point2d in between
         public static List<Point2d> SmoothPolygon(List<Point2d> pointList, double spacingProvided = 1)

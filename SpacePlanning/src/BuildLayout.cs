@@ -619,13 +619,14 @@ namespace SpacePlanning
             Queue<Polygon2d> polyQueue = new Queue<Polygon2d>();
             List<Polygon2d> polyBrokenList = new List<Polygon2d>();
             for (int i = 0; i < polyList.Count; i++) polyQueue.Enqueue(polyList[i]);
-            while (polyQueue.Count > 0 && count < maxTry)
+            while (polyQueue.Count > 0)
             {
                 Polygon2d currentPoly = polyQueue.Dequeue();
                 Dictionary<string, object> splitObj = SplitObject.SplitByRatio(currentPoly, ratio, 0);
                 List<Polygon2d> polySplitList = (List<Polygon2d>)splitObj["PolyAfterSplit"];
                 if (PolygonUtility.CheckPolyList(polySplitList) && polySplitList.Count > 1)
                 {
+                    polySplitList = PolygonUtility.SmoothPolygon(polySplitList, 2);
                     Polygon2d bbox1 = Polygon2d.ByPoints(ReadData.FromPointsGetBoundingPoly(polySplitList[0].Points));
                     Polygon2d bbox2 = Polygon2d.ByPoints(ReadData.FromPointsGetBoundingPoly(polySplitList[1].Points));
                     if (bbox1.Lines[0].Length < acceptableWidth || bbox1.Lines[1].Length < acceptableWidth) polyBrokenList.Add(polySplitList[0]);
