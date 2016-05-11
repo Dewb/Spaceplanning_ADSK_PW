@@ -851,11 +851,7 @@ namespace SpacePlanning
         {
             int threshValue = 50;
             if (pointList == null || pointList.Count == 0) return null;
-            //if (pointList.Count > threshValue) return pointList;
-           
-            List<double> spans = GetSpansXYFromPolygon2d(pointList);
-            double spanX = spans[0];
-            double spanY = spans[1];
+            //if (pointList.Count > threshValue) return pointList;           
             List<Point2d> ptList = new List<Point2d>();
 
             for (int i = 0; i < pointList.Count; i++)
@@ -875,8 +871,7 @@ namespace SpacePlanning
                     double value = (j + 1) * increment / dist;
                     double x = ((1 - value) * ptA.X) + (value * ptB.X);
                     double y = ((1 - value) * ptA.Y) + (value * ptB.Y);
-                    Point2d ptAdd = new Point2d(x, y);
-                    ptList.Add(ptAdd);
+                    ptList.Add(new Point2d(x, y));
                 }
             }
             return ptList;

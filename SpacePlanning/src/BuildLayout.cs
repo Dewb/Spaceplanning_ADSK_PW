@@ -448,8 +448,7 @@ namespace SpacePlanning
                 areaAvailable += PolygonUtility.AreaCheckPolygon(leftOverPoly[i]);
                 leftOverPolyStack.Push(leftOverPoly[i]);
             }
-
-
+            
 
             double areaDeptNeeds = deptItem.DeptAreaProportion * areaAvailable;
             //double areaDeptNeeds = deptItem.DeptAreaNeeded;
@@ -508,73 +507,34 @@ namespace SpacePlanning
             };
         }
 
-        //blocks are assigned based on min width allowed
-        //[MultiReturn(new[] { "PolyAfterSplit" })]
-        public static List<Polygon2d> GetPolysForOtherDepts(List<Polygon2d> polyInputList, double acceptableMinDim = 8, double factor = 8)
-        {
-            if (!PolygonUtility.CheckPolyList(polyInputList)) return null;
-            int fac = 5;//factor =8;
-            Random ran = new Random();
-            List<List<Polygon2d>> polyList = new List<List<Polygon2d>>();          
-            double max = acceptableMinDim + acceptableMinDim / fac, min = acceptableMinDim - acceptableMinDim / fac;
-            double acceptWide = BasicUtility.RandomBetweenNumbers(ran, max, min);
-            Dictionary<string, object> polySplit = SplitObject.SplitBigPolys(polyInputList, acceptWide, factor);
-            List<Polygon2d> polyOrganizedList = (List<Polygon2d>)polySplit["PolySpaces"];
-            List<Polygon2d> polyCoverList = (List<Polygon2d>)polySplit["PolyForCirculation"];//eh
-            return polyOrganizedList;
-        }
-
-
         //blocks are assigned based on ratio of split, used for assigning other depts
         [MultiReturn(new[] { "DeptPoly", "LeftOverPoly", "AllPolys", "AreaAdded", "AllNodes" })]
-        public static Dictionary<string, object> AssignBlocksBasedOnAcceptableDim(DeptData deptItem, List<Polygon2d> polyList, List<Polygon2d> polyWholesomeList, double acceptableWidth = 10, double factor = 5)
+        public static Dictionary<string, object> AssignBlocksBasedOnRatioRecursed(DeptData deptItem, double areaFactor, List<Polygon2d> polyList, double acceptableWidth = 10, double ratio = 0.5)
         {
-            int count = 0, maxTry = 100;
-            if(!PolygonUtility.CheckPolyList(polyList)) return null;
-            /*List<Polygon2d> polyWholesomeList = new List<Polygon2d>();
-            for (int i = 0; i < polyList.Count; i++)
-            {
-                Dictionary<string, object> wholeObject = PolygonUtility.MakeWholesomeBlockInPoly(polyList[i], 10, 5);
-                polyWholesomeList.AddRange((List<Polygon2d>)wholeObject["WholesomePolys"]);
-            }
-            */
-
-
-
-            int lineId = 0;
-            double distance = 0;
-            List<Polygon2d> polyWidthProper = new List<Polygon2d>();
+            //if (!PolygonUtility.CheckPolyList(polyList)) return null;           
+            int count = 0, maxTry = 200;
+            double areaAvailable = 0;
+            for (int i = 0; i < polyList.Count; i++) areaAvailable += PolygonUtility.AreaCheckPolygon(polyList[i]);
             Queue<Polygon2d> polyAvailable = new Queue<Polygon2d>();
-            for (int i = 0; i < polyWholesomeList.Count; i++)
+            List<Polygon2d> polysToDept = new List<Polygon2d>(), leftOverPoly = new List<Polygon2d>();
+            for (int i = 0; i < polyList.Count; i++) polyAvailable.Enqueue(polyList[i]);
+            double deptAreaTarget = areaFactor * areaAvailable, areaAssigned = 0;
+            //double deptAreaTarget = deptItem.DeptAreaNeeded,areaAssigned = 0;
+            while (areaAssigned < deptAreaTarget && polyAvailable.Count > 0)
             {
-                bool dimensionReached = false;
-                polyAvailable.Enqueue(polyWholesomeList[i]);
-                while (!dimensionReached && polyAvailable.Count>0 && count < factor)
-                {
-                    //lineId = BasicUtility.ToggleInputInt(lineId);
-                    Polygon2d currentPoly = polyAvailable.Dequeue();
-                    if (currentPoly.Lines[0].Length > currentPoly.Lines[1].Length) { lineId = 1; distance = currentPoly.Lines[0].Length / 2; }
-                    else { lineId = 0; distance = currentPoly.Lines[1].Length / 2; }
-                    Dictionary<string,object> splitObj = SplitObject.SplitByOffsetFromLine(currentPoly, lineId, distance, acceptableWidth); //"PolyAfterSplit", "LeftOverPoly" 
-                    Polygon2d polySplit = (Polygon2d)splitObj["PolyAfterSplit"];
-                    Polygon2d leftOver = (Polygon2d)splitObj["LeftOverPoly"];
-                    polyAvailable.Enqueue(leftOver);
-                    polyWidthProper.Add(polySplit);
-                    count += 1;
-                }// end of while
-                count = 0;
-            }// end of for
-  
+                Polygon2d currentPoly = polyAvailable.Dequeue();
+                areaAssigned += PolygonUtility.AreaCheckPolygon(currentPoly);
+                polysToDept.Add(currentPoly);
+            }
             return new Dictionary<string, object>
             {
-                { "DeptPoly", (polyWidthProper) },
-                { "LeftOverPoly", (polyAvailable) },
-                { "AllPolys", (null)},
-                { "AreaAdded", (null) },
+                { "DeptPoly", (polysToDept) },
+                { "LeftOverPoly", (polyAvailable.ToList()) },
+                { "AllPolys", (polyList)},
+                { "AreaAdded", (areaAssigned) },
                 { "AllNodes", (null)}
             };
         }
-
 
 
 
@@ -583,18 +543,22 @@ namespace SpacePlanning
         public static Dictionary<string, object> AssignBlocksBasedOnMinEdgeLength(DeptData deptItem, List<Polygon2d> polyList, double acceptableWidth = 10, double factor =5)
         {
             bool leftOver = false;
-            List<Polygon2d> polyBrokenList = GetPolysForOtherDepts(polyList, acceptableWidth, factor);
             Queue<Polygon2d> polyAvailable = new Queue<Polygon2d>();
             List<Polygon2d> polysToDept = new List<Polygon2d>(), leftOverPoly = new List<Polygon2d>();
-            for (int i = 0; i < polyBrokenList.Count; i++) polyAvailable.Enqueue(polyBrokenList[i]);
-            double deptAreaTarget = deptItem.DeptAreaNeeded, areaAssigned = 0;
+            double areaAvailable = 0;
+            for (int i = 0; i < polyList.Count; i++)
+            {
+                areaAvailable += PolygonUtility.AreaCheckPolygon(polyList[i]);
+                polyAvailable.Enqueue(polyList[i]);
+            }
+
+            double deptAreaTarget = deptItem.DeptAreaProportion * areaAvailable, areaAssigned = 0;
             while (areaAssigned < deptAreaTarget && polyAvailable.Count>0)
             {
                 Polygon2d currentPoly = polyAvailable.Dequeue();
                 areaAssigned += PolygonUtility.AreaCheckPolygon(currentPoly);
                 polysToDept.Add(currentPoly);
             }
-
             for (int i = 0; i < polyAvailable.Count; i++)
             {
                 leftOver = true;
@@ -604,7 +568,7 @@ namespace SpacePlanning
             {
                 { "DeptPoly", (polysToDept) },
                 { "LeftOverPoly", (leftOverPoly) },
-                { "AllPolys", (polyBrokenList)},
+                { "AllPolys", (polyList)},
                 { "AreaAdded", (areaAssigned) },
                 { "AllNodes", (null)}
             };
@@ -649,70 +613,7 @@ namespace SpacePlanning
             //return polyQueue.ToList();
         }
 
-        //blocks are assigned based on ratio of split, used for assigning other depts
-        [MultiReturn(new[] { "DeptPoly", "LeftOverPoly", "AllPolys", "AreaAdded", "AllNodes" })]
-        public static Dictionary<string, object> AssignBlocksBasedOnRatioRecursed(DeptData deptItem, List<Polygon2d> polyList, double acceptableWidth = 10, double ratio = 0.5)
-        {
-            //if (!PolygonUtility.CheckPolyList(polyList)) return null;
-           
-            int count = 0, maxTry = 200;
-            Queue<Polygon2d> polyQueue = new Queue<Polygon2d>();
-            List<Polygon2d> polyBrokenList = new List<Polygon2d>();
-            for (int i = 0; i < polyList.Count; i++) polyQueue.Enqueue(polyList[i]);
-            while (polyQueue.Count > 0 && count < maxTry)
-            {
-                Polygon2d currentPoly = polyQueue.Dequeue();
-                Dictionary<string, object> splitObj = SplitObject.SplitByRatio(currentPoly, ratio, 0);
-                List<Polygon2d> polySplitList = (List<Polygon2d>)splitObj["PolyAfterSplit"];
-                if (PolygonUtility.CheckPolyList(polySplitList) && polySplitList.Count > 1)
-                {
-                    Polygon2d bbox1 = Polygon2d.ByPoints(ReadData.FromPointsGetBoundingPoly(polySplitList[0].Points));
-                    Polygon2d bbox2 = Polygon2d.ByPoints(ReadData.FromPointsGetBoundingPoly(polySplitList[1].Points));
-                    if(bbox1.Lines[0].Length < acceptableWidth || bbox1.Lines[1].Length < acceptableWidth) polyBrokenList.Add(polySplitList[0]);
-                    else polyQueue.Enqueue(polySplitList[0]);
-                    if (bbox2.Lines[0].Length < acceptableWidth || bbox2.Lines[1].Length < acceptableWidth) polyBrokenList.Add(polySplitList[1]);
-                    else polyQueue.Enqueue(polySplitList[1]);
-                }
-
-                if (PolygonUtility.CheckPolyList(polySplitList) && polySplitList.Count < 2)
-                {
-                    Polygon2d bbox1 = Polygon2d.ByPoints(ReadData.FromPointsGetBoundingPoly(polySplitList[0].Points));
-                    if (bbox1.Lines[0].Length < acceptableWidth || bbox1.Lines[1].Length < acceptableWidth) polyBrokenList.Add(polySplitList[0]);
-                    else polyQueue.Enqueue(polySplitList[0]);
-                }
-                count += 1;
-            }
-
-            for (int i = 0; i < polyQueue.Count; i++) polyBrokenList.Add(polyQueue.Dequeue());
-
-
-
-            double areaAvailable = 0;
-            for (int i = 0; i < polyList.Count; i++) areaAvailable += PolygonUtility.AreaCheckPolygon(polyList[i]);
-
-            Queue<Polygon2d> polyAvailable = new Queue<Polygon2d>();
-            List<Polygon2d> polysToDept = new List<Polygon2d>(), leftOverPoly = new List<Polygon2d>();
-            for (int i = 0; i < polyBrokenList.Count; i++) polyAvailable.Enqueue(polyBrokenList[i]);
-            double deptAreaTarget = deptItem.DeptAreaProportion * areaAvailable, areaAssigned = 0;
-            //double deptAreaTarget = deptItem.DeptAreaNeeded,areaAssigned = 0;
-            while (areaAssigned < deptAreaTarget && polyAvailable.Count > 0)
-            {
-                Polygon2d currentPoly = polyAvailable.Dequeue();
-                areaAssigned += PolygonUtility.AreaCheckPolygon(currentPoly);
-                polysToDept.Add(currentPoly);
-            }
-          
-            return new Dictionary<string, object>
-            {
-                { "DeptPoly", (polysToDept) },
-                { "LeftOverPoly", (polyAvailable.ToList()) },
-                { "AllPolys", (polyBrokenList)},
-                { "AreaAdded", (areaAssigned) },
-                { "AllNodes", (null)}
-            };
-        }
-
-
+       
         //adds a point to a line of a poly, such that offsetting places offset line inside the poly
         [MultiReturn(new[] { "PolyAddedPts", "ProblemPoint", "IsAdded","PointAdded", "Trials", "FinalRatio","ProblemLine", "ProblemPtsList", "FalseLineList" })]
         public static Dictionary<string, object> AddPointToFitPoly(Polygon2d poly, Polygon2d containerPoly, double distance = 16, double area = 0, double thresDistance = 10, double recompute = 5)
@@ -1400,6 +1301,11 @@ namespace SpacePlanning
             List<List<Polygon2d>> AllDeptPolys = new List<List<Polygon2d>>();
             List<Polygon2d> leftOverPoly = new List<Polygon2d>();//changed from stack
             List<Polygon2d> otherDeptPoly = new List<Polygon2d>();
+            List<Polygon2d> subDividedPoly = new List<Polygon2d>();
+
+            double totalDeptProp = 0;
+            for (int i = 0; i < deptData.Count; i++) if (i > 0) totalDeptProp += deptData[i].DeptAreaProportion;
+
             for (int i = 0; i < deptData.Count; i++)
             {            
                 double areaAssigned = 0;
@@ -1420,12 +1326,17 @@ namespace SpacePlanning
                         leftOverPoly.Add(leftOverBlocks[j]);
                     }              
                 }
-                else // other depts
-                {                  
-                    //Dictionary<string, object> assignedByRatioObj = AssignBlocksBasedOnRatio(deptItem, leftOverPoly, i);
-                    //Dictionary<string, object> assignedByRatioObj = AssignBlocksBasedOnMinEdgeLength(deptItem, leftOverPoly.ToList(),50,20);
+                if( i == 1)
+                {
+                    leftOverPoly = SubdivideInputPoly(leftOverPoly, acceptableWidth, 0.5);
+                }
 
-                    Dictionary<string, object> assignedByRatioObj = AssignBlocksBasedOnRatioRecursed(deptItem, leftOverPoly,acceptableWidth,0.5);
+                if( i > 0 ) // other depts
+                {
+                    double areaFactor = deptItem.DeptAreaProportion / totalDeptProp;
+                    //Dictionary<string, object> assignedByRatioObj = AssignBlocksBasedOnRatio(deptItem, leftOverPoly, i);
+                    //Dictionary<string, object> assignedByRatioObj = AssignBlocksBasedOnMinEdgeLength(deptItem, leftOverPoly,20,10);
+                    Dictionary<string, object> assignedByRatioObj = AssignBlocksBasedOnRatioRecursed(deptItem, areaFactor, leftOverPoly,acceptableWidth,0.5);
                     List<Polygon2d> everyDeptPoly = (List<Polygon2d>)assignedByRatioObj["DeptPoly"];
                     leftOverPoly = (List<Polygon2d>)assignedByRatioObj["LeftOverPoly"];                 
                     areaAssigned = (double)assignedByRatioObj["AreaAdded"];
