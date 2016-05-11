@@ -559,7 +559,7 @@ namespace SpacePlanning
 
         //find lines which will not be inside the poly when offset by a distance
         [MultiReturn(new[] { "LinesFalse", "Offsetables", "IndicesFalse", "PointsOutside"})]
-        public static Dictionary<string, object> CheckLinesOffsetInPoly(Polygon2d poly, Polygon2d containerPoly, double distance = 10)
+        public static Dictionary<string, object> CheckLinesOffsetInPoly(Polygon2d poly, Polygon2d containerPoly, double distance = 10, bool tag = false)
         {
             if (!CheckPoly(poly)) return null;
             Polygon2d oPoly = OffsetPoly(poly, 0.2);
@@ -578,6 +578,7 @@ namespace SpacePlanning
                 bool checkStartPt = GraphicsUtility.PointInsidePolygonTest(oPoly, offStartPt);
                 bool checkEndPt = GraphicsUtility.PointInsidePolygonTest(oPoly, offEndPt);
                 bool checkExtEdge = BuildLayout.CheckLineGetsExternalWall(line, containerPoly);
+                if (tag) checkExtEdge  =true;
                 List<Point2d> pointsDefault = new List<Point2d>();
                 if (checkStartPt && checkEndPt && checkExtEdge)
                 {                    
@@ -833,6 +834,7 @@ namespace SpacePlanning
             }
             return reducedPolyList;
         }
+
 
         //smoothens a polygon2d by adding point2d in between
         public static List<Point2d> SmoothPolygon(List<Point2d> pointList, double spacingProvided = 1)
