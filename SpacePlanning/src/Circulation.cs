@@ -28,7 +28,7 @@ namespace SpacePlanning
         /// </search>
         //Make Dept Topology Matrix , finds all the shared edges between dept polys, and based on that  makes dept neighbors
         [MultiReturn(new[] { "DeptTopologyList", "CirculationNetwork", "DeptAllPolygons", "NonRedundantCirculationNetwork" })]
-        public static Dictionary<string, object> MakeDeptTopology(List<DeptData> deptData, Polygon2d poly, double limit = 0)
+        public static Dictionary<string, object> MakeDeptTopology(List<DeptData> deptData, Polygon2d poly, Polygon2d leftOverPoly, double limit = 0)
         {
             if (deptData == null || deptData.Count == 0 || !PolygonUtility.CheckPoly(poly)) return null;
             List<Polygon2d> polygonsAllDeptList = new List<Polygon2d>();
@@ -45,7 +45,7 @@ namespace SpacePlanning
                     deptDataAllDeptList.Add(deptData[i]);
                 }
             }
-
+            polygonsAllDeptList.Add(leftOverPoly);
             List<Line2d> networkLine = new List<Line2d>();
             for (int i = 0; i < polygonsAllDeptList.Count; i++)
             {
@@ -78,29 +78,17 @@ namespace SpacePlanning
         
         //Make Dept Topology Matrix
         [MultiReturn(new[] { "ProgTopologyList", "ProgNeighborNameList", "ProgAllPolygons", "SharedEdge" })]
-        public static Dictionary<string, object> MakeCirculationTopology(Polygon2d polyOutline, List<Polygon2d> polyA = null, List<Polygon2d> polyB = null, List<Polygon2d> polyC = null)
+        public static Dictionary<string, object> MakeProgramTopology(Polygon2d polyOutline, List<Polygon2d> polyA = null,  List<Polygon2d> polyB = null, List<Polygon2d> polyC = null, List<Polygon2d> polyD = null)
         {
             if (!PolygonUtility.CheckPoly(polyOutline)) return null;
             List<Polygon2d> polygonsAllProgList = new List<Polygon2d>();
             List<DeptData> deptDataAllDeptList = new List<DeptData>();
             List<List<Line2d>> lineCollection = new List<List<Line2d>>();
 
-            if (polyA != null)
-            {
-                polygonsAllProgList.AddRange(polyA);
-            }
-
-            if (polyB != null)
-            {
-                polygonsAllProgList.AddRange(polyB);
-            }
-
-            if (polyC != null)
-            {
-                polygonsAllProgList.AddRange(polyC);
-            }
-
-
+            if (polyA != null) polygonsAllProgList.AddRange(polyA);
+            if (polyB != null) polygonsAllProgList.AddRange(polyB);
+            if (polyC != null) polygonsAllProgList.AddRange(polyC);
+            if (polyD != null) polygonsAllProgList.AddRange(polyD);
 
             List<Line2d> networkLine = new List<Line2d>();
             for (int i = 0; i < polygonsAllProgList.Count; i++)
@@ -110,12 +98,7 @@ namespace SpacePlanning
                 {
                     Polygon2d poly2 = polygonsAllProgList[j];
                     Dictionary<string, object> checkNeighbor = PolygonUtility.FindPolyAdjacentEdge(poly1, poly2);
-
-                    if ((bool)checkNeighbor["Neighbour"] == true)
-                    {
-                        networkLine.Add((Line2d)checkNeighbor["SharedEdge"]);
-                    }
-
+                    if ((bool)checkNeighbor["Neighbour"] == true) networkLine.Add((Line2d)checkNeighbor["SharedEdge"]);
                 }
             }
             List<Line2d> cleanNetworkLines = GraphicsUtility.RemoveDuplicateLines(networkLine);
@@ -126,10 +109,7 @@ namespace SpacePlanning
             for (int i = 0; i < cleanNetworkLines.Count; i++)
             {
                 bool checkOrtho = GraphicsUtility.IsLineOrthogonal(cleanNetworkLines[i]);
-                if (checkOrtho == true)
-                {
-                    onlyOrthoLineList.Add(cleanNetworkLines[i]);
-                }
+                if (checkOrtho == true) onlyOrthoLineList.Add(cleanNetworkLines[i]);
             }
             return new Dictionary<string, object>
             {
@@ -297,33 +277,6 @@ namespace SpacePlanning
 
                 }// end of for loop j
             }// end of for loop i
-
-            string foo = "";
-            /*
-            List<List<Polygon2d>> deptPolyBranchedInList = new List<List<Polygon2d>>();
-
-            List<int> distinctIdList = deptIdList.Distinct().ToList();
-            for (int i = 0; i < distinctIdList.Count; i++)
-            {
-                List<Polygon2d> polyForDeptBranch = new List<Polygon2d>();
-                for (int j = 0; j < deptIdList.Count; j++)
-                {
-                    if (deptIdList[j] == i)
-                    {
-                        if (j < updatedDeptPolyList.Count)
-                        {
-                            polyForDeptBranch.Add(updatedDeptPolyList[j]);
-                        }
-
-                    }
-                }
-                deptPolyBranchedInList.Add(polyForDeptBranch);
-            }
-            */
-
-
-
-
 
             return new Dictionary<string, object>
             {
