@@ -849,10 +849,9 @@ namespace SpacePlanning
         //smoothens a polygon2d by adding point2d in between
         public static List<Point2d> SmoothPolygon(List<Point2d> pointList, double spacingProvided = 1)
         {
-            //return pointList;
             int threshValue = 50;
             if (pointList == null || pointList.Count == 0) return null;
-            if (pointList.Count > threshValue) return pointList;
+            //if (pointList.Count > threshValue) return pointList;
            
             List<double> spans = GetSpansXYFromPolygon2d(pointList);
             double spanX = spans[0];
@@ -866,8 +865,7 @@ namespace SpacePlanning
                 if (i == pointList.Count - 1) ptB = pointList[0];                
                 else ptB = pointList[i + 1];
               
-                Vector2d vec = new Vector2d(ptA, ptB);
-                double dist = vec.Length;
+                double dist = new Vector2d(ptA, ptB).Length;
                 int numPointsNeeded = (int)(dist / spacingProvided);
                 double increment = dist / numPointsNeeded;
                 ptList.Add(pointList[i]);
