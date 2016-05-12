@@ -509,16 +509,15 @@ namespace SpacePlanning
 
         //blocks are assigned based on ratio of split, used for assigning other depts
         [MultiReturn(new[] { "DeptPoly", "LeftOverPoly", "AllPolys", "AreaAdded", "AllNodes" })]
-        public static Dictionary<string, object> AssignBlocksBasedOnRatioRecursed(double areaFactor, List<Polygon2d> polyList, double acceptableWidth = 10, double ratio = 0.5)
+        public static Dictionary<string, object> AssignBlocksBasedOnRatioRecursed(double areaFactor, double areaAvailable, List<Polygon2d> polyList, double acceptableWidth = 10, double ratio = 0.5)
         {
             //if (!PolygonUtility.CheckPolyList(polyList)) return null;           
-            //int count = 0, maxTry = 200;
-            double areaAvailable = 0;
-            for (int i = 0; i < polyList.Count; i++) areaAvailable += PolygonUtility.AreaCheckPolygon(polyList[i]);
+            //for (int i = 0; i < polyList.Count; i++) areaAvailable += PolygonUtility.AreaCheckPolygon(polyList[i]);
             Queue<Polygon2d> polyAvailable = new Queue<Polygon2d>();
             List<Polygon2d> polysToDept = new List<Polygon2d>(), leftOverPoly = new List<Polygon2d>();
             for (int i = 0; i < polyList.Count; i++) polyAvailable.Enqueue(polyList[i]);
             double deptAreaTarget = areaFactor * areaAvailable, areaAssigned = 0;
+            //deptAreaTarget = areaFactor;
             //double deptAreaTarget = deptItem.DeptAreaNeeded,areaAssigned = 0;
             while (areaAssigned < deptAreaTarget && polyAvailable.Count > 0)
             {
@@ -1302,7 +1301,7 @@ namespace SpacePlanning
             List<Polygon2d> otherDeptPoly = new List<Polygon2d>();
             List<Polygon2d> subDividedPoly = new List<Polygon2d>();
 
-            double totalDeptProp = 0;
+            double totalDeptProp = 0, areaAvailable = 0;
             for (int i = 0; i < deptData.Count; i++) if (i > 0) totalDeptProp += deptData[i].DeptAreaProportion;
 
             for (int i = 0; i < deptData.Count; i++)
@@ -1328,6 +1327,7 @@ namespace SpacePlanning
                 if( i == 1)
                 {
                     leftOverPoly = SubdivideInputPoly(leftOverPoly, acceptableWidth, 0.5);
+                    for (int j = 0; j < leftOverPoly.Count; j++) areaAvailable += PolygonUtility.AreaCheckPolygon(leftOverPoly[j]);
                     if (leftOverPoly == null) break;
                 }
 
@@ -1336,7 +1336,7 @@ namespace SpacePlanning
                     double areaFactor = deptItem.DeptAreaProportion / totalDeptProp;
                     //Dictionary<string, object> assignedByRatioObj = AssignBlocksBasedOnRatio(deptItem, leftOverPoly, i);
                     //Dictionary<string, object> assignedByRatioObj = AssignBlocksBasedOnMinEdgeLength(areaFactor, leftOverPoly,20,10);
-                    Dictionary<string, object> assignedByRatioObj = AssignBlocksBasedOnRatioRecursed(areaFactor, leftOverPoly,acceptableWidth,0.5);
+                    Dictionary<string, object> assignedByRatioObj = AssignBlocksBasedOnRatioRecursed(areaFactor,areaAvailable, leftOverPoly,acceptableWidth,0.5);
                     List<Polygon2d> everyDeptPoly = (List<Polygon2d>)assignedByRatioObj["DeptPoly"];
                     leftOverPoly = (List<Polygon2d>)assignedByRatioObj["LeftOverPoly"];                 
                     areaAssigned = (double)assignedByRatioObj["AreaAdded"];
