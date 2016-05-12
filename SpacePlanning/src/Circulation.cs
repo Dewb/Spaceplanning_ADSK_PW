@@ -28,9 +28,13 @@ namespace SpacePlanning
         /// </search>
         //Make Dept Topology Matrix , finds all the shared edges between dept polys, and based on that  makes dept neighbors
         [MultiReturn(new[] { "DeptTopologyList", "CirculationNetwork", "DeptAllPolygons", "NonRedundantCirculationNetwork" })]
-        public static Dictionary<string, object> MakeDeptTopology(List<DeptData> deptData, Polygon2d poly, Polygon2d leftOverPoly, double limit = 0)
+        public static Dictionary<string, object> MakeDeptTopology(List<DeptData> deptData, Polygon2d poly, Polygon2d leftOverPoly = null, double limit = 0)
         {
-            if (deptData == null || deptData.Count == 0 || !PolygonUtility.CheckPoly(poly)) return null;
+            if (deptData == null || deptData.Count == 0 || !PolygonUtility.CheckPoly(poly))
+            {
+                Trace.WriteLine("Found dept or poly null, so returning");
+                return null;
+            }
             List<Polygon2d> polygonsAllDeptList = new List<Polygon2d>();
             List<DeptData> deptDataAllDeptList = new List<DeptData>();
             List<List<string>> deptNamesNeighbors = new List<List<string>>();
@@ -45,7 +49,15 @@ namespace SpacePlanning
                     deptDataAllDeptList.Add(deptData[i]);
                 }
             }
-            polygonsAllDeptList.Add(leftOverPoly);
+            if (leftOverPoly != null)
+            {
+                Trace.WriteLine("leftover added");
+                polygonsAllDeptList.Add(leftOverPoly);
+            }
+            else
+            {
+                Trace.WriteLine("leftover poly found null, so not added");
+            }
             List<Line2d> networkLine = new List<Line2d>();
             for (int i = 0; i < polygonsAllDeptList.Count; i++)
             {
@@ -75,7 +87,64 @@ namespace SpacePlanning
 
             };
         }
-        
+
+
+        [MultiReturn(new[] { "DeptTopologyList", "CirculationNetwork", "DeptAllPolygons", "NonRedundantCirculationNetwork" })]
+        public static Dictionary<string, object> MakeDeptTopologyA(List<DeptData> deptData, Polygon2d poly, double limit = 0)
+        {
+            if (deptData == null || deptData.Count == 0 || !PolygonUtility.CheckPoly(poly))
+            {
+                Trace.WriteLine("Found dept or poly null, so returning");
+                return null;
+            }
+            List<Polygon2d> polygonsAllDeptList = new List<Polygon2d>();
+            List<DeptData> deptDataAllDeptList = new List<DeptData>();
+            List<List<string>> deptNamesNeighbors = new List<List<string>>();
+            List<List<Line2d>> lineCollection = new List<List<Line2d>>();
+            //make flattened list of all dept data and dept polys
+            for (int i = 0; i < deptData.Count; i++)
+            {
+                List<Polygon2d> polyList = deptData[i].PolyDeptAssigned;
+                for (int j = 0; j < polyList.Count; j++)
+                {
+                    polygonsAllDeptList.Add(polyList[j]);
+                    deptDataAllDeptList.Add(deptData[i]);
+                }
+            }
+       
+            List<Line2d> networkLine = new List<Line2d>();
+            for (int i = 0; i < polygonsAllDeptList.Count; i++)
+            {
+                Polygon2d polyA = polygonsAllDeptList[i];
+                for (int j = i + 1; j < polygonsAllDeptList.Count; j++)
+                {
+                    Polygon2d polyB = polygonsAllDeptList[j];
+                    Dictionary<string, object> checkNeighbor = PolygonUtility.FindPolyAdjacentEdge(polyA, polyB, limit);
+                    if (checkNeighbor != null)
+                    {
+                        if ((bool)checkNeighbor["Neighbour"] == true)
+                        {
+                            networkLine.Add((Line2d)checkNeighbor["SharedEdge"]);
+                        }
+                    }
+                }
+            }
+            List<Line2d> cleanNetworkLines = GraphicsUtility.RemoveDuplicateLines(networkLine);
+            cleanNetworkLines = GraphicsUtility.RemoveDuplicateslinesWithPoly(poly, cleanNetworkLines);
+            List<List<string>> deptNeighborNames = new List<List<string>>();
+            return new Dictionary<string, object>
+            {
+                { "DeptTopologyList", (deptNamesNeighbors) },
+                { "CirculationNetwork", (networkLine) },
+                { "DeptAllPolygons", (polygonsAllDeptList) },
+                { "NonRedundantCirculationNetwork", (cleanNetworkLines) }
+
+            };
+        }
+
+
+
+
         //Make Dept Topology Matrix
         [MultiReturn(new[] { "ProgTopologyList", "ProgNeighborNameList", "ProgAllPolygons", "SharedEdge" })]
         public static Dictionary<string, object> MakeProgramTopology(Polygon2d polyOutline, List<Polygon2d> polyA = null,  List<Polygon2d> polyB = null, List<Polygon2d> polyC = null, List<Polygon2d> polyD = null)

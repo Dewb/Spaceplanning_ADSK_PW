@@ -389,7 +389,7 @@ namespace SpacePlanning
             List<Line2d> falseLines = new List<Line2d>();
             List<Line2d> lineOptions = new List<Line2d>();
             bool error = false;
-            while (polyLeftList.Count > 0 && areaAdded < area && count < recompute) //count<recompute
+            while (polyLeftList.Count > 0 && areaAdded < area && count < maxTry) //count<recompute
             {
                 Polygon2d currentPoly = polyLeftList.Pop();
                 Polygon2d tempPoly = new Polygon2d(currentPoly.Points,0);
@@ -1361,6 +1361,7 @@ namespace SpacePlanning
             for (int i = 0; i < UpdatedDeptData.Count; i++) totalDeptArea += UpdatedDeptData[i].DeptAreaNeeded;
             for (int i = 0; i < UpdatedDeptData.Count; i++) UpdatedDeptData[i].DeptAreaProportionAchieved = Math.Round((UpdatedDeptData[i].AreaProvided / totalDeptArea), 3);
 
+            if (leftOverPoly.Count == 0) leftOverPoly = null;
 
             return new Dictionary<string, object>
             {
