@@ -416,6 +416,49 @@ namespace SpacePlanning
                 } 
                 if (error) break;
             }
+
+            //added to allow one more poly
+            bool spaceAvailable = false;
+            for (int i = 0; i < lineOptions.Count; i++) { if (lineOptions[i].Length > 100) spaceAvailable = true; break; }
+
+            if (spaceAvailable && polyLeftList.Count>0)
+            {
+                Polygon2d currentPoly = polyLeftList.Pop();
+                Polygon2d tempPoly = new Polygon2d(currentPoly.Points, 0);
+                Dictionary<string, object> splitObject = CreateBlocksByLines(currentPoly, poly, distance, thresDistance, externalIncude);
+                Trace.WriteLine("Well found that space is available");
+                if (splitObject != null)
+                {
+
+                    Polygon2d blockPoly = (Polygon2d)splitObject["PolyAfterSplit"];
+                    Polygon2d leftPoly = (Polygon2d)splitObject["LeftOverPoly"];
+                    lineOptions = (List<Line2d>)splitObject["LineOptions"];
+                    Dictionary<string, object> addPtObj = AddPointToFitPoly(leftPoly, poly, distance, thresDistance, recompute);
+                    leftPoly = (Polygon2d)addPtObj["PolyAddedPts"];
+                    falseLines = (List<Line2d>)addPtObj["FalseLineList"];
+                    pointAdd = (Point2d)addPtObj["PointAdded"];
+                    areaAdded += PolygonUtility.AreaCheckPolygon(blockPoly);
+                    polyLeftList.Push(leftPoly);
+                    blockPolyList.Add(blockPoly);
+                    count += 1;
+                    if (lineOptions.Count == 0) error = true;
+                    else
+                    {
+                        for (int i = 0; i < lineOptions.Count; i++)
+                        {
+                            if (lineOptions[i].Length > thresDistance) { error = false; break; }
+                            else error = true;
+                        }
+                    }
+                    Trace.WriteLine("Succesfully assigned one extra");
+
+                } // end of if loop
+
+
+            }
+
+            
+
             leftoverPolyList.AddRange(polyLeftList);
             blockPolyList = PolygonUtility.CleanPolygonList(blockPolyList);
             leftoverPolyList = PolygonUtility.CleanPolygonList(leftoverPolyList);
