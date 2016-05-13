@@ -529,6 +529,7 @@ namespace SpacePlanning
             
             Dictionary<string,object> singleNotchObj = RemoveSingleNotch(currentPoly, distance, currentPoly.Points.Count);
             Polygon2d polyRed = (Polygon2d)singleNotchObj["PolyReduced"];
+            if (!CheckPoly(polyRed)) { polyRed = poly; hasNotches = false; }
             return new Dictionary<string, object>
             {
                 { "PolyReduced", (polyRed) },
@@ -625,7 +626,8 @@ namespace SpacePlanning
                     Point2d midPtLLine = LineUtility.LineMidPoint(poly.Lines[a]);
                     int c = i - 1;
                     int d = b + 1;
-                    if (i == 0) c = poly.Points.Count - 1;                
+                    if (i == 0) c = poly.Points.Count - 1;
+                    if (b == poly.Points.Count - 1) d = 0;               
                     if(GraphicsUtility.CheckLineOrient(poly.Lines[c]) == 0) // horizontal
                     {
                         poly.Points[a] = midPtLLine;

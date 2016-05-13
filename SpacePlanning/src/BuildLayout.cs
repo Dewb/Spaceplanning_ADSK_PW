@@ -16,7 +16,7 @@ namespace SpacePlanning
         internal static Random ranGenerate = new Random();
         internal static double recurse = 0;
         internal static Point2d reference = new Point2d(0,0);
-        internal static int maxCount = 200, maxRound = 50;      
+        internal static int maxCount = 50, maxRound = 50;      
 
         #region - Public Methods
 
@@ -210,19 +210,18 @@ namespace SpacePlanning
         /// <search>
         /// dept data arrangement on sie
         /// </search>
-        [MultiReturn(new[] { "DeptPolys", "LeftOverPolys", "CentralStation", "UpdatedDeptData","SpaceDataTree" })]
-        public static Dictionary<string, object> DeptArrangeOnSite(Polygon2d poly, List<DeptData> deptData, List<Cell> cellInside, double offset, int recompute = 1)
+        [MultiReturn(new[] { "DeptPolys", "LeftOverPolys", "CirculationPolys","OtherDeptMainPoly", "UpdatedDeptData"})]
+        public static Dictionary<string, object> PlaceDeptOnSite(List<DeptData> deptData, Polygon2d poly,  double primaryDeptWidth, 
+            double acceptableWidth, double minNotchDistance = 20, double circulationFreq = 8, int recompute = 1)
         {
             Dictionary<string, object> deptArrangement = new Dictionary<string, object>();
-            //deptArrangement = DeptSplitRefined(poly, deptData, cellInside, offset, 1);
             double count = 0;            
             Random rand = new Random();
             bool deptPlaced = false;
             while(deptPlaced == false && count < maxCount)
             {
                 Trace.WriteLine("Lets Go Again for : " + count);
-                int reco = rand.Next();
-                deptArrangement = DeptSplitRefined(poly, deptData, cellInside, offset, recompute);
+                deptArrangement = DeptPlacer(deptData, poly, primaryDeptWidth, acceptableWidth, minNotchDistance, circulationFreq, recompute);
                 if(deptArrangement != null)
                 {
                     List<List<Polygon2d>> deptAllPolys =(List<List<Polygon2d>>) deptArrangement["DeptPolys"];
@@ -461,16 +460,16 @@ namespace SpacePlanning
 
         
         //subdivide a given poly into smaller parts till acceptable width is met, returns list of polydept grids and list of polys to compute circulation
-        public static List<List<Polygon2d>> SubdivideInputPoly(List<Polygon2d> polyList, double acceptableWidth = 10, double ratio = 0.5)
+        public static List<List<Polygon2d>> SubdivideInputPoly(List<Polygon2d> polyList, double acceptableWidth = 10,double circulationFreq = 10, double ratio = 0.5)
         {
             if (!PolygonUtility.CheckPolyList(polyList)) return null;
 
-            int count = 0, maxTry = 200;
+            int count = 0;
             Queue<Polygon2d> polyQueue = new Queue<Polygon2d>();
             List<List<Polygon2d>> polyAllReturn = new List<List<Polygon2d>>();
             List<Polygon2d> polyBrokenList = new List<Polygon2d>(), polyCirculationList = new List<Polygon2d>();
-            double totalArea = 0, cirFac = Math.Ceiling(acceptableWidth/6);
-            cirFac = 6;
+            double totalArea = 0; // cirFac = Math.Ceiling(acceptableWidth/ circulationFreq);
+            double cirFac = circulationFreq;
             for (int i = 0; i < polyList.Count; i++)
             {
                 totalArea += PolygonUtility.AreaCheckPolygon(polyList[i]);
@@ -1148,10 +1147,12 @@ namespace SpacePlanning
 
         //dept assignment new way
         [MultiReturn(new[] { "DeptPolys", "LeftOverPolys","CirculationPolys", "OtherDeptMainPoly", "UpdatedDeptData", })]
-        public static Dictionary<string, object> DeptPlacer(List<DeptData> deptData, Polygon2d poly, double offset, double acceptableWidth = 20, double recompute = 5)
+        public static Dictionary<string, object> DeptPlacer(List<DeptData> deptData, Polygon2d poly, double offset, 
+            double acceptableWidth = 20,double minNotchDist = 20, double circulationFreq = 10, double recompute = 5)
         {
             if (deptData == null) return null;
-           // List<DeptData> sortedDeptData = SortDeptData(deptData);
+            Dictionary<string, object> notchObj = PolygonUtility.CheckPolyNotches(poly, minNotchDist);
+            poly = (Polygon2d)notchObj["PolyReduced"];
             List<double> AllDeptAreaAdded = new List<double>();
             List<List<Polygon2d>> AllDeptPolys = new List<List<Polygon2d>>();
             List<Polygon2d> leftOverPoly = new List<Polygon2d>(), polyCirculation = new List<Polygon2d>();//changed from stack
@@ -1169,7 +1170,8 @@ namespace SpacePlanning
                 {
                     //double areaNeeded = deptItem.DeptAreaNeeded;
                     double areaNeeded = deptItem.DeptAreaProportion*PolygonUtility.AreaCheckPolygon(poly);
-                    Dictionary<string, object> inpatientObject = AssignBlocksBasedOnDistance(poly, offset, areaNeeded, 20, recompute);
+                    areaNeeded = 100000;
+                    Dictionary<string, object> inpatientObject = AssignBlocksBasedOnDistance(poly, offset, areaNeeded, 10, recompute);
                     List<Polygon2d> inpatienBlocks = (List<Polygon2d>)inpatientObject["PolyAfterSplit"];
                     List<Polygon2d> leftOverBlocks = (List<Polygon2d>)inpatientObject["LeftOverPoly"];
                     areaAssigned = (double)inpatientObject["AreaAssignedToBlock"];
@@ -1183,7 +1185,7 @@ namespace SpacePlanning
                 }
                 if( i == 1)
                 {
-                    List<List<Polygon2d>> polySubDivs = SubdivideInputPoly(leftOverPoly, acceptableWidth, 0.5);
+                    List<List<Polygon2d>> polySubDivs = SubdivideInputPoly(leftOverPoly, acceptableWidth, circulationFreq, 0.5);
                     leftOverPoly = polySubDivs[0];
                     polyCirculation = polySubDivs[1];
                     for (int j = 0; j < leftOverPoly.Count; j++) areaAvailable += PolygonUtility.AreaCheckPolygon(leftOverPoly[j]);
@@ -1389,58 +1391,6 @@ namespace SpacePlanning
 
             }// end of for loop
             double minArea = 10, areaMoreCheck = 0;
-            //adding left over polys to inpatient blocks, commented out now to reMove inconsistent blocks
-            /*
-            Random ran2 = new Random();
-            double num = ran2.NextDouble();
-            if (recompute > 3)
-            {    //for any left over poly
-                 //double minArea = 10, areaMoreCheck = 0;
-                if (leftOverPoly.Count > 0)
-                {
-                    while (leftOverPoly.Count > 0 && count3 < maxRound)
-                    {
-                        dir = BasicUtility.ToggleInputInt(dir);
-                        Polygon2d currentPolyObj = leftOverPoly.Pop();
-                        if (!PolygonUtility.CheckPolyDimension(currentPolyObj))
-                        {
-                            count3 += 1;
-                            continue;
-                        }
-                        double areaCurrentPoly = PolygonUtility.AreaCheckPolygon(currentPolyObj);
-                        Dictionary<string, object> splitReturned = SplitByDistance(currentPolyObj, ran2, offset, dir);
-                        List<Polygon2d> edgeSplitted = (List<Polygon2d>)splitReturned["PolyAfterSplit"];
-                        if (edgeSplitted == null)
-                        {
-                            Trace.WriteLine("Returning for leftoverpoly , as  split by distance did not work : ");
-                            return null;
-                        }
-                        if (!PolygonUtility.CheckPolyDimension(edgeSplitted[0]))
-                        {
-                            count3 += 1;
-                            continue;
-                        }
-                        double areaA = PolygonUtility.AreaCheckPolygon(edgeSplitted[0]);
-                        double areaB = PolygonUtility.AreaCheckPolygon(edgeSplitted[1]);
-                        if (areaA < areaB)
-                        {
-                            AllDeptPolys[0].Add(edgeSplitted[0]);
-                            areaMoreCheck += areaA;
-                            if (areaB > minArea) leftOverPoly.Push(edgeSplitted[1]);
-                        }
-                        else
-                        {
-                            AllDeptPolys[0].Add(edgeSplitted[1]);
-                            areaMoreCheck += areaB;
-                            if (areaA > minArea) { leftOverPoly.Push(edgeSplitted[0]); }
-                        }
-                        count3 += 1;
-                    }// end of while loop
-                }// end of if loop for leftover count 
-            }
-
-
-            */
             AllDeptAreaAdded[0] += areaMoreCheck;
             // adding the left over polys to the 2nd highest dept after inpatient
             if (leftOverPoly.Count > 0)

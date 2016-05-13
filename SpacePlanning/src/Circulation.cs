@@ -161,9 +161,7 @@ namespace SpacePlanning
             };
         }
 
-
-
-
+        
 
         //Make Dept Topology Matrix
         [MultiReturn(new[] { "ProgTopologyList", "ProgNeighborNameList", "ProgAllPolygons", "SharedEdge" })]
@@ -224,17 +222,15 @@ namespace SpacePlanning
             List<Line2d> flatLineList = new List<Line2d>();
             List<bool> IsDuplicateList = new List<bool>();
 
+            polyProgList = PolygonUtility.SmoothPolygon(polyProgList, 5);
+
             //flatten all the polys in each depts to make it one list
             List<Polygon2d> circulationPolyList = new List<Polygon2d>();
             List<Polygon2d> updatedProgPolyList = new List<Polygon2d>();
             List<int> deptIdList = new List<int>();
             double num = allowedCircRatio;
             List<double> areaProgPolyList = new List<double>();
-            for (int i = 0; i < polyProgList.Count; i++)
-            {
-                double area = GraphicsUtility.AreaPolygon2d(polyProgList[i].Points);
-                areaProgPolyList.Add(area);
-            }
+            for (int i = 0; i < polyProgList.Count; i++) areaProgPolyList.Add(GraphicsUtility.AreaPolygon2d(polyProgList[i].Points));
 
             double maxArea = areaProgPolyList.Max();
             areaProgPolyList.Sort();
@@ -246,11 +242,7 @@ namespace SpacePlanning
             {
                 Line2d splitter = lineList[i];
                 double someNumber = ran.NextDouble();
-                if (someNumber > frequencyCorridor)
-                {
-                    //Trace.WriteLine("Not doing it , lets continue");
-                    continue;
-                }
+                if (someNumber > frequencyCorridor) continue;
                 for (int j = 0; j < polyProgList.Count; j++)
                 {
                     Polygon2d progPoly = polyProgList[j];
