@@ -69,20 +69,12 @@ namespace SpacePlanning
             _gridY = other.GridY;
 
             _numCellAdded = other.NumberofCellsAdded;
-            _areaGiven = other.AreaAllocatedValue;
+            _areaGiven = other.AreaProvided;
             _IsAreaSatsifed = other.IsAreaSatisfied;
             _CellsAssigned = new List<Cell>();
 
-            if (other.PolyProgAssigned != null)
-            {
-                _polyProgs = other.PolyProgAssigned;
-            }
-            else
-            {
-                _polyProgs = null;
-            }
-
-            
+            if (other.PolyProgAssigned != null) _polyProgs = other.PolyProgAssigned;
+            else _polyProgs = null;            
         }
         public List<Polygon2d> PolyProgAssigned
         {
@@ -172,22 +164,14 @@ namespace SpacePlanning
             set { _numCellAdded = value; }
         }
 
-        public double AreaAllocatedValue
-        {
-            get { return _areaGiven; }
-            //set { _areaGiven = value; }
-        }
 
       
         public bool IsAreaSatisfied
         {
             get {
                 double areaNeeded = _progQuanity * _progUnitArea;
-                if (_areaGiven >= areaNeeded){
-                    return true;
-                }else{
-                    return false;
-                }
+                if (CurrentAreaNeeds <= 0) return true;
+                else return false;
             }
             set
             {

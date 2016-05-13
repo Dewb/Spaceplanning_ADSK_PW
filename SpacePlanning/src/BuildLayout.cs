@@ -1344,7 +1344,7 @@ namespace SpacePlanning
             poly = new Polygon2d(polyPts, 0);
 
             SortedDictionary<double, DeptData> sortedD = new SortedDictionary<double, DeptData>();
-            for (int i = 0; i < deptData.Count; i++) sortedD.Add(deptData[i].AreaEachDept(), deptData[i]);
+            for (int i = 0; i < deptData.Count; i++) sortedD.Add(deptData[i].DeptAreaNeeded, deptData[i]);
 
             List<DeptData> sortedDepartmentData = new List<DeptData>();
             foreach (KeyValuePair<double, DeptData> p in sortedD) sortedDepartmentData.Add(p.Value);

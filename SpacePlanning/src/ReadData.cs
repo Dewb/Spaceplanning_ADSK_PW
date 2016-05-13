@@ -62,7 +62,7 @@ namespace SpacePlanning
         internal static List<DeptData> SortDeptData(List<DeptData> deptData)
         {
             SortedDictionary<double, DeptData> sortedD = new SortedDictionary<double, DeptData>();
-            for (int i = 0; i < deptData.Count; i++) sortedD.Add(deptData[i].AreaEachDept(), deptData[i]);
+            for (int i = 0; i < deptData.Count; i++) sortedD.Add(deptData[i].DeptAreaNeeded, deptData[i]);
 
             List<DeptData> sortedDepartmentData = new List<DeptData>();
             foreach (KeyValuePair<double, DeptData> p in sortedD) sortedDepartmentData.Add(p.Value);
@@ -130,7 +130,7 @@ namespace SpacePlanning
                 List<string> adjList = new List<string>();
                 adjList.Add(values[6]);
                 ProgramData progData = new ProgramData(Convert.ToInt16(values[0]), values[1], values[2], Convert.ToInt16(values[3]),
-                    Convert.ToDouble(values[4]) * circulationFactor, Convert.ToInt16(values[6]), adjList, dummyCell, dimX, dimY);
+                    Convert.ToDouble(values[4]), Convert.ToInt16(values[6]), adjList, dummyCell, dimX, dimY); // prev multipled circulationfactor with unit area of prog
                 programDataStack.Add(progData);
             }// end of for each statement
 
@@ -143,7 +143,7 @@ namespace SpacePlanning
                 for (int j = 0; j < programDataStack.Count; j++)
                     if (deptNames[i] == programDataStack[j].DeptName) progInDept.Add(programDataStack[j]);
                 List<ProgramData> programBasedOnQuanity = MakeProgramListBasedOnQuantity(progInDept);
-                deptDataStack.Add(new DeptData(deptNames[i], programBasedOnQuanity, dimX, dimY));
+                deptDataStack.Add(new DeptData(deptNames[i], programBasedOnQuanity, circulationFactor, dimX, dimY));
             }// end of for loop statement
 
             //sort the depts by high area
@@ -247,7 +247,7 @@ namespace SpacePlanning
                 List<string> adjList = new List<string>();
                 adjList.Add(values[6]);
                 ProgramData progData = new ProgramData(Convert.ToInt16(values[0]), values[1], values[2], Convert.ToInt16(values[3]),
-                    Convert.ToDouble(values[4]) * factor, Convert.ToInt16(values[5]), adjList, dummyCell, dimX, dimY);
+                    Convert.ToDouble(values[4]), Convert.ToInt16(values[5]), adjList, dummyCell, dimX, dimY);
                 programDataStack.Add(progData);
             }
 
@@ -261,7 +261,7 @@ namespace SpacePlanning
                 {
                     if (deptNames[i] == programDataStack[j].DeptName) progInDept.Add(programDataStack[j]);
                 }
-                DeptData deptD = new DeptData(deptNames[i], progInDept, dimX, dimY);
+                DeptData deptD = new DeptData(deptNames[i], progInDept, factor, dimX, dimY);
                 deptDataStack.Add(deptD);
             }
 

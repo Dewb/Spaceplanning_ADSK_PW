@@ -24,15 +24,17 @@ namespace SpacePlanning
         private List<Polygon2d> _polyDepts;
         private double _deptAreaProportion;
         private double _deptAreaProportionAchieved;
+        private double _cirFactor;
 
 
         // We make the constructor for this object internal because the 
         // Dynamo user should construct an object through a static method
-        public DeptData(string deptName, List<ProgramData> programDataList, double dimX, double dimY)
+        public DeptData(string deptName, List<ProgramData> programDataList, double circulationFactor, double dimX, double dimY)
         {
             _deptName = deptName;
             _progDataList = programDataList;
             _numCellsDept = NumCellsNeededDept();
+            _cirFactor = circulationFactor;
             _deptAreaNeeded = AreaEachDept();
             _numCells = NumCellsNeededDept();
             _numCellAdded = 0;
@@ -54,6 +56,7 @@ namespace SpacePlanning
             _deptName = other.DepartmentName;
             _progDataList = other.ProgramsInDept;
             _numCellsDept = other.NumCellsNeededDept();
+            _cirFactor = other.DeptCirFactor;
             _deptAreaNeeded = other.AreaEachDept();
             _numCells = other.NumCellsNeededDept();
             _numCellAdded = other.NumberofCellsAdded;
@@ -74,6 +77,12 @@ namespace SpacePlanning
             }
         }
 
+
+        public double DeptCirFactor
+        {
+            get { return _cirFactor; }
+            set { _cirFactor = value; }
+        }
         public double DeptAreaProportionAchieved
         {
             get { return _deptAreaProportionAchieved; }
@@ -174,26 +183,13 @@ namespace SpacePlanning
         }
 
 
-        //CALC THE TOTAL AREA NEEDED BY THIS DEPTS
-        internal double AreaEachDeptOld()
-        {
-            double area = 0;
-            for(int i=0;i< _progDataList.Count; i++)
-            {
-                area += (_progDataList[i].Quantity * _progDataList[i].UnitArea);
-            }
-            return area;
-        }
 
         //CALC THE TOTAL AREA NEEDED BY THIS DEPTS
         public double AreaEachDept()
         {
             double area = 0;
-            for (int i = 0; i < _progDataList.Count; i++)
-            {
-                area +=  _progDataList[i].UnitArea;
-            }
-            return area;
+            for (int i = 0; i < _progDataList.Count; i++) area += _progDataList[i].UnitArea;
+            return area*_cirFactor;
         }
 
 
