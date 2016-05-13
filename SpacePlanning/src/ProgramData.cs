@@ -24,7 +24,7 @@ namespace SpacePlanning
         private int _numCells;
         private double _areaGiven;
         private bool _IsAreaSatsifed;
-        private Polygon2d _polyProgs;
+        private List<Polygon2d> _polyProgs;
 
 
         public ProgramData(int programID,string programName,string programDept,
@@ -84,7 +84,7 @@ namespace SpacePlanning
 
             
         }
-        public Polygon2d PolyProgAssigned
+        public List<Polygon2d> PolyProgAssigned
         {
             get { return _polyProgs; }
             set { _polyProgs = value; }

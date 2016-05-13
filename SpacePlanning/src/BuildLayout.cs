@@ -389,7 +389,7 @@ namespace SpacePlanning
             List<Line2d> falseLines = new List<Line2d>();
             List<Line2d> lineOptions = new List<Line2d>();
             bool error = false;
-            while (polyLeftList.Count > 0 && areaAdded < area && count < maxTry) //count<recompute
+            while (polyLeftList.Count > 0 && areaAdded < area) //count<recompute count < maxTry
             {
                 Polygon2d currentPoly = polyLeftList.Pop();
                 Polygon2d tempPoly = new Polygon2d(currentPoly.Points,0);
@@ -608,7 +608,6 @@ namespace SpacePlanning
 
             for (int i = 0; i < polyQueue.Count; i++) polyBrokenList.Add(polyQueue.Dequeue());
             return polyBrokenList;
-            //return polyQueue.ToList();
         }
 
        
@@ -676,109 +675,6 @@ namespace SpacePlanning
         }
 
     
-
-        //get a poly and find rectangular polys inside. then merge them together to form a big poly
-        [MultiReturn(new[] { "InpatientPolys", "SplitablePolys", "LeftOverpolys", "SplittableLines","OffsetLines","Count","SplitLineLast", "CleanedOffsetLines", "UsedLines"})]
-        public static Dictionary<string, object> MakeInpatientBlocks(Polygon2d poly,  double patientRoomDepth = 16, double recompute = 5)
-        {
-            if (!PolygonUtility.CheckPoly(poly)) return null;
-            List<Polygon2d> inPatientPolyList = new List<Polygon2d>();
-            List<Polygon2d> leftOverPolyList = new List<Polygon2d>();
-            List<Line2d> allSplitLinesOut = new List<Line2d>();
-            List<Line2d> offsetLinesOut = new List<Line2d>();
-            List<Line2d> offsetLinesCleanedOut = new List<Line2d>();
-            List<Line2d> usedLineList = new List<Line2d>();
-            List<int> sortedIndices = new List<int>();
-            List<Cell> latestMergedCells = new List<Cell>();
-            bool splitDone = false;
-            int maxTry = 500, count = 0, selectLineNum = 0;
-            double  threshArea = 500;
-            Random ran = new Random();
-            List<Line2d> offsetLines = new List<Line2d>();
-            List<Line2d> offsetCleanedLines = new List<Line2d>();
-
-            Stack<Polygon2d> splitablePolys = new Stack<Polygon2d>();
-            splitablePolys.Push(poly);
-      
-            while (splitablePolys.Count > 0 && count < recompute)
-            {
-                Trace.WriteLine("Starting iteration ++++++++++++++++++++++++++++++ : " + count);
-                Polygon2d currentPoly = splitablePolys.Pop();
-                if(PolygonUtility.AreaCheckPolygon(currentPoly) < threshArea)
-                {   count += 1;
-                    Trace.WriteLine("Well the area was not enough!");
-                    continue;
-                }
-                Dictionary<string, object> outerLineObj = ExtLinesAndOffsetsFromBBox(currentPoly, patientRoomDepth,count);
-                List<Line2d> allSplitLines = (List<Line2d>)outerLineObj["SplittableLines"];
-                offsetLines = (List<Line2d>)outerLineObj["OffsetLines"];
-                if (offsetLines == null || offsetLines.Count == 0) { count += 1; continue; }
-                    
-               
-                sortedIndices = (List<int>)outerLineObj["SortedIndices"];
-                Trace.WriteLine("UsedLineList length is : " + usedLineList.Count);
-                Trace.WriteLine("Before cleaning offset lines length : " + offsetLines.Count);
-                List<Line2d> newLines = GraphicsUtility.RemoveDuplicateLinesFromAnotherListTry(offsetLines, usedLineList);
-                if(newLines.Count == 0)
-                {
-                    count += 1;
-                    continue;
-                }
-                selectLineNum = (int)Math.Floor(BasicUtility.RandomBetweenNumbers(ran, newLines.Count, 0));
-                Trace.WriteLine("After cleaning offset lines length : " + newLines.Count);
-             
-
-                Line2d splitLine = newLines[selectLineNum]; // pick any Line
-                //splitLine = LineUtility.Move(splitLine, 0.05);
-                Dictionary<string, object> splitPolys = SplitObject.SplitByLine(currentPoly, splitLine, 0); //{ "PolyAfterSplit", "SplitLine" })]
-                List<Polygon2d> polyAfterSplit = (List<Polygon2d>)splitPolys["PolyAfterSplit"];
-                if (PolygonUtility.CheckPolyList(polyAfterSplit))
-                {
-                    List<Polygon2d> sortedPolys = PolygonUtility.SortPolygonList(polyAfterSplit);
-                    if (PolygonUtility.NumberofSidesPoly(sortedPolys[0]) < 5)
-                    {
-                        Trace.WriteLine("4 sided found");
-                        inPatientPolyList.Add(sortedPolys[0]);
-                        splitablePolys.Push(sortedPolys[1]);
-                        leftOverPolyList.Add(sortedPolys[1]);
-                        usedLineList.Add(splitLine);
-                    }
-                    else
-                    {
-                        Trace.WriteLine("Not rect or square");
-                        splitablePolys.Push(sortedPolys[0]);
-                        splitablePolys.Push(sortedPolys[1]);
-                    }
-                    
-                }
-                else
-                {
-                    Trace.WriteLine("Split went wrong");
-                    //continue;
-                }
-                count += 1;                
-                //allSplitLinesOut.Add(splitLine);
-                allSplitLinesOut.AddRange(allSplitLines);
-                offsetLinesOut.AddRange(offsetLines);
-                //offsetLinesCleanedOut.AddRange(offsetCleanedLines);
-                offsetLinesCleanedOut = newLines;
-
-            }//end of while loop
-            
-            return new Dictionary<string, object>
-            {
-                { "InpatientPolys", (inPatientPolyList) },
-                { "SplitablePolys", (splitablePolys) },
-                { "LeftOverpolys", (leftOverPolyList) },
-                { "SplittableLines", (allSplitLinesOut) },
-                { "OffsetLines", (offsetLinesOut) },
-                { "Count", (count) },
-                { "SplitLineLast", (allSplitLinesOut[0]) },
-                { "CleanedOffsetLines", (offsetLinesCleanedOut) },
-                { "UsedLines", (usedLineList) }
-            };
-        }
-
         [MultiReturn(new[] { "PolyAfterSplit", "UpdatedProgramData", "RoomsAdded" })]
         public static Dictionary<string, object> PlaceInpatientPrograms(List<Polygon2d> polyInputList, List<ProgramData> progData, double distance, int recompute = 1)
         {
@@ -847,7 +743,7 @@ namespace SpacePlanning
             {
                 ProgramData progItem = progDataAddedList[i];
                 ProgramData progNew = new ProgramData(progItem);
-                if (i < polyList.Count) progNew.PolyProgAssigned = polyList[i];
+                if (i < polyList.Count) progNew.PolyProgAssigned = new List<Polygon2d> { polyList[i] };
                 else progNew.PolyProgAssigned = null;
                 UpdatedProgramDataList.Add(progNew);
             }
@@ -955,7 +851,7 @@ namespace SpacePlanning
             {
                 ProgramData progItem = progData[i];
                 ProgramData progNew = new ProgramData(progItem);
-                if (i < polyList.Count) progNew.PolyProgAssigned = polyList[i];
+                if (i < polyList.Count) progNew.PolyProgAssigned = new List<Polygon2d> { polyList[i]};
                 else progNew.PolyProgAssigned = null;
                 UpdatedProgramDataList.Add(progNew);
             }
@@ -1015,8 +911,71 @@ namespace SpacePlanning
 
 
         }
-        
-     
+
+        //gets a polylist and program data list and assigns the polys respective programs
+        [MultiReturn(new[] { "PolyAfterSplit", "CirculationPolygons", "UpdatedProgramData" })]
+        public static Dictionary<string, object> FillDeptWithProgramElements(List<Polygon2d> polyInputList,
+           List<ProgramData> progData, int factor = 4, int recompute = 0)
+        {
+            if (!PolygonUtility.CheckPolyList(polyInputList)) return null;
+            if (progData == null || progData.Count == 0) return null;
+            int fac = 5;
+            Random ran = new Random();
+            List<List<Polygon2d>> polyList = new List<List<Polygon2d>>();
+            List<Polygon2d> polyCoverList = new List<Polygon2d>();
+            Stack<ProgramData> programDataRetrieved = new Stack<ProgramData>();
+            Stack<Polygon2d> polygonAvailable = new Stack<Polygon2d>();
+
+            double totalArea = 0;
+            for (int i = 0; i < polyInputList.Count; i++) totalArea += PolygonUtility.AreaCheckPolygon(polyInputList[i]);
+            double targetArea = totalArea / factor;
+            for (int j = 0; j < polyInputList.Count; j++) { polygonAvailable.Push(polyInputList[j]); }
+            double areaAssigned = 0, eps = 50;
+            int count = 0, maxTry = 100;
+            for(int i = 0; i < progData.Count; i++)
+            {
+                ProgramData progItem = progData[i];
+                progItem.PolyProgAssigned = new List<Polygon2d>();
+                double areaNeeded = progItem.AreaNeeded;
+                while (areaAssigned < areaNeeded && polygonAvailable.Count > 0 && count < maxTry)
+                {
+                    Polygon2d currentPoly = polygonAvailable.Pop();
+                    double areaPoly = PolygonUtility.AreaCheckPolygon(currentPoly);
+                    int compareArea = BasicUtility.CheckWithinRange(areaNeeded, areaPoly, eps);
+                    if (compareArea == 1) // current poly area is more
+                    {
+                        Dictionary<string,object> splitObj = SplitObject.SplitByRatio(currentPoly, 0.5);
+                        List<Polygon2d> polyAfterSplit = (List<Polygon2d>)splitObj["PolyAfterSplit"];
+                        for (int j = 0; j < polyAfterSplit.Count; j++) polygonAvailable.Push(polyAfterSplit[j]);
+                        count += 1;
+                        continue;
+                    }
+                    if (areaPoly > targetArea) polyCoverList.Add(currentPoly);
+                    progItem.PolyProgAssigned.Add(currentPoly);
+                    areaAssigned += areaPoly;                
+                    count += 1;
+                }
+                polyList.Add(progItem.PolyProgAssigned);
+                progItem.AreaProvided = areaAssigned;
+                count = 0;
+                areaAssigned = 0;
+            }
+
+            List<ProgramData> newProgDataList = new List<ProgramData>();
+            for (int i = 0; i < progData.Count; i++) newProgDataList.Add(new ProgramData(progData[i]));
+
+            return new Dictionary<string, object>
+            {
+                { "PolyAfterSplit", (polyList) },
+                { "CirculationPolygons", (polyCoverList) },
+                { "UpdatedProgramData",(newProgDataList) }
+            };
+
+
+        }
+
+
+
         #endregion
 
         #region - Private Methods  

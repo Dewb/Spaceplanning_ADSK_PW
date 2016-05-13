@@ -56,7 +56,7 @@ namespace SpacePlanning
             List<double> areaNeededList = new List<double>();
             List<double> areaProvidedList = new List<double>();
             List<double> quantList = new List<double>();
-            List<Polygon2d> polyProgList = new List<Polygon2d>();
+            List<List<Polygon2d>> polyProgList = new List<List<Polygon2d>>();
             for (int i = 0; i < progData.Count; i++)
             {
                 progNameList.Add(progData[i].ProgName);

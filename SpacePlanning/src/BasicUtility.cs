@@ -36,6 +36,15 @@ namespace SpacePlanning
             return num;
         }
         
+
+        //checks if a number is within a certain range of another or not
+        // returns -1 , if within range, 1 if greater, 0 if smaller
+        internal static int CheckWithinRange(double number, double comparingNum, double eps = 0) 
+        {
+            if (comparingNum > number - eps && comparingNum < number + eps) return -1;
+            else if (comparingNum > number - eps) return 1;
+            else return 0;
+        }
         //quicksort algorithm
         internal static List<int> Quicksort(double[] a, int[] index, int left, int right)
         {
