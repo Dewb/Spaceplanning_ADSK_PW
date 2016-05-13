@@ -179,6 +179,8 @@ namespace SpacePlanning
             if (polyC != null) polygonsAllProgList.AddRange(polyC);
             if (polyD != null) polygonsAllProgList.AddRange(polyD);
 
+            for(int i = 0; i < polygonsAllProgList.Count; i++) polygonsAllProgList[i] = new Polygon2d(polygonsAllProgList[i].Points);
+
             List<Line2d> networkLine = new List<Line2d>();
             for (int i = 0; i < polygonsAllProgList.Count; i++)
             {

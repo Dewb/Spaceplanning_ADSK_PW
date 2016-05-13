@@ -581,7 +581,7 @@ namespace SpacePlanning
 
     
         [MultiReturn(new[] { "PolyAfterSplit", "UpdatedProgramData", "RoomsAdded" })]
-        public static Dictionary<string, object> PlaceInpatientPrograms(List<Polygon2d> polyInputList, List<ProgramData> progData, double distance, int recompute = 1)
+        public static Dictionary<string, object> PlacePrimaryPrograms(List<Polygon2d> polyInputList, List<ProgramData> progData, double distance, int recompute = 1)
         {
             
             if (!PolygonUtility.CheckPolyList(polyInputList)) return null;
@@ -816,22 +816,17 @@ namespace SpacePlanning
         }
 
         //gets a polylist and program data list and assigns the polys respective programs
-        [MultiReturn(new[] { "PolyAfterSplit", "CirculationPolygons", "UpdatedProgramData" })]
-        public static Dictionary<string, object> FillDeptWithProgramElements(List<Polygon2d> polyInputList,
-           List<ProgramData> progData, int factor = 4, int recompute = 0)
+        [MultiReturn(new[] { "PolyAfterSplit", "UpdatedProgramData" })]
+        public static Dictionary<string, object> PlaceSecondaryPrograms(List<Polygon2d> polyInputList, List<ProgramData> progData, int recompute = 0)
         {
             if (!PolygonUtility.CheckPolyList(polyInputList)) return null;
             if (progData == null || progData.Count == 0) return null;
-            int fac = 5;
             Random ran = new Random();
             List<List<Polygon2d>> polyList = new List<List<Polygon2d>>();
             List<Polygon2d> polyCoverList = new List<Polygon2d>();
             Stack<ProgramData> programDataRetrieved = new Stack<ProgramData>();
             Stack<Polygon2d> polygonAvailable = new Stack<Polygon2d>();
-
-            double totalArea = 0;
-            for (int i = 0; i < polyInputList.Count; i++) totalArea += PolygonUtility.AreaCheckPolygon(polyInputList[i]);
-            double targetArea = totalArea / factor;
+            
             for (int j = 0; j < polyInputList.Count; j++) { polygonAvailable.Push(polyInputList[j]); }
             double areaAssigned = 0, eps = 50;
             int count = 0, maxTry = 100;
@@ -855,7 +850,6 @@ namespace SpacePlanning
                         Trace.WriteLine("Area Needs are : " + areaNeeded);
                         continue;
                     }
-                    if (areaPoly > targetArea) polyCoverList.Add(currentPoly);
                     progItem.PolyProgAssigned.Add(currentPoly);
                     areaAssigned += areaPoly;                
                     count += 1;
@@ -872,7 +866,6 @@ namespace SpacePlanning
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (polyList) },
-                { "CirculationPolygons", (polyCoverList) },
                 { "UpdatedProgramData",(newProgDataList) }
             };
 
@@ -1201,7 +1194,6 @@ namespace SpacePlanning
                 {
                     double areaFactor = deptItem.DeptAreaProportion / totalDeptProp;
                     //Dictionary<string, object> assignedByRatioObj = AssignBlocksBasedOnRatio(deptItem, leftOverPoly, i);
-                    //Dictionary<string, object> assignedByRatioObj = AssignBlocksBasedOnMinEdgeLength(areaFactor, leftOverPoly,20,10);
                     Dictionary<string, object> assignedByRatioObj = AssignBlocksBasedOnRatioRecursed(areaFactor,areaAvailable, leftOverPoly,acceptableWidth,0.5);
                     List<Polygon2d> everyDeptPoly = (List<Polygon2d>)assignedByRatioObj["DeptPoly"];
                     leftOverPoly = (List<Polygon2d>)assignedByRatioObj["LeftOverPoly"];                 
@@ -1220,7 +1212,6 @@ namespace SpacePlanning
                 newDeptData.PolyDeptAssigned = AllDeptPolys[i];
                 UpdatedDeptData.Add(newDeptData);
             }
-
 
             //added to compute area percentage for each dept
             double totalDeptArea = 0;
