@@ -15,9 +15,20 @@ namespace stuffer
 
         //ADDED CODE : SUBHAJIT DAS++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+        // makes line3d
+        public static Line LineByLine3d(Line3d line)
+        {
+            if (line == null)
+                return null;
+            if (line.StartPoint.Compare(line.EndPoint))
+                return null;
 
+            return
+              Line.ByStartPointEndPoint(
+                Point.ByCoordinates(line.StartPoint.X, line.StartPoint.Y, line.StartPoint.Z),
+                Point.ByCoordinates(line.EndPoint.X, line.EndPoint.Y, line.EndPoint.Z));
+        }
 
-            
 
         //convert point to point2dList
         internal static List<Point2d> PointtoPoint2D(List<Point> pointList)
@@ -497,12 +508,12 @@ namespace stuffer
     //////////////////////////////////////////////////////////////////////////
     // From Dynamo Geometry
 
-    public static Point3d Point3dByPoint(Point point)
+    public static List<Point> PointByPoint3dList(List<Point3d> point)
     {
-      if (point == null)
-        return null;
-
-      return new Point3d(point.X, point.Y, point.Z);
+      if (point == null) return null;
+      List<Point> ptList = new List<Point>();
+      for(int i = 0; i < point.Count; i++) ptList.Add(Point.ByCoordinates(point[i].X, point[i].Y, point[i].Z));
+       return ptList;
     }
 
     public static Range2d Range2dByRectangle(Rectangle rectangle)

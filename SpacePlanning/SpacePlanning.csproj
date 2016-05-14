@@ -108,6 +108,7 @@
     <Compile Include="src\Dynamo Primitives\Utility\Int\Range1i.cs" />
     <Compile Include="src\Dynamo Primitives\Utility\Int\Rect2i.cs" />
     <Compile Include="src\Dynamo Primitives\Utility\StringUtil.cs" />
+    <Compile Include="src\GlareVisualization.cs" />
     <Compile Include="src\LineUtility.cs" />
     <Compile Include="src\Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>

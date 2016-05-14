@@ -45,6 +45,34 @@ namespace SpacePlanning
             else if (comparingNum > number - eps) return 1;
             else return 0;
         }
+
+        //quicksort algorithm with list input
+        internal static List<int> Quicksort(List<double> aList,List<int> indexList, int left, int right)
+        {
+            double[] a = new double[aList.Count];
+            int[] index = new int[indexList.Count];
+
+            for (int m = 0; m < aList.Count; m++)
+            {
+                a[m] = aList[m];
+                index[m] = indexList[m];
+            }
+
+            if (right <= left) return null;
+            int i = Partition(ref a, ref index, left, right);
+            Quicksort(a, index, left, i - 1);
+            Quicksort(a, index, i + 1, right);
+            List<int> sortedIndex = new List<int>();
+            for (int j = 0; j < index.Length; j++)
+            {
+                sortedIndex.Add(index[j]);
+            }
+
+            return sortedIndex;
+        }
+
+
+
         //quicksort algorithm
         internal static List<int> Quicksort(double[] a, int[] index, int left, int right)
         {
