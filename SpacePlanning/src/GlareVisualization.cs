@@ -200,7 +200,8 @@ namespace SpacePlanning
             List<double> angList = new List<double>();
             List<double> ugrList = new List<double>();
             int count = 0;
-            for(int i = 0; i < floorPoints.Count; i++)
+            pos = (int)(lightPoints.Count * 0.20);
+            for (int i = 0; i < floorPoints.Count; i++)
             {                
                 List<Point3d> selectedPts = new List<Point3d>();
                 Point2d pt2FloorPt = ConvertToPoint2d(floorPoints[i]);
@@ -209,8 +210,7 @@ namespace SpacePlanning
                     Point2d pt2Furniture = ConvertToPoint2d(furniturePoints[j]);
                     double distance = GraphicsUtility.DistanceBetweenPoints(pt2Furniture, pt2FloorPt);
                     if (distance < threshDist) selectedPts.Add(furniturePoints[j]);
-                }// end of j for loop               
-                pos = (int)(lightPoints.Count * 0.80);
+                }// end of j for loop   
                 if (selectedPts.Count > 0) lightPoints.AddRange(selectedPts);               
                 double ugrValue = ComputeUGRValue(lightPoints, floorPoints[i], lightSize, pos, recompute);
                 ugrList.Add(ugrValue);
