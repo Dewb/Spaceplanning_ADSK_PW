@@ -154,7 +154,7 @@ namespace SpacePlanning
 
 
         //computes the UGR value
-        public static double ComputeUGRValue(List<Point3d> lightPts, Point3d observer, double lightSize=2, int pos = 0, double recompute = 1)
+        public static double ComputeUGRValue(List<Point3d> lightPts, Point3d observer, List<double> posList, double lightSize=2, double recompute = 1)
         {
             double backLum = 10;
             double lumin = 10, inc = 100;
@@ -162,13 +162,14 @@ namespace SpacePlanning
             double guthPos = 2;
             double value = 0;
             double summation = 0;
+            int pos = 0, m =0;
             
             for(int i = 0; i < lightPts.Count; i++)
-            {                
-                if (i == pos) lumin = recompute*lumin;
+            {
+
+                if (m < posList.Count && i == (int)posList[m]) { lumin = recompute * lumin; m += 1; }
                 else lumin = 10;
-                //if (i < lightPts.Count / 2) lumin += inc;
-                //else lumin -= inc;
+
                 if (lightPts[i].X > observer.X)
                 {
                     Point2d ptLight2d = ConvertToPoint2d(lightPts[i]);
@@ -194,12 +195,17 @@ namespace SpacePlanning
 
         //compute glare angle values
         public static List<List<double>> ComputeGlareValues(List<Point3d> floorPoints,List<Point3d> furniturePoints,
-            List<Point3d> lightPoints, double threshDist = 10, double thresAngleLow = 50, double thresAngleHigh = 80, double lightSize = 3, double recompute =1)
+            List<Point3d> lightPoints, double threshDist = 10, double thresAngleLow = 50, double thresAngleHigh = 80, double lightSize = 3, double numSpecialLights = 2, double recompute =1)
         {
             int pos = 0;
+            List<double> posList = new List<double>();
             List<double> angList = new List<double>();
             List<double> ugrList = new List<double>();
             int count = 0;
+            double  numD = BasicUtility.RandomBetweenNumbers(new Random(), 0.1, 0.35);
+            //int num = (int)numD;
+            for(int i = 0; i < numSpecialLights; i++) posList.Add(lightPoints.Count * (i + 1) * numD);
+
             pos = (int)(lightPoints.Count * 0.20);
             for (int i = 0; i < floorPoints.Count; i++)
             {                
@@ -212,7 +218,7 @@ namespace SpacePlanning
                     if (distance < threshDist) selectedPts.Add(furniturePoints[j]);
                 }// end of j for loop   
                 if (selectedPts.Count > 0) lightPoints.AddRange(selectedPts);               
-                double ugrValue = ComputeUGRValue(lightPoints, floorPoints[i], lightSize, pos, recompute);
+                double ugrValue = ComputeUGRValue(lightPoints, floorPoints[i], posList, lightSize, recompute);
                 ugrList.Add(ugrValue);
                 count += 1;
             }
@@ -227,7 +233,7 @@ namespace SpacePlanning
             result.Add(new List<double>{count});
             result.Add(ugrList);
             result.Add(new List<double> { lightSize });
-            result.Add(new List<double> { pos });
+            result.Add(posList);
             return result;          
         }
 
