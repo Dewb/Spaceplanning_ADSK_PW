@@ -46,6 +46,22 @@ namespace SpacePlanning
             else return 0;
         }
 
+
+        //normalize a list within an inout range
+        public static List<double> NormalizeList(List<double> numList, double lowValue = 0, double highValue = 100)
+        {
+            if (lowValue > highValue) { double temp = lowValue; lowValue = highValue; highValue = temp; }
+            List<int> indexList = new List<int>();
+            double range = highValue - lowValue;
+            for (int n = 0; n < numList.Count; n++) indexList.Add(n);
+            List<int> sortedIndices = Quicksort(numList, indexList, 0, numList.Count - 1);
+            sortedIndices.Reverse();
+            double maxAng = numList[sortedIndices[0]];
+            List<double> numListNormalized = new List<double>();
+            for (int n = 0; n < numList.Count; n++) numListNormalized.Add(((numList[n] * range / maxAng)+lowValue));
+            return numListNormalized;
+        }
+
         //quicksort algorithm with list input
         internal static List<int> Quicksort(List<double> aList,List<int> indexList, int left, int right)
         {

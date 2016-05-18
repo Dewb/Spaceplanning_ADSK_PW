@@ -147,20 +147,25 @@ namespace SpacePlanning
             double guthPos = 2*lightSize;
             double value = 0;
             double summation = 0;
+            
             for(int i = 0; i < lightPts.Count; i++)
             {
-                //if (lightPts[i].Y > observer.Y)
-                //{
+                if (lightPts[i].X > observer.X)
+                {
+                    Point2d ptLight2d = ConvertToPoint2d(lightPts[i]);
+                    Point2d ptObserver2d = ConvertToPoint2d(observer);
+                    double distance = GraphicsUtility.DistanceBetweenPoints(ptLight2d, ptObserver2d);
+                    
                     Point3d lightPt1 = new Point3d((lightPts[i].X - lightSize), (lightPts[i].Y - lightSize), lightPts[i].Z);
                     Point3d lightPt2 = new Point3d((lightPts[i].X + lightSize), (lightPts[i].Y + lightSize), lightPts[i].Z);
                     Vector3d vec1 = new Vector3d(observer, lightPt1);
                     Vector3d vec2 = new Vector3d(observer, lightPt2);
                     angleEach = VectorUtility.AngleBetween(vec1, vec2);
                     summation += (lumin * lumin * angleEach) / (guthPos * guthPos);
-                //}           
+                }           
             }
             value = (0.25 / backLum) * summation;
-            if (value == 0) return 255;
+            if (value == 0) return 0;
             double ugr = 8 * Math.Log10(value);
             return ugr;
         }
@@ -174,8 +179,7 @@ namespace SpacePlanning
             List<double> ugrList = new List<double>();
             int count = 0;
             for(int i = 0; i < floorPoints.Count; i++)
-            {
-                /*
+            {                
                 List<Point3d> selectedPts = new List<Point3d>();
                 Point2d pt2FloorPt = ConvertToPoint2d(floorPoints[i]);
                 for(int j=0; j < furniturePoints.Count; j++)
@@ -183,39 +187,24 @@ namespace SpacePlanning
                     Point2d pt2Furniture = ConvertToPoint2d(furniturePoints[j]);
                     double distance = GraphicsUtility.DistanceBetweenPoints(pt2Furniture, pt2FloorPt);
                     if (distance < threshDist) selectedPts.Add(furniturePoints[j]);
-                }// end of j for loop
-                */
+                }// end of j for loop               
+
+                if (selectedPts.Count > 0) lightPoints.AddRange(selectedPts);
                 double ugrValue = ComputeUGRValue(lightPoints, floorPoints[i], lightSize);
                 ugrList.Add(ugrValue);
                 count += 1;
             }
-
-            List<int> indexList = new List<int>();
-            for(int n = 0; n < ugrList.Count; n++) indexList.Add(n);
-
-            int colorVal = 255;
-            List<int> sortedIndices = BasicUtility.Quicksort(ugrList, indexList, 0, ugrList.Count-1);
-            sortedIndices.Reverse();
-            double maxAng = ugrList[sortedIndices[0]];
-            List<double> ugrListNormalized = new List<double>();
-            List<double> val2 = new List<double>();
-            List<double> val3 = new List<double>();
-            for (int n = 0; n < ugrList.Count; n++)
-            {
-                ugrListNormalized.Add(ugrList[n] * colorVal / maxAng);
-                val2.Add(0);
-                val3.Add(0);
-            }
+            List<double> val2 = new List<double>(), val3 = new List<double>();
+            for (int n = 0; n < ugrList.Count; n++) { val2.Add(0); val3.Add(0); }
+            List<double> ugrListNormalized = BasicUtility.NormalizeList(ugrList, 0, 255);
             List<List<double>> result = new List<List<double>>();
             result.Add(ugrListNormalized);
             result.Add(val2);
             result.Add(val3);
             result.Add(angList);
-            result.Add(new List<double>{ count});
+            result.Add(new List<double>{count});
             result.Add(ugrList);
-            return result;
-            
-
+            return result;          
         }
 
 
