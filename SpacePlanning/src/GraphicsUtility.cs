@@ -674,12 +674,12 @@ namespace SpacePlanning
             return angle; //return angle*180/Math.PI;
         }
         
-        // sorts two points clockwise, with respect to a reference point not using now
+        // sorts two points clockwise, with respect to a REFERENCEPOINT point not using now
         internal static int SortCornersClockwise(Point2d A, Point2d B)
         {
             double aTanA, aTanB; 
-            aTanA = Math.Atan2(A.Y - BuildLayout.reference.Y, A.X - BuildLayout.reference.X);
-            aTanB = Math.Atan2(B.Y - BuildLayout.reference.Y, B.X - BuildLayout.reference.X);
+            aTanA = Math.Atan2(A.Y - BuildLayout.REFERENCEPOINT.Y, A.X - BuildLayout.REFERENCEPOINT.X);
+            aTanB = Math.Atan2(B.Y - BuildLayout.REFERENCEPOINT.Y, B.X - BuildLayout.REFERENCEPOINT.X);
             //  Determine next point in Clockwise rotation
             if (aTanA < aTanB) return -1;
             else if (aTanA > aTanB) return 1;

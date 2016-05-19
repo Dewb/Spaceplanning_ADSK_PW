@@ -22,7 +22,7 @@ namespace SpacePlanning
 
 
 
-        //sorts a program data inside dept data based on preference 
+        //sorts a program data inside dept data based on pREFERENCEPOINT 
         //[MultiReturn(new[] { "UpdatedDeptData", "KeyList" })]
         public static List<DeptData> SortProgramsByPrefInDept(List<DeptData> deptDataInp)
         {
