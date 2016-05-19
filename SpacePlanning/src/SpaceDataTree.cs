@@ -216,7 +216,7 @@ namespace SpacePlanning
             }
         }
 
-        // returns random nodetype result
+        // returns random nodetype result test
         internal static NodeType GenerateNodeType(double k)
         {
             if (k < 0.5) return NodeType.Container;
