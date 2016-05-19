@@ -572,7 +572,15 @@ namespace SpacePlanning
             double yLen = ptA.Y - ptB.Y;
             return Math.Sqrt(xLen * xLen + yLen * yLen);
         }
-               
+
+        //distance between points
+        internal static double DistanceBetweenPointsByLine(Point2d ptA, Point2d ptB)
+        {
+            if (ptA == null || ptB == null) return 0;
+            Line2d line = new Line2d(ptA, ptB);
+            return line.Length;
+        }
+
         // returns area of a closed polygon, if area is positive, poly points are counter clockwise and vice versa
         internal static double AreaPolygon2d(List<Point2d> polyPoints, bool value = true)
         {

@@ -44,13 +44,10 @@ namespace SpacePlanning
         public static List<Point3d> GetFloorPoints(List<Cell> cellList, double height = 0)
         {
             List<Point3d> ptList = new List<Point3d>();
-            for(int i = 0; i < cellList.Count; i++)
-            {
-                Point3d pt3d = ConvertToPoint3d(cellList[i].CenterPoint, height);
-                ptList.Add(pt3d);
-            }
+            for(int i = 0; i < cellList.Count; i++) ptList.Add(ConvertToPoint3d(cellList[i].CenterPoint, height));
             return ptList;
         }
+
         //gets the mid point of the furnitures in point3d
         public static List<Point3d> GetFurniturePoints(List<Line3d> lineList)
         {
@@ -137,7 +134,7 @@ namespace SpacePlanning
         }
 
         //make cells inside the floor
-        public static List<Cell> MakeCellsVizualization(List<Point2d> outLinePts, double dim =1)
+        public static List<Cell> PlaceCellsInsideOutline(List<Point2d> outLinePts, double dim =1)
         {
             List<Cell> cellList = GridObject.CellsInsidePoly(outLinePts, dim);
             List<Cell> cellNewList = new List<Cell>();
@@ -154,7 +151,7 @@ namespace SpacePlanning
 
 
         //computes the UGR value
-        public static double ComputeUGRValue(List<Point3d> lightPts, Point3d observer, List<double> posList, double lightSize=2, double recompute = 1)
+        public static double CalculateUGR(List<Point3d> lightPts, Point3d observer, List<double> posList, double lightSize=2, double recompute = 1)
         {
             double backLum = 10;
             double lumin = 10, inc = 100;
@@ -166,10 +163,8 @@ namespace SpacePlanning
             
             for(int i = 0; i < lightPts.Count; i++)
             {
-
                 if (m < posList.Count && i == (int)posList[m]) { lumin = recompute * lumin; m += 1; }
                 else lumin = 10;
-
                 if (lightPts[i].X > observer.X)
                 {
                     Point2d ptLight2d = ConvertToPoint2d(lightPts[i]);
@@ -193,17 +188,44 @@ namespace SpacePlanning
         }
 
 
-        //compute glare angle values
+        //visualize glare lines
+        public static List<Line3d> VisualizeGlareLines(List<Point3d> floorPoints, List<Point3d> furniturePoints,
+            List<Point3d> lightPoints, double threshDist = 10, int index = 0)
+        {
+            for (int i = 0; i < floorPoints.Count; i++)
+            {
+                List<Point3d> selectedPts = new List<Point3d>();
+                Point2d pt2FloorPt = ConvertToPoint2d(floorPoints[i]);
+                for (int j = 0; j < furniturePoints.Count; j++)
+                {
+                    Point2d pt2Furniture = ConvertToPoint2d(furniturePoints[j]);
+                    double distance = GraphicsUtility.DistanceBetweenPoints(pt2Furniture, pt2FloorPt);
+                    if (distance < threshDist) selectedPts.Add(furniturePoints[j]);
+                }// end of j for loop   
+                if (selectedPts.Count > 1) lightPoints.AddRange(selectedPts);
+            }
+            List<Line3d> glareLines = new List<Line3d>();
+            for (int i = 0; i < lightPoints.Count; i++)
+            {
+                if (lightPoints[i].X > floorPoints[index].X)
+                    glareLines.Add(new Line3d(floorPoints[index], lightPoints[i]));
+            }
+            return glareLines;
+        }
+
+        
+
+
+        //compute glare  values
         public static List<List<double>> ComputeGlareValues(List<Point3d> floorPoints,List<Point3d> furniturePoints,
-            List<Point3d> lightPoints, double threshDist = 10, double thresAngleLow = 50, double thresAngleHigh = 80, double lightSize = 3, double numSpecialLights = 2, double recompute =1)
+            List<Point3d> lightPoints, double threshDist = 10,  double lightSize = 3, double numSpecialLights = 2, double recompute =1)
         {
             int pos = 0;
             List<double> posList = new List<double>();
-            List<double> angList = new List<double>();
+            List<double> distList = new List<double>();
             List<double> ugrList = new List<double>();
             int count = 0;
             double  numD = BasicUtility.RandomBetweenNumbers(new Random(), 0.1, 0.35);
-            //int num = (int)numD;
             for(int i = 0; i < numSpecialLights; i++) posList.Add(lightPoints.Count * (i + 1) * numD);
 
             pos = (int)(lightPoints.Count * 0.20);
@@ -215,10 +237,11 @@ namespace SpacePlanning
                 {
                     Point2d pt2Furniture = ConvertToPoint2d(furniturePoints[j]);
                     double distance = GraphicsUtility.DistanceBetweenPoints(pt2Furniture, pt2FloorPt);
+                    distList.Add(distance);
                     if (distance < threshDist) selectedPts.Add(furniturePoints[j]);
                 }// end of j for loop   
                 if (selectedPts.Count > 0) lightPoints.AddRange(selectedPts);               
-                double ugrValue = ComputeUGRValue(lightPoints, floorPoints[i], posList, lightSize, recompute);
+                double ugrValue = CalculateUGR(lightPoints, floorPoints[i], posList, lightSize, recompute);
                 ugrList.Add(ugrValue);
                 count += 1;
             }
@@ -229,7 +252,7 @@ namespace SpacePlanning
             result.Add(ugrListNormalized);
             result.Add(val2);
             result.Add(val3);
-            result.Add(angList);
+            result.Add(distList);
             result.Add(new List<double>{count});
             result.Add(ugrList);
             result.Add(new List<double> { lightSize });

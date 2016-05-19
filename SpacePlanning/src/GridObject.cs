@@ -62,10 +62,10 @@ namespace SpacePlanning
 
         }
         #endregion
+
         #region - Public Methods
         // make point2d list which are inside the bounding box
-        [MultiReturn(new[] { "PointsInsideOutline", "CellsFromPoints" })]
-        public static Dictionary<string, object> GridPointsInsideOutline(List<Point2d> bbox, List<Point2d> outlinePoints, double dimXX, double dimYY)
+        public static List<Cell> GridCellsInsideOutline(List<Point2d> bbox, List<Point2d> outlinePoints, double dimXX, double dimYY)
         {
             List<Point2d> pointsGrid = new List<Point2d>();
             List<Cell> cells = new List<Cell>();
@@ -84,35 +84,21 @@ namespace SpacePlanning
             double posY = bbox[0].Y + diffY;
             for (int i = 0; i < numPtsX; i++)
             {
-
                 for (int j = 0; j < numPtsY; j++)
                 {
-
                     bool inside = GraphicsUtility.PointInsidePolygonTest(outlinePoints, Point2d.ByCoordinates(posX, posY));
                     if (inside) {
                         pointsGrid.Add(new Point2d(posX, posY));
                         cells.Add(new Cell(new Point2d(posX, posY), dimXX, dimYY, true));
                     }
-
                     posY += dimYY;
                 }
-
                 posX += dimXX;
                 posY = bbox[0].Y + diffY;
             }
-            return new Dictionary<string, object>
-            {
-                { "PointsInsideOutline", (pointsGrid) },
-                { "CellsFromPoints", (cells) }
-            };
-
+            return cells;
         }
 
-        // make point2d list which are inside the bounding box
-        public static Dictionary<string, object> GridPointsInsideOutlineSingleOut(List<Point2d> bbox, List<Point2d> outlinePoints, double dimXX, double dimYY)
-        {
-            return GridPointsInsideOutline(bbox, outlinePoints, dimXX, dimYY);
-        }
 
         //make cells on the grids poit
         public static List<Polygon2d> MakeCellsFromGridPoints(List<Point> pointsgrid, double dimX, double dimY)
@@ -615,8 +601,7 @@ namespace SpacePlanning
         public static List<Cell> CellsInsidePoly(List<Point2d> outlinePoints, double dim)
         {
             List<Point2d> bboxPoints = ReadData.FromPointsGetBoundingPoly(outlinePoints);
-            Dictionary<string, object> cellInformation = GridPointsInsideOutline(bboxPoints, outlinePoints, dim, dim);
-            return(List<Cell>)cellInformation["CellsFromPoints"];            
+            return GridCellsInsideOutline(bboxPoints, outlinePoints, dim, dim);                     
         }
 
         //gets cells bt indices in a list
