@@ -313,7 +313,7 @@ namespace SpacePlanning
             // can replace the allsplitlines with gridlines
             bool splitDone = false;
             Stack<Polygon2d> splittedPolys = new Stack<Polygon2d>();
-            Polygon2d currentPoly = new Polygon2d(SmoothPolygon(polyReg.Points, BuildLayout.spacingSet));
+            Polygon2d currentPoly = new Polygon2d(SmoothPolygon(polyReg.Points, BuildLayout.SPACING));
             splittedPolys.Push(currentPoly);
             Random ran = new Random();
             int countBig = 0, maxRounds = 50;
@@ -425,7 +425,7 @@ namespace SpacePlanning
                 polyA = new Polygon2d(sortedA);
                 polyB = new Polygon2d(sortedB);
                 double spacingProvided = 3;
-                if (spacing == 0) spacingProvided = BuildLayout.spacingSet;
+                if (spacing == 0) spacingProvided = BuildLayout.SPACING;
                 else spacingProvided = spacing;
                 List<Point2d> ptsPolyA = SmoothPolygon(polyA.Points, spacingProvided);
                 List<Point2d> ptsPolyB = SmoothPolygon(polyB.Points, spacingProvided);
@@ -578,7 +578,7 @@ namespace SpacePlanning
                 Point2d offEndPt = LineUtility.OffsetPointInsidePoly(line, line.EndPoint, oPoly, distance);
                 bool checkStartPt = GraphicsUtility.PointInsidePolygonTest(oPoly, offStartPt);
                 bool checkEndPt = GraphicsUtility.PointInsidePolygonTest(oPoly, offEndPt);
-                bool checkExtEdge = BuildLayout.CheckLineGetsExternalWall(line, containerPoly);
+                bool checkExtEdge = LayoutUtility.CheckLineGetsExternalWall(line, containerPoly);
                 if (tag) checkExtEdge  =true;
                 List<Point2d> pointsDefault = new List<Point2d>();
                 if (checkStartPt && checkEndPt && checkExtEdge)
