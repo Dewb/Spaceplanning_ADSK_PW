@@ -154,7 +154,7 @@ namespace SpacePlanning
         public static double CalculateUGR(List<Point3d> lightPts, Point3d observer, List<double> posList, double lightSize=2, double recompute = 1)
         {
             double backLum = 10;
-            double lumin = 10, inc = 100;
+            double lumin = 10;
             double angleEach = 0;
             double guthPos = 2;
             double value = 0;
