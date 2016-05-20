@@ -52,13 +52,21 @@ namespace SpacePlanning
         {
             if (lowValue > highValue) { double temp = lowValue; lowValue = highValue; highValue = temp; }
             List<int> indexList = new List<int>();
-            double range = highValue - lowValue;
+            double outRange = highValue - lowValue;
             for (int n = 0; n < numList.Count; n++) indexList.Add(n);
             List<int> sortedIndices = Quicksort(numList);
+            double minAng = numList[sortedIndices[0]];
             sortedIndices.Reverse();
             double maxAng = numList[sortedIndices[0]];
+            double inpRange = maxAng - minAng;
             List<double> numListNormalized = new List<double>();
-            for (int n = 0; n < numList.Count; n++) numListNormalized.Add(((numList[n] * range / maxAng)+lowValue));
+            
+            for (int n = 0; n < numList.Count; n++)
+            {
+                double slope = 1.0 * outRange / inpRange;
+                double output = lowValue + Math.Round(slope * (numList[n] - minAng));
+                numListNormalized.Add(output);
+            }
             return numListNormalized;
         }
 
