@@ -56,7 +56,7 @@ namespace SpacePlanning
             {
                 for (int j = 0; j < numPtsY; j++)
                 {
-                    bool inside = GraphicsUtility.PointInsidePolygonTest(outlinePoints, Point2d.ByCoordinates(posX, posY));
+                    bool inside = GraphicsUtility.PointInsidePolygonTest(Polygon2d.ByPoints(outlinePoints), Point2d.ByCoordinates(posX, posY));
                     if (inside) {
                         pointsGrid.Add(new Point2d(posX, posY));
                         cells.Add(new Cell(new Point2d(posX, posY), dimXX, dimYY, true));
@@ -240,7 +240,7 @@ namespace SpacePlanning
             tempStack.Push(ptList[2]);
             for (int i = 3; i < sizePtList; i++)
             {
-                while (GraphicsUtility.CheckPointOrder(GraphicsUtility.BeforeTopPoint(ref tempStack),
+                while (ValidateObject.CheckPointOrder(GraphicsUtility.BeforeTopPoint(ref tempStack),
                     (Point2d)tempStack.Peek(), ptList[i]) != 2 && tempStack.Count > 1)
                 {
                     tempStack.Pop();
@@ -255,21 +255,6 @@ namespace SpacePlanning
                 tempStack.Pop();
             }
             return convexHullPtList;
-        }
-
-        //find points inside polygons
-        public static List<Point> PointsOnlyInsidePolygon(List<Point2d> polyPts, List<Point2d> testPointsList)
-        {
-            List<Point> ptList = new List<Point>();
-            for (int i = 0; i < testPointsList.Count; i++)
-            {
-                bool inside = GraphicsUtility.PointInsidePolygonTest(polyPts, testPointsList[i]);
-                if (inside)
-                {
-                    ptList.Add(Point.ByCoordinates(testPointsList[i].X, testPointsList[i].Y));
-                }
-            }
-            return ptList;
         }
 
         //gets the cell and forms grid line based on distance provided
@@ -328,7 +313,7 @@ namespace SpacePlanning
         [MultiReturn(new[] { "BorderPolyLine", "BorderCellsFound","CellNeighborMatrix", "SortedCells"})]
         public static Dictionary<string, object> BorderAndCellNeighborMatrix(Polygon2d poly, double dim, bool tag = true)
         {
-            if (!PolygonUtility.CheckPoly(poly)) return null;
+            if (!ValidateObject.CheckPoly(poly)) return null;
             List<Cell> cellsInside = CellsInsidePoly(poly.Points, dim);
             Dictionary<string, object> neighborObject = FormsCellNeighborMatrix(cellsInside);
             List<List<int>> cellNeighborMatrix = (List<List<int>>)neighborObject["CellNeighborMatrix"];
@@ -352,7 +337,7 @@ namespace SpacePlanning
             List<Cell> cellList,double groundCoverage = 0.5)
         {
             if (cellList == null) return null;
-            if (!PolygonUtility.CheckPoly(borderPoly)) return null;
+            if (!ValidateObject.CheckPoly(borderPoly)) return null;
             bool blockPlaced = false;
             int count = 0, maxTry = 100;
             double areaSite = PolygonUtility.AreaPolygon(origSitePoly), eps = 0.05, areaPlaced = 0;

@@ -130,6 +130,7 @@
     <Compile Include="src\BuildLayout.cs" />
     <Compile Include="src\SpaceDataTree.cs" />
     <Compile Include="src\Properties\AssemblyInfo.cs" />
+    <Compile Include="src\ValidateObject.cs" />
     <Compile Include="src\VectorUtility.cs" />
   </ItemGroup>
   <ItemGroup>

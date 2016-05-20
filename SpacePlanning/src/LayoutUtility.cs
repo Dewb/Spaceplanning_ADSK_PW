@@ -48,7 +48,7 @@ namespace SpacePlanning
                 //Dictionary<string, object> splittedPoly = SplitByDistanceFromPoint(polyToPlace, dis, dir);
                 Dictionary<string, object> splittedPoly = SplitObject.SplitByDistance(polyToPlace, ran, dis, dir);
                 List<Polygon2d> polyReturnedList = (List<Polygon2d>)splittedPoly["PolyAfterSplit"];
-                if (!PolygonUtility.CheckPolyList(polyReturnedList)) return null;
+                if (!ValidateObject.CheckPolyList(polyReturnedList)) return null;
                 List<int> ind = PolygonUtility.SortPolygonsFromAPoint(polyReturnedList, centerPt);
                 newPolyLists.Add(polyReturnedList[ind[0]]);
                 newPolyLists.Add(polyReturnedList[ind[1]]);
@@ -70,7 +70,7 @@ namespace SpacePlanning
         [MultiReturn(new[] { "SplittableLines", "OffsetLines", "SortedIndices", "OffsetMidPts", "NonOrthoLines" })]
         internal static Dictionary<string, object> FindOuterLinesAndOffsets(Polygon2d poly, double patientRoomDepth = 16, double extension = 8000, double recompute = 5)
         {
-            if (!PolygonUtility.CheckPoly(poly)) return null;
+            if (!ValidateObject.CheckPoly(poly)) return null;
             Polygon2d polyReg = new Polygon2d(poly.Points);
             List<Line2d> hLines = new List<Line2d>();
             List<Line2d> vLines = new List<Line2d>();
@@ -83,7 +83,7 @@ namespace SpacePlanning
                 int a = i, b = i + 1;
                 if (i == polyReg.Points.Count - 1) b = 0;
                 Line2d line = new Line2d(polyReg.Points[a], polyReg.Points[b]);
-                int lineType = GraphicsUtility.CheckLineOrient(line);
+                int lineType = ValidateObject.CheckLineOrient(line);
                 if (lineType > -1)
                 {
                     if (lineType == 0)
@@ -150,7 +150,7 @@ namespace SpacePlanning
         [MultiReturn(new[] { "SplittableLines", "OffsetLines", "SortedIndices", "OffsetMidPts" })]
         internal static Dictionary<string, object> ExtLinesAndOffsetsFromBBox(Polygon2d poly, double patientRoomDepth = 16, double recompute = 5)
         {
-            if (!PolygonUtility.CheckPoly(poly)) return null;
+            if (!ValidateObject.CheckPoly(poly)) return null;
             Polygon2d polyReg = new Polygon2d(poly.Points);
             List<Line2d> allSplitLines = new List<Line2d>();
             Polygon2d polyBBox = Polygon2d.ByPoints(ReadData.FromPointsGetBoundingPoly(polyReg.Points));
@@ -207,7 +207,7 @@ namespace SpacePlanning
                 double eps = 50;
                 if (i == polyReg.Points.Count - 1) b = 0;
                 Line2d line = new Line2d(polyReg.Points[a], polyReg.Points[b]);
-                if (GraphicsUtility.CheckLineOrient(line) == -1)
+                if (ValidateObject.CheckLineOrient(line) == -1)
                 {
                     //double diffX = Math.Abs(line.StartPoint.X - line.EndPoint.X);
                     //double diffY = Math.Abs(line.StartPoint.Y - line.EndPoint.Y);
@@ -304,7 +304,7 @@ namespace SpacePlanning
         internal static bool CheckPolyGetsExternalWall(Polygon2d poly, Polygon2d containerPoly, double shortEdgeDist = 16, bool tag = true)
         {
             bool check = false;
-            if (!PolygonUtility.CheckPoly(poly)) return check;
+            if (!ValidateObject.CheckPoly(poly)) return check;
             Polygon2d polyReg = new Polygon2d(null);
             //make given polys reduce number of points
             if (tag) polyReg = new Polygon2d(poly.Points);
@@ -336,7 +336,7 @@ namespace SpacePlanning
         internal static bool CheckLineGetsExternalWall(Line2d lineA, Polygon2d containerPoly)
         {
             bool check = false;
-            if (!PolygonUtility.CheckPoly(containerPoly)) return check;
+            if (!ValidateObject.CheckPoly(containerPoly)) return check;
             Polygon2d containerPolyReg = new Polygon2d(containerPoly.Points);
             for (int i = 0; i < containerPoly.Points.Count; i++)
             {
@@ -353,10 +353,10 @@ namespace SpacePlanning
         [MultiReturn(new[] { "PolyAddedPts", "ProblemPoint", "IsAdded", "PointAdded", "Trials", "FinalRatio", "ProblemLine", "ProblemPtsList", "FalseLineList" })]
         internal static Dictionary<string, object> AddPointToFitPoly(Polygon2d poly, Polygon2d containerPoly, double distance = 16, double area = 0, double thresDistance = 10, double recompute = 5)
         {
-            if (!PolygonUtility.CheckPoly(poly)) return null;
+            if (!ValidateObject.CheckPoly(poly)) return null;
             if (distance < 1) return null;
 
-            Dictionary<string, object> lineOffsetCheckObj = PolygonUtility.CheckLinesOffsetInPoly(poly, containerPoly, distance);
+            Dictionary<string, object> lineOffsetCheckObj = ValidateObject.CheckLinesOffsetInPoly(poly, containerPoly, distance);
             List<int> indicesFalse = (List<int>)lineOffsetCheckObj["IndicesFalse"];
             List<List<Point2d>> pointsFalse = (List<List<Point2d>>)lineOffsetCheckObj["PointsOutside"];
             List<Point2d> probPointList = new List<Point2d>();

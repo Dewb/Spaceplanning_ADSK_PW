@@ -22,9 +22,10 @@ namespace SpacePlanning
     {     
 
         //checks if a point is inside a polygon or not
-        internal static bool PointInsidePolygonTest(List<Point2d> pointsPolygon, Point2d testPoint)
-        {
+        public static bool PointInsidePolygonTest(Polygon2d poly, Point2d testPoint)
+        {            
             bool check = false;
+            List<Point2d> pointsPolygon = poly.Points;
             int numPolyPts = pointsPolygon.Count;
             for (int i = 0, j = numPolyPts - 1; i < numPolyPts; j = i++)
             {
@@ -35,24 +36,9 @@ namespace SpacePlanning
                 }
             }
             return check;
-        }
+        }          
 
-        //checks if point is inside polygon
-        internal static bool PointInsidePolygonTest(Polygon2d poly, Point2d testPoint)
-        {
-            return PointInsidePolygonTest(poly.Points, testPoint);
-        }
-        
 
-        //check order of points 0 = collinear, 1 = a,b,c clockwise, 2 = a,b,c are anti clockwise
-        internal static int CheckPointOrder(Point2d a, Point2d b, Point2d c)
-        {
-            double area = (b.Y - a.Y) * (c.X - b.X) - (b.X - a.X) * (c.Y - b.Y);
-            if (area > 0) return 1;
-            else if ( area < 0) return 2;
-            return 0;
-        }
-        
         // change two points in the list - used by Grahams Algo
         internal static void ChangePlaces(ref List<Point2d> pointList, int posA, int posB)
         {
@@ -72,17 +58,7 @@ namespace SpacePlanning
         }
 
 
-        //checks a line if horizontal or vertical 0 for horizontal, 1 for vertical
-        internal static int CheckLineOrient(Line2d line)
-        {
-            if (line == null) return -1;
-            double x = Math.Round((line.StartPoint.X - line.EndPoint.X),2);
-            double y = Math.Round((line.StartPoint.Y - line.EndPoint.Y),2);       
-            if (x == 0) return 1;
-            else if ( y==0) return 0;
-            else return -1; // was 0 prev
-        }
-      
+       
         //joins two collinear lines to make one line - using now
         public static Line2d JoinCollinearLines(Line2d lineA, Line2d lineB)
         {
@@ -100,7 +76,7 @@ namespace SpacePlanning
         //returns the point having lowest x,y value from a list using now
         internal static int LowestPointFromList(List<Point2d> ptList)
         {
-            if (!PolygonUtility.CheckPointList(ptList)) return -1;
+            if (!ValidateObject.CheckPointList(ptList)) return -1;
             Point2d lowestPoint = ptList[0];
             int size = ptList.Count;
             int index = 0;
@@ -137,7 +113,7 @@ namespace SpacePlanning
         //returns the point having highest x,y value from a list - using now
         internal static int HighestPointFromList(List<Point2d> ptList)
         {
-            if (!PolygonUtility.CheckPointList(ptList)) return -1;
+            if (!ValidateObject.CheckPointList(ptList)) return -1;
             Point2d highestPoint = ptList[0];
             int size = ptList.Count;
             int index = 0;
@@ -239,7 +215,7 @@ namespace SpacePlanning
                     //if (lineListOrig[i].Compare(otherLineList[j])) { duplicate = true; break; }
                     Line2d lineA = lineListOrig[i], lineB = otherLineList[j];
                     double lineALen = Math.Round(lineA.Length, 3), lineBLen = Math.Round(lineB.Length, 3);
-                    int lineAOrient = CheckLineOrient(lineA), lineBOrient = CheckLineOrient(lineB);
+                    int lineAOrient = ValidateObject.CheckLineOrient(lineA), lineBOrient = ValidateObject.CheckLineOrient(lineB);
                     if(lineAOrient == lineBOrient && lineALen == lineBLen) { duplicate = true;  break; }
                 }
                 duplicateTagList.Add(duplicate);
@@ -270,7 +246,7 @@ namespace SpacePlanning
                     Point2d midPtOrig = LineUtility.LineMidPoint(lineListOrig[i]);
                     Point2d midPtOther = LineUtility.LineMidPoint(otherLineList[j]);
                     //if (midPtOrig.Compare(midPtOther)) { duplicate = true; break; }
-                    if (PolygonUtility.CheckPointsWithinRange(midPtOrig,midPtOther,4)) { duplicate = true; break; }
+                    if (ValidateObject.CheckPointsWithinRange(midPtOrig,midPtOther,4)) { duplicate = true; break; }
                 }
                 duplicateTagList.Add(duplicate);
             }
@@ -377,8 +353,8 @@ namespace SpacePlanning
                 for(int j = i + 1; j < lineList.Count; j++)
                 {
                     Line2d lineB = lineList[j];
-                    int orientA = CheckLineOrient(lineA);
-                    int orientB = CheckLineOrient(lineB);
+                    int orientA = ValidateObject.CheckLineOrient(lineA);
+                    int orientB = ValidateObject.CheckLineOrient(lineB);
                     if(orientA != orientB) continue;
                     else
                     {
@@ -483,22 +459,7 @@ namespace SpacePlanning
             int rootPosition = ElementPosition(ptList, size, lowestPoint);
             if(rootPosition != -1) ChangePlaces(ref ptList, 0, rootPosition);
           
-        }
-
-        //returns angle between two vectors
-        //for 'returndegrees' enter true for an answer in degrees, false for radians
-        internal static double AngleBetween(Vector2d u, Vector2d v, bool returndegrees)
-        {
-            double numerator = u.X * v.X + u.Y * v.Y;
-            double u2 = u.X * u.X + u.Y * u.Y;
-            double v2 = v.X * v.X + v.Y * v.Y;
-            double denominator = 0;
-            denominator = Math.Sqrt(u2 * v2);
-            double rtnval = Math.Acos(numerator / denominator);
-            if (returndegrees) rtnval *= 360.0 / (2 * Math.PI);
-            return rtnval;
-        }
-                
+        }        
 
         //sort point array for Grahams scan algo to find convex hull
         internal static void SortedPoint2dList(ref List<Point2d> ptList, int size)
@@ -507,7 +468,7 @@ namespace SpacePlanning
             {
                 for (int j = i + 1; j < size; ++j)
                 {
-                    int order = CheckPointOrder(ptList[0], ptList[i], ptList[j]);
+                    int order = ValidateObject.CheckPointOrder(ptList[0], ptList[i], ptList[j]);
                     // collinear
                     if (order == 0)
                     {
@@ -579,24 +540,7 @@ namespace SpacePlanning
             if (ptA == null || ptB == null) return 0;
             Line2d line = new Line2d(ptA, ptB);
             return line.Length;
-        }
-
-        // returns area of a closed polygon, if area is positive, poly points are counter clockwise and vice versa
-        internal static double AreaPolygon2d(List<Point2d> polyPoints, bool value = true)
-        {
-            if(polyPoints == null) return 0;
-           
-            double area = 0;
-            int j = polyPoints.Count - 1; 
-            for (int i = 0; i < polyPoints.Count; i++)
-            {
-                area += (polyPoints[j].X + polyPoints[i].X) * (polyPoints[j].Y - polyPoints[i].Y);
-                j = i;  
-            }
-            //if true return absolute value, else return normal value
-            if (value) return Math.Abs(area / 2);
-            else return area / 2;
-        }
+        }  
         
         //sorts list of points by distance from a given point
         public static List<Point2d> SortPointsByDistanceFromPoint(List<Point2d> ptList, Point2d testPoint)
@@ -657,15 +601,7 @@ namespace SpacePlanning
         }
 
       
-        //check to see if a test point is towards the left or right of the point
-        //if positive then the point is towards the left of the point
-        public static bool CheckPointSide(Line2d lineSegment, Point2d c)
-        {
-            Point2d a = lineSegment.StartPoint;
-            Point2d b = lineSegment.EndPoint;
-            return ((b.X - a.X) * (c.Y - a.Y) - (b.Y - a.Y) * (c.X - a.X)) > 0;
-        }
-                
+      
         // finds the angle between two points
         internal static double Angle(Point2d A, Point2d center)
         {

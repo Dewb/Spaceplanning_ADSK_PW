@@ -14,7 +14,7 @@ namespace SpacePlanning
         //subdivide a given poly into smaller parts till acceptable width is met, returns list of polydept grids and list of polys to compute circulation
         internal static List<List<Polygon2d>> SubdivideInputPoly(List<Polygon2d> polyList, double acceptableWidth = 10, double circulationFreq = 10, double ratio = 0.5)
         {
-            if (!PolygonUtility.CheckPolyList(polyList)) return null;
+            if (!ValidateObject.CheckPolyList(polyList)) return null;
 
             int count = 0;
             Queue<Polygon2d> polyQueue = new Queue<Polygon2d>();
@@ -34,7 +34,7 @@ namespace SpacePlanning
                 Dictionary<string, object> splitObj = SplitObject.SplitByRatio(currentPoly, ratio, 0);
                 if (splitObj == null) continue;
                 List<Polygon2d> polySplitList = (List<Polygon2d>)splitObj["PolyAfterSplit"];
-                if (PolygonUtility.CheckPolyList(polySplitList) && polySplitList.Count > 1)
+                if (ValidateObject.CheckPolyList(polySplitList) && polySplitList.Count > 1)
                 {
                     polySplitList = PolygonUtility.SmoothPolygonList(polySplitList, 2);
                     Polygon2d bbox1 = Polygon2d.ByPoints(ReadData.FromPointsGetBoundingPoly(polySplitList[0].Points));
@@ -49,7 +49,7 @@ namespace SpacePlanning
                     else polyQueue.Enqueue(polySplitList[1]);
                 }
 
-                if (PolygonUtility.CheckPolyList(polySplitList) && polySplitList.Count < 2)
+                if (ValidateObject.CheckPolyList(polySplitList) && polySplitList.Count < 2)
                 {
                     Polygon2d bbox1 = Polygon2d.ByPoints(ReadData.FromPointsGetBoundingPoly(polySplitList[0].Points));
                     if (bbox1.Lines[0].Length < acceptableWidth || bbox1.Lines[1].Length < acceptableWidth) polyBrokenList.Add(polySplitList[0]);
@@ -110,7 +110,7 @@ namespace SpacePlanning
                 }
 
                 List<Polygon2d> polyAfterSplit = (List<Polygon2d>)splitResult["PolyAfterSplit"];
-                if (PolygonUtility.CheckPolyList(polyAfterSplit))
+                if (ValidateObject.CheckPolyList(polyAfterSplit))
                 {
                     double areaPolA = PolygonUtility.AreaPolygon(polyAfterSplit[0]);
                     double areaPolB = PolygonUtility.AreaPolygon(polyAfterSplit[1]);
@@ -165,7 +165,7 @@ namespace SpacePlanning
             List<int> pIndexB = new List<int>();
             for (int i = 0; i < poly.Count; i++)
             {
-                bool check = GraphicsUtility.CheckPointSide(splitLine, poly[i]);
+                bool check = ValidateObject.CheckPointSide(splitLine, poly[i]);
                 if (check) pIndexA.Add(i);
                 else pIndexB.Add(i);
             }
@@ -254,14 +254,14 @@ namespace SpacePlanning
         [MultiReturn(new[] { "PolyAfterSplit", "SplitLine", "IntersectedPoints", "PointASide", "PointBSide" })]
         internal static Dictionary<string, object> SplitByDistance(Polygon2d polyOutline, Random ran, double distance = 10, int dir = 0, double spacing = 0)
         {
-            if (!PolygonUtility.CheckPoly(polyOutline)) return null;
+            if (!ValidateObject.CheckPoly(polyOutline)) return null;
             double extents = 5000, spacingProvided;
             List<Point2d> polyOrig = polyOutline.Points;
             if (spacing == 0) spacingProvided = BuildLayout.SPACING;
             else spacingProvided = spacing;
 
             List<Point2d> poly = PolygonUtility.SmoothPolygon(polyOrig, spacingProvided);
-            if (!PolygonUtility.CheckPointList(poly)) return null;
+            if (!ValidateObject.CheckPointList(poly)) return null;
             Dictionary<int, object> obj = PolygonUtility.PointSelector(ran, poly);
             Point2d pt = (Point2d)obj[0];
             int orient = (int)obj[1];
@@ -331,7 +331,7 @@ namespace SpacePlanning
         [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly" })]
         internal static Dictionary<string, object> SplitByOffsetFromLine(Polygon2d polyOutline, int lineId, double distance = 10, double minDist = 0)
         {
-            if (!PolygonUtility.CheckPoly(polyOutline)) return null;
+            if (!ValidateObject.CheckPoly(polyOutline)) return null;
             Polygon2d poly = new Polygon2d(polyOutline.Points, 0);
 
             List<Point2d> pointForBlock = new List<Point2d>();
@@ -353,9 +353,9 @@ namespace SpacePlanning
                     pointForBlock.Add(poly.Points[b]);
                     pointForBlock.Add(offsetLine.EndPoint);
                     pointForBlock.Add(offsetLine.StartPoint);
-                    int orientPrev = GraphicsUtility.CheckLineOrient(prevLine);
-                    int orientCurr = GraphicsUtility.CheckLineOrient(currLine);
-                    int orientNext = GraphicsUtility.CheckLineOrient(nextLine);
+                    int orientPrev = ValidateObject.CheckLineOrient(prevLine);
+                    int orientCurr = ValidateObject.CheckLineOrient(currLine);
+                    int orientNext = ValidateObject.CheckLineOrient(nextLine);
 
                     // case 1
                     if (orientPrev == orientCurr && orientCurr == orientNext)
@@ -406,13 +406,13 @@ namespace SpacePlanning
         internal static Dictionary<string, object> SplitByLine(Polygon2d polyOutline, Line2d inputLine, double distance = 5)
         {
 
-            if (!PolygonUtility.CheckPoly(polyOutline)) return null;
+            if (!ValidateObject.CheckPoly(polyOutline)) return null;
             List<Point2d> polyOrig = polyOutline.Points;
             List<Point2d> poly = PolygonUtility.SmoothPolygon(polyOrig, BuildLayout.SPACING);
             Line2d splitLine = new Line2d(inputLine);
             Point2d centerPoly = GraphicsUtility.CentroidInPointLists(poly);
-            bool checkSide = GraphicsUtility.CheckPointSide(splitLine, centerPoly);
-            int orient = GraphicsUtility.CheckLineOrient(splitLine);
+            bool checkSide = ValidateObject.CheckPointSide(splitLine, centerPoly);
+            int orient = ValidateObject.CheckLineOrient(splitLine);
             if (orient == 0)
             {
                 if (!checkSide) splitLine = LineUtility.Move(splitLine, 0, -1 * distance);

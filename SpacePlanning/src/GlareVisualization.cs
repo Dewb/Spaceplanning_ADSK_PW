@@ -248,7 +248,7 @@ namespace SpacePlanning
                     Point3d lightPt2 = new Point3d((lightPts[i].X + lightSize), (lightPts[i].Y + lightSize), lightPts[i].Z);
                     Vector3d vec1 = new Vector3d(observer, lightPt1);
                     Vector3d vec2 = new Vector3d(observer, lightPt2);
-                    angleEach = VectorUtility.AngleBetween(vec1, vec2);
+                    angleEach = VectorUtility.AngleBetweenVec3d(vec1, vec2);
                     summation += (lumin * lumin * angleEach) / (guthPos * guthPos);
                 }
             }

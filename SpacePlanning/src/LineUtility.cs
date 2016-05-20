@@ -16,7 +16,7 @@ namespace SpacePlanning
         //offsets an input line by a given distance 
         public static Line2d Offset(Line2d lineInp, Polygon2d poly, double distance)
         {
-            if (lineInp == null || !PolygonUtility.CheckPoly(poly)) return null;
+            if (lineInp == null || !ValidateObject.CheckPoly(poly)) return null;
             Point2d ptStart = OffsetLinePoint(lineInp, lineInp.StartPoint, distance);
             Vector2d vec = new Vector2d(lineInp.StartPoint, ptStart);
             Point2d ptEnd = VectorUtility.VectorAddToPoint(lineInp.EndPoint, vec);
@@ -26,7 +26,7 @@ namespace SpacePlanning
         //offsets an input line by a given distance inside a poly
         public static Line2d OffsetLineInsidePoly(Line2d lineInp, Polygon2d poly, double distance)
         {
-            if (lineInp == null || !PolygonUtility.CheckPoly(poly)) return null;
+            if (lineInp == null || !ValidateObject.CheckPoly(poly)) return null;
             Point2d ptStart = OffsetLinePointInsidePoly(lineInp, lineInp.StartPoint, poly, distance);
             Vector2d vec = new Vector2d(lineInp.StartPoint, ptStart);
             Point2d ptEnd = VectorUtility.VectorAddToPoint(lineInp.EndPoint, vec);
@@ -68,7 +68,7 @@ namespace SpacePlanning
         {
             if (extend == 0) extend = 10000;
             double startPtX = 0, startPtY = 0, endPtX = 0, endPtY = 0;
-            if (GraphicsUtility.CheckLineOrient(line) == 1)
+            if (ValidateObject.CheckLineOrient(line) == 1)
             {
                 startPtX = line.StartPoint.X;
                 startPtY = line.StartPoint.Y - extend;
@@ -104,7 +104,7 @@ namespace SpacePlanning
         internal static Point2d OffsetLinePoint(Line2d lineInp, Point2d testPoint, double distance)
         {
             double newX1 = 0, newY1 = 0;
-            if (GraphicsUtility.CheckLineOrient(lineInp) == 0) // horizontal line
+            if (ValidateObject.CheckLineOrient(lineInp) == 0) // horizontal line
             {
                 newX1 = testPoint.X;
                 newY1 = testPoint.Y + distance;
@@ -120,7 +120,7 @@ namespace SpacePlanning
         //offsets an input point by a given distance inside a poly
         internal static Point2d OffsetLinePointInsidePoly(Line2d lineInp, Point2d testPoint, Polygon2d poly, double distance)
         {
-            if (lineInp == null || !PolygonUtility.CheckPoly(poly)) return null;
+            if (lineInp == null || !ValidateObject.CheckPoly(poly)) return null;
             int dir = DirectionForPointInPoly(lineInp, poly, distance);
             if (dir == 0) return null;
             return OffsetLinePoint(lineInp, testPoint, dir * distance);
@@ -129,11 +129,11 @@ namespace SpacePlanning
         //offsets an input line by a given distance 
         internal static int DirectionForPointInPoly(Line2d lineInp, Polygon2d poly, double distance)
         {
-            if (lineInp == null || !PolygonUtility.CheckPoly(poly)) return 0;
+            if (lineInp == null || !ValidateObject.CheckPoly(poly)) return 0;
             Point2d midPt = LineMidPoint(lineInp);
             Point2d pt1 = OffsetLinePoint(lineInp, midPt, distance);
             Point2d pt2 = OffsetLinePoint(lineInp, midPt, -1 * distance);
-            if (GraphicsUtility.PointInsidePolygonTest(poly.Points, pt1)) return 1;
+            if (GraphicsUtility.PointInsidePolygonTest(poly, pt1)) return 1;
             else return -1;
         }
 

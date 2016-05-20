@@ -9,40 +9,7 @@ namespace SpacePlanning
 {
     public class PolygonUtility
     {
-        //checks a polygon2d to have min Area and min dimensions
-        internal static bool CheckPolyDimension(Polygon2d poly, double minArea = 6, double side = 2)
-        {
-            if (!CheckPoly(poly)) return false;
-            if (AreaPolygon(poly) < minArea) return false;
-            List<double> spans = GetSpansXYFromPolygon2d(poly.Points);
-            if (spans[0] < side) return false;
-            if (spans[1] < side) return false;
-            return true;
-        }
-
-        //check if a polygon is null then return false
-        internal static bool CheckPoly(Polygon2d poly)
-        {
-            if (poly == null || poly.Points == null
-                || poly.Points.Count == 0 || poly.Lines == null || poly.Lines.Count < 3) return false;
-            else return true;
-        }
-
-        //checks a polygonlist if any poly is null then return false
-        internal static bool CheckPolyList(List<Polygon2d> polyList)
-        {
-            if (polyList == null || polyList.Count == 0) return false;
-            bool check = true;
-            for(int i = 0; i < polyList.Count; i++) if (!CheckPoly(polyList[i])) check = false;
-            return check;            
-        }
-
-        //check if a pointlist is null then return false
-        internal static bool CheckPointList(List<Point2d> ptList)
-        {
-            if (ptList == null || ptList.Count == 0) return false;
-            else return true;
-        }
+    
 
         //gives the highest and lowest point from poly points
         internal static List<Point2d> GetLowestAndHighestPointFromPoly(Polygon2d poly)
@@ -86,7 +53,6 @@ namespace SpacePlanning
             List<int> indices = BasicUtility.SortIndex(distanceList);
             return indices;
         }
-
 
     
         //cleans duplicate points and returns updated list - using this now
@@ -172,7 +138,7 @@ namespace SpacePlanning
         //get a polygonlist and sort based on area
         internal static List<Polygon2d> SortPolygonList(List<Polygon2d> polyList)
         {
-            if (!CheckPolyList(polyList)) return null;
+            if (!ValidateObject.CheckPolyList(polyList)) return null;
             List<double> areaPolyList = new List<double>();
             for (int i = 0; i < polyList.Count; i++) areaPolyList.Add(AreaPolygon(polyList[i]));
             List<int> sortedIndices = BasicUtility.Quicksort(areaPolyList);
@@ -181,18 +147,7 @@ namespace SpacePlanning
             return sortedPolys;
         }
      
-        //checks if two points are within a certain threshold region
-        public static bool CheckPointsWithinRange(Point2d ptA, Point2d ptB, double threshold = 2)
-        {
-            List<Point2d> squarePts = new List<Point2d>();
-            squarePts.Add(Point2d.ByCoordinates(ptA.X + threshold, ptA.Y - threshold));//LR
-            squarePts.Add(Point2d.ByCoordinates(ptA.X + threshold, ptA.Y + threshold));//UR
-            squarePts.Add(Point2d.ByCoordinates(ptA.X - threshold, ptA.Y + threshold));//UL
-            squarePts.Add(Point2d.ByCoordinates(ptA.X - threshold, ptA.Y - threshold));//LLl
-            Polygon2d squarePoly = Polygon2d.ByPoints(squarePts);
-            return GraphicsUtility.PointInsidePolygonTest(squarePoly, ptB);
-        }
-
+ 
         //finds the outerlines of a polygon, except the extreme max and min lines in its x and y axis
         public static List<Line2d> GetOuterLines(Polygon2d polyReg)
         {            
@@ -205,7 +160,7 @@ namespace SpacePlanning
                 int a = i, b = i + 1;
                 if (i == polyReg.Points.Count - 1) b = 0;
                 Line2d line = new Line2d(polyReg.Points[a], polyReg.Points[b]);
-                int lineType = GraphicsUtility.CheckLineOrient(line);
+                int lineType = ValidateObject.CheckLineOrient(line);
                 if (lineType != -1)
                 {
                     if (lineType == 0)
@@ -387,8 +342,8 @@ namespace SpacePlanning
             }
 
             //added check to see if poly is null
-            if (!CheckPoly(polyA)) polyA = null;
-            if (!CheckPoly(polyB)) polyB = null;
+            if (!ValidateObject.CheckPoly(polyA)) polyA = null;
+            if (!ValidateObject.CheckPoly(polyB)) polyB = null;
 
             List<Polygon2d> splittedPoly = new List<Polygon2d>();
             splittedPoly.Add(polyA);
@@ -422,7 +377,7 @@ namespace SpacePlanning
         //offsets a poly 
         public static Polygon2d OffsetPoly(Polygon2d polyOutline, double distance = 0.5)
         {
-            if (!PolygonUtility.CheckPoly(polyOutline)) return null;
+            if (!ValidateObject.CheckPoly(polyOutline)) return null;
             List<bool> offsetAble = new List<bool>();
             Polygon2d poly = new Polygon2d(polyOutline.Points);
             List<Line2d> linesPoly = poly.Lines;
@@ -450,115 +405,12 @@ namespace SpacePlanning
             }
             return new Polygon2d(poly.Points);
         }
-
-        //iterate multiple times till theres is no notches in the poly
-        [MultiReturn(new[] { "PolyReduced","HasNotches", "Trials"  })]
-        public static Dictionary<string,object> CheckPolyNotches(Polygon2d poly, double distance = 10)
-        {
-            if (!CheckPoly(poly)) return null;
-            bool hasNotches = true;
-            int count = 0, maxTry = 2*poly.Points.Count;
-            Polygon2d currentPoly = new Polygon2d(poly.Points);
-            while (hasNotches && count < maxTry)
-            {
-                Dictionary<string, object> notchObject = RemoveMultipleNotches(currentPoly, distance);
-                if (notchObject == null) continue;
-                currentPoly = (Polygon2d)notchObject["PolyReduced"];
-                for(int i = 0; i < poly.Lines.Count; i++)
-                {
-                    int a = i, b = i + 1;
-                    if (i == poly.Points.Count - 1) b = 0;
-                    if (poly.Lines[a].Length < distance && poly.Lines[b].Length < distance) { hasNotches = true; break; }
-                    else hasNotches = false;
-                }
-                count += 1;
-            }
-            
-            Dictionary<string,object> singleNotchObj = RemoveSingleNotch(currentPoly, distance, currentPoly.Points.Count);
-            Polygon2d polyRed = (Polygon2d)singleNotchObj["PolyReduced"];
-            if (!CheckPoly(polyRed)) { polyRed = poly; hasNotches = false; }
-            return new Dictionary<string, object>
-            {
-                { "PolyReduced", (polyRed) },
-                { "HasNotches", (hasNotches) },
-                { "Trials", (count) }
-            };
-        }
-
-        //polygon list cleaner
-        internal static List<Polygon2d> CleanPolygonList(List<Polygon2d> polyList)
-        {
-           // if (!CheckPolyList(polyList)) return null;
-            List<Polygon2d> polyNewList = new List<Polygon2d>();
-            bool added = false;
-            for (int i = 0; i < polyList.Count; i++)
-            {
-                if (CheckPoly(polyList[i]))
-                {
-                    polyNewList.Add(polyList[i]);
-                    added = true;
-                }
-
-            }
-            if (added) return polyNewList;
-            else return null;
-        }
-
-
-        //find lines which will not be inside the poly when offset by a distance
-        [MultiReturn(new[] { "LinesFalse", "Offsetables", "IndicesFalse", "PointsOutside"})]
-        internal static Dictionary<string, object> CheckLinesOffsetInPoly(Polygon2d poly, Polygon2d containerPoly, double distance = 10, bool tag = false)
-        {
-            if (!CheckPoly(poly)) return null;
-            Polygon2d oPoly = OffsetPoly(poly, 0.2);
-            List<bool> offsetAble = new List<bool>();
-            List<List<Point2d>> pointsOutsideList = new List<List<Point2d>>();
-            List<Line2d> linesNotOffset = new List<Line2d>();
-            List<int> indicesFalse = new List<int>();
-            for (int i = 0; i < poly.Points.Count; i++)
-            {
-                bool offsetAllow = false;
-                int a = i, b = i + 1;
-                if (i == poly.Points.Count - 1) b = 0;
-                Line2d line = poly.Lines[i];
-                Point2d offStartPt = LineUtility.OffsetLinePointInsidePoly(line, line.StartPoint, oPoly, distance);
-                Point2d offEndPt = LineUtility.OffsetLinePointInsidePoly(line, line.EndPoint, oPoly, distance);
-                bool checkStartPt = GraphicsUtility.PointInsidePolygonTest(oPoly, offStartPt);
-                bool checkEndPt = GraphicsUtility.PointInsidePolygonTest(oPoly, offEndPt);
-                bool checkExtEdge = LayoutUtility.CheckLineGetsExternalWall(line, containerPoly);
-                if (tag) checkExtEdge  =true;
-                List<Point2d> pointsDefault = new List<Point2d>();
-                if (checkStartPt && checkEndPt && checkExtEdge)
-                {                    
-                    offsetAllow = true;
-                    indicesFalse.Add(-1);
-                    pointsDefault.Add(null);
-                }
-                else
-                {                    
-                    if (!checkStartPt) pointsDefault.Add(line.StartPoint);
-                    if (!checkEndPt) pointsDefault.Add(line.EndPoint);                    
-                    linesNotOffset.Add(line);
-                    indicesFalse.Add(i);
-                    offsetAllow = false;                                   
-                }
-                pointsOutsideList.Add(pointsDefault);
-                offsetAble.Add(offsetAllow);
-            }
-            return new Dictionary<string, object>
-            {
-                { "LinesFalse", (linesNotOffset) },
-                { "Offsetables", (offsetAble) },
-                { "IndicesFalse", (indicesFalse) },
-                { "PointsOutside", (pointsOutsideList) }
-            };
-        }
-
+       
         //gets a poly and removes a single notch if it meets criteria
         [MultiReturn(new[] {  "PolyReduced", "FoundSmall" })]
         public static Dictionary<string,object> RemoveSingleNotch(Polygon2d polyInp, double distance = 10, int recompute = 2)
         {
-            if (!CheckPoly(polyInp)) return null;
+            if (!ValidateObject.CheckPoly(polyInp)) return null;
             Polygon2d poly = new Polygon2d(polyInp.Points);
             int startIndex = poly.Points.Count - 1, endIndex = 0, inititalIndex = startIndex;
             bool check = false, found = false;
@@ -575,7 +427,7 @@ namespace SpacePlanning
                     int d = b + 1;
                     if (i == 0) c = poly.Points.Count - 1;
                     if (b == poly.Points.Count - 1) d = 0;               
-                    if(GraphicsUtility.CheckLineOrient(poly.Lines[c]) == 0) // horizontal
+                    if(ValidateObject.CheckLineOrient(poly.Lines[c]) == 0) // horizontal
                     {
                         poly.Points[a] = midPtLLine;
                         poly.Points[c] = new Point2d(poly.Points[c].X, midPtLLine.Y);
@@ -609,7 +461,7 @@ namespace SpacePlanning
         [MultiReturn(new[] { "PointStart", "PointEnd", "ConnectingLine", "PointsProjected", "PolyReduced", "FoundSmall" })]
         public static Dictionary<string, object> RemoveMultipleNotches(Polygon2d poly, double distance = 10)
         {
-            if (!CheckPoly(poly)) return null;
+            if (!ValidateObject.CheckPoly(poly)) return null;
             int startIndex = poly.Points.Count - 1, endIndex = 0, inititalIndex = startIndex;
             bool check = false, found = false;
 
@@ -750,14 +602,14 @@ namespace SpacePlanning
         //checks all lines of a polyline, if orthogonal or not, if not makes the polyline orthogonal
         public static Polygon2d CreateOrthoPoly(Polygon2d nonOrthoPoly)
         {
-            if (!CheckPoly(nonOrthoPoly)) return null;
+            if (!ValidateObject.CheckPoly(nonOrthoPoly)) return null;
             List<Point2d> pointFoundList = new List<Point2d>();
             for(int i = 0; i < nonOrthoPoly.Points.Count; i++)
             {
                 int a = i, b = i + 1;
                 if (i == nonOrthoPoly.Points.Count - 1) b = 0;
                 Line2d line = new Line2d(nonOrthoPoly.Points[a], nonOrthoPoly.Points[b]);
-                if (GraphicsUtility.CheckLineOrient(line)  == -1) // found non ortho
+                if (ValidateObject.CheckLineOrient(line)  == -1) // found non ortho
                 {
                     nonOrthoPoly.Points[b] = new Point2d(nonOrthoPoly.Points[a].X, nonOrthoPoly.Points[b].Y);
                     pointFoundList.Add(nonOrthoPoly.Points[b]);
@@ -786,7 +638,7 @@ namespace SpacePlanning
         //smoothens a polygon2d list by adding points in each poly
         public static List<Polygon2d> SmoothPolygonList(List<Polygon2d> polyList, double spacingProvided = 1)
         {
-            if (!CheckPolyList(polyList)) return null;
+            if (!ValidateObject.CheckPolyList(polyList)) return null;
             List<Polygon2d> smoothPolyList = new List<Polygon2d>();
             for(int i = 0; i < polyList.Count; i++)
                 smoothPolyList.Add(new Polygon2d(SmoothPolygon(polyList[i].Points, spacingProvided), 0));
@@ -824,41 +676,30 @@ namespace SpacePlanning
             }
             return ptList;
         }
-        
-        //checks area of a polygon2d
-        public static double AreaPolygon(Polygon2d poly)
-        {
-            if (poly == null) return 0;           
-            return GraphicsUtility.AreaPolygon2d(poly.Points);
-        }        
 
-
-        //checks the ratio of the dimension of a poly bbox to be of certain proportion or not
-        internal static bool CheckPolyBBox(Polygon2d poly, double num = 3)
+        // returns area of a closed polygon, if area is positive, poly points are counter clockwise and vice versa
+        internal static double AreaPolygon(Polygon2d poly, bool value = true)
         {
-            bool check = false;
-            Range2d range = poly.BBox;
-            double X = range.Xrange.Span;
-            double Y = range.Yrange.Span;
-            if (Y < X)
+            if (!ValidateObject.CheckPoly(poly)) return -1;
+            List<Point2d> polyPoints = poly.Points;
+            double area = 0;
+            int j = polyPoints.Count - 1;
+            for (int i = 0; i < polyPoints.Count; i++)
             {
-                double div1 = X / Y;
-                if (div1 > num) check = true;
+                area += (polyPoints[j].X + polyPoints[i].X) * (polyPoints[j].Y - polyPoints[i].Y);
+                j = i;
             }
-            else
-            {
-                double div1 = Y / X;
-                if (div1 > num) check = true;
-            }
-            return check;
+            //if true return absolute value, else return normal value
+            if (value) return Math.Abs(area / 2);
+            else return area / 2;
         }
 
 
         //find if two polys are adjacent, and if yes, then returns the common edge between them
         [MultiReturn(new[] { "Neighbour", "SharedEdge" })]
-        public static Dictionary<string, object> FindPolyAdjacentEdge(Polygon2d polyA, Polygon2d polyB, double eps = 0)
+        internal static Dictionary<string, object> FindPolyAdjacentEdge(Polygon2d polyA, Polygon2d polyB, double eps = 0)
         {
-            if (!CheckPoly(polyA) || !CheckPoly(polyB)) return null;
+            if (!ValidateObject.CheckPoly(polyA) || !ValidateObject.CheckPoly(polyB)) return null;
             Line2d joinedLine = null;
             bool isNeighbour = false;
             Polygon2d polyAReg = new Polygon2d(polyA.Points, 0);

@@ -30,7 +30,7 @@ namespace SpacePlanning
         [MultiReturn(new[] { "DeptTopologyList", "CirculationNetwork", "DeptAllPolygons", "NonRedundantCirculationNetwork" })]
         public static Dictionary<string, object> MakeDeptTopology(List<DeptData> deptData, Polygon2d poly, Polygon2d leftOverPoly = null, double limit = 0)
         {
-            if (deptData == null || deptData.Count == 0 || !PolygonUtility.CheckPoly(poly))
+            if (deptData == null || deptData.Count == 0 || !ValidateObject.CheckPoly(poly))
             {
                 Trace.WriteLine("Found dept or poly null, so returning");
                 return null;
@@ -120,10 +120,10 @@ namespace SpacePlanning
                     {
                         Dictionary<string, object> splitResult = SplitObject.SplitByLine(deptPoly, splitter, width);
                         List<Polygon2d> polyAfterSplit = (List<Polygon2d>)(splitResult["PolyAfterSplit"]);
-                        if (PolygonUtility.CheckPolyList(polyAfterSplit))
+                        if (ValidateObject.CheckPolyList(polyAfterSplit))
                         {
-                            double areaA = GraphicsUtility.AreaPolygon2d(polyAfterSplit[0].Points);
-                            double areaB = GraphicsUtility.AreaPolygon2d(polyAfterSplit[1].Points);
+                            double areaA = PolygonUtility.AreaPolygon(polyAfterSplit[0]);
+                            double areaB = PolygonUtility.AreaPolygon(polyAfterSplit[1]);
                             if (areaA < areaB)
                             {
                                 circulationPolyList.Add(polyAfterSplit[0]);
@@ -165,7 +165,7 @@ namespace SpacePlanning
         [MultiReturn(new[] { "ProgTopologyList", "ProgNeighborNameList", "ProgAllPolygons", "SharedEdge" })]
         public static Dictionary<string, object> MakeProgramTopology(Polygon2d polyOutline, List<Polygon2d> polyA = null,  List<Polygon2d> polyB = null, List<Polygon2d> polyC = null, List<Polygon2d> polyD = null)
         {
-            if (!PolygonUtility.CheckPoly(polyOutline)) return null;
+            if (!ValidateObject.CheckPoly(polyOutline)) return null;
             List<Polygon2d> polygonsAllProgList = new List<Polygon2d>();
             List<DeptData> deptDataAllDeptList = new List<DeptData>();
             List<List<Line2d>> lineCollection = new List<List<Line2d>>();
@@ -212,7 +212,7 @@ namespace SpacePlanning
         [MultiReturn(new[] { "CirculationPolygons", "UpdatedProgPolygons" })]
         public static Dictionary<string, object> MakeProgramCirculation(List<Polygon2d> polyProgList, List<Line2d> lineList, double width = 8, double allowedCircRatio = 3, double frequencyCorridor = 0.5)
         {
-            if (!PolygonUtility.CheckPolyList(polyProgList)) return null;
+            if (!ValidateObject.CheckPolyList(polyProgList)) return null;
             if (lineList == null || lineList.Count == 0) return null;
             List<Line2d> flatLineList = new List<Line2d>();
             List<bool> IsDuplicateList = new List<bool>();
@@ -225,7 +225,7 @@ namespace SpacePlanning
             List<int> deptIdList = new List<int>();
             double num = allowedCircRatio;
             List<double> areaProgPolyList = new List<double>();
-            for (int i = 0; i < polyProgList.Count; i++) areaProgPolyList.Add(GraphicsUtility.AreaPolygon2d(polyProgList[i].Points));
+            for (int i = 0; i < polyProgList.Count; i++) areaProgPolyList.Add(PolygonUtility.AreaPolygon(polyProgList[i]));
 
             double maxArea = areaProgPolyList.Max();
             areaProgPolyList.Sort();
@@ -241,7 +241,7 @@ namespace SpacePlanning
                 for (int j = 0; j < polyProgList.Count; j++)
                 {
                     Polygon2d progPoly = polyProgList[j];
-                    double areaPoly = GraphicsUtility.AreaPolygon2d(progPoly.Points);
+                    double areaPoly = PolygonUtility.AreaPolygon(progPoly);
 
                     Point2d midPt = LineUtility.LineMidPoint(splitter);
                     Point2d nudgedMidPt = LineUtility.NudgeLineMidPt(splitter,progPoly, 0.5);
@@ -251,15 +251,15 @@ namespace SpacePlanning
                     {
                         Dictionary<string, object> splitResult = SplitObject.SplitByLine(progPoly, splitter, width);
                         List<Polygon2d> polyAfterSplit = (List<Polygon2d>)(splitResult["PolyAfterSplit"]);
-                        if (PolygonUtility.CheckPolyList(polyAfterSplit))
+                        if (ValidateObject.CheckPolyList(polyAfterSplit))
                         {
-                            double areaA = GraphicsUtility.AreaPolygon2d(polyAfterSplit[0].Points);
-                            double areaB = GraphicsUtility.AreaPolygon2d(polyAfterSplit[1].Points);
+                            double areaA = PolygonUtility.AreaPolygon(polyAfterSplit[0]);
+                            double areaB = PolygonUtility.AreaPolygon(polyAfterSplit[1]);
                             if (areaA < areaB)
                             {
                                 if (polyAfterSplit[0].Points != null)
                                 {
-                                    bool check = PolygonUtility.CheckPolyBBox(polyAfterSplit[0], num);
+                                    bool check = ValidateObject.CheckPolyBBox(polyAfterSplit[0], num);
                                     if (check) circulationPolyList.Add(polyAfterSplit[0]);
                                 }
                                 updatedProgPolyList.Add(polyAfterSplit[1]);
@@ -268,7 +268,7 @@ namespace SpacePlanning
                             {
                                 if (polyAfterSplit[1].Points != null)
                                 {
-                                    bool check = PolygonUtility.CheckPolyBBox(polyAfterSplit[1], num);
+                                    bool check = ValidateObject.CheckPolyBBox(polyAfterSplit[1], num);
                                     if (check) circulationPolyList.Add(polyAfterSplit[1]);
                                 }
                                 updatedProgPolyList.Add(polyAfterSplit[0]);

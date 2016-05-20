@@ -222,7 +222,7 @@ namespace SpacePlanning
         //returns the point having highest x,y value from a list - using now
         internal static int ReturnHighestPointFromList(List<Point2d> ptList)
         {
-            if (!PolygonUtility.CheckPointList(ptList)) return -1;
+            if (!ValidateObject.CheckPointList(ptList)) return -1;
             Point2d highestPoint = ptList[0];
             int size = ptList.Count;
             int index = 0;
@@ -240,7 +240,7 @@ namespace SpacePlanning
         //returns the point having lowest x,y value from a list
         internal static int ReturnLowestPointFromList(List<Point2d> ptList)
         {
-            if (!PolygonUtility.CheckPointList(ptList)) return -1;
+            if (!ValidateObject.CheckPointList(ptList)) return -1;
             Point2d lowestPoint = ptList[0];
             int size = ptList.Count;
             int index = 0;
@@ -267,8 +267,8 @@ namespace SpacePlanning
             Point2d staticPoint, movingPoint;
             Polygon2d staticPoly, movingPoly;
 
-            double areaPolyA = GraphicsUtility.AreaPolygon2d(polyA.Points);
-            double areaPolyB = GraphicsUtility.AreaPolygon2d(polyB.Points);
+            double areaPolyA = PolygonUtility.AreaPolygon(polyA);
+            double areaPolyB = PolygonUtility.AreaPolygon(polyB);
             if (areaPolyA > areaPolyB)
             {
                 staticPoint = centerPolyB;
@@ -287,8 +287,8 @@ namespace SpacePlanning
             //shift the other points
             Point2d movingPoint1 = new Point2d(staticPoint.X, movingPoint.Y);
             Point2d movingPoint2 = new Point2d(movingPoint.X, staticPoint.Y);
-            bool IsMovingPoint1 = GraphicsUtility.PointInsidePolygonTest(movingPoly.Points, movingPoint1);
-            bool IsMovingPoint2 = GraphicsUtility.PointInsidePolygonTest(movingPoly.Points, movingPoint2);
+            bool IsMovingPoint1 = GraphicsUtility.PointInsidePolygonTest(movingPoly, movingPoint1);
+            bool IsMovingPoint2 = GraphicsUtility.PointInsidePolygonTest(movingPoly, movingPoint2);
 
             if (IsMovingPoint1) movingPoint = movingPoint1;
             else if (IsMovingPoint2) movingPoint = movingPoint2;

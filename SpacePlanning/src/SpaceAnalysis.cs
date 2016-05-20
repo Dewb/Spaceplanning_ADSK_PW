@@ -148,10 +148,10 @@ namespace SpacePlanning
             double areaInpatientRooms = 0, percInpatientFromSite = 0, dim = cellList[0].DimX;
             for(int i = 0; i < inPatientPoly.Count; i++)
             {
-                if (!PolygonUtility.CheckPolyList(inPatientPoly[i])) continue;
+                if (!ValidateObject.CheckPolyList(inPatientPoly[i])) continue;
                 for(int j = 0; j < inPatientPoly[i].Count; j++)
                 {
-                    if (!PolygonUtility.CheckPoly(inPatientPoly[i][j])) continue;
+                    if (!ValidateObject.CheckPoly(inPatientPoly[i][j])) continue;
                     totalPatientRoomCount += 1;
                     areaInpatientRooms += PolygonUtility.AreaPolygon(inPatientPoly[i][j]);
                 }
