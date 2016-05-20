@@ -217,7 +217,7 @@ namespace SpacePlanning
             List<Line2d> flatLineList = new List<Line2d>();
             List<bool> IsDuplicateList = new List<bool>();
 
-            polyProgList = PolygonUtility.SmoothPolygon(polyProgList, 5);
+            polyProgList = PolygonUtility.SmoothPolygonList(polyProgList, 5);
 
             //flatten all the polys in each depts to make it one list
             List<Polygon2d> circulationPolyList = new List<Polygon2d>();

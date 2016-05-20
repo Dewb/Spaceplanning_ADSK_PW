@@ -308,7 +308,6 @@ namespace SpacePlanning
             return uniqueItemsList;
         }
 
-
         //sorts a program data inside dept data based on pREFERENCEPOINT 
         internal static List<DeptData> SortProgramsByPrefInDept(List<DeptData> deptDataInp)
         {

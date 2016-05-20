@@ -91,14 +91,14 @@ namespace SpacePlanning
             allPoints.Add(lineA.EndPoint);
             allPoints.Add(lineB.StartPoint);
             allPoints.Add(lineB.EndPoint);
-            int p = ReturnLowestPointFromListNew(allPoints);
-            int q = ReturnHighestPointFromListNew(allPoints);
+            int p = LowestPointFromList(allPoints);
+            int q = HighestPointFromList(allPoints);
             Line2d lineJoined = new Line2d(allPoints[p],allPoints[q]);
             return lineJoined;
         }
              
         //returns the point having lowest x,y value from a list using now
-        internal static int ReturnLowestPointFromListNew(List<Point2d> ptList)
+        internal static int LowestPointFromList(List<Point2d> ptList)
         {
             if (!PolygonUtility.CheckPointList(ptList)) return -1;
             Point2d lowestPoint = ptList[0];
@@ -135,7 +135,7 @@ namespace SpacePlanning
             };
         }
         //returns the point having highest x,y value from a list - using now
-        internal static int ReturnHighestPointFromListNew(List<Point2d> ptList)
+        internal static int HighestPointFromList(List<Point2d> ptList)
         {
             if (!PolygonUtility.CheckPointList(ptList)) return -1;
             Point2d highestPoint = ptList[0];
@@ -690,7 +690,7 @@ namespace SpacePlanning
         //sorts a list of points to form a polyline - not using
         public static List<Point2d> SortPoints(List<Point2d> pointList)
         {
-            Point2d cen = PolygonUtility.CentroidFromPoly(pointList);
+            Point2d cen = PolygonUtility.CentroidOfPoly(pointList);
             Vector2d vecX = new Vector2d(0, 100);
             List<double> angList = new List<double>();
             int[] indList = new int[pointList.Count];

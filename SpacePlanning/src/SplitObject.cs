@@ -24,7 +24,7 @@ namespace SpacePlanning
             double cirFac = circulationFreq;
             for (int i = 0; i < polyList.Count; i++)
             {
-                totalArea += PolygonUtility.AreaCheckPolygon(polyList[i]);
+                totalArea += PolygonUtility.AreaPolygon(polyList[i]);
                 polyQueue.Enqueue(polyList[i]);
             }
             double targetArea = totalArea / cirFac;
@@ -36,12 +36,12 @@ namespace SpacePlanning
                 List<Polygon2d> polySplitList = (List<Polygon2d>)splitObj["PolyAfterSplit"];
                 if (PolygonUtility.CheckPolyList(polySplitList) && polySplitList.Count > 1)
                 {
-                    polySplitList = PolygonUtility.SmoothPolygon(polySplitList, 2);
+                    polySplitList = PolygonUtility.SmoothPolygonList(polySplitList, 2);
                     Polygon2d bbox1 = Polygon2d.ByPoints(ReadData.FromPointsGetBoundingPoly(polySplitList[0].Points));
                     Polygon2d bbox2 = Polygon2d.ByPoints(ReadData.FromPointsGetBoundingPoly(polySplitList[1].Points));
 
-                    if (PolygonUtility.AreaCheckPolygon(polySplitList[0]) > targetArea) polyCirculationList.Add(polySplitList[0]);
-                    if (PolygonUtility.AreaCheckPolygon(polySplitList[1]) > targetArea) polyCirculationList.Add(polySplitList[1]);
+                    if (PolygonUtility.AreaPolygon(polySplitList[0]) > targetArea) polyCirculationList.Add(polySplitList[0]);
+                    if (PolygonUtility.AreaPolygon(polySplitList[1]) > targetArea) polyCirculationList.Add(polySplitList[1]);
 
                     if (bbox1.Lines[0].Length < acceptableWidth || bbox1.Lines[1].Length < acceptableWidth) polyBrokenList.Add(polySplitList[0]);
                     else polyQueue.Enqueue(polySplitList[0]);
@@ -53,7 +53,7 @@ namespace SpacePlanning
                 {
                     Polygon2d bbox1 = Polygon2d.ByPoints(ReadData.FromPointsGetBoundingPoly(polySplitList[0].Points));
                     if (bbox1.Lines[0].Length < acceptableWidth || bbox1.Lines[1].Length < acceptableWidth) polyBrokenList.Add(polySplitList[0]);
-                    if (PolygonUtility.AreaCheckPolygon(polySplitList[0]) > targetArea) polyCirculationList.Add(polySplitList[0]);
+                    if (PolygonUtility.AreaPolygon(polySplitList[0]) > targetArea) polyCirculationList.Add(polySplitList[0]);
                     else polyQueue.Enqueue(polySplitList[0]);
                 }
                 count += 1;
@@ -112,8 +112,8 @@ namespace SpacePlanning
                 List<Polygon2d> polyAfterSplit = (List<Polygon2d>)splitResult["PolyAfterSplit"];
                 if (PolygonUtility.CheckPolyList(polyAfterSplit))
                 {
-                    double areaPolA = PolygonUtility.AreaCheckPolygon(polyAfterSplit[0]);
-                    double areaPolB = PolygonUtility.AreaCheckPolygon(polyAfterSplit[1]);
+                    double areaPolA = PolygonUtility.AreaPolygon(polyAfterSplit[0]);
+                    double areaPolB = PolygonUtility.AreaPolygon(polyAfterSplit[1]);
                     if (areaPolA > targetArea) polycoverList.Add(polyAfterSplit[0]);
                     if (areaPolB > targetArea) polycoverList.Add(polyAfterSplit[1]);
 
@@ -131,7 +131,7 @@ namespace SpacePlanning
                             else
                             {
                                 polyOrganizedList.Add(polyAfterSplit[0]);
-                                double areaPoly = PolygonUtility.AreaCheckPolygon(polyAfterSplit[0]);
+                                double areaPoly = PolygonUtility.AreaPolygon(polyAfterSplit[0]);
                             }
                             //end of 1st if
                             if (spanB[0] > acceptableWidth && spanB[1] > acceptableWidth)
@@ -198,7 +198,7 @@ namespace SpacePlanning
             List<Point2d> poly = PolygonUtility.SmoothPolygon(polyOrig, BuildLayout.SPACING);
             List<double> spans = PolygonUtility.GetSpansXYFromPolygon2d(poly);
             double horizontalSpan = spans[0], verticalSpan = spans[1];
-            Point2d polyCenter = PolygonUtility.CentroidFromPoly(poly);
+            Point2d polyCenter = PolygonUtility.CentroidOfPoly(poly);
             if (horizontalSpan < minimumLength || verticalSpan < minimumLength) return null;
 
             if (horizontalSpan > verticalSpan) { dir = 1; aspectRatio = horizontalSpan / verticalSpan; }
@@ -239,7 +239,7 @@ namespace SpacePlanning
                     count += 1;
                     continue;
                 }
-                double targetArea = PolygonUtility.AreaCheckPolygon(poly) / factor;
+                double targetArea = PolygonUtility.AreaPolygon(poly) / factor;
                 MakePolysOfProportion(poly, polyOrganizedList, polyCoverList, acceptableWidth, targetArea);
             }
             BuildLayout.RECURSE = 0;
@@ -303,7 +303,7 @@ namespace SpacePlanning
             else { poly = PolygonUtility.SmoothPolygon(polyOrig, BuildLayout.SPACING2); }
 
             if (poly == null || poly.Count == 0) return null;
-            int lowInd = GraphicsUtility.ReturnLowestPointFromListNew(poly);// THIS IS BETTER THAN THE OTHER VER
+            int lowInd = GraphicsUtility.LowestPointFromList(poly);
             Point2d lowPt = poly[lowInd];
             Line2d splitLine = new Line2d(lowPt, extents, dir);
             if (dir == 0) splitLine = LineUtility.Move(splitLine, 0, 1 * distance);

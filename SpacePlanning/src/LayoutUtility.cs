@@ -10,6 +10,7 @@ namespace SpacePlanning
 {
     internal class LayoutUtility
     {
+        #region - Private Methods
 
         //gets list of polygon2ds and find the most closest polygon2d to the center , to place the central stn
         internal static Dictionary<string, object> MakeCentralStation(List<Polygon2d> polygonsList, Point2d centerPt)
@@ -29,7 +30,7 @@ namespace SpacePlanning
             double minArea = 100, ratio = 0.5, dis = 0; ; int dir = 0;
             List<int> indices = PolygonUtility.SortPolygonsFromAPoint(polygonsList, centerPt);
             Polygon2d polyToPlace = polygonsList[indices[0]];
-            double area = PolygonUtility.AreaCheckPolygon(polyToPlace);
+            double area = PolygonUtility.AreaPolygon(polyToPlace);
             if (area > minArea)
             {
                 List<double> spans = PolygonUtility.GetSpansXYFromPolygon2d(polyToPlace.Points);
@@ -64,12 +65,10 @@ namespace SpacePlanning
 
         }
 
-
-
         // to be reconsidered this func
         //get a poly and find rectangular polys inside. then merge them together to form a big poly
         [MultiReturn(new[] { "SplittableLines", "OffsetLines", "SortedIndices", "OffsetMidPts", "NonOrthoLines" })]
-        public static Dictionary<string, object> FindOuterLinesAndOffsets(Polygon2d poly, double patientRoomDepth = 16, double extension = 8000, double recompute = 5)
+        internal static Dictionary<string, object> FindOuterLinesAndOffsets(Polygon2d poly, double patientRoomDepth = 16, double extension = 8000, double recompute = 5)
         {
             if (!PolygonUtility.CheckPoly(poly)) return null;
             Polygon2d polyReg = new Polygon2d(poly.Points);
@@ -111,8 +110,8 @@ namespace SpacePlanning
             List<Line2d> selectedVLines = new List<Line2d>();
             int hIndLow = TestGraphicsUtility.ReturnLowestPointFromList(hMidPt);
             int hIndHigh = TestGraphicsUtility.ReturnHighestPointFromList(hMidPt);
-            int vIndLow = GraphicsUtility.ReturnLowestPointFromListNew(vMidPt);
-            int vIndHigh = GraphicsUtility.ReturnHighestPointFromListNew(vMidPt);
+            int vIndLow = GraphicsUtility.LowestPointFromList(vMidPt);
+            int vIndHigh = GraphicsUtility.HighestPointFromList(vMidPt);
             if (hIndLow > -1) selectedHLines.Add(hLines[hIndLow]);
             if (hIndHigh > -1) selectedHLines.Add(hLines[hIndHigh]);
             if (vIndLow > -1) selectedVLines.Add(vLines[vIndLow]);
@@ -149,7 +148,7 @@ namespace SpacePlanning
         // to be reconsidered this func
         //get a poly and find rectangular polys inside. then merge them together to form a big poly
         [MultiReturn(new[] { "SplittableLines", "OffsetLines", "SortedIndices", "OffsetMidPts" })]
-        public static Dictionary<string, object> ExtLinesAndOffsetsFromBBox(Polygon2d poly, double patientRoomDepth = 16, double recompute = 5)
+        internal static Dictionary<string, object> ExtLinesAndOffsetsFromBBox(Polygon2d poly, double patientRoomDepth = 16, double recompute = 5)
         {
             if (!PolygonUtility.CheckPoly(poly)) return null;
             Polygon2d polyReg = new Polygon2d(poly.Points);
@@ -181,7 +180,7 @@ namespace SpacePlanning
         }
 
         //use makePolypointsOrtho multiple times
-        public static Polygon2d FitPolyToBeOrtho(Polygon2d inputPoly, int times = 5)
+        internal static Polygon2d FitPolyToBeOrtho(Polygon2d inputPoly, int times = 5)
         {
             Polygon2d polyReturn = MakePolyPointsOrtho(inputPoly);
             for (int i = 0; i < times; i++)
@@ -192,7 +191,7 @@ namespace SpacePlanning
         }
 
         //make the given poly all points orthonogonal to each other
-        public static Polygon2d MakePolyPointsOrtho(Polygon2d poly)
+        internal static Polygon2d MakePolyPointsOrtho(Polygon2d poly)
         {
             Polygon2d polyReg = new Polygon2d(poly.Points);
             List<Point2d> ptForOrthoPoly = new List<Point2d>();
@@ -212,7 +211,7 @@ namespace SpacePlanning
                 {
                     //double diffX = Math.Abs(line.StartPoint.X - line.EndPoint.X);
                     //double diffY = Math.Abs(line.StartPoint.Y - line.EndPoint.Y);
-                    Point2d cenPoly = PolygonUtility.CentroidFromPoly(polyReg);
+                    Point2d cenPoly = PolygonUtility.CentroidOfPoly(polyReg);
                     Point2d ptEndA = Point2d.ByCoordinates(polyReg.Points[a].X + eps, polyReg.Points[a].Y);
                     Line2d refLineA = Line2d.ByStartPointEndPoint(polyReg.Points[a], ptEndA);
 
@@ -302,7 +301,7 @@ namespace SpacePlanning
         }
 
         //check if a given polygon2d has any of its longer edges aligned with any edge of the containerpolygon2d
-        public static bool CheckPolyGetsExternalWall(Polygon2d poly, Polygon2d containerPoly, double shortEdgeDist = 16, bool tag = true)
+        internal static bool CheckPolyGetsExternalWall(Polygon2d poly, Polygon2d containerPoly, double shortEdgeDist = 16, bool tag = true)
         {
             bool check = false;
             if (!PolygonUtility.CheckPoly(poly)) return check;
@@ -317,7 +316,7 @@ namespace SpacePlanning
                 double eps = 0;
                 if (i == polyReg.Points.Count - 1) b = 0;
                 double distance = GraphicsUtility.DistanceBetweenPoints(polyReg.Points[a], polyReg.Points[b]);
-                List<double> spansSorted = PolygonUtility.PolySpanCheck(containerPolyReg);
+                List<double> spansSorted = PolygonUtility.GetPolySpan(containerPolyReg);
                 if (distance <= spansSorted[0] * 0.75) continue;
                 Line2d lineA = Line2d.ByStartPointEndPoint(polyReg.Points[a], polyReg.Points[b]);
                 for (int j = 0; j < containerPolyReg.Points.Count; j++)
@@ -333,9 +332,8 @@ namespace SpacePlanning
             return check;
         }
 
-
         //check if a given polygon2d has any of its longer edges aligned with any edge of the containerpolygon2d
-        public static bool CheckLineGetsExternalWall(Line2d lineA, Polygon2d containerPoly)
+        internal static bool CheckLineGetsExternalWall(Line2d lineA, Polygon2d containerPoly)
         {
             bool check = false;
             if (!PolygonUtility.CheckPoly(containerPoly)) return check;
@@ -351,11 +349,9 @@ namespace SpacePlanning
             return check;
         }
 
-
-
         //adds a point to a line of a poly, such that offsetting places offset line inside the poly
         [MultiReturn(new[] { "PolyAddedPts", "ProblemPoint", "IsAdded", "PointAdded", "Trials", "FinalRatio", "ProblemLine", "ProblemPtsList", "FalseLineList" })]
-        public static Dictionary<string, object> AddPointToFitPoly(Polygon2d poly, Polygon2d containerPoly, double distance = 16, double area = 0, double thresDistance = 10, double recompute = 5)
+        internal static Dictionary<string, object> AddPointToFitPoly(Polygon2d poly, Polygon2d containerPoly, double distance = 16, double area = 0, double thresDistance = 10, double recompute = 5)
         {
             if (!PolygonUtility.CheckPoly(poly)) return null;
             if (distance < 1) return null;
@@ -393,7 +389,7 @@ namespace SpacePlanning
                     {
                         ratio += increment;
                         ptNewEnd = VectorUtility.VectorAddToPoint(probPt, vecToOther, ratio);
-                        Point2d offPtNew = LineUtility.OffsetPointInsidePoly(line, ptNewEnd, poly, distance);
+                        Point2d offPtNew = LineUtility.OffsetLinePointInsidePoly(line, ptNewEnd, poly, distance);
                         checkOffPtNew = GraphicsUtility.PointInsidePolygonTest(poly, offPtNew);
                         count += 1;
                     }
@@ -439,7 +435,7 @@ namespace SpacePlanning
                 {
                     //Trace.WriteLine("  = = now in while = = ");
                     Polygon2d currentPoly = polyStack.Pop();
-                    double currentArea = PolygonUtility.AreaCheckPolygon(currentPoly);
+                    double currentArea = PolygonUtility.AreaPolygon(currentPoly);
                     progItem.AddAreaToProg(currentArea);
                     polysForProg.Add(currentPoly);
                     //Trace.WriteLine("Area Given Now is : " + progItem.AreaAllocatedValue);
@@ -454,6 +450,8 @@ namespace SpacePlanning
             return polyEachProgramList;
         }
 
+
+        #endregion
 
 
 

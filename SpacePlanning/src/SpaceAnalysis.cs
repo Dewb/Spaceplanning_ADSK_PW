@@ -153,7 +153,7 @@ namespace SpacePlanning
                 {
                     if (!PolygonUtility.CheckPoly(inPatientPoly[i][j])) continue;
                     totalPatientRoomCount += 1;
-                    areaInpatientRooms += PolygonUtility.AreaCheckPolygon(inPatientPoly[i][j]);
+                    areaInpatientRooms += PolygonUtility.AreaPolygon(inPatientPoly[i][j]);
                 }
             }
 
