@@ -405,7 +405,7 @@ namespace SpacePlanning
             {
                 if (offsetAble[i] == true) { lineLength.Add(poly.Lines[i].Length); }
                 else lineLength.Add(0);
-            }           
+            }
             double[] lineLengthArray = new double[lineLength.Count];
             int[] unsortedIndices = new int[lineLength.Count];
             for (int i = 0; i < lineLength.Count; i++)
@@ -413,7 +413,8 @@ namespace SpacePlanning
                 lineLengthArray[i] = lineLength[i];
                 unsortedIndices[i] = i;
             }
-            List<int> sortedIndices = BasicUtility.Quicksort(lineLengthArray, unsortedIndices, 0, lineLength.Count - 1);
+           // List<int> sortedIndices = BasicUtility.Quicksort(lineLengthArray, unsortedIndices, 0, lineLength.Count - 1);
+            List<int> sortedIndices = BasicUtility.Quicksort(lineLength);
             if (sortedIndices != null) sortedIndices.Reverse();
             for (int i = 0; i < poly.Points.Count; i++) if (lineLength[i] > 0 && i != sortedIndices[0]) { lineOptions.Add(poly.Lines[i]); }
             Dictionary<string, object> splitObj = SplitObject.SplitByOffsetFromLine(poly, sortedIndices[0], distance, minDist);

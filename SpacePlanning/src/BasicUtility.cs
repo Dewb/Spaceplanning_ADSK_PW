@@ -36,7 +36,6 @@ namespace SpacePlanning
             return num;
         }
         
-
         //checks if a number is within a certain range of another or not
         // returns -1 , if within range, 1 if greater, 0 if smaller
         internal static int CheckWithinRange(double number, double comparingNum, double eps = 0) 
@@ -45,7 +44,6 @@ namespace SpacePlanning
             else if (comparingNum > number - eps) return 1;
             else return 0;
         }
-
 
         //normalize a list within an inout range
         public static List<double> NormalizeList(List<double> numList, double lowValue = 0, double highValue = 100)
@@ -73,7 +71,6 @@ namespace SpacePlanning
         //quicksort algorithm with list input
         public static List<int> Quicksort(List<double> aList)
         {
-
             List<int> indexList = new List<int>();
             for(int n = 0;  n< aList.Count; n++) indexList.Add(n);
             int left = 0, right = aList.Count - 1;
@@ -87,33 +84,27 @@ namespace SpacePlanning
 
             if (right <= left) return null;
             int i = Partition(ref a, ref index, left, right);
-            Quicksort(a, index, left, i - 1);
-            Quicksort(a, index, i + 1, right);
+            QuicksortInternal(a, index, left, i - 1);
+            QuicksortInternal(a, index, i + 1, right);
             List<int> sortedIndex = new List<int>();
-            for (int j = 0; j < index.Length; j++)
-            {
-                sortedIndex.Add(index[j]);
-            }
-
+            for (int j = 0; j < index.Length; j++) sortedIndex.Add(index[j]);
             return sortedIndex;
         }
 
-
-
         //quicksort algorithm
-        internal static List<int> Quicksort(double[] a, int[] index, int left, int right)
+        internal static List<int> QuicksortInternal(double[] a, int[] index, int left, int right)
         {
             if (right <= left) return null;
             int i = Partition(ref a, ref index, left, right);
-            Quicksort(a, index, left, i - 1);
-            Quicksort(a, index, i + 1, right);
+            QuicksortInternal(a, index, left, i - 1);
+            QuicksortInternal(a, index, i + 1, right);
             List<int> sortedIndex = new List<int>();
             for(int j = 0; j < index.Length; j++) sortedIndex.Add(index[j]);
             return sortedIndex;
         }
 
-        //toggle input value between 0 and 1
-        internal static int RandomToggleInputInt()
+        //toggle input value randomly between 0 and 1
+        public static int ToggleRandomInt()
         {
             double num = new Random().NextDouble();
             if (num >0.5) return 1;
@@ -127,6 +118,7 @@ namespace SpacePlanning
             else return 0;
         }
 
+        // used by quicksortinternal
         // partition a[left] to a[right], assumes left < right for Quicksort
         internal static int Partition(ref double[] a, ref int[] index,
         int left, int right)
@@ -145,7 +137,7 @@ namespace SpacePlanning
             return i;
         }
         
-        //return lesser of the two values
+        //return true/ false if x is less than y
         internal static bool IsLess(double x, double y)
         {
             return (x < y);
@@ -162,25 +154,9 @@ namespace SpacePlanning
             index[j] = b;
         }
 
-
-        //binary search algorithm
-        internal static int  BinarySearch(List<int> inputArray, int key)
-        {
-            int min = 0;
-            int max = inputArray.Count - 1;
-            while (min <= max)
-            {
-                int mid = (min + max) / 2;
-                if (key == inputArray[mid]) return ++mid - 1;
-                else if (key < inputArray[mid]) max = mid - 1;
-                else min = mid + 1;
-            }
-            return -1;
-        }
-
-
+  
         //binary search algo with double
-        internal static int BinarySearchDouble(List<double> inputArray, double key)
+        internal static int BinarySearch(List<double> inputArray, double key)
         {
             int min = 0;
             int max = inputArray.Count - 1;
@@ -195,23 +171,19 @@ namespace SpacePlanning
         }
 
         //cleans duplicate indices from a list
-        internal static List<double> DuplicateIndexes(List<double> exprList)
+        internal static List<double> CleanDuplicateIndices(List<double> exprList)
         {
             var dups = exprList.GroupBy(x => x)
             .Where(x => x.Count() > 1)
             .Select(x => x.Key)
             .ToList();
-
             List<double> distinct = exprList.Distinct().ToList();
             for (int i = 0; i < distinct.Count; i++)
             {
                 double dis = distinct[i];
                 for (int j = 0; j < exprList.Count; j++)
                 {
-                    if (dis == exprList[j])
-                    {
-                        break;
-                    }
+                    if (dis == exprList[j]) break;
                 }
             }
             return dups;
@@ -219,36 +191,6 @@ namespace SpacePlanning
         }
 
 
-        // test binary search
-        internal static List<int> TestBinarySearch(List<int> inp, int key)
-        {
-            List<int> indices = new List<int>();
-            List<int> inpList = new List<int>();
-            for (int i = 0; i < inp.Count; i++)
-            {
-                inpList.Add(inp[i]);
-            }
-            int value = 0;
-            int prevValue = 10000000;
-            int m = 1;
-            while (value != -1)
-            {
-                value = BinarySearch(inpList, key);
-                if (value > -1)
-                {
-                    inpList.RemoveAt(value);
-                    if (value >= prevValue)
-                    {
-                        indices.Add(value + 1);
-                        m += 1;
-                    }
-                    else indices.Add(value);
-                }
-                prevValue = value;
-
-            }// end of while loop
-            return indices;
-        }
 
 
     

@@ -103,15 +103,10 @@ namespace SpacePlanning
                 }
                 else
                 {
-                    Trace.WriteLine("----------------");
-                    Trace.WriteLine("NonOrhto Start Point X : " + line.StartPoint.X + "   NonOrhto Start Point Y : " + line.StartPoint.Y);
-                    Trace.WriteLine("NonOrhto End Point X : " + line.EndPoint.X + "   NonOrhto End Point Y : " + line.EndPoint.Y);
-                    Trace.WriteLine("----------------");
                     countNonOrtho += 1;
                     nonOrthoLines.Add(line);
                 }
             }
-            Trace.WriteLine("Orhto lines are : " + countOrtho + "   Non ortho lines are : " + countNonOrtho);
             List<Line2d> selectedHLines = new List<Line2d>();
             List<Line2d> selectedVLines = new List<Line2d>();
             int hIndLow = TestGraphicsUtility.ReturnLowestPointFromList(hMidPt);
@@ -126,15 +121,17 @@ namespace SpacePlanning
             List<Line2d> allSplitLines = new List<Line2d>();
             allSplitLines.AddRange(selectedHLines);
             allSplitLines.AddRange(selectedVLines);
-
-            double[] splitLineLength = new double[allSplitLines.Count];
+            List<double> splitLineLength = new List<double>();
+            //double[] splitLineLength = new double[allSplitLines.Count];
             int[] unsortedIndices = new int[allSplitLines.Count];
             for (int i = 0; i < allSplitLines.Count; i++)
             {
-                splitLineLength[i] = allSplitLines[i].Length;
+                splitLineLength.Add(allSplitLines[i].Length);
+                //splitLineLength[i] = allSplitLines[i].Length;
                 unsortedIndices[i] = i;
             }
-            List<int> sortedIndices = BasicUtility.Quicksort(splitLineLength, unsortedIndices, 0, allSplitLines.Count - 1);
+            //List<int> sortedIndices = BasicUtility.Quicksort(splitLineLength, unsortedIndices, 0, allSplitLines.Count - 1);
+            List<int> sortedIndices = BasicUtility.Quicksort(splitLineLength);
             if (sortedIndices != null) sortedIndices.Reverse();
 
             List<Line2d> offsetLines = new List<Line2d>();
@@ -167,14 +164,9 @@ namespace SpacePlanning
             List<Line2d> allSplitLines = new List<Line2d>();
             Polygon2d polyBBox = Polygon2d.ByPoints(ReadData.FromPointsGetBoundingPoly(polyReg.Points));
             allSplitLines = polyBBox.Lines;
-            double[] splitLineLength = new double[allSplitLines.Count];
-            int[] unsortedIndices = new int[allSplitLines.Count];
-            for (int i = 0; i < allSplitLines.Count; i++)
-            {
-                splitLineLength[i] = allSplitLines[i].Length;
-                unsortedIndices[i] = i;
-            }
-            List<int> sortedIndices = BasicUtility.Quicksort(splitLineLength, unsortedIndices, 0, allSplitLines.Count - 1);
+            List<double> splitLineLength = new List<double>();
+            for (int i = 0; i < allSplitLines.Count; i++) splitLineLength.Add(allSplitLines[i].Length);
+            List<int> sortedIndices = BasicUtility.Quicksort(splitLineLength);
             if (sortedIndices != null) sortedIndices.Reverse();
 
             List<Line2d> offsetLines = new List<Line2d>();

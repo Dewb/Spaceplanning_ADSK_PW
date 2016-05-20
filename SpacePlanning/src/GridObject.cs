@@ -648,9 +648,10 @@ namespace SpacePlanning
             List<Cell> newCellLists = new List<Cell>();
             for (int i = 0; i < cellLists.Count; i++) newCellLists.Add(new Cell(cellLists[i]));
             List<Point2d> cellCenterPtLists = new List<Point2d>();
-            for (int i = 0; i < newCellLists.Count; i++) cellCenterPtLists.Add(newCellLists[i].CenterPoint);  
+            for (int i = 0; i < newCellLists.Count; i++) cellCenterPtLists.Add(newCellLists[i].CenterPoint);
 
-            double[] XYEquationList = new double[cellCenterPtLists.Count];
+            List<double> XYEquationList = new List<double>();
+           // double[] XYEquationList = new double[cellCenterPtLists.Count];
             int[] UnsortedIndices = new int[cellCenterPtLists.Count];
             double[] XCordCenterPt = new double[cellCenterPtLists.Count];
             double[] YCordCenterPt = new double[cellCenterPtLists.Count];
@@ -659,10 +660,12 @@ namespace SpacePlanning
             {
                 UnsortedIndices[i] = i;
                 XCordCenterPt[i] = cellCenterPtLists[i].X; YCordCenterPt[i] = cellCenterPtLists[i].Y;
-                XYEquationList[i] = EquationforXYLocation(cellCenterPtLists[i].X, cellCenterPtLists[i].Y);
+                //XYEquationList[i] = EquationforXYLocation(cellCenterPtLists[i].X, cellCenterPtLists[i].Y);
+                XYEquationList.Add(EquationforXYLocation(cellCenterPtLists[i].X, cellCenterPtLists[i].Y));
             }
-            List<int> SortedIndicesX = new List<int>(), SortedIndicesY = new List<int>(), SortedXYEquationIndices = new List<int>(); 
-            SortedXYEquationIndices = BasicUtility.Quicksort(XYEquationList, UnsortedIndices, 0, UnsortedIndices.Length - 1);
+            List<int> SortedIndicesX = new List<int>(), SortedIndicesY = new List<int>(), SortedXYEquationIndices = new List<int>();
+            //SortedXYEquationIndices = BasicUtility.Quicksort(XYEquationList, UnsortedIndices, 0, UnsortedIndices.Length - 1);
+            SortedXYEquationIndices = BasicUtility.Quicksort(XYEquationList);
             List<double> XYEquationLists = new List<double>();
             for (int k = 0; k < cellCenterPtLists.Count; k++) XYEquationLists.Add(XYEquationList[k]);
             List<Cell> sortedCells = new List<Cell>();
@@ -704,20 +707,20 @@ namespace SpacePlanning
 
                 //find index of down cell
                 double downValue = EquationforXYLocation(currentCenterPt.X, (currentCenterPt.Y - dimY));
-                int downCellIndex = BasicUtility.BinarySearchDouble(XYEquationLists, downValue);
+                int downCellIndex = BasicUtility.BinarySearch(XYEquationLists, downValue);
                 //if (downCellIndex == i) downCellIndex = -1;
                 //find index of left cell
                 double leftValue = EquationforXYLocation((currentCenterPt.X - dimX), currentCenterPt.Y);
-                int leftCellIndex = BasicUtility.BinarySearchDouble(XYEquationLists, leftValue);
+                int leftCellIndex = BasicUtility.BinarySearch(XYEquationLists, leftValue);
                // if (leftCellIndex == i) leftCellIndex = -1;
                 //find index of up cell
                 double upValue = EquationforXYLocation(currentCenterPt.X, (currentCenterPt.Y + dimY));
-                int upCellIndex = BasicUtility.BinarySearchDouble(XYEquationLists, upValue);
+                int upCellIndex = BasicUtility.BinarySearch(XYEquationLists, upValue);
                 //if (upCellIndex == i) upCellIndex = -1;
 
                 //find index of up cell
                 double rightValue = EquationforXYLocation((currentCenterPt.X + dimX), currentCenterPt.Y);
-                int rightCellIndex = BasicUtility.BinarySearchDouble(XYEquationLists, rightValue);
+                int rightCellIndex = BasicUtility.BinarySearch(XYEquationLists, rightValue);
                 //if (rightCellIndex == i) rightCellIndex = -1;
 
 
