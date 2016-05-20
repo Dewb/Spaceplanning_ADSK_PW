@@ -93,7 +93,7 @@ namespace SpacePlanning
         internal static Point2d NudgeLineMidPt(Line2d line, Polygon2d poly, double scale = 0.2)
         {
             Point2d midPt = LineMidPoint(line);
-            Point2d polyCenter = GraphicsUtility.CentroidInPointLists(poly.Points);
+            Point2d polyCenter = PointUtility.CentroidInPointLists(poly.Points);
             Vector2d vecToCenter = new Vector2d(midPt, polyCenter);
             Vector2d vecNormalized = vecToCenter.Normalize();
             Vector2d vecScaled = vecNormalized.Scale(scale);
@@ -141,7 +141,7 @@ namespace SpacePlanning
         internal static Line2d Move(Line2d line, List<Point2d> poly, double distance)
         {
             Point2d midPt = LineMidPoint(line);
-            Point2d centerPoly = GraphicsUtility.CentroidInPointLists(poly);
+            Point2d centerPoly = PointUtility.CentroidInPointLists(poly);
             Vector2d vecToCenter = new Vector2d(midPt, centerPoly);
             Vector2d vecToCenterN = vecToCenter.Normalize();
             Vector2d vectScaled = vecToCenter.Scale(distance);
@@ -149,6 +149,227 @@ namespace SpacePlanning
             Point2d start = new Point2d((line.StartPoint.X + vectScaled.X), (line.StartPoint.Y + vectScaled.Y));
             Point2d end = new Point2d((line.EndPoint.X + vectScaled.X), (line.EndPoint.Y + vectScaled.Y));
             return new Line2d(start, end);
+        }
+
+        //removes duplicate lines from a list, based on the lines from another list
+        internal static List<Line2d> RemoveDuplicateLinesBasedOnMidPt(List<Line2d> lineListOrig, List<Line2d> otherLineList)
+        {
+            List<Line2d> lineEditedList = new List<Line2d>();
+            for (int i = 0; i < lineListOrig.Count; i++) lineEditedList.Add(lineListOrig[i]);
+            List<bool> duplicateTagList = new List<bool>();
+            for (int i = 0; i < lineListOrig.Count; i++)
+            {
+                bool duplicate = false;
+                for (int j = 0; j < otherLineList.Count; j++)
+                {
+                    Point2d midPtOrig = LineUtility.LineMidPoint(lineListOrig[i]);
+                    Point2d midPtOther = LineUtility.LineMidPoint(otherLineList[j]);
+                    //if (midPtOrig.Compare(midPtOther)) { duplicate = true; break; }
+                    if (ValidateObject.CheckPointsWithinRange(midPtOrig, midPtOther, 4)) { duplicate = true; break; }
+                }
+                duplicateTagList.Add(duplicate);
+            }
+            int count = 0;
+            for (int i = 0; i < duplicateTagList.Count; i++)
+            {
+                if (duplicateTagList[i])
+                {
+                    lineEditedList.RemoveAt(i - count);
+                    count += 1;
+                }
+            }
+            return lineEditedList;
+        }
+
+        //removes duplicate lines from a list, based on line adjacency check
+        internal static List<Line2d> RemoveDuplicateLinesBasedOnAdjacency(List<Line2d> lineListOrig, List<Line2d> otherLineList)
+        {
+            List<Line2d> lineEditedList = new List<Line2d>();
+            for (int i = 0; i < lineListOrig.Count; i++) lineEditedList.Add(lineListOrig[i]);
+            List<bool> duplicateTagList = new List<bool>();
+            for (int i = 0; i < lineListOrig.Count; i++)
+            {
+                bool duplicate = false;
+                for (int j = 0; j < otherLineList.Count; j++)
+                {
+                    Point2d midPtOrig = LineUtility.LineMidPoint(lineListOrig[i]);
+                    Point2d midPtOther = LineUtility.LineMidPoint(otherLineList[j]);
+                    if (GraphicsUtility.LineAdjacencyCheck(lineListOrig[i], otherLineList[j])) { duplicate = true; break; }
+                }
+                duplicateTagList.Add(duplicate);
+            }
+            int count = 0;
+            for (int i = 0; i < duplicateTagList.Count; i++)
+            {
+                if (duplicateTagList[i])
+                {
+                    lineEditedList.RemoveAt(i - count);
+                    count += 1;
+                }
+            }
+            return lineEditedList;
+        }
+
+        //removes duplicate lines from the list
+        internal static List<Line2d> RemoveDuplicateLines(List<Line2d> networkLine)
+        {
+            List<Line2d> dummyLineList = new List<Line2d>();
+            List<bool> duplicateList = new List<bool>();
+            for (int i = 0; i < networkLine.Count; i++)
+            {
+                Line2d line = new Line2d(networkLine[i].StartPoint, networkLine[i].EndPoint);
+                dummyLineList.Add(line);
+                duplicateList.Add(false);
+            }
+            List<Line2d> cleanLines = new List<Line2d>();
+            for (int i = 0; i < networkLine.Count; i++)
+            {
+                Line2d lineA = networkLine[i];
+                for (int j = i + 1; j < networkLine.Count; j++)
+                {
+                    Line2d lineB = networkLine[j];
+                    bool checkDuplicacy = GraphicsUtility.LineAdjacencyCheck(lineA, lineB); ;
+                    if (checkDuplicacy)
+                    {
+                        double lenA = lineA.Length;
+                        double lenB = lineB.Length;
+                        if (lenA > lenB) duplicateList[j] = true;
+                        else duplicateList[i] = true;
+                    }
+                }
+            }
+            int count = 0;
+            for (int i = 0; i < duplicateList.Count; i++)
+            {
+                if (duplicateList[i] == true)
+                {
+                    dummyLineList.RemoveAt(i - count);
+                    count += 1;
+                }
+            }
+            return dummyLineList;
+        }
+
+        //removes duplicate lines from a list, based on the lines from another list
+        public static List<Line2d> RemoveDuplicateLinesFromAnotherList(List<Line2d> lineListOrig, List<Line2d> otherLineList)
+        {
+            //List<Line2d> lineEditedList = new List<Line2d>();
+            //for (int i = 0; i < lineListOrig.Count; i++) lineEditedList.Add(lineListOrig[i]);
+            List<Line2d> lineEditedList = lineListOrig.Select(x => new Line2d(x.StartPoint, x.EndPoint)).ToList(); // example of deep copy
+            if (otherLineList == null || otherLineList.Count == 0) return lineEditedList;
+
+            List<bool> duplicateTagList = new List<bool>();
+            for (int i = 0; i < lineListOrig.Count; i++)
+            {
+                bool duplicate = false;
+                for (int j = 0; j < otherLineList.Count; j++)
+                {
+                    if (lineListOrig[i].Compare(otherLineList[j])) { duplicate = true; break; }
+                }
+                duplicateTagList.Add(duplicate);
+            }
+            int count = 0;
+            for (int i = 0; i < duplicateTagList.Count; i++)
+            {
+                if (duplicateTagList[i])
+                {
+                    lineEditedList.RemoveAt(i - count);
+                    count += 1;
+                }
+            }
+            return lineEditedList;
+        }
+
+
+        //checks if two lines are same 
+        public static bool IsLineDuplicate(Line2d A, Line2d B)
+        {
+            bool check = false;
+            double eps = 0.1;
+            double mA = (A.EndPoint.Y - A.StartPoint.Y) / (A.EndPoint.X - A.StartPoint.X);
+            double mB = (B.EndPoint.Y - B.StartPoint.Y) / (B.EndPoint.X - B.StartPoint.X);
+            if ((mB - eps < mA && mA < mB + eps) || (mA - eps < mB && mB < mA + eps))
+            {
+                double intercA = A.StartPoint.Y - mA * A.StartPoint.X;
+                double intercB = B.StartPoint.Y - mB * B.StartPoint.X;
+                if ((intercA - eps < intercA && intercA < intercA + eps) || (intercB - eps < intercB && intercB < intercB + eps)) check = true;
+                else check = false;
+            }
+            return check;
+        }
+
+
+        //removes duplicates lines from a list of lines
+        public static List<Line2d> CleanLines(List<Line2d> lineList)
+        {
+            List<Line2d> cleanList = new List<Line2d>();
+            List<bool> taggedList = new List<bool>();
+            for (int i = 0; i < lineList.Count; i++)
+            {
+                Line2d lin = new Line2d(lineList[i].StartPoint, lineList[i].EndPoint);
+                cleanList.Add(lin);
+                taggedList.Add(false);
+            }
+
+            for (int i = 0; i < lineList.Count; i++)
+            {
+                double eps = 1;
+                Line2d lineA = lineList[i];
+                for (int j = i + 1; j < lineList.Count; j++)
+                {
+                    Line2d lineB = lineList[j];
+                    int orientA = ValidateObject.CheckLineOrient(lineA);
+                    int orientB = ValidateObject.CheckLineOrient(lineB);
+                    if (orientA != orientB) continue;
+                    else
+                    {
+                        Point2d midA = LineUtility.LineMidPoint(lineA);
+                        Point2d midB = LineUtility.LineMidPoint(lineB);
+                        if (orientA == 0)
+                        {
+                            //lines are horizontal                           
+                            if ((midA.Y - eps < midB.Y && midB.Y < midA.Y + eps) ||
+                                (midB.Y - eps < midA.Y && midA.Y < midB.Y + eps))
+                            {
+                                // lines are duplicate check length, whichever has longer length will be added to list
+                                double lenA = lineA.Length;
+                                double lenB = lineB.Length;
+                                if (lenA > lenB) taggedList[i] = true;
+                                else taggedList[j] = true;
+                            }// end of if statement
+                        }
+                        else
+                        {
+                            //lines are vertical
+                            if ((midA.X - eps < midB.X && midB.X < midA.X + eps) ||
+                               (midB.X - eps < midA.X && midA.X < midB.X + eps))
+                            {
+                                double lenA = lineA.Length;
+                                double lenB = lineB.Length;
+                                if (lenA > lenB) cleanList.Add(lineA);
+                                else cleanList.Add(lineB);
+                            }// end of if statement
+
+                        }
+                    }
+                }
+            }
+            return cleanList;
+        }
+
+
+
+        //flatten list of line2d
+        internal static List<Line2d> FlattenLine2dList(List<List<Line2d>> lineList)
+        {
+            if (lineList == null || lineList.Count == 0) return null;
+            List<Line2d> flatLineList = new List<Line2d>();
+            for (int i = 0; i < lineList.Count; i++)
+            {
+                if (lineList[i] != null)
+                    if (lineList[i].Count > 0) flatLineList.AddRange(lineList[i]);
+            }
+            return flatLineList;
         }
         #endregion
 

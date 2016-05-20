@@ -9,6 +9,25 @@ namespace SpacePlanning
 {
     internal class ValidateObject
     {
+        #region - Private Methods
+        // Given three colinear points p, q, r, the function checks if
+        // point q lies on line segment 'pr'
+        internal static bool CheckOnSegment(Point2d p, Point2d q, Point2d r)
+        {
+            if (q.X <= Math.Max(p.X, r.X) && q.X >= Math.Min(p.X, r.X) &&
+                q.Y <= Math.Max(p.Y, r.Y) && q.Y >= Math.Min(p.Y, r.Y)) return true;
+            return false;
+        }
+
+
+        // Given three colinear points p, q, r, the function checks if
+        // point q lies on line segment 'pr'
+        internal static bool CheckOnSegment(Line2d givenLine, Point2d q, double eps = 0)
+        {
+            if (givenLine == null || q == null) return false;
+            Point2d p = givenLine.StartPoint, r = givenLine.EndPoint;
+            return CheckOnSegment(p, q, r);
+        }
         //checks the ratio of the dimension of a poly bbox to be of certain proportion or not
         internal static bool CheckPolyBBox(Polygon2d poly, double num = 3)
         {
@@ -66,7 +85,7 @@ namespace SpacePlanning
 
         //iterate multiple times till theres is no notches in the poly
         [MultiReturn(new[] { "PolyReduced", "HasNotches", "Trials" })]
-        public static Dictionary<string, object> CheckPolyNotches(Polygon2d poly, double distance = 10)
+        internal static Dictionary<string, object> CheckPolyNotches(Polygon2d poly, double distance = 10)
         {
             if (!CheckPoly(poly)) return null;
             bool hasNotches = true;
@@ -74,7 +93,7 @@ namespace SpacePlanning
             Polygon2d currentPoly = new Polygon2d(poly.Points);
             while (hasNotches && count < maxTry)
             {
-                Dictionary<string, object> notchObject =PolygonUtility.RemoveMultipleNotches(currentPoly, distance);
+                Dictionary<string, object> notchObject = PolygonUtility.RemoveMultipleNotches(currentPoly, distance);
                 if (notchObject == null) continue;
                 currentPoly = (Polygon2d)notchObject["PolyReduced"];
                 for (int i = 0; i < poly.Lines.Count; i++)
@@ -87,7 +106,7 @@ namespace SpacePlanning
                 count += 1;
             }
 
-            Dictionary<string, object> singleNotchObj =PolygonUtility.RemoveSingleNotch(currentPoly, distance, currentPoly.Points.Count);
+            Dictionary<string, object> singleNotchObj = PolygonUtility.RemoveSingleNotch(currentPoly, distance, currentPoly.Points.Count);
             Polygon2d polyRed = (Polygon2d)singleNotchObj["PolyReduced"];
             if (!CheckPoly(polyRed)) { polyRed = poly; hasNotches = false; }
             return new Dictionary<string, object>
@@ -189,7 +208,7 @@ namespace SpacePlanning
 
         //check to see if a test point is towards the left or right of the point
         //if positive then the point is towards the left of the point
-        public static bool CheckPointSide(Line2d lineSegment, Point2d c)
+        internal static bool CheckPointSide(Line2d lineSegment, Point2d c)
         {
             Point2d a = lineSegment.StartPoint;
             Point2d b = lineSegment.EndPoint;
@@ -197,7 +216,7 @@ namespace SpacePlanning
         }
 
         //checks if two points are within a certain threshold region
-        public static bool CheckPointsWithinRange(Point2d ptA, Point2d ptB, double threshold = 2)
+        internal static bool CheckPointsWithinRange(Point2d ptA, Point2d ptB, double threshold = 2)
         {
             List<Point2d> squarePts = new List<Point2d>();
             squarePts.Add(Point2d.ByCoordinates(ptA.X + threshold, ptA.Y - threshold));//LR
@@ -208,6 +227,21 @@ namespace SpacePlanning
             return GraphicsUtility.PointInsidePolygonTest(squarePoly, ptB);
         }
 
+
+
+        //finds if line is horizontal or vertical
+        internal static bool CheckLineOrthogonal(Line2d line)
+        {
+            bool check = false;
+            Point2d p1 = line.StartPoint;
+            Point2d p2 = line.EndPoint;
+            double xDiff = p1.X - p2.X;
+            double yDiff = p1.Y - p2.Y;
+            if (xDiff == 0 || yDiff == 0) check = true;
+            return check;
+        }
+
+        #endregion
 
 
     }

@@ -693,7 +693,7 @@ namespace SpacePlanning
 
 
             //make the centralStation on second highest dept
-            Point2d centerPt = PolygonUtility.CentroidOfPoly(poly.Points);
+            Point2d centerPt = PolygonUtility.CentroidOfPoly(poly);
             Dictionary<string, object> centralPolyLists =LayoutUtility.MakeCentralStation(AllDeptPolys[1], centerPt);
             List<Polygon2d> polyReturned = new List<Polygon2d>();
             if (centralPolyLists != null)

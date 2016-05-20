@@ -182,24 +182,24 @@ namespace SpacePlanning
             }
 
             List<bool> getsExternalWall = new List<bool>();
-            Point2d buildingCenter = GraphicsUtility.CentroidInPointLists(borderPts);
-            List<Polygon2d> polyFlatList = GraphicsUtility.FlattenPolygon2dList(inPatientPoly);
+            Point2d buildingCenter = PointUtility.CentroidInPointLists(borderPts);
+            List<Polygon2d> polyFlatList = PolygonUtility.FlattenPolygon2dList(inPatientPoly);
             double dimPoly = 0, numTrues = 0, travelDistancePatientRms =0, arbLargeValue = 10000;
             for(int i = 0; i < polyFlatList.Count; i++)
             {
                 bool check = false;
-                Point2d cenPoly = GraphicsUtility.CentroidInPointLists(polyFlatList[i].Points);
+                Point2d cenPoly = PointUtility.CentroidInPointLists(polyFlatList[i].Points);
                 polyCenterList.Add(cenPoly);
                 List<double> spanList = PolygonUtility.GetSpansXYFromPolygon2d(polyFlatList[i].Points);
                 if (spanList[0] > spanList[1]) dimPoly = spanList[0];
                 else dimPoly = spanList[1];
                 double dimAdd = dim + dimPoly;
 
-                travelDistancePatientRms += GraphicsUtility.DistanceBetweenPoints(buildingCenter, cenPoly);
+                travelDistancePatientRms += PointUtility.DistanceBetweenPoints(buildingCenter, cenPoly);
 
                 for (int j = 0; j < borderPts.Count; j++)
                 {                    
-                    double distToCell = GraphicsUtility.DistanceBetweenPoints(borderPts[j], cenPoly);    
+                    double distToCell = PointUtility.DistanceBetweenPoints(borderPts[j], cenPoly);    
                     if (distToCell <= dimAdd) { check = true; numTrues += 1;  break; }
                 }
                 getsExternalWall.Add(check);

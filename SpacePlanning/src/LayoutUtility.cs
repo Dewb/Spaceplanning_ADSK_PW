@@ -110,8 +110,8 @@ namespace SpacePlanning
             List<Line2d> selectedVLines = new List<Line2d>();
             int hIndLow = TestGraphicsUtility.ReturnLowestPointFromList(hMidPt);
             int hIndHigh = TestGraphicsUtility.ReturnHighestPointFromList(hMidPt);
-            int vIndLow = GraphicsUtility.LowestPointFromList(vMidPt);
-            int vIndHigh = GraphicsUtility.HighestPointFromList(vMidPt);
+            int vIndLow = PointUtility.LowestPointFromList(vMidPt);
+            int vIndHigh = PointUtility.HighestPointFromList(vMidPt);
             if (hIndLow > -1) selectedHLines.Add(hLines[hIndLow]);
             if (hIndHigh > -1) selectedHLines.Add(hLines[hIndHigh]);
             if (vIndLow > -1) selectedVLines.Add(vLines[vIndLow]);
@@ -315,7 +315,7 @@ namespace SpacePlanning
                 int a = i, b = i + 1;
                 double eps = 0;
                 if (i == polyReg.Points.Count - 1) b = 0;
-                double distance = GraphicsUtility.DistanceBetweenPoints(polyReg.Points[a], polyReg.Points[b]);
+                double distance = PointUtility.DistanceBetweenPoints(polyReg.Points[a], polyReg.Points[b]);
                 List<double> spansSorted = PolygonUtility.GetPolySpan(containerPolyReg);
                 if (distance <= spansSorted[0] * 0.75) continue;
                 Line2d lineA = Line2d.ByStartPointEndPoint(polyReg.Points[a], polyReg.Points[b]);

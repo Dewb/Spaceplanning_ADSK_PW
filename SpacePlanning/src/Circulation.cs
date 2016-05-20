@@ -75,7 +75,7 @@ namespace SpacePlanning
                     }       
                 }
             }
-            List<Line2d> cleanNetworkLines = GraphicsUtility.RemoveDuplicateLines(networkLine);
+            List<Line2d> cleanNetworkLines = LineUtility.RemoveDuplicateLines(networkLine);
             cleanNetworkLines = GraphicsUtility.RemoveDuplicateslinesWithPoly(poly, cleanNetworkLines);
             List<List<string>> deptNeighborNames = new List<List<string>>();
             return new Dictionary<string, object>
@@ -93,7 +93,7 @@ namespace SpacePlanning
         public static Dictionary<string, object> MakeDeptCirculation(List<DeptData> deptData, List<List<Line2d>> lineList, double width = 8)
         {
             if (deptData == null || deptData.Count == 0 || lineList == null || lineList.Count == null) return null;
-            List<Line2d> cleanLineList = GraphicsUtility.FlattenLine2dList(lineList);
+            List<Line2d> cleanLineList = LineUtility.FlattenLine2dList(lineList);
             List<Polygon2d> allDeptPolyList = new List<Polygon2d>();
             List<Polygon2d> circulationPolyList = new List<Polygon2d>();
             List<Polygon2d> updatedDeptPolyList = new List<Polygon2d>();
@@ -188,14 +188,14 @@ namespace SpacePlanning
                     if ((bool)checkNeighbor["Neighbour"] == true) networkLine.Add((Line2d)checkNeighbor["SharedEdge"]);
                 }
             }
-            List<Line2d> cleanNetworkLines = GraphicsUtility.RemoveDuplicateLines(networkLine);
+            List<Line2d> cleanNetworkLines = LineUtility.RemoveDuplicateLines(networkLine);
             cleanNetworkLines = GraphicsUtility.RemoveDuplicateslinesWithPoly(polyOutline, cleanNetworkLines);
             List<List<string>> deptNeighborNames = new List<List<string>>();
 
             List<Line2d> onlyOrthoLineList = new List<Line2d>();
             for (int i = 0; i < cleanNetworkLines.Count; i++)
             {
-                bool checkOrtho = GraphicsUtility.IsLineOrthogonal(cleanNetworkLines[i]);
+                bool checkOrtho = ValidateObject.CheckLineOrthogonal(cleanNetworkLines[i]);
                 if (checkOrtho == true) onlyOrthoLineList.Add(cleanNetworkLines[i]);
             }
             return new Dictionary<string, object>

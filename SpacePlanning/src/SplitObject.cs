@@ -171,8 +171,8 @@ namespace SpacePlanning
             }
 
             //organize the points to make closed poly
-            List<Point2d> sortedA = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexA);
-            List<Point2d> sortedB = PolygonUtility.DoSortClockwise(poly, intersectedPoints, pIndexB);
+            List<Point2d> sortedA = PointUtility.DoSortClockwise(poly, intersectedPoints, pIndexA);
+            List<Point2d> sortedB = PointUtility.DoSortClockwise(poly, intersectedPoints, pIndexB);
             //List<Polygon2d> splittedPoly = PolygonUtility.OptimizePolyPoints(sortedA, sortedB, true, space);
             List<Polygon2d> splittedPoly = new List<Polygon2d> { new Polygon2d(sortedA, 0), new Polygon2d(sortedB, 0) };
             return new Dictionary<string, object>
@@ -198,7 +198,7 @@ namespace SpacePlanning
             List<Point2d> poly = PolygonUtility.SmoothPolygon(polyOrig, BuildLayout.SPACING);
             List<double> spans = PolygonUtility.GetSpansXYFromPolygon2d(poly);
             double horizontalSpan = spans[0], verticalSpan = spans[1];
-            Point2d polyCenter = PolygonUtility.CentroidOfPoly(poly);
+            Point2d polyCenter = PolygonUtility.CentroidOfPoly(Polygon2d.ByPoints(poly));
             if (horizontalSpan < minimumLength || verticalSpan < minimumLength) return null;
 
             if (horizontalSpan > verticalSpan) { dir = 1; aspectRatio = horizontalSpan / verticalSpan; }
@@ -262,7 +262,7 @@ namespace SpacePlanning
 
             List<Point2d> poly = PolygonUtility.SmoothPolygon(polyOrig, spacingProvided);
             if (!ValidateObject.CheckPointList(poly)) return null;
-            Dictionary<int, object> obj = PolygonUtility.PointSelector(ran, poly);
+            Dictionary<int, object> obj = PointUtility.PointSelector(ran, poly);
             Point2d pt = (Point2d)obj[0];
             int orient = (int)obj[1];
             Line2d splitLine = new Line2d(pt, extents, dir);
@@ -303,7 +303,7 @@ namespace SpacePlanning
             else { poly = PolygonUtility.SmoothPolygon(polyOrig, BuildLayout.SPACING2); }
 
             if (poly == null || poly.Count == 0) return null;
-            int lowInd = GraphicsUtility.LowestPointFromList(poly);
+            int lowInd = PointUtility.LowestPointFromList(poly);
             Point2d lowPt = poly[lowInd];
             Line2d splitLine = new Line2d(lowPt, extents, dir);
             if (dir == 0) splitLine = LineUtility.Move(splitLine, 0, 1 * distance);
@@ -410,7 +410,7 @@ namespace SpacePlanning
             List<Point2d> polyOrig = polyOutline.Points;
             List<Point2d> poly = PolygonUtility.SmoothPolygon(polyOrig, BuildLayout.SPACING);
             Line2d splitLine = new Line2d(inputLine);
-            Point2d centerPoly = GraphicsUtility.CentroidInPointLists(poly);
+            Point2d centerPoly = PointUtility.CentroidInPointLists(poly);
             bool checkSide = ValidateObject.CheckPointSide(splitLine, centerPoly);
             int orient = ValidateObject.CheckLineOrient(splitLine);
             if (orient == 0)

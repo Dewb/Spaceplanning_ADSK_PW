@@ -146,7 +146,7 @@ namespace SpacePlanning
                 for (int j = 0; j < furniturePoints.Count; j++)
                 {
                     Point2d pt2Furniture = ConvertToPoint2d(furniturePoints[j]);
-                    double distance = GraphicsUtility.DistanceBetweenPoints(pt2Furniture, pt2FloorPt);
+                    double distance = PointUtility.DistanceBetweenPoints(pt2Furniture, pt2FloorPt);
                     if (distance < threshDist) selectedPts.Add(furniturePoints[j]);
                 }// end of j for loop   
                 if (selectedPts.Count > 1) lightPoints.AddRange(selectedPts);
@@ -181,7 +181,7 @@ namespace SpacePlanning
                 for (int j = 0; j < furniturePoints.Count; j++)
                 {
                     Point2d pt2Furniture = ConvertToPoint2d(furniturePoints[j]);
-                    double distance = GraphicsUtility.DistanceBetweenPoints(pt2Furniture, pt2FloorPt);
+                    double distance = PointUtility.DistanceBetweenPoints(pt2Furniture, pt2FloorPt);
                     distList.Add(distance);
                     if (distance < threshDist) selectedPts.Add(furniturePoints[j]);
                 }// end of j for loop   
@@ -241,7 +241,7 @@ namespace SpacePlanning
                 {
                     Point2d ptLight2d = ConvertToPoint2d(lightPts[i]);
                     Point2d ptObserver2d = ConvertToPoint2d(observer);
-                    double distance = GraphicsUtility.DistanceBetweenPoints(ptLight2d, ptObserver2d);
+                    double distance = PointUtility.DistanceBetweenPoints(ptLight2d, ptObserver2d);
                     guthPos = distance;
 
                     Point3d lightPt1 = new Point3d((lightPts[i].X - lightSize), (lightPts[i].Y - lightSize), lightPts[i].Z);

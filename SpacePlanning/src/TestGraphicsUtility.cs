@@ -31,16 +31,16 @@ namespace SpacePlanning
             if (o1 != o2 && o3 != o4)
                 return false;
             // p1, q1 and p2 are colinear and p2 lies on segment p1q1
-            if (o1 == 0 && GraphicsUtility.OnSegment(p1, p2, q1)) return true;
+            if (o1 == 0 && ValidateObject.CheckOnSegment(p1, p2, q1)) return true;
 
             // p1, q1 and p2 are colinear and q2 lies on segment p1q1
-            if (o2 == 0 && GraphicsUtility.OnSegment(p1, q2, q1)) return true;
+            if (o2 == 0 && ValidateObject.CheckOnSegment(p1, q2, q1)) return true;
 
             // p2, q2 and p1 are colinear and p1 lies on segment p2q2
-            if (o3 == 0 && GraphicsUtility.OnSegment(p2, p1, q2)) return true;
+            if (o3 == 0 && ValidateObject.CheckOnSegment(p2, p1, q2)) return true;
 
             // p2, q2 and q1 are colinear and q1 lies on segment p2q2
-            if (o4 == 0 && GraphicsUtility.OnSegment(p2, q1, q2)) return true;
+            if (o4 == 0 && ValidateObject.CheckOnSegment(p2, q1, q2)) return true;
             return false; // Doesn't fall in any of the above cases
         }
 
@@ -129,7 +129,7 @@ namespace SpacePlanning
                     double xE = (edge.StartPoint.X + edge.EndPoint.X) / 2;
                     double yE = (edge.StartPoint.Y + edge.EndPoint.Y) / 2;
                     Point2d EdgeMidPt = new Point2d(xE, yE);
-                    double checkDist = GraphicsUtility.DistanceBetweenPoints(centerPt, EdgeMidPt);
+                    double checkDist = PointUtility.DistanceBetweenPoints(centerPt, EdgeMidPt);
                     try
                     {
                         sortedIntersectionLines.Add(checkDist, edge);
@@ -255,14 +255,26 @@ namespace SpacePlanning
             return index;
 
         }
-        
+
+
+        //make polygon2d on grids
+        public static Polygon2d MakeSquarePolygon2dFromCenterSide(Point2d centerPt, double side)
+        {
+            List<Point> ptList = MakeSquarePointsFromCenterSide(centerPt, side);
+            List<Point2d> pt2dList = new List<Point2d>();
+            for (int i = 0; i < ptList.Count; i++)
+            {
+                pt2dList.Add(new Point2d(ptList[i].X, ptList[i].Y));
+            }
+            return Polygon2d.ByPoints(pt2dList);
+        }
         //changes the center of one or both polys to ensure correct intersection line is found
         [MultiReturn(new[] { "CenterPolyA", "CenterPolyB", "PolyA", "PolyB" })]
         internal static Dictionary<string, object> ComputePolyCentersAlign(Polygon2d polyA, Polygon2d polyB)
         {
             //compute orig centers
-            Point2d centerPolyA = GraphicsUtility.CentroidInPointLists(polyA.Points);
-            Point2d centerPolyB = GraphicsUtility.CentroidInPointLists(polyB.Points);
+            Point2d centerPolyA = PointUtility.CentroidInPointLists(polyA.Points);
+            Point2d centerPolyB = PointUtility.CentroidInPointLists(polyB.Points);
 
             Point2d staticPoint, movingPoint;
             Polygon2d staticPoly, movingPoly;
@@ -343,14 +355,14 @@ namespace SpacePlanning
             Point2d projectedPtOnPolyReg = GraphicsUtility.ProjectedPointOnLine(lineInPolyReg, centerPoly);
             Point2d projectedPtOnOtherReg = GraphicsUtility.ProjectedPointOnLine(lineInOtherReg, centerOther);
 
-            double dist1 = GraphicsUtility.DistanceBetweenPoints(centerPoly, projectedPtOnPolyReg);
-            double dist2 = GraphicsUtility.DistanceBetweenPoints(centerOther, projectedPtOnOtherReg);
+            double dist1 = PointUtility.DistanceBetweenPoints(centerPoly, projectedPtOnPolyReg);
+            double dist2 = PointUtility.DistanceBetweenPoints(centerOther, projectedPtOnOtherReg);
 
             double totalDistance = 2 * (dist1 + dist2);
             Line2d lineMoved = new Line2d(lineInPolyReg.StartPoint, lineInPolyReg.EndPoint);
             lineMoved = LineUtility.Move(lineMoved, centerPoly);
             Point2d projectedPt = GraphicsUtility.ProjectedPointOnLine(lineMoved, centerOther);
-            double distance = GraphicsUtility.DistanceBetweenPoints(projectedPt, centerOther);
+            double distance = PointUtility.DistanceBetweenPoints(projectedPt, centerOther);
 
             bool isNeighbour = false;
             if (totalDistance - eps < distance && distance < totalDistance + eps) isNeighbour = true;

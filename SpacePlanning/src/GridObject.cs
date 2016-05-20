@@ -39,7 +39,7 @@ namespace SpacePlanning
         {
             List<Point2d> pointsGrid = new List<Point2d>();
             List<Cell> cells = new List<Cell>();
-            Range2d xyRange = GraphicsUtility.FromPoint2dGetRange2D(bbox);
+            Range2d xyRange = PointUtility.FromPoint2dGetRange2D(bbox);
 
             double xDistance = xyRange.Xrange.Span;
             double yDistance = xyRange.Yrange.Span;
@@ -232,15 +232,15 @@ namespace SpacePlanning
             List<Point2d> convexHullPtList = new List<Point2d>();
             int sizePtList = ptList.Count;
             //get the lowest point in the list and place it on 0 index
-            GraphicsUtility.FindLowestPointFromList(ref ptList, sizePtList);
-            GraphicsUtility.SortedPoint2dList(ref ptList, sizePtList);
+            PointUtility.GetLowestPointForGrahamsScan(ref ptList, sizePtList);
+            PointUtility.SortedPoint2dListForGrahamScan(ref ptList, sizePtList);
             Stack tempStack = new Stack();
             tempStack.Push(ptList[0]);
             tempStack.Push(ptList[1]);
             tempStack.Push(ptList[2]);
             for (int i = 3; i < sizePtList; i++)
             {
-                while (ValidateObject.CheckPointOrder(GraphicsUtility.BeforeTopPoint(ref tempStack),
+                while (ValidateObject.CheckPointOrder(PointUtility.BeforeTopPointForGrahamScan(ref tempStack),
                     (Point2d)tempStack.Peek(), ptList[i]) != 2 && tempStack.Count > 1)
                 {
                     tempStack.Pop();
@@ -265,7 +265,7 @@ namespace SpacePlanning
             double eps = 25, extension = 300;
             double distanceX = mul * dim, distanceY = mul * dim;
 
-            Dictionary<string, object> lowHighObj = GraphicsUtility.ReturnHighestAndLowestPointofBBox(poly);
+            Dictionary<string, object> lowHighObj = PointUtility.ReturnHighestAndLowestPointofBBox(poly);
             Point2d lowPt = (Point2d)lowHighObj["LowerPoint"];
             Point2d hipt = (Point2d)lowHighObj["HigherPoint"];
             List<Point2d> pointXList = new List<Point2d>(), pointYList = new List<Point2d>();
@@ -499,7 +499,7 @@ namespace SpacePlanning
             List<Point2d> borderPolyPoints = new List<Point2d>();
             List<Point2d> borderPolyThroughCenter = new List<Point2d>();
             for (int i = 0; i < cellList.Count; i++) cenPtBorderCells.Add(cellList[i].CenterPoint);
-            int lowestCellId = GraphicsUtility.LowestPointFromList(cenPtBorderCells);
+            int lowestCellId = PointUtility.LowestPointFromList(cenPtBorderCells);
             Cell currentCell = cellList[lowestCellId];
             Point2d currentCellPoint = currentCell.LeftDownCorner;
             Point2d currentCellCenter = currentCell.CenterPoint;
@@ -729,7 +729,7 @@ namespace SpacePlanning
         internal static List<Point2d> GridPointsFromBBoxNew(List<Point2d> bbox, double dimXX, double dimYY, double a, double b)
         {
             List<Point2d> pointsGrid = new List<Point2d>();
-            Range2d xyRange = GraphicsUtility.FromPoint2dGetRange2D(bbox);
+            Range2d xyRange = PointUtility.FromPoint2dGetRange2D(bbox);
             double xDistance = xyRange.Xrange.Span;
             double yDistance = xyRange.Yrange.Span;
 

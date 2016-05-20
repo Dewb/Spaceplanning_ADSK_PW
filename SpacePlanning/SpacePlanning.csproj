@@ -111,6 +111,7 @@
     <Compile Include="src\GlareVisualization.cs" />
     <Compile Include="src\LayoutUtility.cs" />
     <Compile Include="src\LineUtility.cs" />
+    <Compile Include="src\PointUtility.cs" />
     <Compile Include="src\Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

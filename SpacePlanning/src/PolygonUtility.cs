@@ -16,8 +16,8 @@ namespace SpacePlanning
         {
             List<Point2d> returnPts = new List<Point2d>();
             List<Point2d> ptList = poly.Points;
-            int highPtInd = GraphicsUtility.HighestPointFromList(ptList);
-            int lowPtInd = GraphicsUtility.LowestPointFromList(ptList);
+            int highPtInd = PointUtility.HighestPointFromList(ptList);
+            int lowPtInd = PointUtility.LowestPointFromList(ptList);
             returnPts.Add(ptList[lowPtInd]);
             returnPts.Add(ptList[highPtInd]);
             return returnPts;
@@ -36,7 +36,6 @@ namespace SpacePlanning
             }
             return cleanPolyList;
         }
-
         
         // sorts a list of polygons from a point and returns the indices 
         internal static List<int> SortPolygonsFromAPoint(List<Polygon2d> polygonsList, Point2d centerPt)
@@ -46,60 +45,16 @@ namespace SpacePlanning
             {
                 if (polygonsList[i] == null || polygonsList[i].Points == null || polygonsList[i].Points.Count == 0)
                     continue;
-                Point2d cen = PolygonUtility.CentroidOfPoly(polygonsList[i]);
-                double distance = GraphicsUtility.DistanceBetweenPoints(cen, centerPt);
+                Point2d cen = CentroidOfPoly(polygonsList[i]);
+                double distance = PointUtility.DistanceBetweenPoints(cen, centerPt);
                 distanceList.Add(distance);
             }
             List<int> indices = BasicUtility.SortIndex(distanceList);
             return indices;
         }
 
-    
-        //cleans duplicate points and returns updated list - using this now
-        internal static List<Point2d> CleanDuplicatePoint2d(List<Point2d> ptListUnclean)
-        {
-            List<Point2d> cleanList = new List<Point2d>();
-            List<double> exprList = new List<double>();
-            double a = 45, b = 65;
-            for (int i = 0; i < ptListUnclean.Count; i++)
-            {
-                double expr = a * ptListUnclean[i].X + b * ptListUnclean[i].Y;
-                exprList.Add(expr);
-            }
 
-            var dups = exprList.GroupBy(x => x)
-            .Where(x => x.Count() > 1)
-            .Select(x => x.Key)
-            .ToList();
 
-            List<double> distinct = exprList.Distinct().ToList();
-            for (int i = 0; i < distinct.Count; i++)
-            {
-                double dis = distinct[i];
-                for (int j = 0; j < exprList.Count; j++)
-                {
-                    if (dis == exprList[j])
-                    {
-                        cleanList.Add(ptListUnclean[j]);
-                        break;
-                    }
-                }
-            }
-            return cleanList;
-
-        }
-        
-        //sort points clockwise direction
-        internal static List<Point2d> DoSortClockwise(List<Point2d> poly, List<Point2d> intersectedPoints, List<int> pIndex)
-        {
-            if (intersectedPoints == null || intersectedPoints.Count == 0) return null;
-            List<Point2d> cleanedPtList = new List<Point2d>();
-            if (intersectedPoints.Count > 2) cleanedPtList = CleanDuplicatePoint2d(intersectedPoints);
-            else cleanedPtList = intersectedPoints;
-            //Trace.WriteLine("Found Intersections : " + cleanedPtList.Count);
-            return OrderPolygon2dPoints(poly, cleanedPtList, pIndex); //intersectedPoints
-        }
-                
         //orders the points to form a closed polygon2d
         internal static List<Point2d> OrderPolygon2dPoints(List<Point2d> poly, List<Point2d> intersectedPoints, List<int> pIndex)
         {
@@ -113,7 +68,7 @@ namespace SpacePlanning
                 pt.Add(poly[pIndex[i]]);
                 if (Math.Abs(pIndex[i] - pIndex[i + 1]) > 1 && added == false)
                 {
-                    List<Point2d> intersNewList = GraphicsUtility.SortPointsByDistanceFromPoint(intersectedPoints,
+                    List<Point2d> intersNewList = PointUtility.SortPointsByDistanceFromPoint(intersectedPoints,
                         poly[pIndex[i]]);
                     pt.Add(intersNewList[a]);
                     pt.Add(intersNewList[b]);
@@ -123,7 +78,7 @@ namespace SpacePlanning
                 if (i == (pIndex.Count - 2) && added == false)
                 {
                     pt.Add(poly[pIndex[i + 1]]);
-                    List<Point2d> intersNewList = GraphicsUtility.SortPointsByDistanceFromPoint(intersectedPoints,
+                    List<Point2d> intersNewList = PointUtility.SortPointsByDistanceFromPoint(intersectedPoints,
                              poly[pIndex[i + 1]]);
                     pt.Add(intersNewList[a]);
                     pt.Add(intersNewList[b]);
@@ -133,7 +88,6 @@ namespace SpacePlanning
             }
             return pt;
         }
-
 
         //get a polygonlist and sort based on area
         internal static List<Polygon2d> SortPolygonList(List<Polygon2d> polyList)
@@ -145,8 +99,7 @@ namespace SpacePlanning
             List<Polygon2d> sortedPolys = new List<Polygon2d>();
             for (int i = 0; i < polyList.Count; i++) sortedPolys.Add(polyList[sortedIndices[i]]);
             return sortedPolys;
-        }
-     
+        }     
  
         //finds the outerlines of a polygon, except the extreme max and min lines in its x and y axis
         public static List<Line2d> GetOuterLines(Polygon2d polyReg)
@@ -178,9 +131,9 @@ namespace SpacePlanning
             //int hIndLow = GraphicsUtility.ReturnLowestPointFromListNew(hMidPt);
             //int hIndHigh = GraphicsUtility.ReturnHighestPointFromListNew(hMidPt);
             int hIndLow = TestGraphicsUtility.ReturnLowestPointFromList(hMidPt);
-            int hIndHigh = GraphicsUtility.HighestPointFromList(hMidPt);
-            int vIndLow = GraphicsUtility.LowestPointFromList(vMidPt);
-            int vIndHigh = GraphicsUtility.HighestPointFromList(vMidPt);
+            int hIndHigh = PointUtility.HighestPointFromList(hMidPt);
+            int vIndLow = PointUtility.LowestPointFromList(vMidPt);
+            int vIndHigh = PointUtility.HighestPointFromList(vMidPt);
             hLines.RemoveAt(hIndLow);
             hLines.RemoveAt(hIndHigh);
             vLines.RemoveAt(vIndLow);
@@ -191,6 +144,21 @@ namespace SpacePlanning
             return allSplitLines;
 
         }
+
+
+        //flatten list of polygon2d
+        internal static List<Polygon2d> FlattenPolygon2dList(List<List<Polygon2d>> polyList)
+        {
+            if (polyList == null) return null;
+            List<Polygon2d> flatPolyList = new List<Polygon2d>();
+            for (int i = 0; i < polyList.Count; i++)
+            {
+                if (polyList[i] != null)
+                    if (polyList[i].Count > 0) flatPolyList.AddRange(polyList[i]);
+            }
+            return flatPolyList;
+        }
+
 
         //get a poly and find rectangular polys inside. then merge them together to form a big poly 
         [MultiReturn(new[] { "WholesomePolys", "PolysAfterSplit", "AllSplitLines"})]
@@ -292,29 +260,7 @@ namespace SpacePlanning
             return sides;
         }
 
-
-        //random point selector from a list
-        public static Dictionary<int, object> PointSelector(Random ran, List<Point2d> poly)
-        {
-            Dictionary<int, object> output = new Dictionary<int, object>();
-            double num = ran.NextDouble();
-            int highInd = GraphicsUtility.HighestPointFromList(poly);
-            Point2d hiPt = poly[highInd];
-            int lowInd = GraphicsUtility.LowestPointFromList(poly);
-            Point2d lowPt = poly[lowInd];
-            if (num < 0.5)
-            {
-                output[0] = lowPt;
-                output[1] = 1;
-            }
-            else
-            {
-                output[0] = hiPt; //hiPt
-                output[1] = -1; //lowPt
-            }
-            return output;
-        }
-
+  
         //gets two point lists , adds or optimizes the number of points and merges the pointlist together
         internal static List<Polygon2d> OptimizePolyPoints(List<Point2d> sortedA, List<Point2d> sortedB,
         bool tag = false, double spacing = 0)
@@ -525,17 +471,11 @@ namespace SpacePlanning
 
         }
 
-
         //calc centroid of a closed polygon2d
         public static Point2d CentroidOfPoly(Polygon2d poly)
         {
-            if (poly == null || poly.Points == null || poly.Points.Count == 0) return null;
-            return CentroidOfPoly(poly.Points);
-        }
-        
-        //calc centroid of a closed polygon2d
-        public static Point2d CentroidOfPoly(List<Point2d> ptList)
-        {
+            if (!ValidateObject.CheckPoly(poly)) return null;
+            List<Point2d> ptList = poly.Points;
             double x = 0, y = 0;
             for (int i = 0; i < ptList.Count; i++)
             {
@@ -548,10 +488,9 @@ namespace SpacePlanning
             ptList = null;
             return cen;
 
-        }
-        
+        }        
       
-        //gets the spans in both dir for a polygon2d
+        //gets the spans in both dir for a polygon2d - repeated 
         internal static List<double> GetSpansXYFromPolygon2d(List<Point2d> poly)
         {
             if (poly == null || poly.Count == 0)
@@ -596,8 +535,7 @@ namespace SpacePlanning
             Range1d ran1Y = new Range1d(yMin, yMax);
             Range2d ran2D = new Range2d(ran1X, ran1Y);
             return ran2D;
-        }
-        
+        }        
 
         //checks all lines of a polyline, if orthogonal or not, if not makes the polyline orthogonal
         public static Polygon2d CreateOrthoPoly(Polygon2d nonOrthoPoly)
@@ -644,7 +582,6 @@ namespace SpacePlanning
                 smoothPolyList.Add(new Polygon2d(SmoothPolygon(polyList[i].Points, spacingProvided), 0));
             return smoothPolyList;
         }
-
 
         //smoothens a polygon2d by adding point2d to a given poly
         public static List<Point2d> SmoothPolygon(List<Point2d> pointList, double spacingProvided = 1)
@@ -693,7 +630,6 @@ namespace SpacePlanning
             if (value) return Math.Abs(area / 2);
             else return area / 2;
         }
-
 
         //find if two polys are adjacent, and if yes, then returns the common edge between them
         [MultiReturn(new[] { "Neighbour", "SharedEdge" })]
