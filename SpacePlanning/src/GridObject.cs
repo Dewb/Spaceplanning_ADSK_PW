@@ -397,7 +397,7 @@ namespace SpacePlanning
 
         //get the cells and make an orthogonal outline poly - not using now, but works best
         [MultiReturn(new[] { "BorderPolyLine", "BorderCellsFound" })]
-        public static Dictionary<string,object> CreateBorder(List<List<int>> cellNeighborMatrix, List<Cell> cellList, bool tag = true)
+        internal static Dictionary<string,object> CreateBorder(List<List<int>> cellNeighborMatrix, List<Cell> cellList, bool tag = true)
         {
             if (cellList == null || cellList.Count == 0) return null;
             //get the id of the lowest left cell centroid from all the boundary cells
@@ -617,7 +617,7 @@ namespace SpacePlanning
 
       
         //finds any id issues in the cellNeighborMatrix
-        public static List<bool> FindProblemsInCellNeighbors(List<List<int>> cellNeighborMatrix)
+        internal static List<bool> FindProblemsInCellNeighbors(List<List<int>> cellNeighborMatrix)
         {
             List<bool> isErrorList = new List<bool>();
             for(int i = 0; i < cellNeighborMatrix.Count; i++)

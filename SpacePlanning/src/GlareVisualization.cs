@@ -147,8 +147,7 @@ namespace SpacePlanning
             }
             return cellNewList;
         }
-
-
+        
 
         //computes the UGR value
         public static double CalculateUGR(List<Point3d> lightPts, Point3d observer, List<double> posList, double lightSize=2, double recompute = 1)
@@ -214,8 +213,6 @@ namespace SpacePlanning
         }
 
         
-
-
         //compute glare  values
         public static List<List<double>> ComputeGlareValues(List<Point3d> floorPoints,List<Point3d> furniturePoints,
             List<Point3d> lightPoints, double threshDist = 10,  double lightSize = 3, double numSpecialLights = 2, double recompute =1)

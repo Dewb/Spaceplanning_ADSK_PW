@@ -352,14 +352,14 @@ namespace SpacePlanning
 
         #region - Private Methods  
         //gets and sets the space between points for any smoothened polygon2d
-        internal double SPACINGOrig
+        internal double SPACINGORIG
         {
             get { return SPACING; }
             set { SPACING = value; }
         }
 
         //gets and sets the space between points for any smoothened polygon2d
-        internal double SPACINGAnother
+        internal double SPACINGANOTHER
         {
             get { return SPACING2; }
             set { SPACING2 = value; }
@@ -393,7 +393,7 @@ namespace SpacePlanning
     
         //splits a polygon based on offset direction
         [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly", "LineOptions", "SortedLengths" })]
-        public static Dictionary<string, object> CreateBlocksByLines(Polygon2d polyOutline, Polygon2d containerPoly, double distance = 10, double minDist = 20,bool tag = true)
+        internal static Dictionary<string, object> CreateBlocksByLines(Polygon2d polyOutline, Polygon2d containerPoly, double distance = 10, double minDist = 20,bool tag = true)
         {
             if (!PolygonUtility.CheckPoly(polyOutline)) return null;
             Polygon2d poly = new Polygon2d(polyOutline.Points,0);

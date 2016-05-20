@@ -54,7 +54,7 @@ namespace SpacePlanning
             List<int> indexList = new List<int>();
             double range = highValue - lowValue;
             for (int n = 0; n < numList.Count; n++) indexList.Add(n);
-            List<int> sortedIndices = Quicksort(numList, indexList, 0, numList.Count - 1);
+            List<int> sortedIndices = Quicksort(numList);
             sortedIndices.Reverse();
             double maxAng = numList[sortedIndices[0]];
             List<double> numListNormalized = new List<double>();
@@ -63,11 +63,14 @@ namespace SpacePlanning
         }
 
         //quicksort algorithm with list input
-        internal static List<int> Quicksort(List<double> aList,List<int> indexList, int left, int right)
+        public static List<int> Quicksort(List<double> aList)
         {
+
+            List<int> indexList = new List<int>();
+            for(int n = 0;  n< aList.Count; n++) indexList.Add(n);
+            int left = 0, right = aList.Count - 1;
             double[] a = new double[aList.Count];
             int[] index = new int[indexList.Count];
-
             for (int m = 0; m < aList.Count; m++)
             {
                 a[m] = aList[m];
@@ -97,11 +100,7 @@ namespace SpacePlanning
             Quicksort(a, index, left, i - 1);
             Quicksort(a, index, i + 1, right);
             List<int> sortedIndex = new List<int>();
-            for(int j = 0; j < index.Length; j++)
-            {
-                sortedIndex.Add(index[j]);
-            }
-
+            for(int j = 0; j < index.Length; j++) sortedIndex.Add(index[j]);
             return sortedIndex;
         }
 
@@ -249,20 +248,7 @@ namespace SpacePlanning
         }
 
 
-        // test quick sort algorithm
-        internal static List<int> TestQuickSort(double[] main = null, int[] index = null, int tag = 1)
-        {
-            int left = 0;
-            int right = index.Length - 1;
-            int[] newIndex = new int[index.Length];
-            for (int i = 0; i < index.Length; i++)
-            {
-                newIndex[i] = index[i];
-            }
-
-            return Quicksort(main, newIndex, left, right);
-        }
-
+    
 
 
     }
