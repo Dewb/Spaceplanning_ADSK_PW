@@ -76,11 +76,13 @@ namespace SpacePlanning
             if (other.PolyProgAssigned != null) _polyProgs = other.PolyProgAssigned;
             else _polyProgs = null;            
         }
+
         public List<Polygon2d> PolyProgAssigned
         {
             get { return _polyProgs; }
             set { _polyProgs = value; }
         }
+
         public List<Cell> ProgramCells
         {
             get { return _CellsAssigned; }
@@ -139,14 +141,11 @@ namespace SpacePlanning
             
         }
 
-
         public double CurrentAreaNeeds
         {
             get { return _progUnitArea - _areaGiven; }
 
         }
-
-
 
         public double AreaProvided
         {
@@ -163,8 +162,6 @@ namespace SpacePlanning
             get { return _numCellAdded; }
             set { _numCellAdded = value; }
         }
-
-
       
         public bool IsAreaSatisfied
         {
@@ -178,8 +175,7 @@ namespace SpacePlanning
                 _IsAreaSatsifed = value;
             }
             
-        }
-   
+        }   
 
         public string ProgramName
         {
@@ -196,7 +192,8 @@ namespace SpacePlanning
             get { return _gridY; }
         }
 
-        //CALC THE AREA ALLOCATED
+        #region - Private Methods
+        //calc area allocated per program element
         internal void CalcAreaAllocated()
         {
             _numCellAdded += 1;
@@ -204,8 +201,7 @@ namespace SpacePlanning
 
         }
 
-
-        //ALLOCATE CELLS TO THE PROGRAM
+        //allocate cells to the program
         internal void CellAssign(List<Cell> inputCellList)
         {
             _CellsAssigned = inputCellList;
@@ -213,7 +209,7 @@ namespace SpacePlanning
             NumberofCellsAdded = _numCellAdded;
         }
 
-        //ALLOCATE CELLS TO THE PROGRAM
+        //allocate cells to the program
         internal void CellAssignPerItem(Cell cellItem)
         {
             _CellsAssigned.Add(cellItem);
@@ -221,8 +217,8 @@ namespace SpacePlanning
             NumberofCellsAdded = _numCellAdded;
         }
 
-        //CALC NUMBER OF CELLS NEEDED TO PLACE EACH PROGRAM
-        public int NumCellsNeeded()
+        //calc number of cells needed
+        internal int NumCellsNeeded()
         {
             int num = 0;
             double cellArea = _gridX * _gridY;
@@ -230,11 +226,13 @@ namespace SpacePlanning
             return num;
         }
 
+        //call area added to each prog
         internal void AddAreaToProg(double area)
         {
             _areaGiven += area;
         }
+        #endregion
 
-     
+
     }
 }

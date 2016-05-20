@@ -15,69 +15,7 @@ namespace SpacePlanning
     public class ReadData
     {
 
-        #region - Public Methods
-
-
-
-
-
-
-        //sorts a program data inside dept data based on pREFERENCEPOINT 
-        //[MultiReturn(new[] { "UpdatedDeptData", "KeyList" })]
-        public static List<DeptData> SortProgramsByPrefInDept(List<DeptData> deptDataInp)
-        {
-            if (deptDataInp == null) return null;
-            List<DeptData> deptData = new List<DeptData>();
-            for (int i = 0; i < deptDataInp.Count; i++) deptData.Add(new DeptData(deptDataInp[i]));
-            double eps = 01, inc = 0.01;
-            for (int i = 0; i < deptData.Count; i++)
-            {
-                DeptData deptItem = deptData[i];
-                List<ProgramData> sortedProgramData = new List<ProgramData>();
-                List<ProgramData> progItems = deptItem.ProgramsInDept;
-                SortedDictionary<double, ProgramData> sortedPrograms = new SortedDictionary<double, ProgramData>();
-                List<double> keys = new List<double>();
-                for (int j = 0; j < progItems.Count; j++)
-                {
-                    double key = progItems[j].ProgPrefValue + eps;
-                    sortedPrograms.Add(key, progItems[j]);
-                    eps += inc;
-                }
-                eps = 0;
-                foreach (KeyValuePair<double, ProgramData> p in sortedPrograms) sortedProgramData.Add(p.Value);
-                sortedProgramData.Reverse();
-                deptItem.ProgramsInDept = sortedProgramData;
-
-            }
-            List<DeptData> newDept = new List<DeptData>();
-            for (int i = 0; i < deptData.Count; i++) newDept.Add(new DeptData(deptData[i]));
-            return newDept;
-        }
-
-
-
-
-
-        //sorts a deptdata based on area 
-        internal static List<DeptData> SortDeptData(List<DeptData> deptData)
-        {
-            SortedDictionary<double, DeptData> sortedD = new SortedDictionary<double, DeptData>();
-            for (int i = 0; i < deptData.Count; i++) sortedD.Add(deptData[i].DeptAreaNeeded, deptData[i]);
-
-            List<DeptData> sortedDepartmentData = new List<DeptData>();
-            foreach (KeyValuePair<double, DeptData> p in sortedD) sortedDepartmentData.Add(p.Value);
-            sortedDepartmentData.Reverse();
-            return sortedDepartmentData;
-        }
-
-
-
-
-
-
-
-
-
+        #region - Public Methods  
 
         //read embedded .csv file and make data stack
         //arrange depts on site, till all depts have not been satisfied
@@ -158,12 +96,7 @@ namespace SpacePlanning
        
 
         }
-
-
-
-       
-
-
+        
 
         //read embedded .sat file and make building outline
         /// <summary>
@@ -374,7 +307,50 @@ namespace SpacePlanning
             List<string> uniqueItemsList = deptNameList.Distinct().ToList();
             return uniqueItemsList;
         }
-   
+
+
+        //sorts a program data inside dept data based on pREFERENCEPOINT 
+        internal static List<DeptData> SortProgramsByPrefInDept(List<DeptData> deptDataInp)
+        {
+            if (deptDataInp == null) return null;
+            List<DeptData> deptData = new List<DeptData>();
+            for (int i = 0; i < deptDataInp.Count; i++) deptData.Add(new DeptData(deptDataInp[i]));
+            double eps = 01, inc = 0.01;
+            for (int i = 0; i < deptData.Count; i++)
+            {
+                DeptData deptItem = deptData[i];
+                List<ProgramData> sortedProgramData = new List<ProgramData>();
+                List<ProgramData> progItems = deptItem.ProgramsInDept;
+                SortedDictionary<double, ProgramData> sortedPrograms = new SortedDictionary<double, ProgramData>();
+                List<double> keys = new List<double>();
+                for (int j = 0; j < progItems.Count; j++)
+                {
+                    double key = progItems[j].ProgPrefValue + eps;
+                    sortedPrograms.Add(key, progItems[j]);
+                    eps += inc;
+                }
+                eps = 0;
+                foreach (KeyValuePair<double, ProgramData> p in sortedPrograms) sortedProgramData.Add(p.Value);
+                sortedProgramData.Reverse();
+                deptItem.ProgramsInDept = sortedProgramData;
+            }
+            List<DeptData> newDept = new List<DeptData>();
+            for (int i = 0; i < deptData.Count; i++) newDept.Add(new DeptData(deptData[i]));
+            return newDept;
+        }
+
+        //sorts a deptdata based on area 
+        internal static List<DeptData> SortDeptData(List<DeptData> deptData)
+        {
+            SortedDictionary<double, DeptData> sortedD = new SortedDictionary<double, DeptData>();
+            for (int i = 0; i < deptData.Count; i++) sortedD.Add(deptData[i].DeptAreaNeeded, deptData[i]);
+
+            List<DeptData> sortedDepartmentData = new List<DeptData>();
+            foreach (KeyValuePair<double, DeptData> p in sortedD) sortedDepartmentData.Add(p.Value);
+            sortedDepartmentData.Reverse();
+            return sortedDepartmentData;
+        }
+
         #endregion
 
 

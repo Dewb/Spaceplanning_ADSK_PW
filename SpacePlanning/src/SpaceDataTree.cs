@@ -15,7 +15,7 @@ namespace SpacePlanning
     ///left child , stores a node type of 'Space' while the right child stores the node type container 
     ///further details about the 'space' and 'container' is provided in the Node Class
     /// </summary>
-    public class SpaceDataTree
+    internal class SpaceDataTree
     {
         private Node _root;
         private int _numNodes;
@@ -28,7 +28,7 @@ namespace SpacePlanning
         private double _spaceY;
 
         //constructor
-        public SpaceDataTree(Node root, Point origin, double X, double Y)
+        internal SpaceDataTree(Node root, Point origin, double X, double Y)
         {
             _root = root;
             _numNodes = 1;
@@ -44,33 +44,34 @@ namespace SpacePlanning
             _spaceY = Y;            
         }
 
+        #region - Private Methods
         //returns the list containting radius for each node in the tree
-        public List<double> RadiusNodeList
+        internal List<double> RadiusNodeList
         {
             get { return _radiusNodeList;  }            
         }
 
         //returns the Origin Point for each node in the tree
-        public List<Point> CenterPtNodeList
+        internal List<Point> CenterPtNodeList
         {
             get { return _centerPtsNodeList; }           
         }
 
         //returns the NodeType for each node in the form of a list of strings
-        public List<string> NodeTypeList
+        internal List<string> NodeTypeList
         {
             get { return _nodeTypeString; }           
         }
 
         //returns number of nodes in the tree
-        public int NumberOfNodes
+        internal int NumberOfNodes
         {
             get { return _numNodes; }           
         }
 
         //returns the Root Node of the tree
         //sets the root node of a tree and rebuilds the tree
-        public Node Root
+        internal Node Root
         {
             get { return _root; }
             set
@@ -102,14 +103,14 @@ namespace SpacePlanning
         }
 
         // checks of the given node has a parent
-        private static Node CheckParentValid(Node node)
+        internal static Node CheckParentValid(Node node)
         {
             if(node.ParentNode == null) return node;
             else return node.ParentNode;
         }
 
         // makes origin point for the node
-        private Point PointForNode(Point parentPt, int mul)
+        internal Point PointForNode(Point parentPt, int mul)
         {
             double x = parentPt.X + mul * _spaceX;
             double y = parentPt.Y +  _spaceY;
@@ -117,7 +118,7 @@ namespace SpacePlanning
         }
 
         // add the following entries into the space data tree
-        private void InsertNodeData(Node parent, Node item, bool container)
+        internal void InsertNodeData(Node parent, Node item, bool container)
         {
             double rad = parent.RadiusNode;
             double proportion, addOn;
@@ -229,6 +230,7 @@ namespace SpacePlanning
             if (tag) return NodeType.Container;
             else return NodeType.Space;
         }
+#endregion
 
     }
 }

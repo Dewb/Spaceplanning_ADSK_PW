@@ -42,12 +42,9 @@ namespace SpacePlanning
             _CellsAssigned = new List<Cell>();
             _gridX = dimX;
             _gridY = dimY;
-
             _polyDepts = null;
             _deptAreaProportion = 0;
             _deptAreaProportionAchieved = 0;
-
-
 
         }
 
@@ -78,11 +75,15 @@ namespace SpacePlanning
         }
 
 
+
+        #region - Public Methods
+
         public double DeptCirFactor
         {
             get { return _cirFactor; }
             set { _cirFactor = value; }
         }
+
         public double DeptAreaProportionAchieved
         {
             get { return _deptAreaProportionAchieved; }
@@ -95,13 +96,11 @@ namespace SpacePlanning
             set { _deptAreaProportion = value; }
         }
 
-
         public double AreaPercentageAchieved
         {
-            get { return Math.Round(AreaProvided/DeptAreaNeeded,3); }
+            get { return Math.Round(AreaProvided / DeptAreaNeeded, 3); }
         }
 
-      
         public List<Polygon2d> PolyDeptAssigned
         {
             get { return _polyDepts; }
@@ -117,6 +116,7 @@ namespace SpacePlanning
         {
             get { return _gridY; }
         }
+
         public List<Cell> DepartmentCells
         {
             get { return _CellsAssigned; }
@@ -128,6 +128,7 @@ namespace SpacePlanning
             get { return _numCellsDept; }
             //set { _cellAvailable = value; }
         }
+
         public double AreaProvided
         {
             get { return _areaGivenDept; }
@@ -135,16 +136,15 @@ namespace SpacePlanning
             {
                 _areaGivenDept = value;
                 _numCellAdded = (int)(_areaGivenDept / (_gridX * _gridY));
-                
+
             }
         }
-
 
         public bool IsAreaSatisfied
         {
             get
             {
-                
+
                 if (_areaGivenDept >= _deptAreaNeeded)
                 {
                     return true;
@@ -182,18 +182,29 @@ namespace SpacePlanning
             set { _progDataList = value; }
         }
 
+        //calc number of cells assigned to each dept
+        public int NumCellsNeededDept()
+        {
+            int num = 0;
+            double cellArea = _gridX * _gridY;
+            double totalProgramAreas = AreaEachDept();
+            num = (int)(totalProgramAreas / cellArea);
+            return num;
+        }
 
-
-        //CALC THE TOTAL AREA NEEDED BY THIS DEPTS
+        //calc area for each dept
         public double AreaEachDept()
         {
             double area = 0;
             for (int i = 0; i < _progDataList.Count; i++) area += _progDataList[i].UnitArea;
-            return area*_cirFactor;
+            return area * _cirFactor;
         }
 
+        #endregion
 
-        //ALLOCATE CELLS TO THE DEPARTMENT
+
+        #region - Private Methods
+        //assign cells
         internal void CellAssign(List<Cell> inputCellList)
         {
             _CellsAssigned = inputCellList;
@@ -201,7 +212,7 @@ namespace SpacePlanning
             NumberofCellsAdded = _numCellAdded;
         }
 
-        //ALLOCATE CELLS TO THE DEPARTMENT
+        //assign cells per dept
         internal void CellAssignPerItem(Cell cellItem)
         {
 
@@ -210,31 +221,24 @@ namespace SpacePlanning
             NumberofCellsAdded = _numCellAdded;
         }
 
-        //CALC THE AREA ALLOCATED
+        //calc area allocated
         internal void CalcAreaAllocated()
         {
             _numCellAdded += 1;
-            _areaGivenDept = _gridX*_gridY * _numCellAdded;
+            _areaGivenDept = _gridX * _gridY * _numCellAdded;
 
         }
 
-        //CALC THE AREA ALLOCATED
+        //calc area from a given poly
         internal void CalcAreaGivenFromPoly(double areaPoly)
         {
             _areaGivenDept = areaPoly;
 
         }
+        #endregion
 
 
-        //CALC NUMBER OF CELLS NEEDED TO PLACE EACH PROGRAM
-        public int NumCellsNeededDept()
-        {
-            int num = 0;
-            double cellArea = _gridX * _gridY;
-            double totalProgramAreas = AreaEachDept();            
-            num = (int)(totalProgramAreas / cellArea);
-            return num;
-        }
+
     }
 }
 

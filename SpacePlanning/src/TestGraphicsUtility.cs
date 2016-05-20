@@ -14,7 +14,7 @@ namespace SpacePlanning
         //################################################################################################################
         
         // checks if two lines are collinear - not using
-        public static bool CheckLineCollinear(Line2d lineA, Line2d lineB)
+        internal static bool CheckLineCollinear(Line2d lineA, Line2d lineB)
         {
             Point2d p1 = lineA.StartPoint;
             Point2d p2 = lineA.EndPoint;
@@ -45,7 +45,7 @@ namespace SpacePlanning
         }
 
         //make points on grids - not using now
-        public static List<Point> MakeSquarePointsFromCenterSide(Point2d centerPt, double side)
+        internal static List<Point> MakeSquarePointsFromCenterSide(Point2d centerPt, double side)
         {
             List<Point> ptList = new List<Point>();
             double a = centerPt.X - (side / 2);
@@ -71,13 +71,13 @@ namespace SpacePlanning
         }
 
         //make cell on grids - not using now
-        public static Polygon MakeSquareFromCenterSide(Point2d centerPt, double side)
+        internal static Polygon MakeSquareFromCenterSide(Point2d centerPt, double side)
         {
             return Polygon.ByPoints(MakeSquarePointsFromCenterSide(centerPt, side));
         }
 
         //finds line and line intersection point - not using now
-        public static Point2d LineLineIntersectionNew(Line2d s1, Line2d s2)
+        internal static Point2d LineLineIntersectionNew(Line2d s1, Line2d s2)
         {
             Point2d startS1 = s1.StartPoint;
             Point2d endS1 = s1.EndPoint;
@@ -218,8 +218,6 @@ namespace SpacePlanning
             ptList.Add(p2);
             return ptList;
         }
-
-
 
         //returns the point having highest x,y value from a list - using now
         internal static int ReturnHighestPointFromList(List<Point2d> ptList)
@@ -369,29 +367,6 @@ namespace SpacePlanning
                 { "CenterPolyOtherPoint", (centerOther) },
             };
 
-        }
-
-        //sort a list with Quicksort algorithm
-        public static void Quicksort2(ref IComparable[] elements, int left, int right)
-        {
-            int i = left, j = right;
-            IComparable pivot = elements[(left + right) / 2];
-            while (i <= j)
-            {
-                while (elements[i].CompareTo(pivot) < 0) i++;
-                while (elements[j].CompareTo(pivot) > 0) j--;
-
-                if (i <= j)
-                {
-                    IComparable tmp = elements[i];
-                    elements[i] = elements[j];
-                    elements[j] = tmp;
-                    i++;
-                    j--;
-                }
-            }
-            if (left < j) Quicksort2(ref elements, left, j);
-            if (i < right) Quicksort2(ref elements, i, right);
         }
 
         //removes duplicates lines from a list of line

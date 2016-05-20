@@ -124,7 +124,6 @@
     <Compile Include="src\TestGraphicsUtility.cs" />
     <Compile Include="src\GridObject.cs" />
     <Compile Include="src\Node.cs" />
-    <Compile Include="src\PlaceSpace.cs" />
     <Compile Include="src\GraphicsUtility.cs" />
     <Compile Include="src\ProgramData.cs" />
     <Compile Include="src\ReadData.cs" />
@@ -149,11 +148,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="src\Asset\ProgramDocument.csv" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ClassDiagram1.cd" />
-    <None Include="ClassDiagram2.cd" />
-    <None Include="ClassDiagram3.cd" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

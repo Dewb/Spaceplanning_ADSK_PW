@@ -8,10 +8,11 @@ using System.Linq;
 
 namespace SpacePlanning
 {
-    public class SplitObject
+    internal class SplitObject
     {
+        #region - Private Methods
         //subdivide a given poly into smaller parts till acceptable width is met, returns list of polydept grids and list of polys to compute circulation
-        public static List<List<Polygon2d>> SubdivideInputPoly(List<Polygon2d> polyList, double acceptableWidth = 10, double circulationFreq = 10, double ratio = 0.5)
+        internal static List<List<Polygon2d>> SubdivideInputPoly(List<Polygon2d> polyList, double acceptableWidth = 10, double circulationFreq = 10, double ratio = 0.5)
         {
             if (!PolygonUtility.CheckPolyList(polyList)) return null;
 
@@ -155,7 +156,7 @@ namespace SpacePlanning
         }// end of function
 
         //makes intersections and returns the two polygon2ds after intersection
-        public static Dictionary<string, object> MakeIntersections(List<Point2d> poly, Line2d splitLine, double space)
+        internal static Dictionary<string, object> MakeIntersections(List<Point2d> poly, Line2d splitLine, double space)
         {
             List<Point2d> intersectedPoints = GraphicsUtility.LinePolygonIntersection(poly, splitLine);
             //List<Point2d> intersectedPoints = TestGraphicsUtility.LinePolygonIntersectionIndex(poly, splitLine);
@@ -184,10 +185,9 @@ namespace SpacePlanning
 
         }
 
-
         //splits a polygon into two based on ratio and dir
         [MultiReturn(new[] { "PolyAfterSplit", "SplitLine", "IntersectedPoints" })]
-        public static Dictionary<string, object> SplitByRatio(Polygon2d polyOutline, double ratio = 0.5, int dir = 0)
+        internal static Dictionary<string, object> SplitByRatio(Polygon2d polyOutline, double ratio = 0.5, int dir = 0)
         {
             if (polyOutline == null) return null;
             if (polyOutline != null && polyOutline.Points == null) return null;
@@ -227,7 +227,7 @@ namespace SpacePlanning
         }
 
         //uses makepolysofproportion function to split one big poly into sub components
-        public static Dictionary<string, object> SplitBigPolys(List<Polygon2d> polyInputList, double acceptableWidth, double factor = 4)
+        internal static Dictionary<string, object> SplitBigPolys(List<Polygon2d> polyInputList, double acceptableWidth, double factor = 4)
         {
             List<Polygon2d> polyOrganizedList = new List<Polygon2d>(), polyCoverList = new List<Polygon2d>();
             int count = 0;
@@ -249,7 +249,7 @@ namespace SpacePlanning
                 { "PolyForCirculation", (polyCoverList) }
             };
         }
-        
+
         //splits a polygon based on distance and random direction
         [MultiReturn(new[] { "PolyAfterSplit", "SplitLine", "IntersectedPoints", "PointASide", "PointBSide" })]
         internal static Dictionary<string, object> SplitByDistance(Polygon2d polyOutline, Random ran, double distance = 10, int dir = 0, double spacing = 0)
@@ -329,7 +329,7 @@ namespace SpacePlanning
 
         //splits a polygon based on offset direction from a given line id
         [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly" })]
-        public static Dictionary<string, object> SplitByOffsetFromLine(Polygon2d polyOutline, int lineId, double distance = 10, double minDist = 0)
+        internal static Dictionary<string, object> SplitByOffsetFromLine(Polygon2d polyOutline, int lineId, double distance = 10, double minDist = 0)
         {
             if (!PolygonUtility.CheckPoly(polyOutline)) return null;
             Polygon2d poly = new Polygon2d(polyOutline.Points, 0);
@@ -403,7 +403,7 @@ namespace SpacePlanning
 
         //splits a polygon by a line 
         [MultiReturn(new[] { "PolyAfterSplit", "SplitLine" })]
-        public static Dictionary<string, object> SplitByLine(Polygon2d polyOutline, Line2d inputLine, double distance = 5)
+        internal static Dictionary<string, object> SplitByLine(Polygon2d polyOutline, Line2d inputLine, double distance = 5)
         {
 
             if (!PolygonUtility.CheckPoly(polyOutline)) return null;
@@ -432,6 +432,8 @@ namespace SpacePlanning
                 { "SplitLine", (splitLine) }
             };
         }
+
+        #endregion
 
 
     }

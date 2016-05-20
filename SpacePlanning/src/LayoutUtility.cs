@@ -122,15 +122,7 @@ namespace SpacePlanning
             allSplitLines.AddRange(selectedHLines);
             allSplitLines.AddRange(selectedVLines);
             List<double> splitLineLength = new List<double>();
-            //double[] splitLineLength = new double[allSplitLines.Count];
-            int[] unsortedIndices = new int[allSplitLines.Count];
-            for (int i = 0; i < allSplitLines.Count; i++)
-            {
-                splitLineLength.Add(allSplitLines[i].Length);
-                //splitLineLength[i] = allSplitLines[i].Length;
-                unsortedIndices[i] = i;
-            }
-            //List<int> sortedIndices = BasicUtility.Quicksort(splitLineLength, unsortedIndices, 0, allSplitLines.Count - 1);
+            for (int i = 0; i < allSplitLines.Count; i++) splitLineLength.Add(allSplitLines[i].Length);
             List<int> sortedIndices = BasicUtility.Quicksort(splitLineLength);
             if (sortedIndices != null) sortedIndices.Reverse();
 

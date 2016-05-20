@@ -160,9 +160,7 @@ namespace SpacePlanning
 
             };
         }
-
         
-
         //Make Dept Topology Matrix
         [MultiReturn(new[] { "ProgTopologyList", "ProgNeighborNameList", "ProgAllPolygons", "SharedEdge" })]
         public static Dictionary<string, object> MakeProgramTopology(Polygon2d polyOutline, List<Polygon2d> polyA = null,  List<Polygon2d> polyB = null, List<Polygon2d> polyC = null, List<Polygon2d> polyD = null)
@@ -209,10 +207,7 @@ namespace SpacePlanning
 
             };
         }
-
-
-
-     
+        
         //Make Circulation Polygons between depts
         [MultiReturn(new[] { "CirculationPolygons", "UpdatedProgPolygons" })]
         public static Dictionary<string, object> MakeProgramCirculation(List<Polygon2d> polyProgList, List<Line2d> lineList, double width = 8, double allowedCircRatio = 3, double frequencyCorridor = 0.5)
@@ -299,8 +294,6 @@ namespace SpacePlanning
 
         #endregion
 
-
-
-
+        
     }
 }

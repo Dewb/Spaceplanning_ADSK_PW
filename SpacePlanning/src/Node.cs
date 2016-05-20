@@ -18,7 +18,7 @@ namespace SpacePlanning
     /// space node types are assigned to the left child and container node types are assigned to the right child of a parent node
     /// the last container in a Space Data Tree has both left and right  child as space nodes
     /// </summary>
-    public class Node
+    internal class Node
     {
         private int _id;
         private Line2d _splitLine;       
@@ -38,7 +38,7 @@ namespace SpacePlanning
 
 
         // constructor for root node
-        public Node(int id, NodeType type, bool flag, Point centerPt, double radius)
+        internal Node(int id, NodeType type, bool flag, Point centerPt, double radius)
         {
 
             _id = id;
@@ -62,7 +62,7 @@ namespace SpacePlanning
         }
 
         // constructor for container node
-        public Node(int id, NodeType type)
+        internal Node(int id, NodeType type)
         {
             _id = id;            
             _nodeType = type;
@@ -74,8 +74,7 @@ namespace SpacePlanning
 
         }
 
-
-        public Node( int id, Node parent, Node left, Node right, NodeType type, Polygon2d poly, Line2d splitLine, DeptData dept)
+        internal Node( int id, Node parent, Node left, Node right, NodeType type, Polygon2d poly, Line2d splitLine, DeptData dept)
         {           
             _id = id;            
             _left = left;
@@ -89,66 +88,68 @@ namespace SpacePlanning
         }
 
 
-        public double RadiusNode
+        #region - Private Methods
+        internal double RadiusNode
         {
             get { return _radius; }
             set { _radius = value; }
         }
 
-        public double Proportion
+        internal double Proportion
         {
             get { return _prop; }
         }
 
-        public double RadiusNodeExtra
+        internal double RadiusNodeExtra
         {
             get { return _extraRadius; }
             set { _extraRadius = value; }
         }
 
-        public Point CenterPoint
+        internal Point CenterPoint
         {
             get { return _centerPt; }
             set { _centerPt = value; }
         }
 
-        public bool IsRoot
+        internal bool IsRoot
         {
             get { return _isRoot; }
             set { _isRoot = value; }
         }
 
-        public bool Check
+        internal bool Check
         {
             get { return _check; }
             set { _check = value; }
         }
 
-        public Node ParentNode{
+        internal Node ParentNode
+        {
             get { return _parent; }
             set { _parent = value; }
         }
 
-        public Node LeftNode
+        internal Node LeftNode
         {
             get { return _left; }
             set { _left = value; }
 
         }
 
-
-        public Node RightNode
+        internal Node RightNode
         {
             get { return _right; }
             set { _right = value; }
         }
 
-
-        public NodeType NodeType
+        internal NodeType NodeType
         {
             get { return _nodeType; }
             set { _nodeType = value; }
 
         }
+        #endregion
+
     }
 }

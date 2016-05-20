@@ -685,7 +685,7 @@ namespace SpacePlanning
             else if (aTanA > aTanB) return 1;
             return 0;
         }
-
+         
         
         //sorts a list of points to form a polyline - not using
         public static List<Point2d> SortPoints(List<Point2d> pointList)
@@ -729,9 +729,7 @@ namespace SpacePlanning
         {
             if(givenLine == null || q == null) return false; 
             Point2d p = givenLine.StartPoint, r = givenLine.EndPoint;
-            if (q.X <= (Math.Max(p.X, r.X) + eps) && q.X >= (Math.Min(p.X, r.X) - eps) &&
-                q.Y <= (Math.Max(p.Y, r.Y) + eps) && q.Y >= (Math.Min(p.Y, r.Y))- eps) return true;
-            return false;
+            return OnSegment(p, q, r);
         }
 
         // checks collinearity and order of three points
@@ -766,9 +764,7 @@ namespace SpacePlanning
         }
 
     
-        
-
-        // find closest point to a line- ( has some problem needs revision )
+        // find closest point to a line
         public static Point2d ProjectedPointOnLine(Line2d testline, Point2d P)
         {
             Line2d line = new Line2d(Point2d.ByCoordinates(testline.StartPoint.X, testline.StartPoint.Y), 
@@ -945,7 +941,6 @@ namespace SpacePlanning
         }
 
        
-
         //get the bounding box from input points
         public static List<Point2d> FromPointsGetBoundingPoly(List<Point2d> pointList)
         {

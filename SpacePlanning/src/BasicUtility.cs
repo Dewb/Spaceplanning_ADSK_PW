@@ -8,12 +8,15 @@ namespace SpacePlanning
 {
     public class BasicUtility
     {
+
+        #region - Public Methods
+
         //returns a random object
         public static Random RandomMaker()
         {
             return new Random();
         }
-        
+
         //sorts input list of double and returns the indices 
         public static List<int> SortIndex(List<double> A)
         {
@@ -28,17 +31,17 @@ namespace SpacePlanning
             //return the indices list
             return idx;
         }
-        
+
         //random double numbers between two decimals
-        internal static double RandomBetweenNumbers(Random rn, double max, double min)
+        public static double RandomBetweenNumbers(Random rn, double max, double min)
         {
             double num = rn.NextDouble() * (max - min) + min;
             return num;
         }
-        
+
         //checks if a number is within a certain range of another or not
         // returns -1 , if within range, 1 if greater, 0 if smaller
-        internal static int CheckWithinRange(double number, double comparingNum, double eps = 0) 
+        public static int CheckWithinRange(double number, double comparingNum, double eps = 0)
         {
             if (comparingNum > number - eps && comparingNum < number + eps) return -1;
             else if (comparingNum > number - eps) return 1;
@@ -58,7 +61,7 @@ namespace SpacePlanning
             double maxAng = numList[sortedIndices[0]];
             double inpRange = maxAng - minAng;
             List<double> numListNormalized = new List<double>();
-            
+
             for (int n = 0; n < numList.Count; n++)
             {
                 double slope = 1.0 * outRange / inpRange;
@@ -72,7 +75,7 @@ namespace SpacePlanning
         public static List<int> Quicksort(List<double> aList)
         {
             List<int> indexList = new List<int>();
-            for(int n = 0;  n< aList.Count; n++) indexList.Add(n);
+            for (int n = 0; n < aList.Count; n++) indexList.Add(n);
             int left = 0, right = aList.Count - 1;
             double[] a = new double[aList.Count];
             int[] index = new int[indexList.Count];
@@ -91,72 +94,16 @@ namespace SpacePlanning
             return sortedIndex;
         }
 
-        //quicksort algorithm
-        internal static List<int> QuicksortInternal(double[] a, int[] index, int left, int right)
-        {
-            if (right <= left) return null;
-            int i = Partition(ref a, ref index, left, right);
-            QuicksortInternal(a, index, left, i - 1);
-            QuicksortInternal(a, index, i + 1, right);
-            List<int> sortedIndex = new List<int>();
-            for(int j = 0; j < index.Length; j++) sortedIndex.Add(index[j]);
-            return sortedIndex;
-        }
-
-        //toggle input value randomly between 0 and 1
-        public static int ToggleRandomInt()
-        {
-            double num = new Random().NextDouble();
-            if (num >0.5) return 1;
-            else return 0;
-        }
-
         //toggle input value between 0 and 1
-        internal static int ToggleInputInt(int value = 0)
+        public static int ToggleInputInt(int value = 0)
         {
-            if(value == 0) return 1;
+            if (value == 0) return 1;
             else return 0;
         }
 
-        // used by quicksortinternal
-        // partition a[left] to a[right], assumes left < right for Quicksort
-        internal static int Partition(ref double[] a, ref int[] index,
-        int left, int right)
-        {
-            int i = left - 1;
-            int j = right;
-            while (true)
-            {
-                while (IsLess(a[++i], a[right]));
-                while (IsLess(a[right], a[--j]))    
-                    if (j == left) break;           
-                if (i >= j) break;                
-                Exchange(a, index, i, j);              
-            }
-            Exchange(a, index, i, right);             
-            return i;
-        }
-        
-        //return true/ false if x is less than y
-        internal static bool IsLess(double x, double y)
-        {
-            return (x < y);
-        }
 
-        // exchange two indices in an array
-        private static void Exchange(double[] a, int[] index, int i, int j)
-        {
-            double swap = a[i];
-            a[i] = a[j];
-            a[j] = swap;
-            int b = index[i];
-            index[i] = index[j];
-            index[j] = b;
-        }
-
-  
         //binary search algo with double
-        internal static int BinarySearch(List<double> inputArray, double key)
+        public static int BinarySearch(List<double> inputArray, double key)
         {
             int min = 0;
             int max = inputArray.Count - 1;
@@ -169,6 +116,68 @@ namespace SpacePlanning
             }
             return -1;
         }
+
+        //toggle input value randomly between 0 and 1
+        public static int ToggleRandomInt()
+        {
+            double num = new Random().NextDouble();
+            if (num > 0.5) return 1;
+            else return 0;
+        }
+
+        #endregion
+
+
+        #region - Private Methods
+
+        //quicksort algorithm
+        internal static List<int> QuicksortInternal(double[] a, int[] index, int left, int right)
+        {
+            if (right <= left) return null;
+            int i = Partition(ref a, ref index, left, right);
+            QuicksortInternal(a, index, left, i - 1);
+            QuicksortInternal(a, index, i + 1, right);
+            List<int> sortedIndex = new List<int>();
+            for (int j = 0; j < index.Length; j++) sortedIndex.Add(index[j]);
+            return sortedIndex;
+        }
+
+        // used by quicksortinternal
+        // partition a[left] to a[right], assumes left < right for Quicksort
+        internal static int Partition(ref double[] a, ref int[] index,
+        int left, int right)
+        {
+            int i = left - 1;
+            int j = right;
+            while (true)
+            {
+                while (IsLess(a[++i], a[right])) ;
+                while (IsLess(a[right], a[--j]))
+                    if (j == left) break;
+                if (i >= j) break;
+                Exchange(a, index, i, j);
+            }
+            Exchange(a, index, i, right);
+            return i;
+        }
+
+        //return true/ false if x is less than y
+        internal static bool IsLess(double x, double y)
+        {
+            return (x < y);
+        }
+
+        // exchange two indices in an array
+        internal static void Exchange(double[] a, int[] index, int i, int j)
+        {
+            double swap = a[i];
+            a[i] = a[j];
+            a[j] = swap;
+            int b = index[i];
+            index[i] = index[j];
+            index[j] = b;
+        }
+
 
         //cleans duplicate indices from a list
         internal static List<double> CleanDuplicateIndices(List<double> exprList)
@@ -189,10 +198,12 @@ namespace SpacePlanning
             return dups;
 
         }
+        
 
+        #endregion
+ 
 
-
-
+  
     
 
 

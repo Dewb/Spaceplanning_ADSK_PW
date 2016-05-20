@@ -20,6 +20,7 @@ namespace SpacePlanning
         private List<Point2d> _siteBoundingBox = new List<Point2d>();
         private double _dimX;
         private double _dimY;
+
         #region - Private Methods
         //constructor
         internal GridObject(List<Point2d> siteOutline, List<Point2d> siteBoundingBox, double dimensionX, double dimensionY)
@@ -99,6 +100,37 @@ namespace SpacePlanning
             return cells;
         }
 
+        //make convex hulls from cell objects
+        [MultiReturn(new[] { "PolyCurves", "PointLists" })]
+        internal static Dictionary<string, object> MakeConvexHullsFromCells(List<List<Cell>> cellProgramsList)
+        {
+            List<Polygon> polyList = new List<Polygon>();
+            List<List<Point2d>> ptAllnew = new List<List<Point2d>>();
+            for (int i = 0; i < cellProgramsList.Count; i++)
+            {
+                List<Cell> cellList = cellProgramsList[i];
+                List<Point2d> tempPts = new List<Point2d>();
+                List<Point2d> convexHullPts = new List<Point2d>();
+                if (cellList.Count > 0) for (int j = 0; j < cellList.Count; j++) tempPts.Add(cellList[j].CenterPoint);
+                if (tempPts.Count > 2)
+                {
+                    ptAllnew.Add(tempPts);
+                    convexHullPts = GridObject.ConvexHullFromPoint2D(tempPts);
+                    List<Point> ptAll = DynamoGeometry.pointFromPoint2dList(convexHullPts);
+                    if (ptAll.Count > 2) polyList.Add(Polygon.ByPoints(ptAll));
+                    else polyList.Add(null);
+                }
+                else polyList.Add(null);
+            }
+
+            return new Dictionary<string, object>
+            {
+                { "PolyCurves", (polyList) },
+                { "PointLists", (ptAllnew) }
+            };
+
+
+        }
 
         //make cells on the grids poit
         public static List<Polygon2d> MakeCellsFromGridPoints(List<Point> pointsgrid, double dimX, double dimY)
@@ -651,20 +683,12 @@ namespace SpacePlanning
             for (int i = 0; i < newCellLists.Count; i++) cellCenterPtLists.Add(newCellLists[i].CenterPoint);
 
             List<double> XYEquationList = new List<double>();
-           // double[] XYEquationList = new double[cellCenterPtLists.Count];
             int[] UnsortedIndices = new int[cellCenterPtLists.Count];
             double[] XCordCenterPt = new double[cellCenterPtLists.Count];
             double[] YCordCenterPt = new double[cellCenterPtLists.Count];
 
-            for (int i = 0; i < cellCenterPtLists.Count; i++)
-            {
-                UnsortedIndices[i] = i;
-                XCordCenterPt[i] = cellCenterPtLists[i].X; YCordCenterPt[i] = cellCenterPtLists[i].Y;
-                //XYEquationList[i] = EquationforXYLocation(cellCenterPtLists[i].X, cellCenterPtLists[i].Y);
-                XYEquationList.Add(EquationforXYLocation(cellCenterPtLists[i].X, cellCenterPtLists[i].Y));
-            }
-            List<int> SortedIndicesX = new List<int>(), SortedIndicesY = new List<int>(), SortedXYEquationIndices = new List<int>();
-            //SortedXYEquationIndices = BasicUtility.Quicksort(XYEquationList, UnsortedIndices, 0, UnsortedIndices.Length - 1);
+            for (int i = 0; i < cellCenterPtLists.Count; i++) XYEquationList.Add(EquationforXYLocation(cellCenterPtLists[i].X, cellCenterPtLists[i].Y));
+            List<int> SortedXYEquationIndices = new List<int>();
             SortedXYEquationIndices = BasicUtility.Quicksort(XYEquationList);
             List<double> XYEquationLists = new List<double>();
             for (int k = 0; k < cellCenterPtLists.Count; k++) XYEquationLists.Add(XYEquationList[k]);

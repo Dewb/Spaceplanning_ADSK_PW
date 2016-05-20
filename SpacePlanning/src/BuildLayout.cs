@@ -44,6 +44,7 @@ namespace SpacePlanning
         public static Dictionary<string, object> PlaceDeptOnSite(List<DeptData> deptData, Polygon2d poly,  double primaryDeptWidth, 
             double acceptableWidth, double minNotchDistance = 20, double circulationFreq = 8, int recompute = 1)
         {
+           
             Dictionary<string, object> deptArrangement = new Dictionary<string, object>();
             double count = 0;            
             Random rand = new Random();
@@ -405,15 +406,7 @@ namespace SpacePlanning
             {
                 if (offsetAble[i] == true) { lineLength.Add(poly.Lines[i].Length); }
                 else lineLength.Add(0);
-            }
-            double[] lineLengthArray = new double[lineLength.Count];
-            int[] unsortedIndices = new int[lineLength.Count];
-            for (int i = 0; i < lineLength.Count; i++)
-            {
-                lineLengthArray[i] = lineLength[i];
-                unsortedIndices[i] = i;
-            }
-           // List<int> sortedIndices = BasicUtility.Quicksort(lineLengthArray, unsortedIndices, 0, lineLength.Count - 1);
+            }       
             List<int> sortedIndices = BasicUtility.Quicksort(lineLength);
             if (sortedIndices != null) sortedIndices.Reverse();
             for (int i = 0; i < poly.Points.Count; i++) if (lineLength[i] > 0 && i != sortedIndices[0]) { lineOptions.Add(poly.Lines[i]); }

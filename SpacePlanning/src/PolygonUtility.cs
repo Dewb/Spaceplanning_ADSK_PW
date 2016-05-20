@@ -222,14 +222,7 @@ namespace SpacePlanning
         {
             if (!CheckPolyList(polyList)) return null;
             List<double> areaPolyList = new List<double>();
-            int[] indArray = new int[polyList.Count];
-            for (int i = 0; i < polyList.Count; i++)
-            {
-                areaPolyList.Add(AreaCheckPolygon(polyList[i]));
-                indArray[i] = i;
-            }
-            double[] areaArray = areaPolyList.ToArray();
-            //List<int> sortedIndices = BasicUtility.Quicksort(areaArray, indArray, 0, areaArray.Length - 1);
+            for (int i = 0; i < polyList.Count; i++) areaPolyList.Add(AreaCheckPolygon(polyList[i]));
             List<int> sortedIndices = BasicUtility.Quicksort(areaPolyList);
             List<Polygon2d> sortedPolys = new List<Polygon2d>();
             for (int i = 0; i < polyList.Count; i++) sortedPolys.Add(polyList[sortedIndices[i]]);

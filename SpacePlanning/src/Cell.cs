@@ -9,9 +9,7 @@
 namespace SpacePlanning
 {
     public class Cell
-    {
-
-       
+    {       
         private Point2d _centerPoint;
         private double _dimX;
         private double _dimY;
@@ -23,7 +21,8 @@ namespace SpacePlanning
             PAD,
             CORE        
         };
-        
+
+        #region - Public Methods
         public Cell(Point2d centerPt, double dimensionX, double dimensionY, bool cellAvail = true)
         {
             _centerPoint = centerPt;
@@ -79,7 +78,8 @@ namespace SpacePlanning
         {
             get { return _dimY; }
         }
-        
+        #endregion
+
 
 
 
