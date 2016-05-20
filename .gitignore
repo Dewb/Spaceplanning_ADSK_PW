@@ -52,3 +52,6 @@ _ReSharper*
 Asset
 Resources
 
+
+#Class Diagrams
+*.cd

@@ -115,13 +115,8 @@ namespace SpacePlanning
         //toggle input value between 0 and 1
         internal static int ToggleInputInt(int value = 0)
         {
-            if(value == 0)
-            {
-                return 1;
-            }else
-            {
-                return 0;
-            }
+            if(value == 0) return 1;
+            else return 0;
         }
 
         // partition a[left] to a[right], assumes left < right for Quicksort
