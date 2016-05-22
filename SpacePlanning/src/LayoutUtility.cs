@@ -108,8 +108,8 @@ namespace SpacePlanning
             }
             List<Line2d> selectedHLines = new List<Line2d>();
             List<Line2d> selectedVLines = new List<Line2d>();
-            int hIndLow = TestGraphicsUtility.ReturnLowestPointFromList(hMidPt);
-            int hIndHigh = TestGraphicsUtility.ReturnHighestPointFromList(hMidPt);
+            int hIndLow = CodeToBeTested.ReturnLowestPointFromList(hMidPt);
+            int hIndHigh = CodeToBeTested.ReturnHighestPointFromList(hMidPt);
             int vIndLow = PointUtility.LowestPointFromList(vMidPt);
             int vIndHigh = PointUtility.HighestPointFromList(vMidPt);
             if (hIndLow > -1) selectedHLines.Add(hLines[hIndLow]);

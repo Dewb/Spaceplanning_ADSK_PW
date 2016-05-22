@@ -7,7 +7,7 @@ using Autodesk.DesignScript.Runtime;
 
 namespace SpacePlanning
 {
-    internal class TestGraphicsUtility
+    internal class CodeToBeTested
     {
         //################################################################################################################
         //this class stores methods realted to GraphicsUtility class which needs to be tested further for reliability
@@ -348,8 +348,8 @@ namespace SpacePlanning
             if (centerToCenX.Length > centerToCenY.Length) keyVec = new Vector2d(centerToCenX.X, centerToCenX.Y);
             else keyVec = new Vector2d(centerToCenY.X, centerToCenY.Y);
             //check line poly intersection between centertocen vector and each polys            
-            Line2d lineInPolyReg = TestGraphicsUtility.LinePolygonIntersectionReturnLine(polyReg.Points, centerLine, centerOther);
-            Line2d lineInOtherReg = TestGraphicsUtility.LinePolygonIntersectionReturnLine(otherReg.Points, centerLine, centerPoly);
+            Line2d lineInPolyReg = CodeToBeTested.LinePolygonIntersectionReturnLine(polyReg.Points, centerLine, centerOther);
+            Line2d lineInOtherReg = CodeToBeTested.LinePolygonIntersectionReturnLine(otherReg.Points, centerLine, centerPoly);
 
             //find distance d1 and d2 from two centers to linepolyintersection line
             Point2d projectedPtOnPolyReg = GraphicsUtility.ProjectedPointOnLine(lineInPolyReg, centerPoly);

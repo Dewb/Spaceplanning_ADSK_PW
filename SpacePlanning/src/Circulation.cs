@@ -10,31 +10,25 @@ using Autodesk.DesignScript.Geometry;
 
 namespace SpacePlanning
 {
-    public class Circulation
+    public static class Circulation
     {
         #region - Public Methods
+
+        //Builds Dept Topology Matrix , finds all the shared edges between dept polys, and updates department polygon2d's.
         /// <summary>
-        /// It arranges the dept on the site based on input from program document
-        /// Returns the dept polygon2d and dept  .
+        /// Builds the department topology matrix internally and finds circulation network lines between department polygon2d's. 
         /// </summary>
-        /// <param name="DeptData">DeptData Object</param>
-        /// <param name="Poly">Polygon2d representing departments in the site</param>
-        /// <param name="Limit">Distance allowed to be considered as a neighbor of a department</param>
-        /// <returns name="ProgramDataObject">Program Data Object containing information from the embedded .csv file</param>
-        /// <returns name="DepartmentTopologyList">List of list showing who are the neighboring departments for each department</param>
-        /// <returns name="DepartmentTopologyList">List of list showing who are the neighboring departments for each department</param>
+        /// <param name="deptData">DeptData Object</param>
+        /// <param name="deptPoly">Polygon2d representing departments in the site</param>
+        /// <param name="leftOverPoly">Polygon2d not assigned to any department.</param>
+        /// <param name="limit">Maximum distance allowed to be considered as a neighbor of a department.</param>
+        /// <returns name="CirculationNetwork">List of line2d geometry representing circulation network between department polygon2d's.</returns>
         /// <search>
-        /// make data stack, embedded data
+        /// Department Circulation Network, Shared Edges between departments
         /// </search>
-        //Make Dept Topology Matrix , finds all the shared edges between dept polys, and based on that  makes dept neighbors
-        [MultiReturn(new[] { "DeptTopologyList", "CirculationNetwork", "DeptAllPolygons", "NonRedundantCirculationNetwork" })]
-        public static Dictionary<string, object> MakeDeptTopology(List<DeptData> deptData, Polygon2d poly, Polygon2d leftOverPoly = null, double limit = 0)
+        public static List<Line2d> FindDeptCirculationNetwork(List<DeptData> deptData, Polygon2d deptPoly, Polygon2d leftOverPoly = null, double limit = 0)
         {
-            if (deptData == null || deptData.Count == 0 || !ValidateObject.CheckPoly(poly))
-            {
-                Trace.WriteLine("Found dept or poly null, so returning");
-                return null;
-            }
+            if (deptData == null || deptData.Count == 0 || !ValidateObject.CheckPoly(deptPoly)) return null;
             List<Polygon2d> polygonsAllDeptList = new List<Polygon2d>();
             List<DeptData> deptDataAllDeptList = new List<DeptData>();
             List<List<string>> deptNamesNeighbors = new List<List<string>>();
@@ -49,15 +43,8 @@ namespace SpacePlanning
                     deptDataAllDeptList.Add(deptData[i]);
                 }
             }
-            if (leftOverPoly != null)
-            {
-                Trace.WriteLine("leftover added");
-                polygonsAllDeptList.Add(leftOverPoly);
-            }
-            else
-            {
-                Trace.WriteLine("leftover poly found null, so not added");
-            }
+            if (leftOverPoly != null) polygonsAllDeptList.Add(leftOverPoly);
+            else Trace.WriteLine("leftover poly found null, so not added");
             List<Line2d> networkLine = new List<Line2d>();
             for (int i = 0; i < polygonsAllDeptList.Count; i++)
             {
@@ -66,34 +53,32 @@ namespace SpacePlanning
                 {
                     Polygon2d polyB = polygonsAllDeptList[j];
                     Dictionary<string, object> checkNeighbor = PolygonUtility.FindPolyAdjacentEdge(polyA, polyB,limit);
-                    if(checkNeighbor != null)
-                    {
-                        if ((bool)checkNeighbor["Neighbour"] == true)
-                        {
-                            networkLine.Add((Line2d)checkNeighbor["SharedEdge"]);
-                        }
-                    }       
+                    if(checkNeighbor != null) if ((bool)checkNeighbor["Neighbour"] == true) networkLine.Add((Line2d)checkNeighbor["SharedEdge"]);     
                 }
             }
             List<Line2d> cleanNetworkLines = LineUtility.RemoveDuplicateLines(networkLine);
-            cleanNetworkLines = GraphicsUtility.RemoveDuplicateslinesWithPoly(poly, cleanNetworkLines);
+            cleanNetworkLines = GraphicsUtility.RemoveDuplicateslinesWithPoly(deptPoly, cleanNetworkLines);
             List<List<string>> deptNeighborNames = new List<List<string>>();
-            return new Dictionary<string, object>
-            {
-                { "DeptTopologyList", (deptNamesNeighbors) },
-                { "CirculationNetwork", (networkLine) },
-                { "DeptAllPolygons", (polygonsAllDeptList) },
-                { "NonRedundantCirculationNetwork", (cleanNetworkLines) }
-
-            };
+            return cleanNetworkLines;
         }
 
-        //Make Circulation Polygons between depts
-        [MultiReturn(new[] { "CirculationPolygons", "UpdatedDeptPolygons" })]
-        public static Dictionary<string, object> MakeDeptCirculation(List<DeptData> deptData, List<List<Line2d>> lineList, double width = 8)
+        //Make circulation Polygons2d's between departments.
+        /// <summary>
+        /// Builds cirulation polygon2d's between departments.
+        /// </summary>
+        /// <param name="deptData">Dept Data object.</param>
+        /// <param name="circulationNetwork">List of line2d's representing circulation network between departments.</param>
+        /// <param name="circulationWidth">Width in metres for circulation corridors between departments.</param>
+        /// <returns name="CirculationPolygons">Polygon2d's representing circulation areas between departments.</returns>
+        /// <returns name="UpdatedDeptPolygons">Updated polygon2d's representing departments.</returns>
+        /// <search>
+        /// Department Circulation Network, Shared Edges between departments
+        /// </search>
+        [MultiReturn(new[] { "CirculationPolygons", "UpdatedDeptPoly" })]
+        public static Dictionary<string, object> MakeDeptCirculation(List<DeptData> deptData, List<List<Line2d>> circulationNetwork, double circulationWidth = 8)
         {
-            if (deptData == null || deptData.Count == 0 || lineList == null || lineList.Count == null) return null;
-            List<Line2d> cleanLineList = LineUtility.FlattenLine2dList(lineList);
+            if (deptData == null || deptData.Count == 0 || circulationNetwork == null || circulationNetwork.Count == null) return null;
+            List<Line2d> cleanLineList = LineUtility.FlattenLine2dList(circulationNetwork);
             List<Polygon2d> allDeptPolyList = new List<Polygon2d>();
             List<Polygon2d> circulationPolyList = new List<Polygon2d>();
             List<Polygon2d> updatedDeptPolyList = new List<Polygon2d>();
@@ -118,7 +103,7 @@ namespace SpacePlanning
                     Point2d nudgedMidPt = LineUtility.NudgeLineMidPt(splitter, deptPoly, 0.5);
                     if (GraphicsUtility.PointInsidePolygonTest(deptPoly, nudgedMidPt))
                     {
-                        Dictionary<string, object> splitResult = SplitObject.SplitByLine(deptPoly, splitter, width);
+                        Dictionary<string, object> splitResult = SplitObject.SplitByLine(deptPoly, splitter, circulationWidth);
                         List<Polygon2d> polyAfterSplit = (List<Polygon2d>)(splitResult["PolyAfterSplit"]);
                         if (ValidateObject.CheckPolyList(polyAfterSplit))
                         {
@@ -156,7 +141,7 @@ namespace SpacePlanning
             return new Dictionary<string, object>
             {
                 { "CirculationPolygons", (circulationPolyList) },
-                { "UpdatedDeptPolygons", (deptPolyBranchedInList) }
+                { "UpdatedDeptPoly", (deptPolyBranchedInList) }
 
             };
         }

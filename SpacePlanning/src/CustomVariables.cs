@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace SpacePlanning
 {
-    public enum NodeType
+
+    internal enum NodeType
     {
         Container,
         Space

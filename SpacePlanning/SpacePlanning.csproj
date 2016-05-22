@@ -122,7 +122,7 @@
     <Compile Include="src\CustomVariables.cs" />
     <Compile Include="src\DeptData.cs" />
     <Compile Include="src\SplitObject.cs" />
-    <Compile Include="src\TestGraphicsUtility.cs" />
+    <Compile Include="src\CodeToBeTested.cs" />
     <Compile Include="src\GridObject.cs" />
     <Compile Include="src\Node.cs" />
     <Compile Include="src\GraphicsUtility.cs" />

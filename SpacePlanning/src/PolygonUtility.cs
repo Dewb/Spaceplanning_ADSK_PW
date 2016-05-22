@@ -23,6 +23,24 @@ namespace SpacePlanning
             return returnPts;
         }
 
+        //polygon list cleaner
+        internal static List<Polygon2d> CleanPolygonList(List<Polygon2d> polyList)
+        {
+            // if (!CheckPolyList(polyList)) return null;
+            List<Polygon2d> polyNewList = new List<Polygon2d>();
+            bool added = false;
+            for (int i = 0; i < polyList.Count; i++)
+            {
+                if (ValidateObject.CheckPoly(polyList[i]))
+                {
+                    polyNewList.Add(polyList[i]);
+                    added = true;
+                }
+
+            }
+            if (added) return polyNewList;
+            else return null;
+        }
 
         // removes polygons which are null from the list
         internal static List<Polygon2d> CleanPolygons(List<Polygon2d> polygonsList)
@@ -130,7 +148,7 @@ namespace SpacePlanning
             }
             //int hIndLow = GraphicsUtility.ReturnLowestPointFromListNew(hMidPt);
             //int hIndHigh = GraphicsUtility.ReturnHighestPointFromListNew(hMidPt);
-            int hIndLow = TestGraphicsUtility.ReturnLowestPointFromList(hMidPt);
+            int hIndLow = CodeToBeTested.ReturnLowestPointFromList(hMidPt);
             int hIndHigh = PointUtility.HighestPointFromList(hMidPt);
             int vIndLow = PointUtility.LowestPointFromList(vMidPt);
             int vIndHigh = PointUtility.HighestPointFromList(vMidPt);
