@@ -62,7 +62,7 @@ namespace SpacePlanning
             return cleanNetworkLines;
         }
 
-        //Make circulation Polygons2d's between departments.
+        //Make circulation Polygons2d's between departments
         /// <summary>
         /// Builds cirulation polygon2d's between departments.
         /// </summary>
@@ -74,10 +74,10 @@ namespace SpacePlanning
         /// <search>
         /// Department Circulation Network, Shared Edges between departments
         /// </search>
-        [MultiReturn(new[] { "CirculationPolygons", "UpdatedDeptPoly" })]
-        public static Dictionary<string, object> MakeDeptCirculation(List<DeptData> deptData, List<List<Line2d>> circulationNetwork, double circulationWidth = 8)
+        [MultiReturn(new[] { "CirculationPolygons", "UpdatedDeptPolys" })]
+        public static Dictionary<string, object> MakeDeptCirculationPolys(List<DeptData> deptData, List<List<Line2d>> circulationNetwork, double circulationWidth = 8)
         {
-            if (deptData == null || deptData.Count == 0 || circulationNetwork == null || circulationNetwork.Count == null) return null;
+            if (deptData == null || deptData.Count == 0 || circulationNetwork == null || circulationNetwork.Count == 0) return null;
             List<Line2d> cleanLineList = LineUtility.FlattenLine2dList(circulationNetwork);
             List<Polygon2d> allDeptPolyList = new List<Polygon2d>();
             List<Polygon2d> circulationPolyList = new List<Polygon2d>();
@@ -141,16 +141,26 @@ namespace SpacePlanning
             return new Dictionary<string, object>
             {
                 { "CirculationPolygons", (circulationPolyList) },
-                { "UpdatedDeptPoly", (deptPolyBranchedInList) }
+                { "UpdatedDeptPolys", (deptPolyBranchedInList) }
 
             };
         }
-        
-        //Make Dept Topology Matrix
-        [MultiReturn(new[] { "ProgTopologyList", "ProgNeighborNameList", "ProgAllPolygons", "SharedEdge" })]
-        public static Dictionary<string, object> MakeProgramTopology(Polygon2d polyOutline, List<Polygon2d> polyA = null,  List<Polygon2d> polyB = null, List<Polygon2d> polyC = null, List<Polygon2d> polyD = null)
+
+        //Builds Prog Topology Matrix , finds all the shared edges between program polys, and updates program polygon2d's.
+        /// <summary>
+        /// Builds the program topology matrix internally and finds circulation network lines between program polygon2d's. 
+        /// </summary>
+        /// <param name="buildingOutline">Polygon2d of building outline.</param>
+        /// <param name="polyA">Polygon2d for programs of department A</param>
+        /// <param name="polyB">Polygon2d for programs of department B</param>
+        /// <param name="polyC">Polygon2d for programs of department C</param>
+        /// <param name="polyD">Polygon2d for any left over polygon2d</param>
+        /// <returns name="CirculationPolygons">Polygon2d's representing circulation areas between programs.</returns>
+        /// <returns name="PolygonsForAllPrograms">All program element's polygon2d geometry in one list.</returns>
+        [MultiReturn(new[] { "CirculationNetwork", "PolygonsForAllPrograms" })]
+        public static Dictionary<string, object> FindProgCirculationNetwork(Polygon2d buildingOutline, List<Polygon2d> polyA = null,  List<Polygon2d> polyB = null, List<Polygon2d> polyC = null, List<Polygon2d> polyD = null)
         {
-            if (!ValidateObject.CheckPoly(polyOutline)) return null;
+            if (!ValidateObject.CheckPoly(buildingOutline)) return null;
             List<Polygon2d> polygonsAllProgList = new List<Polygon2d>();
             List<DeptData> deptDataAllDeptList = new List<DeptData>();
             List<List<Line2d>> lineCollection = new List<List<Line2d>>();
@@ -174,7 +184,7 @@ namespace SpacePlanning
                 }
             }
             List<Line2d> cleanNetworkLines = LineUtility.RemoveDuplicateLines(networkLine);
-            cleanNetworkLines = GraphicsUtility.RemoveDuplicateslinesWithPoly(polyOutline, cleanNetworkLines);
+            cleanNetworkLines = GraphicsUtility.RemoveDuplicateslinesWithPoly(buildingOutline, cleanNetworkLines);
             List<List<string>> deptNeighborNames = new List<List<string>>();
 
             List<Line2d> onlyOrthoLineList = new List<Line2d>();
@@ -185,20 +195,27 @@ namespace SpacePlanning
             }
             return new Dictionary<string, object>
             {
-                { "ProgTopologyList", (null) },
-                { "ProgNeighborNameList", (networkLine) },
-                { "ProgAllPolygons", (polygonsAllProgList) },
-                { "SharedEdge", (onlyOrthoLineList) }
-
+                { "CirculationNetwork", (onlyOrthoLineList) },
+                { "PolygonsForAllPrograms", (polygonsAllProgList) }
+               
             };
         }
-        
-        //Make Circulation Polygons between depts
+
+        //Make circulation Polygons2d's between programs
+        /// <summary>
+        /// Builds circulation polygon2d's between programs.
+        /// </summary>
+        /// <param name="polyProgList">Polygon2d's of all programs in every department and of any left over space.</param>
+        /// <param name="circulationNetwork">List of line2d's representing circulation network between programs.</param>
+        /// <param name="circulationWidth">Width in metres for circulation corridors between programs.</param>
+        /// <param name="allowedCircRatio">Allowed aspect ratio of generated circulation polygon2d's.</param>
+        /// <param name="frequencyCorridor">Allowed frequncy of circulation spaces. Higher value allows more spaces for circulation network.</param>
+        /// <returns></returns>
         [MultiReturn(new[] { "CirculationPolygons", "UpdatedProgPolygons" })]
-        public static Dictionary<string, object> MakeProgramCirculation(List<Polygon2d> polyProgList, List<Line2d> lineList, double width = 8, double allowedCircRatio = 3, double frequencyCorridor = 0.5)
+        public static Dictionary<string, object> MakeProgCirculationPolys(List<Line2d> circulationNetwork, List<Polygon2d> polyProgList, double circulationWidth = 8, double allowedCircRatio = 3, double frequencyCorridor = 0.5)
         {
             if (!ValidateObject.CheckPolyList(polyProgList)) return null;
-            if (lineList == null || lineList.Count == 0) return null;
+            if (circulationNetwork == null || circulationNetwork.Count == 0) return null;
             List<Line2d> flatLineList = new List<Line2d>();
             List<bool> IsDuplicateList = new List<bool>();
 
@@ -218,9 +235,9 @@ namespace SpacePlanning
             double areaThresh = areaProgPolyList[value];
             Random ran = new Random();
 
-            for (int i = 0; i < lineList.Count; i++)
+            for (int i = 0; i < circulationNetwork.Count; i++)
             {
-                Line2d splitter = lineList[i];
+                Line2d splitter = circulationNetwork[i];
                 double someNumber = ran.NextDouble();
                 if (someNumber > frequencyCorridor) continue;
                 for (int j = 0; j < polyProgList.Count; j++)
@@ -234,7 +251,7 @@ namespace SpacePlanning
 
                     if (checkInside)
                     {
-                        Dictionary<string, object> splitResult = SplitObject.SplitByLine(progPoly, splitter, width);
+                        Dictionary<string, object> splitResult = SplitObject.SplitByLine(progPoly, splitter, circulationWidth);
                         List<Polygon2d> polyAfterSplit = (List<Polygon2d>)(splitResult["PolyAfterSplit"]);
                         if (ValidateObject.CheckPolyList(polyAfterSplit))
                         {
@@ -258,22 +275,15 @@ namespace SpacePlanning
                                 }
                                 updatedProgPolyList.Add(polyAfterSplit[0]);
                             }
-
-
-
                         }// end of if loop checking polylist
                     } // end of check inside
-
-
                 }// end of for loop j
             }// end of for loop i
 
             return new Dictionary<string, object>
-            {
-               
+            {               
                 { "CirculationPolygons", (circulationPolyList) },
                 { "UpdatedProgPolygons", (updatedProgPolyList) }
-
             };
         }
 
