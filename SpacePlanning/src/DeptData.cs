@@ -6,9 +6,11 @@ using System.Collections.Generic;
 
 namespace SpacePlanning
 {
+    /// <summary>
+    /// Department Data object to store information related to departments from the input program document.
+    /// </summary>
     public class DeptData
     {
-
         // Two private variables for example purposes
         private string _deptName;
         private List<ProgramData> _progDataList;
@@ -26,10 +28,8 @@ namespace SpacePlanning
         private double _deptAreaProportionAchieved;
         private double _cirFactor;
 
-
-        // We make the constructor for this object internal because the 
-        // Dynamo user should construct an object through a static method
-        public DeptData(string deptName, List<ProgramData> programDataList, double circulationFactor, double dimX, double dimY)
+        #region - internal constructor
+        internal DeptData(string deptName, List<ProgramData> programDataList, double circulationFactor, double dimX, double dimY)
         {
             _deptName = deptName;
             _progDataList = programDataList;
@@ -48,7 +48,7 @@ namespace SpacePlanning
 
         }
 
-        public DeptData(DeptData other)
+        internal DeptData(DeptData other)
         {
             _deptName = other.DepartmentName;
             _progDataList = other.ProgramsInDept;
@@ -56,79 +56,69 @@ namespace SpacePlanning
             _cirFactor = other.DeptCirFactor;
             _deptAreaNeeded = other.AreaEachDept();
             _numCells = other.NumCellsNeededDept();
-            _numCellAdded = other.NumberofCellsAdded;
+            _numCellAdded = other.NumCellsInDept;
             _IsAreaSatisfied = other.IsAreaSatisfied;
             _CellsAssigned = other.DepartmentCells;
-            _gridX = other.GridX;
-            _gridY = other.GridY;
-            _deptAreaProportion = other.DeptAreaProportion;
+            _gridX = other._gridX;
+            _gridY = other._gridY;
+            _deptAreaProportion = other.DeptAreaProportionNeeded;
             _deptAreaProportionAchieved = other.DeptAreaProportionAchieved;
 
-            if (other.PolyDeptAssigned != null && other.PolyDeptAssigned.Count > 0)
-            {
-                _polyDepts = other.PolyDeptAssigned;
-            }
-            else
-            {
-                _polyDepts = null;
-            }
+            if (other.PolyAssignedToDept != null && other.PolyAssignedToDept.Count > 0) _polyDepts = other.PolyAssignedToDept;
+            else _polyDepts = null;
         }
+        #endregion
 
 
 
-        #region - Public Methods
-
-        public double DeptCirFactor
+        #region - Public Properties
+        /// <summary>
+        /// Required area proportion for each department on site.
+        /// </summary>
+        public double DeptAreaProportionNeeded
         {
-            get { return _cirFactor; }
-            set { _cirFactor = value; }
+            get { return _deptAreaProportion; }
+            set { _deptAreaProportion = value; }
         }
 
+        /// <summary>
+        /// Returns the area proportion achieved for each department after space plan layout is generated.
+        /// </summary>
         public double DeptAreaProportionAchieved
         {
             get { return _deptAreaProportionAchieved; }
             set { _deptAreaProportionAchieved = value; }
         }
 
-        public double DeptAreaProportion
-        {
-            get { return _deptAreaProportion; }
-            set { _deptAreaProportion = value; }
-        }
-
+        /// <summary>
+        /// Proportion of each department after its assigned on site.
+        /// </summary>
         public double AreaPercentageAchieved
         {
             get { return Math.Round(AreaProvided / DeptAreaNeeded, 3); }
         }
 
-        public List<Polygon2d> PolyDeptAssigned
+        /// <summary>
+        /// Polygon2d assigned to each department.
+        /// </summary>     
+        public List<Polygon2d> PolyAssignedToDept
         {
             get { return _polyDepts; }
             set { _polyDepts = value; }
         }
 
-        public double GridX
-        {
-            get { return _gridX; }
-        }
-
-        public double GridY
-        {
-            get { return _gridY; }
-        }
-
+        /// <summary>
+        /// Cell objects assigned to each department.
+        /// </summary>
         public List<Cell> DepartmentCells
         {
             get { return _CellsAssigned; }
             set { _CellsAssigned = value; }
         }
 
-        public int NumberofCellsDept
-        {
-            get { return _numCellsDept; }
-            //set { _cellAvailable = value; }
-        }
-
+        /// <summary>
+        /// Area provided to each department.
+        /// </summary>
         public double AreaProvided
         {
             get { return _areaGivenDept; }
@@ -140,6 +130,9 @@ namespace SpacePlanning
             }
         }
 
+        /// <summary>
+        /// Does provided area to the department satisfy the area needs.
+        /// </summary>
         public bool IsAreaSatisfied
         {
             get
@@ -160,30 +153,54 @@ namespace SpacePlanning
 
         }
 
-        public int NumberofCellsAdded
+        /// <summary>
+        /// Total number of cells assigned to each department.
+        /// </summary>
+        public int NumCellsInDept
         {
             get { return _numCellAdded; }
             set { _numCellAdded = value; }
         }
 
+        /// <summary>
+        /// Name of the Department.
+        /// </summary>
         public string DepartmentName
         {
             get { return _deptName; }
         }
 
+        /// <summary>
+        /// Area needed for each department.
+        /// </summary>
         public double DeptAreaNeeded
         {
             get { return _deptAreaNeeded; }
         }
 
+        /// <summary>
+        /// List of programs inside each department.
+        /// </summary>
         public List<ProgramData> ProgramsInDept
         {
             get { return _progDataList; }
             set { _progDataList = value; }
         }
+        #endregion
 
-        //calc number of cells assigned to each dept
-        public int NumCellsNeededDept()
+        #region - Private Properties
+        //dept circulation factor
+        internal double DeptCirFactor
+        {
+            get { return _cirFactor; }
+            set { _cirFactor = value; }
+        }
+        #endregion
+
+
+        #region - Private Methods
+        //calc number of cells needed for each dept
+        internal int NumCellsNeededDept()
         {
             int num = 0;
             double cellArea = _gridX * _gridY;
@@ -192,24 +209,12 @@ namespace SpacePlanning
             return num;
         }
 
-        //calc area for each dept
-        public double AreaEachDept()
+        //computes total area of each dept
+        internal double AreaEachDept()
         {
             double area = 0;
             for (int i = 0; i < _progDataList.Count; i++) area += _progDataList[i].UnitArea;
             return area * _cirFactor;
-        }
-
-        #endregion
-
-
-        #region - Private Methods
-        //assign cells
-        internal void CellAssign(List<Cell> inputCellList)
-        {
-            _CellsAssigned = inputCellList;
-            _numCellAdded = _CellsAssigned.Count;
-            NumberofCellsAdded = _numCellAdded;
         }
 
         //assign cells per dept
@@ -218,7 +223,7 @@ namespace SpacePlanning
 
             _CellsAssigned.Add(cellItem);
             _numCellAdded = _CellsAssigned.Count;
-            NumberofCellsAdded = _numCellAdded;
+            NumCellsInDept = _numCellAdded;
         }
 
         //calc area allocated
@@ -229,12 +234,6 @@ namespace SpacePlanning
 
         }
 
-        //calc area from a given poly
-        internal void CalcAreaGivenFromPoly(double areaPoly)
-        {
-            _areaGivenDept = areaPoly;
-
-        }
         #endregion
 
 

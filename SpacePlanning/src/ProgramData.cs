@@ -4,10 +4,12 @@ using System.Collections.Generic;
 
 namespace SpacePlanning
 {
+    /// <summary>
+    /// Program Data object to store information related to program elements from the input program document.
+    /// </summary>
     public class ProgramData 
     {
 
-        // Two private variables for example purposes
         private int _progrID;
         private string _progName;
         private string _progDept;
@@ -19,15 +21,14 @@ namespace SpacePlanning
         private double _gridY;
         private int _numCellAdded;
         private List<Cell> _CellsAssigned;
-
-        public List<Cell> _progrCell;
+        private List<Cell> _progrCell;
         private int _numCells;
         private double _areaGiven;
         private bool _IsAreaSatsifed;
         private List<Polygon2d> _polyProgs;
 
 
-        public ProgramData(int programID,string programName,string programDept,
+        internal ProgramData(int programID,string programName,string programDept,
             int programQuant,double programUnitArea, int programPrefValue, List<string> programAdjList,List<Cell> programCell, double dimX, double dimY)
         {
             _progrID = programID;
@@ -52,101 +53,134 @@ namespace SpacePlanning
 
 
         }
-
-
-        public ProgramData(ProgramData other)
+        
+        internal ProgramData(ProgramData other)
         {
             _progrID = other.ProgID;
-            _progName = other.ProgName;
+            _progName = other.ProgramName;
             _progDept = other.DeptName;
             _progQuanity = other.Quantity;
             _progUnitArea = other.UnitArea;
-            _progPrefValue = other.ProgPrefValue;
+            _progPrefValue = other.ProgPreferenceVal;
             _progAdjList = other.ProgAdjList;
             _progrCell = other.ProgCell;
             _numCells = other.NumCellsNeeded();
-            _gridX = other.GridX;
-            _gridY = other.GridY;
+            _gridX = other._gridX;
+            _gridY = other._gridY;
 
             _numCellAdded = other.NumberofCellsAdded;
             _areaGiven = other.AreaProvided;
             _IsAreaSatsifed = other.IsAreaSatisfied;
             _CellsAssigned = new List<Cell>();
 
-            if (other.PolyProgAssigned != null) _polyProgs = other.PolyProgAssigned;
+            if (other.PolyAssignedToProg != null) _polyProgs = other.PolyAssignedToProg;
             else _polyProgs = null;            
         }
 
-        public List<Polygon2d> PolyProgAssigned
+
+        #region - Public properties
+        /// <summary>
+        /// Name of the program.
+        /// </summary>
+        public string ProgramName
+        {
+            get { return _progName; }
+        }
+
+        /// <summary>
+        /// Polygon2d's assigned to each program.
+        /// </summary>
+        public List<Polygon2d> PolyAssignedToProg
         {
             get { return _polyProgs; }
             set { _polyProgs = value; }
         }
 
-        public List<Cell> ProgramCells
-        {
-            get { return _CellsAssigned; }
-            set { _CellsAssigned = value; }
-        }
-
-        public int NumberofCellsProgram
+        /// <summary>
+        /// Number of cell objects assigned to each program.
+        /// </summary>
+        public int NumCellsInProg
         {
             get { return _numCells; }
-            //set { _cellAvailable = value; }
         }
 
-        public int ProgID
-        {
-            get { return _progrID; }
-        }
-
+        /// <summary>
+        /// Program adjacency list.
+        /// </summary>
         public List<string> ProgAdjList
         {
             get { return _progAdjList; }
         }
 
+        /// <summary>
+        /// List of cell objects in each program.
+        /// </summary>
         public List<Cell> ProgCell
         {
             get { return _progrCell; }
         }
 
-        public int ProgPrefValue
+        /// <summary>
+        /// Program preference value.
+        /// </summary>
+        public int ProgPreferenceVal
         {
             get { return _progPrefValue; }
         }
 
-        public string ProgName
-        {
-            get { return _progName; }
-        }
-
+        /// <summary>
+        /// Name of the Deparment to which the program is assigned to.
+        /// </summary>
         public string DeptName
         {
             get { return _progDept; }
         }
 
+        /// <summary>
+        /// Area of one unit of program.
+        /// </summary>
         public double UnitArea
         {
             get { return _progUnitArea; }
         }
 
+        /// <summary>
+        /// Quantity of each program.
+        /// </summary>
         public int Quantity
         {
             get { return _progQuanity; }
         }
 
+        /// <summary>
+        /// Area of one unit of the program.
+        /// </summary>
         public double AreaNeeded
         {
-            get { return _progUnitArea; }
-            
+            get { return _progUnitArea; }            
         }
 
-        public double CurrentAreaNeeds
+        /// <summary>
+        /// Does the area assigned to the program satisfy the area requirements.
+        /// </summary>
+        public bool IsAreaSatisfied
         {
-            get { return _progUnitArea - _areaGiven; }
+            get
+            {
+                double areaNeeded = _progQuanity * _progUnitArea;
+                if (CurrentAreaNeeds <= 0) return true;
+                else return false;
+            }
+            set
+            {
+                _IsAreaSatsifed = value;
+            }
 
         }
 
+        /// <summary>
+        /// Area assigned to the program.
+        /// </summary>
         public double AreaProvided
         {
             get { return _gridX*_gridY*_numCellAdded; }
@@ -156,41 +190,29 @@ namespace SpacePlanning
             }
             
         }
+        #endregion
 
-        public int NumberofCellsAdded
+
+
+        #region - Private properties
+        internal int NumberofCellsAdded
         {
             get { return _numCellAdded; }
             set { _numCellAdded = value; }
         }
-      
-        public bool IsAreaSatisfied
-        {
-            get {
-                double areaNeeded = _progQuanity * _progUnitArea;
-                if (CurrentAreaNeeds <= 0) return true;
-                else return false;
-            }
-            set
-            {
-                _IsAreaSatsifed = value;
-            }
-            
-        }   
 
-        public string ProgramName
+        internal double CurrentAreaNeeds
         {
-            get { return _progName; }
+            get { return _progUnitArea - _areaGiven; }
+
         }
 
-        public double GridX
+        internal int ProgID
         {
-            get { return _gridX; }
+            get { return _progrID; }
         }
+        #endregion
 
-        public double GridY
-        {
-            get { return _gridY; }
-        }
 
         #region - Private Methods
         //calc area allocated per program element

@@ -7,7 +7,10 @@ using stuffer;
 
 namespace SpacePlanning
 {
-    public class BubbleChart
+    /// <summary>
+    /// Class to build a bubble chart, representing programs with area, quantity and adjacency
+    /// </summary>
+    public static class BubbleChart
     {
         #region - Public Methods
         //makes point grid for bubbles

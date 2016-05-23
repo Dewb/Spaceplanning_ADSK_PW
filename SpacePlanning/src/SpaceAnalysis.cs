@@ -6,10 +6,23 @@ using System;
 
 namespace SpacePlanning
 {
-    public class SpaceAnalysis
+    /// <summary>
+    /// Class to perform spatial analytis to score and appraise space plan layouts.
+    /// </summary>
+    public static class SpaceAnalysis
     {
         #region - Public Methods
         //provides information related to dept data
+        /// <summary>
+        /// Provides analytics on Department data after spaces has been assigned.
+        /// </summary>
+        /// <param name="deptData">Department data object.</param>
+        /// <returns name="DepartmentNames">Name of the departments.</returns>
+        /// <returns name="NumCellsTaken">Number of cells assgined to each department.</returns>
+        /// <returns name="AreaSatisfied">If Department area is satisfied</returns>
+        /// <search>
+        /// department analytics
+        /// </search>
         [MultiReturn(new[] { "DepartmentNames", "NumCellsTaken", "AreaSatisfied", "AreaNeeded", "AreaProvided", "ProgramsInDepts", "PolyAssignedDepts" })]
         public static Dictionary<string, object> DeptAnalytics(List<DeptData> deptData)
         {
@@ -25,12 +38,12 @@ namespace SpacePlanning
             for (int i = 0; i < deptData.Count; i++)
             {
                 deptNameList.Add(deptData[i].DepartmentName);
-                numCellsList.Add(deptData[i].NumberofCellsAdded);
+                numCellsList.Add(deptData[i].NumCellsInDept);
                 areaSatisfiedList.Add(deptData[i].IsAreaSatisfied);
                 progLists.Add(deptData[i].ProgramsInDept);
                 areaNeededList.Add(deptData[i].DeptAreaNeeded);
                 areaProvidedList.Add(deptData[i].AreaProvided);
-                polyAssignedList.Add(deptData[i].PolyDeptAssigned);
+                polyAssignedList.Add(deptData[i].PolyAssignedToDept);
             }
             return new Dictionary<string, object>
             {
@@ -44,7 +57,17 @@ namespace SpacePlanning
             };
         }
 
-        //Pprovides information related to program data
+        //Provides information related to program data
+        /// <summary>
+        /// Provides analytics on Program data after spaces has been assigned.
+        /// </summary>
+        /// <param name="progData">Program data object</param>
+        /// <returns name="ProgramNames">Name of the programs.</returns>
+        /// <returns name="NumCellsTaken">Number of cells assgined to each program.</returns>
+        /// <returns name="AreaSatisfied">Area of the program is satisfied or not</returns>
+        /// <search>
+        /// program analytics
+        /// </search>
         [MultiReturn(new[] { "ProgramNames", "NumCellsTaken", "AreaSatisfied", "AreaNeeded", "AreaProvided", "Quantity", "PolyAssignedProgs" })]
         public static Dictionary<string, object> ProgramAnalytics(List<ProgramData> progData)
         {
@@ -59,16 +82,14 @@ namespace SpacePlanning
             List<List<Polygon2d>> polyProgList = new List<List<Polygon2d>>();
             for (int i = 0; i < progData.Count; i++)
             {
-                progNameList.Add(progData[i].ProgName);
+                progNameList.Add(progData[i].ProgramName);
                 numCellsList.Add(progData[i].NumberofCellsAdded);
                 areaSatisfiedList.Add(progData[i].IsAreaSatisfied);
                 areaNeededList.Add(progData[i].AreaNeeded);
                 areaProvidedList.Add(progData[i].AreaProvided);
                 quantList.Add(progData[i].Quantity);
-                polyProgList.Add(progData[i].PolyProgAssigned);
+                polyProgList.Add(progData[i].PolyAssignedToProg);
             }
-
-
             return new Dictionary<string, object>
             {
                 { "ProgramNames", (progNameList) },
@@ -81,9 +102,22 @@ namespace SpacePlanning
 
             };
         }
-
-
-        //Visualizes the scores and displays as text
+        
+        //Visualizes the space plan scores and displays as text
+        /// <summary>
+        /// Visualizes space plan scores on the viewport.
+        /// </summary>
+        /// <param name="totalScore">Total score of the space plan layout.</param>
+        /// <param name="programFitScore">Program fitness score of the space plan layout.</param>
+        /// <param name="extViewScore">External view score of the space plan layout.</param>
+        /// <param name="travelDistScore">Travel distance score of the space plan layout.</param>
+        /// <param name="percKPUScore">Percentage KPU score of the space plan layout.</param>
+        /// <param name="x">X coordinate of the visualization.</param>
+        /// <param name="y">Y coordinate of the visualization.</param>
+        /// <param name="spacingX">Spacing in the direction of X axis.</param>
+        /// <param name="spacingY">Spacing in the direction of Y axis.</param>
+        /// <returns name="TextToWrite">String to visualize.</returns>
+        /// <returns name="Points">Point at visualiation.</returns>        
         [MultiReturn(new[] { "TextToWrite", "Points" })]
         public static Dictionary<string, object> Visualizer(double totalScore, double programFitScore,
             double extViewScore, double travelDistScore, double percKPUScore, double x = 0, double y = 0, double spacingX = 10, double spacingY = 10 )
@@ -129,13 +163,30 @@ namespace SpacePlanning
                 { "Points", (ptList) }
             };
         }
-
-
-        //scores the design, currently there are four individual scores and total score as summation
-        [MultiReturn(new[] { "TotalScore", "ProgramFitScore", "ExtViewKPUScore",
-            "TravelDistanceScore", "PercentageKPUScore", "TestBorderCells","TestBorderPts",
-            "TestData", "InpatientDeptInfo", "ExternalWallCheck", "PolyFlatList", "PolyCenterPts"})]
-        public static Dictionary<string, object> ScoreSpacePlan(List<DeptData> deptData, List<List<Polygon2d>> inPatientPoly, 
+        
+        //scores the space plan layout. currently there are four individual scores and total score is the summation of them.
+        /// <summary>
+        /// Scores the space plan layout based on four key metrics, program fitness score, external view score, travel distance score, percentage of key planning units score.
+        /// </summary>
+        /// <param name="deptData">Department data object.</param>
+        /// <param name="primaryProgPoly">Primary program element polygon2d list.</param>
+        /// <param name="cellList">List of cell objects for the building outline.</param>
+        /// <param name="siteArea">Area of the site.</param>
+        /// <param name="programFitWeight">User assigned weight for program fitness score.</param>
+        /// <param name="extViewWeight">User assigned weight for external view score.</param>
+        /// <param name="traveDistWeight">User assigned weight for travel distance score.</param>
+        /// <param name="percKPUWeight">User assigned weight for percentage of key planning units score.</param>
+        /// <returns name="TotalScore">Total score of the space plan layout.</returns>
+        /// <returns name="ProgramFitScore">Program fitness score of the space plan layout.</returns>
+        /// <returns name="ExtViewKPUScore">External view score of the space plan layout.</returns>
+        /// <returns name="TravelDistanceScore">Travel distance score of the space plan layout.</returns>
+        /// <returns name="PercentageKPUScore">Percentage KPU score of the space plan layout.</returns>
+        /// <returns name="InpatientDeptData">Department data of primary department.</returns>
+        /// <search>
+        /// space plane scoring, space plan metrics
+        /// </search>
+        [MultiReturn(new[] { "TotalScore", "ProgramFitScore", "ExtViewKPUScore", "TravelDistanceScore", "PercentageKPUScore","InpatientDeptData"})]
+        public static Dictionary<string, object> SpacePlanScorer(List<DeptData> deptData, List<List<Polygon2d>> primaryProgPoly, 
             List<Cell> cellList, double siteArea = 0,  double programFitWeight = 0.6, double extViewWeight = 1, double traveDistWeight = 0.8,
             double percKPUWeight = 0.70)
         {
@@ -146,18 +197,16 @@ namespace SpacePlanning
             List<double> inPatientData = new List<double>();
             int totalPatientRoomCount = 0;
             double areaInpatientRooms = 0, percInpatientFromSite = 0, dim = cellList[0].DimX;
-            for(int i = 0; i < inPatientPoly.Count; i++)
+            for(int i = 0; i < primaryProgPoly.Count; i++)
             {
-                if (!ValidateObject.CheckPolyList(inPatientPoly[i])) continue;
-                for(int j = 0; j < inPatientPoly[i].Count; j++)
+                if (!ValidateObject.CheckPolyList(primaryProgPoly[i])) continue;
+                for(int j = 0; j < primaryProgPoly[i].Count; j++)
                 {
-                    if (!ValidateObject.CheckPoly(inPatientPoly[i][j])) continue;
+                    if (!ValidateObject.CheckPoly(primaryProgPoly[i][j])) continue;
                     totalPatientRoomCount += 1;
-                    areaInpatientRooms += PolygonUtility.AreaPolygon(inPatientPoly[i][j]);
+                    areaInpatientRooms += PolygonUtility.AreaPolygon(primaryProgPoly[i][j]);
                 }
-            }
-
-    
+            }   
 
             percInpatientFromSite = areaInpatientRooms / (2*siteArea);
             testData.Add(totalPatientRoomCount);
@@ -165,9 +214,7 @@ namespace SpacePlanning
             testData.Add(percInpatientFromSite);
             inPatientData.Add(inPatientDeptData.AreaPercentageAchieved);
             inPatientData.Add(inPatientDeptData.DeptAreaNeeded);
-            inPatientData.Add(inPatientDeptData.AreaProvided);
-            
-
+            inPatientData.Add(inPatientDeptData.AreaProvided);          
 
 
             Dictionary<string,object> cellNeighborObj = GridObject.FormsCellNeighborMatrix(cellList);
@@ -183,7 +230,7 @@ namespace SpacePlanning
 
             List<bool> getsExternalWall = new List<bool>();
             Point2d buildingCenter = PointUtility.CentroidInPointLists(borderPts);
-            List<Polygon2d> polyFlatList = PolygonUtility.FlattenPolygon2dList(inPatientPoly);
+            List<Polygon2d> polyFlatList = PolygonUtility.FlattenPolygon2dList(primaryProgPoly);
             double dimPoly = 0, numTrues = 0, travelDistancePatientRms =0, arbLargeValue = 10000;
             for(int i = 0; i < polyFlatList.Count; i++)
             {
@@ -203,27 +250,19 @@ namespace SpacePlanning
                     if (distToCell <= dimAdd) { check = true; numTrues += 1;  break; }
                 }
                 getsExternalWall.Add(check);
-            }
-            
-           
+            }          
             //double programFitWeight = 0.6, extViewWeight = 1, traveDistWeight = 0.8, percKPUWeight = 0.70;
             double programFitScore = 1, extViewScore = 1, travelDistScore = 1, percKPUScore = 1;
             
 
             for(int i = 0; i < deptData.Count; i++) programFitScore += deptData[i].DeptAreaProportionAchieved;
-
             programFitScore = programFitScore / deptData.Count;
             extViewScore = numTrues / polyFlatList.Count;
             travelDistScore = travelDistancePatientRms / arbLargeValue;
             percKPUScore = inPatientDeptData.DeptAreaProportionAchieved;
-
             double totalScore = Math.Round(((programFitWeight * programFitScore + extViewWeight * extViewScore +
                                 traveDistWeight * travelDistScore + percKPUWeight * percKPUScore) * 40), 2);
-
-
-
-
-
+            
             return new Dictionary<string, object>
             {
                 { "TotalScore", (totalScore) },
@@ -231,16 +270,9 @@ namespace SpacePlanning
                 { "ExtViewKPUScore", (extViewWeight * extViewScore) },
                 { "TravelDistanceScore", (traveDistWeight * travelDistScore) },
                 { "PercentageKPUScore", (percKPUWeight * percKPUScore) },
-                { "TestBorderCells", (borderCellIndices) },
-                { "TestBorderPts", (borderPts) },
-                { "TestData", (testData) },
-                { "InpatientDeptInfo", (inPatientData) },
-                { "ExternalWallCheck", (getsExternalWall) },
-                { "PolyFlatList", (polyFlatList) },
-                { "PolyCenterPts", (buildingCenter) }
+                { "InpatientDeptData", (inPatientData) }
             };
         }
-
         #endregion
 
     }

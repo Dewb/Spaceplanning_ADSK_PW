@@ -15,7 +15,7 @@ using System.Collections;
 using System.Diagnostics;
 namespace SpacePlanning
 {
-    public class VectorUtility
+    public static class VectorUtility
 
     {
         #region - Public Methods

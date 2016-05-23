@@ -12,8 +12,17 @@ using System.Reflection;
 
 namespace SpacePlanning
 {
+    /// <summary>
+    /// A static class to read contextual data and build the data stack about site outline and program document.
+    /// </summary>
     public static class ReadData
     {
+
+        ///////////////////////////////////////////////////////////////////
+        /// NOTE: This project requires REFERENCEPOINTs to the ProtoInterface
+        /// and ProtoGeometry DLLs. These are found in the Dynamo install
+        /// directory.
+        ///////////////////////////////////////////////////////////////////
 
         #region - Public Methods  
         //read embedded .csv file and make data stack
@@ -88,7 +97,7 @@ namespace SpacePlanning
             //added to compute area percentage for each dept
             double totalDeptArea = 0;
             for(int i = 0; i < deptDataStack.Count; i++) totalDeptArea += deptDataStack[i].DeptAreaNeeded;
-            for (int i = 0; i < deptDataStack.Count; i++) deptDataStack[i].DeptAreaProportion = Math.Round((deptDataStack[i].DeptAreaNeeded / totalDeptArea), 3);
+            for (int i = 0; i < deptDataStack.Count; i++) deptDataStack[i].DeptAreaProportionNeeded = Math.Round((deptDataStack[i].DeptAreaNeeded / totalDeptArea), 3);
 
             return SortProgramsByPrefInDept(deptDataStack);
        
@@ -197,7 +206,7 @@ namespace SpacePlanning
             //added to compute area percentage for each dept
             double totalDeptArea = 0;
             for (int i = 0; i < deptDataStack.Count; i++) totalDeptArea += deptDataStack[i].DeptAreaNeeded;
-            for (int i = 0; i < deptDataStack.Count; i++) deptDataStack[i].DeptAreaProportion = Math.Round((deptDataStack[i].DeptAreaNeeded / totalDeptArea),3);
+            for (int i = 0; i < deptDataStack.Count; i++) deptDataStack[i].DeptAreaProportionNeeded = Math.Round((deptDataStack[i].DeptAreaNeeded / totalDeptArea),3);
             return SortDeptData(deptDataStack);
         }
 
@@ -310,7 +319,7 @@ namespace SpacePlanning
                 List<double> keys = new List<double>();
                 for (int j = 0; j < progItems.Count; j++)
                 {
-                    double key = progItems[j].ProgPrefValue + eps;
+                    double key = progItems[j].ProgPreferenceVal + eps;
                     sortedPrograms.Add(key, progItems[j]);
                     eps += inc;
                 }

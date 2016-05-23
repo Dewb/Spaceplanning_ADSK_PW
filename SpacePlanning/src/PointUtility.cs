@@ -8,7 +8,7 @@ using System.Collections;
 
 namespace SpacePlanning
 {
-    class PointUtility
+    public static class PointUtility
     {
         #region - Public Methods
         // find the centroid of list of point2d

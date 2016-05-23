@@ -10,6 +10,9 @@ using Autodesk.DesignScript.Geometry;
 
 namespace SpacePlanning
 {
+    /// <summary>
+    /// Class to compute and generate circulation networks in space plans.
+    /// </summary>
     public static class Circulation
     {
         #region - Public Methods
@@ -35,7 +38,7 @@ namespace SpacePlanning
             //make flattened list of all dept data and dept polys
             for (int i = 0; i < deptData.Count; i++)
             {
-                List<Polygon2d> polyList = deptData[i].PolyDeptAssigned;
+                List<Polygon2d> polyList = deptData[i].PolyAssignedToDept;
                 for (int j = 0; j < polyList.Count; j++)
                 {
                     polygonsAllDeptList.Add(polyList[j]);
@@ -84,7 +87,7 @@ namespace SpacePlanning
             List<int> deptIdList = new List<int>();
             for (int i = 0; i < deptData.Count; i++)
             {
-                List<Polygon2d> deptPolyList = deptData[i].PolyDeptAssigned;
+                List<Polygon2d> deptPolyList = deptData[i].PolyAssignedToDept;
                 for (int j = 0; j < deptPolyList.Count; j++)
                 {
                     deptIdList.Add(i);

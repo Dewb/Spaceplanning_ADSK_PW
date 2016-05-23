@@ -9,10 +9,11 @@ using System.Linq;
 
 namespace SpacePlanning
 {
+    /// <summary>
+    /// Class to compute, analyse and visualize glare in an indoor space using UGR Calculations.
+    /// </summary>
     public class GlareVisualization
     {
-
-
         #region- Public Methods
         //builds the line3d of the furnitures
         public static List<Line3d> GetLine2dFurnitures(List<NurbsCurve> nurbList, double height = 0)

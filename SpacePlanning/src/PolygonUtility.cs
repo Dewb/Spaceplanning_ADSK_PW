@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace SpacePlanning
 {
-    public class PolygonUtility
+    public static class PolygonUtility
     {
     
 

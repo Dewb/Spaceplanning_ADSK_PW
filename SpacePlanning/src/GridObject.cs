@@ -11,6 +11,9 @@ using System.Linq;
 
 namespace SpacePlanning
 {
+    /// <summary>
+    /// Class to perform operations on the cell objects inside the site outline, inluding building a form and other similar uses.
+    /// </summary>
     public class GridObject
     {
 
@@ -32,9 +35,20 @@ namespace SpacePlanning
         }
 
 
-
         #region - Public Methods
-        // make point2d list which are inside the bounding box
+        // make cells inside a given building outline
+        /// <summary>
+        /// Builds the cells which are inside a given polygon2d outline.
+        /// Returns list of cellls
+        /// </summary>
+        /// <param name="bbox">Point2d list representing a bounding box.</param>
+        /// <param name="outlinePoints">Point2d list representing a polygon2d outline.</param>
+        /// <param name="dimXX">X axis dimension of the cell object.</param>
+        /// <param name="dimYY">Y axis dimension of the cell object.</param>
+        /// <returns name="CellList">List of cell object inside the outline.</returns>
+        /// <search>
+        /// make cells inside outline, grid cells inside.
+        /// </search>
         public static List<Cell> GridCellsInsideOutline(List<Point2d> bbox, List<Point2d> outlinePoints, double dimXX, double dimYY)
         {
             List<Point2d> pointsGrid = new List<Point2d>();
@@ -69,44 +83,19 @@ namespace SpacePlanning
             return cells;
         }
 
-  
-        //make cells on the grids from point2d
-        public static List<Polygon2d> MakeCellPolysFromGridPoints2da(List<Point2d> point2dgrid, double dimX, double dimY)
-        {
-
-            List<Polygon2d> cellsPolyList = new List<Polygon2d>();
-            List<Cell> cellList = new List<Cell>();
-            for (int i = 0; i < point2dgrid.Count; i++)
-            {
-                List<Point2d> ptList = new List<Point2d>();
-
-                double a = point2dgrid[i].X - (dimX / 2);
-                double b = point2dgrid[i].Y - (dimY / 2);
-                Point2d pt = Point2d.ByCoordinates(a, b);
-                ptList.Add(pt);
-
-                a = point2dgrid[i].X - (dimX / 2);
-                b = point2dgrid[i].Y + (dimY / 2);
-                pt = Point2d.ByCoordinates(a, b);
-                ptList.Add(pt);
-
-                a = point2dgrid[i].X + (dimX / 2);
-                b = point2dgrid[i].Y + (dimY / 2);
-                pt = Point2d.ByCoordinates(a, b);
-                ptList.Add(pt);
-
-                a = point2dgrid[i].X + (dimX / 2);
-                b = point2dgrid[i].Y - (dimY / 2);
-                pt = Point2d.ByCoordinates(a, b);
-                ptList.Add(pt);
-
-                Polygon2d pol = Polygon2d.ByPoints(ptList);
-                cellsPolyList.Add(pol);
-            }
-            return cellsPolyList;
-        }
-
-        //make cells on the grids from point2d based on the indices provided
+        //make cells as polygon2d's from point2d based on the indices provided
+        /// <summary>
+        /// Builds list of cell object based on a provided point 2d list and indices list.
+        /// Returns list of polygon2d's representing the cells.
+        /// </summary>
+        /// <param name="pointsgrid">Point2d list to make the cells.</param>
+        /// <param name="dimX">X axis dimension of the cell object.</param>
+        /// <param name="dimY">y axis dimension of the cell object.</param>
+        /// <param name="indexList">List of int, representing indicies to be used from the point2d list.</param>
+        /// <returns name="PolyList">Polygon2d list representing cells.</returns>
+        /// <search>
+        /// make cell polys from point2d
+        /// </search>
         public static List<Polygon2d> MakeCellPolysFromIndicesPoint2d(List<Point2d> pointsgrid, double dimX, double dimY, List<int> indexList = null)
         {
             List<Polygon2d> cellsPolyList = new List<Polygon2d>();
@@ -153,7 +142,17 @@ namespace SpacePlanning
             return cellsPolyList;
         }
 
-        //make cells on the grids from cell objects
+        //make cells as polygon2d's from cell objects
+        /// <summary>
+        /// Makes polygon2d's to represent cell object
+        /// </summary>
+        /// <param name="cellList">List of cell objects.</param>
+        /// <param name="indexList">List of int, representing indices of the cell objects to be used.</param>
+        /// <param name="height">Z axis value of the polygon2d.</param>
+        /// <returns name="PolyList">Polygon2d list representing cells.</returns>
+        /// <search>
+        /// make cell polys from cell objects
+        /// </search>
         public static List<Polygon> MakeCellPolysFromCellObjects(List<Cell> cellList, List<int> indexList = null, double height  = 0)
         {
             List<Polygon> cellsPolyList = new List<Polygon>();
@@ -213,27 +212,32 @@ namespace SpacePlanning
         }
 
         //make grahams scan algo based convex hull from an input list of points
-        public static List<Point2d> ConvexHullFromPoint2dList(List<Point2d> ptList)
+        /// <summary>
+        /// Makes convex hull for an input list of points based on Grahams scan algorithm.
+        /// Returns list of point2d.
+        /// </summary>
+        /// <param name="pointList">List of point2d whose convex hull needs to be made.</param>
+        /// <returns name="PointList">List of point2d representing the convex hull.</returns>
+        /// <search>
+        /// make convex hull based on grahams scan algorithm
+        /// </search>
+        public static List<Point2d> ConvexHullFromPoint2dList(List<Point2d> pointList)
         {
             List<Point2d> convexHullPtList = new List<Point2d>();
-            int sizePtList = ptList.Count;
+            int sizePtList = pointList.Count;
             //get the lowest point in the list and place it on 0 index
-            PointUtility.GetLowestPointForGrahamsScan(ref ptList, sizePtList);
-            PointUtility.SortedPoint2dListForGrahamScan(ref ptList, sizePtList);
+            PointUtility.GetLowestPointForGrahamsScan(ref pointList, sizePtList);
+            PointUtility.SortedPoint2dListForGrahamScan(ref pointList, sizePtList);
             Stack tempStack = new Stack();
-            tempStack.Push(ptList[0]);
-            tempStack.Push(ptList[1]);
-            tempStack.Push(ptList[2]);
+            tempStack.Push(pointList[0]);
+            tempStack.Push(pointList[1]);
+            tempStack.Push(pointList[2]);
             for (int i = 3; i < sizePtList; i++)
             {
                 while (ValidateObject.CheckPointOrder(PointUtility.BeforeTopPointForGrahamScan(ref tempStack),
-                    (Point2d)tempStack.Peek(), ptList[i]) != 2 && tempStack.Count > 1)
-                {
-                    tempStack.Pop();
-                }
-                tempStack.Push(ptList[i]);
+                    (Point2d)tempStack.Peek(), pointList[i]) != 2 && tempStack.Count > 1) tempStack.Pop();
+                tempStack.Push(pointList[i]);
             }
-
             while (tempStack.Count > 0)
             {
                 Point2d ptTop = (Point2d)tempStack.Peek();
@@ -243,15 +247,26 @@ namespace SpacePlanning
             return convexHullPtList;
         }
 
-        //gets the cell and forms grid line based on distance provided
-        [MultiReturn(new[] { "LowerPoint", "HigherPoint", "GridXLines", "GridYLines", "PointXList", "PointYList" })]
-        public static Dictionary<string, object> CreateGridLines(Polygon2d poly, double dim = 10, int mul = 1)
+        //creates grid lines on an input polygon2d
+        /// <summary>
+        /// Builds grid lines on an input polygon2d, based on input offset distance and multiplier
+        /// </summary>
+        /// <param name="polyOutline">Polygon2d outline on whiche grid linese needs to be built.</param>
+        /// <param name="dim">X and Y axis dimension of the grid line spacings.</param>
+        /// <param name="scale">Multipler on the dimension to offset grid lines.</param>
+        /// <returns name="GridXLines">List of line2d in X direction.</returns>
+        /// <returns name="GridYLines">List of line2d in X direction.</returns>
+        /// <search>
+        /// grid lines
+        /// </search>
+        [MultiReturn(new[] { "GridXLines", "GridYLines"})]
+        public static Dictionary<string, object> CreateGridLines(Polygon2d polyOutline, double dim = 10, int scale = 1)
         {
-            if (mul < 1) mul = 1;
+            if (scale < 1) scale = 1;
             double eps = 25, extension = 300;
-            double distanceX = mul * dim, distanceY = mul * dim;
+            double distanceX = scale * dim, distanceY = scale * dim;
 
-            Dictionary<string, object> lowHighObj = PointUtility.ReturnHighestAndLowestPointofBBox(poly);
+            Dictionary<string, object> lowHighObj = PointUtility.ReturnHighestAndLowestPointofBBox(polyOutline);
             Point2d lowPt = (Point2d)lowHighObj["LowerPoint"];
             Point2d hipt = (Point2d)lowHighObj["HigherPoint"];
             List<Point2d> pointXList = new List<Point2d>(), pointYList = new List<Point2d>();
@@ -285,22 +300,31 @@ namespace SpacePlanning
 
             return new Dictionary<string, object>
             {
-                { "LowerPoint", (lowPt) },
-                { "HigherPoint", (hipt) },
                 { "GridXLines", (gridXLines) },
-                { "GridYLines", (gridYLines) },
-                { "PointXList", (pointXList) },
-                { "PointYList", (pointYList) }
+                { "GridYLines", (gridYLines) }
             };
         }
-       
-     
-        //get the cells and make an orthogonal outline poly 
+
+        //finds the border cells and builds the cell neighbor matrix
+        /// <summary>
+        /// Finds the border cells for the input polyoutline
+        /// Builds the Cell NeighborMatrix
+        /// </summary>
+        /// <param name="polyOutline">Polygon2d as the border outline.</param>
+        /// <param name="dim">Dimension of the cell object in X and Y direction.</param>
+        /// <param name="tag">Boolean item to activate two separate modes of calculation.</param>
+        /// <returns name="BorderPolyLine">Polygon2d representing orthogonal poly outline.</returns>
+        /// <returns name="BorderCellsFound">Cell objects at the border of the outline.</returns>  
+        /// <returns name="CellNeighborMatrix">Cell NeighborMatrix object.</returns> 
+        /// <returns name="SortedCells">Sorted cell objects.</returns> 
+        /// <search>
+        /// bordercells, cellneighbormatrix
+        /// </search>
         [MultiReturn(new[] { "BorderPolyLine", "BorderCellsFound","CellNeighborMatrix", "SortedCells"})]
-        public static Dictionary<string, object> BorderAndCellNeighborMatrix(Polygon2d poly, double dim, bool tag = true)
+        public static Dictionary<string, object> BorderAndCellNeighborMatrix(Polygon2d polyOutline, double dim, bool tag = true)
         {
-            if (!ValidateObject.CheckPoly(poly)) return null;
-            List<Cell> cellsInside = CellsInsidePoly(poly.Points, dim);
+            if (!ValidateObject.CheckPoly(polyOutline)) return null;
+            List<Cell> cellsInside = CellsInsidePoly(polyOutline.Points, dim);
             Dictionary<string, object> neighborObject = FormsCellNeighborMatrix(cellsInside);
             List<List<int>> cellNeighborMatrix = (List<List<int>>)neighborObject["CellNeighborMatrix"];
             List<Cell> sortedCells = (List<Cell>)neighborObject["SortedCells"];
@@ -315,9 +339,25 @@ namespace SpacePlanning
                 { "SortedCells", (sortedCells) }
             };
         }
-        
 
-        //make wholesome polys inside till it meets certain area cover
+
+        //makes orhtogonal form as polygon2d based on input ground coverage
+        /// <summary>
+        /// Builds the building outline form based on input site outline and ground coverage
+        /// </summary>
+        /// <param name="borderPoly">Orthogonal border polygon2d of the site outline</param>
+        /// <param name="origSitePoly">Original polygon2d of the site outline</param>
+        /// <param name="cellList">List of cell objects inside the site</param>
+        /// <param name="groundCoverage">Expected ground coverage, value between 0.2 to 0.8</param>
+        /// <returns name="BuildingOutline">Polygon2d representing orthogonal poly outline.</returns>
+        /// <returns name="WholesomePolys">List of Polygon2d each wholesame having four sides.</returns>  
+        /// <returns name="SiteArea">Area of the site outline.</returns> 
+        /// <returns name="BuildingOutlineArea">Area of the building outline formed.</returns> 
+        /// <returns name="GroundCoverAchieved">Ground coverage achieved, value between 0.2 to 0.8.</returns> 
+        /// <returns name="SortedCells">Sorted cell objects.</returns> 
+        /// <search>
+        /// form maker, buildingoutline, orthogonal forms
+        /// </search>
         [MultiReturn(new[] { "BuildingOutline","WholesomePolys", "SiteArea" , "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells" })]
         public static Dictionary<string, object> FormMakeInSite(Polygon2d borderPoly, Polygon2d origSitePoly, 
             List<Cell> cellList,double groundCoverage = 0.5)
@@ -356,14 +396,32 @@ namespace SpacePlanning
             };
         }
 
-        //make cells inside polly
+        //make cells inside polgon2d
+        /// <summary>
+        /// Builds cell objects inside a given polygon2d
+        /// </summary>
+        /// <param name="outlinePoints">Polygon2d outline input as a list of point2d list.</param>
+        /// <param name="dim">Dimension of the cell object in X and Y axis.</param>
+        /// <returns name="Cell Objects">List of cell objects.</returns> 
+        /// <search>
+        /// cell objects, cells inside polygon2d
+        /// </search>
         public static List<Cell> CellsInsidePoly(List<Point2d> outlinePoints, double dim)
         {
             List<Point2d> bboxPoints = ReadData.FromPointsGetBoundingPoly(outlinePoints);
             return GridCellsInsideOutline(bboxPoints, outlinePoints, dim, dim);                     
         }
 
-        //gets cells bt indices in a list
+        //gets cells by indices in a list
+        /// <summary>
+        /// Gets the cell objects whose indices are provided
+        /// </summary>
+        /// <param name="cellLists">List of cell objects.</param>
+        /// <param name="cellIdLists">List of int, indices of the cell objects to be obtained.</param>
+        /// <returns name="CellList">List of cell objects.</returns> 
+        /// <search>
+        /// cells by indices, cell objects
+        /// </search>
         public static List<Cell> CellsByIndex(List<Cell> cellLists, List<int> cellIdLists)
         {
             List<Cell> cellSelectedList = new List<Cell>();
@@ -373,12 +431,10 @@ namespace SpacePlanning
             }
             return cellSelectedList;
         }
-
         #endregion
 
 
         #region - Private Methods
-
         //sorts a list of cells based on a equation
         [MultiReturn(new[] { "SortedCells", "SortedCellIndices", "XYEqualtionList" })]
         internal static Dictionary<string, object> SortCellList(List<Cell> cellLists)
@@ -678,8 +734,6 @@ namespace SpacePlanning
             //return 1000*Math.Round(((A * x + B * y)), 3); 
             return 1000 * Math.Round(((A * x) + (B * y)), 3);
         }
-
-
 
         //make grahams scan algo based convex hull from an input list of points
         internal static List<Point2d> ConvexHullFromPoint2d(List<Point2d> ptList)

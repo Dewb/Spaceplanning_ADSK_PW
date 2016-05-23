@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace SpacePlanning
 {
-    internal class LayoutUtility
+    public static class LayoutUtility
     {
         #region - Private Methods
 

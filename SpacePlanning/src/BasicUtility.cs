@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SpacePlanning
 {
-    public class BasicUtility
+    internal class BasicUtility
     {
 
         #region - Public Methods

@@ -8,6 +8,9 @@ using System.Linq;
 
 namespace SpacePlanning
 {
+    /// <summary>
+    /// Builds department and programs polygons based on input contextual data.
+    /// </summary>
     public static class BuildLayout
     {
         
@@ -149,8 +152,8 @@ namespace SpacePlanning
             {
                 ProgramData progItem = progDataAddedList[i];
                 ProgramData progNew = new ProgramData(progItem);
-                if (i < polyList.Count) progNew.PolyProgAssigned = new List<Polygon2d> { polyList[i] };
-                else progNew.PolyProgAssigned = null;
+                if (i < polyList.Count) progNew.PolyAssignedToProg = new List<Polygon2d> { polyList[i] };
+                else progNew.PolyAssignedToProg = null;
                 UpdatedProgramDataList.Add(progNew);
             }
             return new Dictionary<string, object>
@@ -187,7 +190,7 @@ namespace SpacePlanning
             for(int i = 0; i < progData.Count; i++)
             {
                 ProgramData progItem = progData[i];
-                progItem.PolyProgAssigned = new List<Polygon2d>();
+                progItem.PolyAssignedToProg = new List<Polygon2d>();
                 double areaNeeded = progItem.AreaNeeded;
                 while (areaAssigned < areaNeeded && polygonAvailable.Count > 0 && count < maxTry)
                 {
@@ -202,11 +205,11 @@ namespace SpacePlanning
                         count += 1;
                         continue;
                     }
-                    progItem.PolyProgAssigned.Add(currentPoly);
+                    progItem.PolyAssignedToProg.Add(currentPoly);
                     areaAssigned += areaPoly;                
                     count += 1;
                 }// end of while
-                polyList.Add(progItem.PolyProgAssigned);
+                polyList.Add(progItem.PolyAssignedToProg);
                 progItem.AreaProvided = areaAssigned;
                 count = 0;
                 areaAssigned = 0;
@@ -449,7 +452,7 @@ namespace SpacePlanning
             List<Polygon2d> subDividedPoly = new List<Polygon2d>();
 
             double totalDeptProp = 0, areaAvailable = 0;
-            for (int i = 0; i < deptData.Count; i++) if (i > 0) totalDeptProp += deptData[i].DeptAreaProportion;
+            for (int i = 0; i < deptData.Count; i++) if (i > 0) totalDeptProp += deptData[i].DeptAreaProportionNeeded;
 
             for (int i = 0; i < deptData.Count; i++)
             {            
@@ -458,7 +461,7 @@ namespace SpacePlanning
                 if (i == 0) // inpatient dept
                 {
                     //double areaNeeded = deptItem.DeptAreaNeeded;
-                    double areaNeeded = deptItem.DeptAreaProportion*PolygonUtility.AreaPolygon(poly);
+                    double areaNeeded = deptItem.DeptAreaProportionNeeded * PolygonUtility.AreaPolygon(poly);
                     areaNeeded = 100000;
                     Dictionary<string, object> inpatientObject = AssignBlocksBasedOnDistance(poly, offset, areaNeeded, 10, recompute);
                     List<Polygon2d> inpatienBlocks = (List<Polygon2d>)inpatientObject["PolyAfterSplit"];
@@ -474,7 +477,7 @@ namespace SpacePlanning
                 }
                 if( i == 1)
                 {
-                    List<List<Polygon2d>> polySubDivs = SplitObject.SubdivideInputPoly(leftOverPoly, acceptableWidth, circulationFreq, 0.5);
+                    List<List<Polygon2d>> polySubDivs = SplitObject.SplitRecursivelyToSubdividePoly(leftOverPoly, acceptableWidth, circulationFreq, 0.5);
                     leftOverPoly = polySubDivs[0];
                     polyCirculation = polySubDivs[1];
                     for (int j = 0; j < leftOverPoly.Count; j++) areaAvailable += PolygonUtility.AreaPolygon(leftOverPoly[j]);
@@ -483,7 +486,7 @@ namespace SpacePlanning
 
                 if( i > 0 ) // other depts
                 {
-                    double areaFactor = deptItem.DeptAreaProportion / totalDeptProp;
+                    double areaFactor = deptItem.DeptAreaProportionNeeded / totalDeptProp;
                     Dictionary<string, object> assignedByRatioObj = AssignBlocksBasedOnRatio(areaFactor,areaAvailable, leftOverPoly,acceptableWidth,0.5);
                     List<Polygon2d> everyDeptPoly = (List<Polygon2d>)assignedByRatioObj["DeptPoly"];
                     leftOverPoly = (List<Polygon2d>)assignedByRatioObj["LeftOverPoly"];                 
@@ -499,7 +502,7 @@ namespace SpacePlanning
             {
                 DeptData newDeptData = new DeptData(deptData[i]);
                 newDeptData.AreaProvided = AllDeptAreaAdded[i];
-                newDeptData.PolyDeptAssigned = AllDeptPolys[i];
+                newDeptData.PolyAssignedToDept = AllDeptPolys[i];
                 UpdatedDeptData.Add(newDeptData);
             }
 
@@ -699,7 +702,7 @@ namespace SpacePlanning
             {
                 DeptData newDeptData = new DeptData(sortedDepartmentData[i]);
                 newDeptData.AreaProvided = AllDeptAreaAdded[i];
-                newDeptData.PolyDeptAssigned = AllDeptPolys[i];
+                newDeptData.PolyAssignedToDept = AllDeptPolys[i];
                 UpdatedDeptData.Add(newDeptData);
             }
 
