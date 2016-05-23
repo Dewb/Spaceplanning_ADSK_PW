@@ -13,7 +13,6 @@ namespace SpacePlanning
     public static class Circulation
     {
         #region - Public Methods
-
         //Builds Dept Topology Matrix , finds all the shared edges between dept polys, and updates department polygon2d's.
         /// <summary>
         /// Builds the department topology matrix internally and finds circulation network lines between department polygon2d's. 

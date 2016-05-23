@@ -22,7 +22,7 @@ namespace SpacePlanning
         private double _dimY;
 
         //constructor
-        public GridObject(List<Point2d> siteOutline, List<Point2d> siteBoundingBox, double dimensionX, double dimensionY)
+        internal GridObject(List<Point2d> siteOutline, List<Point2d> siteBoundingBox, double dimensionX, double dimensionY)
         {
 
             _siteOutline = siteOutline;
@@ -69,21 +69,9 @@ namespace SpacePlanning
             return cells;
         }
 
-          //make cells on the grids poit
-        public static List<Polygon2d> MakeCellsFromGridPoints(List<Point> pointsgrid, double dimX, double dimY)
-        {
-            List<Point2d> pt2dList = new List<Point2d>();
-            for (int i = 0; i < pointsgrid.Count; i++)
-            {
-                pt2dList.Add(Point2d.ByCoordinates(pointsgrid[i].X, pointsgrid[i].Y));
-            }
-
-            return MakeCellsFromGridPoints2d(pt2dList, dimX, dimY);
-
-        }
-
+  
         //make cells on the grids from point2d
-        public static List<Polygon2d> MakeCellsFromGridPoints2d(List<Point2d> point2dgrid, double dimX, double dimY)
+        public static List<Polygon2d> MakeCellPolysFromGridPoints2da(List<Point2d> point2dgrid, double dimX, double dimY)
         {
 
             List<Polygon2d> cellsPolyList = new List<Polygon2d>();
@@ -118,11 +106,10 @@ namespace SpacePlanning
             return cellsPolyList;
         }
 
-
-        //make cells on the grids from point2d from indices
-        public static List<Polygon> MakeCellsFromIndicesPoint2d(List<Point2d> pointsgrid, double dimX, double dimY, List<int> indexList)
+        //make cells on the grids from point2d based on the indices provided
+        public static List<Polygon2d> MakeCellPolysFromIndicesPoint2d(List<Point2d> pointsgrid, double dimX, double dimY, List<int> indexList = null)
         {
-            List<Polygon> cellsPolyList = new List<Polygon>();
+            List<Polygon2d> cellsPolyList = new List<Polygon2d>();
             List<Cell> cellList = new List<Cell>();
             if (indexList == null)
             {
@@ -135,31 +122,30 @@ namespace SpacePlanning
 
             for (int i = 0; i < indexList.Count; i++)
             {
-
-                List<Point> ptList = new List<Point>();
+                List<Point2d> ptList = new List<Point2d>();
 
                 double a = pointsgrid[indexList[i]].X - (dimX / 2);
                 double b = pointsgrid[indexList[i]].Y - (dimY / 2);
-                Point pt = Point.ByCoordinates(a, b);
+                Point2d pt = Point2d.ByCoordinates(a, b);
                 ptList.Add(pt);
 
                 a = pointsgrid[indexList[i]].X - (dimX / 2);
                 b = pointsgrid[indexList[i]].Y + (dimY / 2);
-                pt = Point.ByCoordinates(a, b);
+                pt = Point2d.ByCoordinates(a, b);
                 ptList.Add(pt);
 
                 a = pointsgrid[indexList[i]].X + (dimX / 2);
                 b = pointsgrid[indexList[i]].Y + (dimY / 2);
-                pt = Point.ByCoordinates(a, b);
+                pt = Point2d.ByCoordinates(a, b);
                 ptList.Add(pt);
 
                 a = pointsgrid[indexList[i]].X + (dimX / 2);
                 b = pointsgrid[indexList[i]].Y - (dimY / 2);
-                pt = Point.ByCoordinates(a, b);
+                pt = Point2d.ByCoordinates(a, b);
                 ptList.Add(pt);
 
 
-                Polygon pol = Polygon.ByPoints(ptList);
+                Polygon2d pol = Polygon2d.ByPoints(ptList);
                 cellsPolyList.Add(pol);
             }
 
@@ -168,7 +154,7 @@ namespace SpacePlanning
         }
 
         //make cells on the grids from cell objects
-        public static List<Polygon> MakeCellsFromCellObjects(List<Cell> cellList, List<int> indexList = null, double height  = 0)
+        public static List<Polygon> MakeCellPolysFromCellObjects(List<Cell> cellList, List<int> indexList = null, double height  = 0)
         {
             List<Polygon> cellsPolyList = new List<Polygon>();
             List<Point2d> pointsgrid = new List<Point2d>();
@@ -227,7 +213,7 @@ namespace SpacePlanning
         }
 
         //make grahams scan algo based convex hull from an input list of points
-        public static List<Point2d> ConvexHullFromPoint2D(List<Point2d> ptList)
+        public static List<Point2d> ConvexHullFromPoint2dList(List<Point2d> ptList)
         {
             List<Point2d> convexHullPtList = new List<Point2d>();
             int sizePtList = ptList.Count;
@@ -309,7 +295,7 @@ namespace SpacePlanning
         }
        
      
-        //get the cells and make an orthogonal outline poly - not using now, but works best
+        //get the cells and make an orthogonal outline poly 
         [MultiReturn(new[] { "BorderPolyLine", "BorderCellsFound","CellNeighborMatrix", "SortedCells"})]
         public static Dictionary<string, object> BorderAndCellNeighborMatrix(Polygon2d poly, double dim, bool tag = true)
         {
@@ -333,7 +319,7 @@ namespace SpacePlanning
 
         //make wholesome polys inside till it meets certain area cover
         [MultiReturn(new[] { "BuildingOutline","WholesomePolys", "SiteArea" , "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells" })]
-        public static Dictionary<string, object> FormMakerInSite(Polygon2d borderPoly, Polygon2d origSitePoly, 
+        public static Dictionary<string, object> FormMakeInSite(Polygon2d borderPoly, Polygon2d origSitePoly, 
             List<Cell> cellList,double groundCoverage = 0.5)
         {
             if (cellList == null) return null;
@@ -583,7 +569,7 @@ namespace SpacePlanning
 
             //return new Polygon2d(borderPolyPoints);
             List<Point> ptList = DynamoGeometry.pointFromPoint2dList(borderPolyThroughCenter);
-            List<Polygon2d> cellFound = MakeCellsFromGridPoints(ptList, cellList[0].DimX, cellList[0].DimY);
+            List<Polygon2d> cellFound = MakeCellPolysFromIndicesPoint2d(borderPolyThroughCenter, cellList[0].DimX, cellList[0].DimY, null);
             Polygon2d borderPoly = PolygonUtility.CreateOrthoPoly(new Polygon2d(borderPolyPoints));
             return new Dictionary<string, object>
             {
@@ -693,7 +679,40 @@ namespace SpacePlanning
             return 1000 * Math.Round(((A * x) + (B * y)), 3);
         }
 
+
+
+        //make grahams scan algo based convex hull from an input list of points
+        internal static List<Point2d> ConvexHullFromPoint2d(List<Point2d> ptList)
+        {
+            List<Point2d> convexHullPtList = new List<Point2d>();
+            int sizePtList = ptList.Count;
+            //get the lowest point in the list and place it on 0 index
+            PointUtility.GetLowestPointForGrahamsScan(ref ptList, sizePtList);
+            PointUtility.SortedPoint2dListForGrahamScan(ref ptList, sizePtList);
+            Stack tempStack = new Stack();
+            tempStack.Push(ptList[0]);
+            tempStack.Push(ptList[1]);
+            tempStack.Push(ptList[2]);
+            for (int i = 3; i < sizePtList; i++)
+            {
+                while (ValidateObject.CheckPointOrder(PointUtility.BeforeTopPointForGrahamScan(ref tempStack),
+                    (Point2d)tempStack.Peek(), ptList[i]) != 2 && tempStack.Count > 1)
+                {
+                    tempStack.Pop();
+                }
+                tempStack.Push(ptList[i]);
+            }
+
+            while (tempStack.Count > 0)
+            {
+                Point2d ptTop = (Point2d)tempStack.Peek();
+                convexHullPtList.Add(ptTop);
+                tempStack.Pop();
+            }
+            return convexHullPtList;
+        }
         //make convex hulls from cell objects
+
         [MultiReturn(new[] { "PolyCurves", "PointLists" })]
         internal static Dictionary<string, object> MakeConvexHullsFromCells(List<List<Cell>> cellProgramsList)
         {
@@ -708,7 +727,7 @@ namespace SpacePlanning
                 if (tempPts.Count > 2)
                 {
                     ptAllnew.Add(tempPts);
-                    convexHullPts = GridObject.ConvexHullFromPoint2D(tempPts);
+                    convexHullPts = GridObject.ConvexHullFromPoint2d(tempPts);
                     List<Point> ptAll = DynamoGeometry.pointFromPoint2dList(convexHullPts);
                     if (ptAll.Count > 2) polyList.Add(Polygon.ByPoints(ptAll));
                     else polyList.Add(null);
