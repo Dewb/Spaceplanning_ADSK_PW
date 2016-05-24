@@ -17,7 +17,6 @@ namespace SpacePlanning
     /// </summary>
     public static class ReadData
     {
-
         ///////////////////////////////////////////////////////////////////
         /// NOTE: This project requires REFERENCEPOINTs to the ProtoInterface
         /// and ProtoGeometry DLLs. These are found in the Dynamo install
