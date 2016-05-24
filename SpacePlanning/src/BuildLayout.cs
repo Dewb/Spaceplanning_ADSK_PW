@@ -107,7 +107,7 @@ namespace SpacePlanning
                 else lineId = 1;
                 
                 List<double> spans = PolygonUtility.GetSpansXYFromPolygon2d(poly.Points);
-                double setSpan = 1000000000000, fac = 1.5;
+                double setSpan = 1000000000000, fac = 2.1;
                 if (spans[0] > spans[1]) setSpan = spans[0];
                 else setSpan = spans[1];
                 Polygon2d currentPoly = poly;
@@ -116,22 +116,28 @@ namespace SpacePlanning
                 while (setSpan > primaryProgramWidth) //programDataRetrieved.Count > 0
                 {
                     double dist = 0;
-                    if (setSpan > fac * primaryProgramWidth) dist = primaryProgramWidth;
-                    else dist = setSpan;
+                    if (setSpan < fac * primaryProgramWidth) dist = setSpan;
+                    else dist = primaryProgramWidth;
                     Dictionary<string, object> splitReturn = SplitObject.SplitByOffsetFromLine(currentPoly,lineId, dist);
                     polyAfterSplitting = (Polygon2d)splitReturn["PolyAfterSplit"];
-                    leftOverPoly = (Polygon2d)splitReturn["LeftOverPoly"];                    
+                    leftOverPoly = (Polygon2d)splitReturn["LeftOverPoly"];
                     if (ValidateObject.CheckPoly(leftOverPoly))
                     {
                         progItem = programDataRetrieved.Dequeue();
                         currentPoly = leftOverPoly;
                         polyList.Add(polyAfterSplitting);
-                        progItem.AreaProvided = PolygonUtility.AreaPolygon(polyAfterSplitting); 
+                        progItem.AreaProvided = PolygonUtility.AreaPolygon(polyAfterSplitting);
                         setSpan -= dist;
                         progDataAddedList.Add(progItem);
                         count += 1;
+                        Trace.WriteLine("leftover poly all fine : " + count);
+
                     }
-                    else break;
+                    else
+                    {
+                        Trace.WriteLine("leftover poly not valid found : " + count);
+                        break;
+                    }
                     if (programDataRetrieved.Count == 0) programDataRetrieved.Enqueue(copyProgData);
                 }// end of while loop                
                 progItem = programDataRetrieved.Dequeue();
@@ -296,6 +302,7 @@ namespace SpacePlanning
             bool error = false;
             while (polyLeftList.Count > 0 && areaAdded < area) //count<recompute count < maxTry
             {
+                error = false;
                 Polygon2d currentPoly = polyLeftList.Pop();
                 Polygon2d tempPoly = new Polygon2d(currentPoly.Points, 0);
                 Dictionary<string, object> splitObject = CreateBlocksByLines(currentPoly, poly, distance, thresDistance, externalIncude);
@@ -335,7 +342,6 @@ namespace SpacePlanning
                 Trace.WriteLine("Well found that space is available");
                 if (splitObject != null)
                 {
-
                     Polygon2d blockPoly = (Polygon2d)splitObject["PolyAfterSplit"];
                     Polygon2d leftPoly = (Polygon2d)splitObject["LeftOverPoly"];
                     lineOptions = (List<Line2d>)splitObject["LineOptions"];
@@ -357,10 +363,7 @@ namespace SpacePlanning
                         }
                     }
                     Trace.WriteLine("Succesfully assigned one extra");
-
                 } // end of if loop
-
-
             }
 
 
@@ -442,7 +445,7 @@ namespace SpacePlanning
         {
             if (deptData == null) return null;
             Dictionary<string, object> notchObj = ValidateObject.CheckPolyNotches(poly, minNotchDist);
-            poly = (Polygon2d)notchObj["PolyReduced"];
+            //poly = (Polygon2d)notchObj["PolyReduced"];
             List<double> AllDeptAreaAdded = new List<double>();
             List<List<Polygon2d>> AllDeptPolys = new List<List<Polygon2d>>();
             List<Polygon2d> leftOverPoly = new List<Polygon2d>(), polyCirculation = new List<Polygon2d>();//changed from stack

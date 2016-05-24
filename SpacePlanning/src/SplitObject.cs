@@ -220,7 +220,6 @@ namespace SpacePlanning
                     {
                         polyPtsCopy.Insert(b, offsetLine.EndPoint);
                         polyPtsCopy.Insert(b, offsetLine.StartPoint);
-                        //Trace.WriteLine("Case 1 : inserted two pts");
                     }
 
                     // case 2
@@ -228,7 +227,6 @@ namespace SpacePlanning
                     {
                         polyPtsCopy[a] = offsetLine.StartPoint;
                         polyPtsCopy.Insert(b, offsetLine.EndPoint);
-                        //Trace.WriteLine("Case 2 : inserted 1 pt, replaced 1 pt----------------");
                     }
 
                     // case 3
@@ -236,7 +234,6 @@ namespace SpacePlanning
                     {
                         polyPtsCopy.Insert(b, offsetLine.StartPoint);
                         polyPtsCopy[b + 1] = offsetLine.EndPoint;
-                        //Trace.WriteLine("Case 3 : inserted 1 pt, replaced 1 pt");
                     }
 
                     // case 4
@@ -244,13 +241,11 @@ namespace SpacePlanning
                     {
                         polyPtsCopy[a] = offsetLine.StartPoint;
                         polyPtsCopy[b] = offsetLine.EndPoint;
-                        //Trace.WriteLine("Case 4 : replaced 2 pts");
                     }
                 }
             }
             Polygon2d polySplit = new Polygon2d(pointForBlock, 0);
             Polygon2d leftPoly = new Polygon2d(polyPtsCopy, 0); //poly.Points
-            //Trace.WriteLine("Ret ++++++++++++++++++++++++++++++++++++++++++++");
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (polySplit) },

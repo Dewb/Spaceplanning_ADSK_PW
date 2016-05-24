@@ -140,7 +140,7 @@ namespace SpacePlanning
                 bool checkStartPt = GraphicsUtility.PointInsidePolygonTest(oPoly, offStartPt);
                 bool checkEndPt = GraphicsUtility.PointInsidePolygonTest(oPoly, offEndPt);
                 bool checkExtEdge = LayoutUtility.CheckLineGetsExternalWall(line, containerPoly);
-                if (tag) checkExtEdge = true;
+                //if (tag) checkExtEdge = true;
                 List<Point2d> pointsDefault = new List<Point2d>();
                 if (checkStartPt && checkEndPt && checkExtEdge)
                 {
