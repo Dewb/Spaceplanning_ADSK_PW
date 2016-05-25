@@ -38,7 +38,7 @@ namespace SpacePlanning.src.Properties {
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
-                if (object.Equals(resourceMan, null)) {
+                if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("SpacePlanning.src.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
@@ -61,7 +61,7 @@ namespace SpacePlanning.src.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to PROGRAM ID,PROGRAM NAME,ZONE/ DEPARTMENT,QUANTITY,AREA,PREFERENCEPOINT VALUE,ADJACENT PROGRAMS
+        ///   Looks up a localized string similar to PROGRAM ID,PROGRAM NAME,ZONE/ DEPARTMENT,QUANTITY,AREA,PREFERENCE VALUE,ADJACENT PROGRAMS
         ///0,Family Lounge,Family Public Support,48,15,3,3..4..5..8
         ///1,Public Toilet,Family Public Support,2,160,1,2..4..6..15
         ///2,Conference,Family Public Support,1,225,3,3..2

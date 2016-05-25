@@ -104,7 +104,7 @@ namespace SpacePlanning
                 if (!ValidateObject.CheckPoly(poly)) continue;
                 int lineId = 0, count = 0;
                 if (poly.Lines[0].Length > poly.Lines[1].Length) lineId = 1;
-                else lineId = 1;
+                else lineId = 0;
                 
                 List<double> spans = PolygonUtility.GetSpansXYFromPolygon2d(poly.Points);
                 double setSpan = 1000000000000, fac = 2.1;
@@ -113,7 +113,7 @@ namespace SpacePlanning
                 Polygon2d currentPoly = poly;
                 Polygon2d polyAfterSplitting = new Polygon2d(null), leftOverPoly = new Polygon2d(null);
                 ProgramData progItem = new ProgramData(progData[0]);
-                while (setSpan > primaryProgramWidth) //programDataRetrieved.Count > 0
+                while (setSpan > primaryProgramWidth) 
                 {
                     double dist = 0;
                     if (setSpan < fac * primaryProgramWidth) dist = setSpan;
@@ -125,13 +125,13 @@ namespace SpacePlanning
                     {
                         progItem = programDataRetrieved.Dequeue();
                         currentPoly = leftOverPoly;
-                        polyList.Add(polyAfterSplitting);
+                        Point2d centerPolySplit = PolygonUtility.CentroidOfPoly(polyAfterSplitting);
+                        if(GraphicsUtility.PointInsidePolygonTest(poly,centerPolySplit)) polyList.Add(polyAfterSplitting);
                         progItem.AreaProvided = PolygonUtility.AreaPolygon(polyAfterSplitting);
                         setSpan -= dist;
                         progDataAddedList.Add(progItem);
                         count += 1;
                         Trace.WriteLine("leftover poly all fine : " + count);
-
                     }
                     else
                     {
@@ -139,9 +139,9 @@ namespace SpacePlanning
                         break;
                     }
                     if (programDataRetrieved.Count == 0) programDataRetrieved.Enqueue(copyProgData);
-                }// end of while loop                
+                }// end of while                 
                 progItem = programDataRetrieved.Dequeue();
-                polyList.Add(leftOverPoly);
+                //polyList.Add(leftOverPoly);
                 progItem.AreaProvided = PolygonUtility.AreaPolygon(leftOverPoly); 
                 progDataAddedList.Add(progItem);
                 if (programDataRetrieved.Count == 0) programDataRetrieved.Enqueue(copyProgData);
@@ -158,13 +158,7 @@ namespace SpacePlanning
                 else progNew.PolyAssignedToProg = null;
                 UpdatedProgramDataList.Add(progNew);
             }
-            List<Polygon2d> cleanPolyList = new List<Polygon2d>();
-            for (int i = 0; i < polyList.Count; i++)
-            {
-                bool lineLength = true;
-                for (int j = 0; j < polyList[i].Lines.Count; j++) if (polyList[i].Lines[j].Length < 0.05) lineLength =  false;
-                if (ValidateObject.CheckPoly(polyList[i]) && lineLength) cleanPolyList.Add(polyList[i]);
-            }
+            List<Polygon2d> cleanPolyList = ValidateObject.CheckAndCleanPolygon2dList(polyList);    
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (cleanPolyList) },
@@ -233,23 +227,11 @@ namespace SpacePlanning
         }
         #endregion
 
+
+
+
+
         #region - Private Methods  
-        /*
-        //gets and sets the space between points for any smoothened polygon2d
-        internal double SPACINGORIG
-        {
-            get { return SPACING; }
-            set { SPACING = value; }
-        }
-
-        //gets and sets the space between points for any smoothened polygon2d
-        internal double SPACINGANOTHER
-        {
-            get { return SPACING2; }
-            set { SPACING2 = value; }
-        }
-        */
-
         //blocks are assigned based on ratio of split, used for assigning other depts
         [MultiReturn(new[] { "DeptPoly", "LeftOverPoly", "AllPolys", "AreaAdded", "AllNodes" })]
         internal static Dictionary<string, object> AssignBlocksBasedOnRatio(double areaFactor, double areaAvailable, List<Polygon2d> polyList, double acceptableWidth = 10, double ratio = 0.5)
@@ -464,7 +446,7 @@ namespace SpacePlanning
                     //double areaNeeded = deptItem.DeptAreaNeeded;
                     double areaNeeded = deptItem.DeptAreaProportionNeeded * PolygonUtility.AreaPolygon(poly);
                     areaNeeded = 100000;
-                    Dictionary<string, object> inpatientObject = AssignBlocksBasedOnDistance(poly, offset, areaNeeded, 10, recompute);
+                    Dictionary<string, object> inpatientObject = AssignBlocksBasedOnDistance(poly, offset, areaNeeded, 10, 30);
                     List<Polygon2d> inpatienBlocks = (List<Polygon2d>)inpatientObject["PolyAfterSplit"];
                     List<Polygon2d> leftOverBlocks = (List<Polygon2d>)inpatientObject["LeftOverPoly"];
                     areaAssigned = (double)inpatientObject["AreaAssignedToBlock"];
@@ -497,8 +479,11 @@ namespace SpacePlanning
                     AllDeptPolys.Add(everyDeptPoly);
                 }
             }
+            //clean dept polys based on their fitness
+            for(int i = 0; i < AllDeptPolys.Count; i++) AllDeptPolys[i] = ValidateObject.CheckAndCleanPolygon2dList(AllDeptPolys[i]);
+
+            //update dept data based on polys assigned
             List<DeptData> UpdatedDeptData = new List<DeptData>();
-            //make the sorted dept data
             for (int i = 0; i < deptData.Count; i++)
             {
                 DeptData newDeptData = new DeptData(deptData[i]);

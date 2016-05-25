@@ -20,6 +20,19 @@ namespace SpacePlanning
         }
 
 
+        //this checks a polylist for abnormal polys and returns only those which deem fit
+        internal static List<Polygon2d>CheckAndCleanPolygon2dList(List<Polygon2d> polyList)
+        {
+            List<Polygon2d> cleanPolyList = new List<Polygon2d>();
+            for (int i = 0; i < polyList.Count; i++)
+            {
+                bool lineLength = true;
+                for (int j = 0; j < polyList[i].Lines.Count; j++) if (polyList[i].Lines[j].Length < 0.01 && PolygonUtility.AreaPolygon(polyList[i]) < 0.2) lineLength = false;
+                if (CheckPoly(polyList[i]) && lineLength) cleanPolyList.Add(polyList[i]);
+            }
+            return cleanPolyList;
+        }
+
         // Given three colinear points p, q, r, the function checks if
         // point q lies on line segment 'pr'
         internal static bool CheckOnSegment(Line2d givenLine, Point2d q, double eps = 0)

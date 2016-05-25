@@ -71,7 +71,6 @@ namespace SpacePlanning
             return false;
         }
 
-
         // find closest point to a line
         public static Point2d ProjectedPointOnLine(Line2d testline, Point2d P)
         {
@@ -87,7 +86,6 @@ namespace SpacePlanning
             Vector2d vVector3 = vVector2N.Scale(t);
             return new Point2d(A.X + vVector3.X, A.Y + vVector3.Y);
         }
-
 
         //finds line and line intersection point - using now
         public static Point2d LineLineIntersection(Line2d s1, Line2d s2)
@@ -113,7 +111,6 @@ namespace SpacePlanning
             }
             else return null; // no intersection
         }
-
 
         //finds the closest point to a line from a point list
         public static Point2d ClosestPointToLine(List<Point2d> pt, Line2d line)
@@ -248,9 +245,6 @@ namespace SpacePlanning
             if (val == 0) return 0;  // colinear
             return (val > 0) ? 1 : 2; // clock or counterclock wise
         }
-
-
-
         #endregion
 
 

@@ -280,7 +280,6 @@ namespace SpacePlanning
             return lineEditedList;
         }
 
-
         //checks if two lines are same 
         public static bool IsLineDuplicate(Line2d A, Line2d B)
         {
@@ -297,7 +296,6 @@ namespace SpacePlanning
             }
             return check;
         }
-
 
         //removes duplicates lines from a list of lines
         public static List<Line2d> CleanLines(List<Line2d> lineList)
@@ -356,8 +354,6 @@ namespace SpacePlanning
             }
             return cleanList;
         }
-
-
 
         //flatten list of line2d
         internal static List<Line2d> FlattenLine2dList(List<List<Line2d>> lineList)

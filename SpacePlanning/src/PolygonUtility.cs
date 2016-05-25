@@ -71,8 +71,6 @@ namespace SpacePlanning
             return indices;
         }
 
-
-
         //orders the points to form a closed polygon2d
         internal static List<Point2d> OrderPolygon2dPoints(List<Point2d> poly, List<Point2d> intersectedPoints, List<int> pIndex)
         {
@@ -260,8 +258,7 @@ namespace SpacePlanning
                 { "PolysAfterSplit", (allPolyAfterSplit) },
                 { "AllSplitLines" , (allSplitLinesCopy) }
             };
-        }
-            
+        }            
 
         //finds number of sides in a polygon2d
         public static int NumberofSidesPoly(Polygon2d poly)
@@ -277,7 +274,6 @@ namespace SpacePlanning
             }
             return sides;
         }
-
   
         //gets two point lists , adds or optimizes the number of points and merges the pointlist together
         internal static List<Polygon2d> OptimizePolyPoints(List<Point2d> sortedA, List<Point2d> sortedB,

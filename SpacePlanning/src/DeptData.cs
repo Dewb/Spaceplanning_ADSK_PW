@@ -91,7 +91,7 @@ namespace SpacePlanning
         }
 
         /// <summary>
-        /// Proportion of each department after its assigned on site.
+        /// Proportion of each department after it's assigned on site.
         /// </summary>
         public double AreaPercentageAchieved
         {

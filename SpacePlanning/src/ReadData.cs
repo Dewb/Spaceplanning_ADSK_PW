@@ -29,12 +29,10 @@ namespace SpacePlanning
         /// Builds the data stack from the embedded program document.
         /// Returns the Dept Data object
         /// </summary>
-        /// <param name="dimX">x axis dimension of the grid</param>
-        /// <param name="dimY">y axis dimension of the grid</param>
-        /// <param name="circulationFactor">Multiplier to account for add on circulation area</param>
-        /// <returns name="DataStackArray">Data Stack from the embedded .csv</returns>
-        /// <returns name="ProgramDataObject">Program Data object containing information about program elements</returns>
-        /// <returns name="DeptDataObject">Department Data object containing information about departments</returns>
+        /// <param name="dimX">x axis dimension of the grid.</param>
+        /// <param name="dimY">y axis dimension of the grid.</param>
+        /// <param name="circulationFactor">Multiplier to account for add on circulation area.</param>
+        /// <returns name="DeptData">List of department data object from the provided program document.</returns>
         /// <search>
         /// make data stack, dept data object, program data object
         /// </search>
