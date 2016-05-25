@@ -368,8 +368,5 @@ namespace SpacePlanning
             return flatLineList;
         }
         #endregion
-
-
-
     }
 }

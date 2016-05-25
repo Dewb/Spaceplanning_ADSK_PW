@@ -63,7 +63,6 @@ namespace SpacePlanning
             }
 
             for (int i = 0; i < polyQueue.Count; i++) polyBrokenList.Add(polyQueue.Dequeue());
-            //return polyBrokenList;
             polyAllReturn.Add(polyBrokenList);
             polyAllReturn.Add(polyCirculationList);
             return polyAllReturn;

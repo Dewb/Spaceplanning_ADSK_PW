@@ -449,8 +449,8 @@ namespace SpacePlanning
             List<Polygon2d> leftOverPoly = new List<Polygon2d>(), polyCirculation = new List<Polygon2d>();//changed from stack
             List<Polygon2d> otherDeptPoly = new List<Polygon2d>();
             List<Polygon2d> subDividedPoly = new List<Polygon2d>();
-
-            double totalDeptProp = 0, areaAvailable = 0;
+            int count = 0, maxTry = 20;
+            double totalDeptProp = 0, areaAvailable = 0, ratio = 0.6;
             for (int i = 0; i < deptData.Count; i++) if (i > 0) totalDeptProp += deptData[i].DeptAreaProportionNeeded;
 
             for (int i = 0; i < deptData.Count; i++)
@@ -477,7 +477,14 @@ namespace SpacePlanning
                 }
                 if( i == 1)
                 {
-                    List<List<Polygon2d>> polySubDivs = SplitObject.SplitRecursivelyToSubdividePoly(leftOverPoly, acceptableWidth, circulationFreq, 0.45);
+                    List<List<Polygon2d>> polySubDivs = SplitObject.SplitRecursivelyToSubdividePoly(leftOverPoly, acceptableWidth, circulationFreq, ratio);
+                    while(polySubDivs == null && count < maxTry)
+                    {                 
+                        ratio -= 0.01;
+                        Trace.WriteLine("Ratio problem faced , ratio reduced to : " + ratio);
+                        polySubDivs = SplitObject.SplitRecursivelyToSubdividePoly(leftOverPoly, acceptableWidth, circulationFreq, ratio);
+                        count += 1;
+                    }
                     leftOverPoly = polySubDivs[0];
                     polyCirculation = polySubDivs[1];
                     for (int j = 0; j < leftOverPoly.Count; j++) areaAvailable += PolygonUtility.AreaPolygon(leftOverPoly[j]);
