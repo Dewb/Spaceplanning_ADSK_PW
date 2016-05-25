@@ -50,30 +50,36 @@ namespace SpacePlanning
             double acceptableWidth, double minNotchDistance = 20, double circulationFreq = 8, int recompute = 1)
         {           
             Dictionary<string, object> deptArrangement = new Dictionary<string, object>();
-            double count = 0;            
+            double count = 0,eps = minNotchDistance;            
             Random rand = new Random();
             bool deptPlaced = false;
             while(deptPlaced == false && count < MAXCOUNT)
             {
-                Trace.WriteLine("Lets Go Again for : " + count);
+                Trace.WriteLine("Lets arrange dept again : " + count);
                 deptArrangement = DeptPlacer(deptData, buildingOutline, primaryDeptDepth, acceptableWidth, minNotchDistance, circulationFreq, recompute);
                 if(deptArrangement != null)
                 {
                     List<List<Polygon2d>> deptAllPolys =(List<List<Polygon2d>>) deptArrangement["DeptPolys"];
+                    List<Polygon2d> deptPolysTogether = new List<Polygon2d>();
+                    for (int i = 0; i < deptAllPolys.Count; i++) deptPolysTogether.AddRange(deptAllPolys[i]);
                     for(int i = 0; i < deptAllPolys.Count; i++)
                     {
+                        Trace.WriteLine("dept arrangement not null, lets check further");
                         List<Polygon2d> eachDeptPoly = deptAllPolys[i];
                         if (ValidateObject.CheckPolyList(eachDeptPoly)) deptPlaced = true;
-                        else { deptPlaced = false; break; }                        
-                    }
-                    Trace.WriteLine("dept arrangement not null");
+                        else { deptPlaced = false; Trace.WriteLine("dept arrangement bad polys, rejected"); break; }
+
+                        if (ValidateObject.CheckPolygon2dOrthogonality(deptPolysTogether,eps)) deptPlaced = true;
+                        else { deptPlaced = false; Trace.WriteLine("dept arrangement non orthogonal, rejected"); break; }
+                    }               
                 }
                 else
                 {
-                   // deptPlaced = false;
-                    Trace.WriteLine("DeptPlacer returned null: " + count);
+                    deptPlaced = false;
+                    Trace.WriteLine("DeptPlacer returned null, rejected for: " + count);
                 }
                 count += 1;
+                Trace.WriteLine("+++++++++++++++++++++++++++++++++");
             }// end of while loop
             return deptArrangement;
         }
@@ -317,7 +323,7 @@ namespace SpacePlanning
                     }
                 }
                 if (error) break;
-                Trace.WriteLine("still inside while loop at assgineblocksbydistance");
+                //Trace.WriteLine("still inside while loop at assgineblocksbydistance");
             }// end of while loop
 
 

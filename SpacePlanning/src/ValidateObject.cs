@@ -19,6 +19,22 @@ namespace SpacePlanning
             return false;
         }
 
+        //method to check a list of polygon2ds if they have all orthogonal lines or not
+        internal static bool CheckPolygon2dOrthogonality(List<Polygon2d> polyList,double eps =0)
+        {
+            if (polyList == null) return false;
+            for(int i = 0; i < polyList.Count; i++)
+            {
+                if (!CheckPoly(polyList[i])) return false;
+                List<Line2d> lineList = polyList[i].Lines;
+                for(int j = 0; j < lineList.Count; j++) if (!CheckLineOrthogonal(lineList[j],eps)) return false;
+            }
+            return true;
+
+        }
+
+        //
+
 
         //this checks a polylist for abnormal polys and returns only those which deem fit
         internal static List<Polygon2d>CheckAndCleanPolygon2dList(List<Polygon2d> polyList)
@@ -225,14 +241,20 @@ namespace SpacePlanning
 
 
         //finds if line is horizontal or vertical
-        internal static bool CheckLineOrthogonal(Line2d line)
+        internal static bool CheckLineOrthogonal(Line2d line, double eps = 0)
         {
             bool check = false;
             Point2d p1 = line.StartPoint;
             Point2d p2 = line.EndPoint;
             double xDiff = p1.X - p2.X;
             double yDiff = p1.Y - p2.Y;
-            if (xDiff == 0 || yDiff == 0) check = true;
+            if (eps == 0) if (xDiff == 0 || yDiff == 0) check = true;
+            else
+            {
+                    if (BasicUtility.CheckWithinRange(0, xDiff, eps) == 0 && BasicUtility.CheckWithinRange(0, yDiff, eps) == 0)
+                        check = false;
+                    else check = true;
+            }         
             return check;
         }
 
