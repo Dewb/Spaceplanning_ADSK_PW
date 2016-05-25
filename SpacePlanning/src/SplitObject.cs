@@ -40,6 +40,7 @@ namespace SpacePlanning
                     polySplitList = PolygonUtility.SmoothPolygonList(polySplitList, 2);
                     Polygon2d bbox1 = Polygon2d.ByPoints(ReadData.FromPointsGetBoundingPoly(polySplitList[0].Points));
                     Polygon2d bbox2 = Polygon2d.ByPoints(ReadData.FromPointsGetBoundingPoly(polySplitList[1].Points));
+                    if (!ValidateObject.CheckPoly(bbox1) || !ValidateObject.CheckPoly(bbox2)) continue;
 
                     if (PolygonUtility.AreaPolygon(polySplitList[0]) > targetArea) polyCirculationList.Add(polySplitList[0]);
                     if (PolygonUtility.AreaPolygon(polySplitList[1]) > targetArea) polyCirculationList.Add(polySplitList[1]);
@@ -53,6 +54,7 @@ namespace SpacePlanning
                 if (ValidateObject.CheckPolyList(polySplitList) && polySplitList.Count < 2)
                 {
                     Polygon2d bbox1 = Polygon2d.ByPoints(ReadData.FromPointsGetBoundingPoly(polySplitList[0].Points));
+                    if (!ValidateObject.CheckPoly(bbox1)) continue;
                     if (bbox1.Lines[0].Length < acceptableWidth || bbox1.Lines[1].Length < acceptableWidth) polyBrokenList.Add(polySplitList[0]);
                     if (PolygonUtility.AreaPolygon(polySplitList[0]) > targetArea) polyCirculationList.Add(polySplitList[0]);
                     else polyQueue.Enqueue(polySplitList[0]);

@@ -477,7 +477,7 @@ namespace SpacePlanning
                 }
                 if( i == 1)
                 {
-                    List<List<Polygon2d>> polySubDivs = SplitObject.SplitRecursivelyToSubdividePoly(leftOverPoly, acceptableWidth, circulationFreq, 0.5);
+                    List<List<Polygon2d>> polySubDivs = SplitObject.SplitRecursivelyToSubdividePoly(leftOverPoly, acceptableWidth, circulationFreq, 0.45);
                     leftOverPoly = polySubDivs[0];
                     polyCirculation = polySubDivs[1];
                     for (int j = 0; j < leftOverPoly.Count; j++) areaAvailable += PolygonUtility.AreaPolygon(leftOverPoly[j]);
