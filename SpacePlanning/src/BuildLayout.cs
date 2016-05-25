@@ -64,11 +64,17 @@ namespace SpacePlanning
                     {
                         List<Polygon2d> eachDeptPoly = deptAllPolys[i];
                         if (ValidateObject.CheckPolyList(eachDeptPoly)) deptPlaced = true;
-                        else { deptPlaced = false; break; }
+                        else { deptPlaced = false; break; }                        
                     }
+                    Trace.WriteLine("dept arrangement not null");
+                }
+                else
+                {
+                   // deptPlaced = false;
+                    Trace.WriteLine("DeptPlacer returned null: " + count);
                 }
                 count += 1;
-            }
+            }// end of while loop
             return deptArrangement;
         }
 
@@ -131,11 +137,11 @@ namespace SpacePlanning
                         setSpan -= dist;
                         progDataAddedList.Add(progItem);
                         count += 1;
-                        Trace.WriteLine("leftover poly all fine : " + count);
+                        //Trace.WriteLine("leftover poly all fine : " + count);
                     }
                     else
                     {
-                        Trace.WriteLine("leftover poly not valid found : " + count);
+                        //Trace.WriteLine("leftover poly not valid found : " + count);
                         break;
                     }
                     if (programDataRetrieved.Count == 0) programDataRetrieved.Enqueue(copyProgData);
@@ -268,13 +274,14 @@ namespace SpacePlanning
 
             if (!ValidateObject.CheckPoly(poly)) return null;
             if (distance < 1) return null;
+            Trace.WriteLine("assginblocks by distance in process");
             bool externalIncude = false;
             if (recompute > 5) externalIncude = true;
             int count = 0, maxTry = 100;
             poly = new Polygon2d(poly.Points);
             if (area == 0) area = 0.8 * PolygonUtility.AreaPolygon(poly);
             Stack<Polygon2d> polyLeftList = new Stack<Polygon2d>();
-            double areaAdded = 0;
+            double areaAdded = 0, minLength = 200;
             polyLeftList.Push(poly);
             Point2d pointAdd = new Point2d(0, 0);
             List<Polygon2d> blockPolyList = new List<Polygon2d>();
@@ -310,11 +317,14 @@ namespace SpacePlanning
                     }
                 }
                 if (error) break;
-            }
+                Trace.WriteLine("still inside while loop at assgineblocksbydistance");
+            }// end of while loop
 
+
+            /*
             //added to allow one more poly
             bool spaceAvailable = false;
-            for (int i = 0; i < lineOptions.Count; i++) { if (lineOptions[i].Length > 100) spaceAvailable = true; break; }
+            for (int i = 0; i < lineOptions.Count; i++) { if (lineOptions[i].Length > minLength) spaceAvailable = true; break; }
 
             if (spaceAvailable && polyLeftList.Count > 0)
             {
@@ -347,7 +357,7 @@ namespace SpacePlanning
                     Trace.WriteLine("Succesfully assigned one extra");
                 } // end of if loop
             }
-
+            */
 
 
             leftoverPolyList.AddRange(polyLeftList);
@@ -425,9 +435,15 @@ namespace SpacePlanning
         internal static Dictionary<string, object> DeptPlacer(List<DeptData> deptData, Polygon2d poly, double offset, 
             double acceptableWidth = 20,double minNotchDist = 20, double circulationFreq = 10, double recompute = 5)
         {
-            if (deptData == null) return null;
-            Dictionary<string, object> notchObj = ValidateObject.CheckPolyNotches(poly, minNotchDist);
+            if (deptData == null) //|| !ValidateObject.CheckPoly(poly)
+            {
+                Trace.WriteLine("Null found poly or deptdata");
+                return null;
+            }
+
+            //Dictionary<string, object> notchObj = ValidateObject.CheckPolyNotches(poly, minNotchDist);
             //poly = (Polygon2d)notchObj["PolyReduced"];
+            Trace.WriteLine("Dept placer is good to go");
             List<double> AllDeptAreaAdded = new List<double>();
             List<List<Polygon2d>> AllDeptPolys = new List<List<Polygon2d>>();
             List<Polygon2d> leftOverPoly = new List<Polygon2d>(), polyCirculation = new List<Polygon2d>();//changed from stack
@@ -446,6 +462,7 @@ namespace SpacePlanning
                     //double areaNeeded = deptItem.DeptAreaNeeded;
                     double areaNeeded = deptItem.DeptAreaProportionNeeded * PolygonUtility.AreaPolygon(poly);
                     areaNeeded = 100000;
+                    Trace.WriteLine("placing inpatients");
                     Dictionary<string, object> inpatientObject = AssignBlocksBasedOnDistance(poly, offset, areaNeeded, 10, 30);
                     List<Polygon2d> inpatienBlocks = (List<Polygon2d>)inpatientObject["PolyAfterSplit"];
                     List<Polygon2d> leftOverBlocks = (List<Polygon2d>)inpatientObject["LeftOverPoly"];
