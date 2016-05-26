@@ -372,12 +372,16 @@ namespace SpacePlanning
             if (groundCoverage > 0.8) groundCoverage = 0.8;
             double groundCoverLow = groundCoverage - eps, groundCoverHigh = groundCoverage + eps;
             Dictionary<string, object> wholeSomeData = new Dictionary<string, object>();
+            Random ran = new Random();
             while (blockPlaced == false && count < iteration)
             {
                 wholeSomeData = PolygonUtility.MakeWholesomeBlockInPoly(borderPoly, groundCoverage);
                 List<Polygon2d> polysWhole = (List<Polygon2d>)wholeSomeData["WholesomePolys"];
+
+                List<int> indicesList = BasicUtility.GenerateList(0, polysWhole.Count);
+                indicesList = BasicUtility.RandomizeList(indicesList, ran);
                 areaPlaced = 0;
-                for (int i = 0; i < polysWhole.Count; i++) areaPlaced += PolygonUtility.AreaPolygon(polysWhole[i]);
+                for (int i = 0; i < polysWhole.Count; i++) areaPlaced += PolygonUtility.AreaPolygon(polysWhole[indicesList[i]]);
                 if (areaPlaced < areaSite * groundCoverLow || areaPlaced > areaSite * groundCoverHigh) blockPlaced = false;
                 else blockPlaced = true;
                 count += 1;

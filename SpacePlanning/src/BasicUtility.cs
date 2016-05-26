@@ -11,6 +11,38 @@ namespace SpacePlanning
 
         #region - Public Methods
 
+        //generate a list of ints between given numbers
+        public static List<int> GenerateList(int start=0, int end = 10)
+        {
+            if (start > end)
+            {
+                int temp = end;
+                end = start;
+                start = temp;
+            }
+
+            List<int> intList = new List<int>();
+            int range = end - start;
+            for (int i = 0; i < range; i++) intList.Add(i + start);
+            return intList;
+        }
+
+        //randomize an input list of integers
+        public static List<int>RandomizeList(List<int> indices, Random ran = null)
+        {
+            if (ran == null) ran = new Random();  
+            int n = indices.Count;
+            while (n > 1)
+            {
+                n--;
+                int k = ran.Next(n + 1);
+                int value = indices[k];
+                indices[k] = indices[n];
+                indices[n] = value;
+            }
+            return indices.Select(x => x).ToList();      
+        }
+
         //returns a random object
         public static Random RandomMaker()
         {
