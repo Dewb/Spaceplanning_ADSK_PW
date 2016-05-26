@@ -26,7 +26,8 @@ namespace SpacePlanning
             for(int i = 0; i < polyList.Count; i++)
             {
                 if (!CheckPoly(polyList[i])) return false;
-                List<Line2d> lineList = polyList[i].Lines;
+                Polygon2d polySimple = new Polygon2d(polyList[i].Points);               
+                List<Line2d> lineList = polySimple.Lines;
                 for(int j = 0; j < lineList.Count; j++) if (!CheckLineOrthogonal(lineList[j],eps)) return false;
             }
             return true;

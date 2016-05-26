@@ -349,6 +349,7 @@ namespace SpacePlanning
         /// <param name="origSitePoly">Original polygon2d of the site outline</param>
         /// <param name="cellList">List of cell objects inside the site</param>
         /// <param name="groundCoverage">Expected ground coverage, value between 0.2 to 0.8</param>
+        /// <param name="iteration">Number of times the node should iterate untill it retreives form satisfying ground coverage.</param>
         /// <returns name="BuildingOutline">Polygon2d representing orthogonal poly outline.</returns>
         /// <returns name="WholesomePolys">List of Polygon2d each wholesame having four sides.</returns>  
         /// <returns name="SiteArea">Area of the site outline.</returns> 
@@ -360,18 +361,18 @@ namespace SpacePlanning
         /// </search>
         [MultiReturn(new[] { "BuildingOutline","WholesomePolys", "SiteArea" , "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells" })]
         public static Dictionary<string, object> FormMakeInSite(Polygon2d borderPoly, Polygon2d origSitePoly, 
-            List<Cell> cellList,double groundCoverage = 0.5)
+            List<Cell> cellList,double groundCoverage = 0.5, int iteration = 100)
         {
             if (cellList == null) return null;
             if (!ValidateObject.CheckPoly(borderPoly)) return null;
             bool blockPlaced = false;
-            int count = 0, maxTry = 100;
+            int count = 0;
             double areaSite = PolygonUtility.AreaPolygon(origSitePoly), eps = 0.05, areaPlaced = 0;
             if (groundCoverage < eps) groundCoverage = 2 * eps;
             if (groundCoverage > 0.8) groundCoverage = 0.8;
             double groundCoverLow = groundCoverage - eps, groundCoverHigh = groundCoverage + eps;
             Dictionary<string, object> wholeSomeData = new Dictionary<string, object>();
-            while (blockPlaced == false && count < maxTry)
+            while (blockPlaced == false && count < iteration)
             {
                 wholeSomeData = PolygonUtility.MakeWholesomeBlockInPoly(borderPoly, groundCoverage);
                 List<Polygon2d> polysWhole = (List<Polygon2d>)wholeSomeData["WholesomePolys"];
