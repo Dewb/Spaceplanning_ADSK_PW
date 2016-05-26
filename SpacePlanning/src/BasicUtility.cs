@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SpacePlanning
 {
-    internal class BasicUtility
+    public class BasicUtility
     {
 
         #region - Public Methods
@@ -43,7 +43,7 @@ namespace SpacePlanning
         // returns -1 , if within range, 1 if greater, 0 if smaller
         public static int CheckWithinRange(double number, double comparingNum, double eps = 0)
         {
-            if (comparingNum > number - eps && comparingNum < number + eps) return -1;
+            if (comparingNum >= number - eps && comparingNum <= number + eps) return -1;
             else if (comparingNum > number - eps) return 1;
             else return 0;
         }

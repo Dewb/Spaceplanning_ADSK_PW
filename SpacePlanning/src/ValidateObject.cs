@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace SpacePlanning
 {
-    internal class ValidateObject
+    public static class ValidateObject
     {
         #region - Private Methods
         // Given three colinear points p, q, r, the function checks if
@@ -20,7 +20,7 @@ namespace SpacePlanning
         }
 
         //method to check a list of polygon2ds if they have all orthogonal lines or not
-        internal static bool CheckPolygon2dOrthogonality(List<Polygon2d> polyList,double eps =0)
+        public static bool CheckPolygon2dOrthogonality(List<Polygon2d> polyList,double eps =0)
         {
             if (polyList == null) return false;
             for(int i = 0; i < polyList.Count; i++)
@@ -239,21 +239,35 @@ namespace SpacePlanning
         }
 
 
-
         //finds if line is horizontal or vertical
-        internal static bool CheckLineOrthogonal(Line2d line, double eps = 0)
+        public static bool CheckLineOrthogonal(Line2d line, double eps = 0)
         {
+            Trace.WriteLine("Checking orthogonality");
             bool check = false;
             Point2d p1 = line.StartPoint;
             Point2d p2 = line.EndPoint;
             double xDiff = p1.X - p2.X;
             double yDiff = p1.Y - p2.Y;
-            if (eps == 0) if (xDiff == 0 || yDiff == 0) check = true;
+            if (eps == 0)
+            {
+                if (xDiff == 0 || yDiff == 0)
+                {
+                    Trace.WriteLine("eps 0 found");
+                    check = true;
+                }
+            }
             else
             {
-                    if (BasicUtility.CheckWithinRange(0, xDiff, eps) == 0 && BasicUtility.CheckWithinRange(0, yDiff, eps) == 0)
-                        check = false;
-                    else check = true;
+                if (BasicUtility.CheckWithinRange(0, xDiff, eps) == -1 || BasicUtility.CheckWithinRange(0, yDiff, eps) == -1)
+                {
+                    Trace.WriteLine("withtin range");
+                    check = true;
+                }
+                else
+                {
+                    Trace.WriteLine("not in range");
+                    check = false;
+                }
             }         
             return check;
         }
