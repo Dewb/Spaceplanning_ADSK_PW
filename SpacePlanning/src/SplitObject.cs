@@ -11,11 +11,6 @@ namespace SpacePlanning
     public static class SplitObject
     {
 
-        public static int testSplit()
-        {
-            return 10;
-        }
-
         #region - Public Methods
         //subdivide a given poly into smaller parts till acceptable width is met, returns list of polydept grids and list of polys to compute circulation
         public static List<List<Polygon2d>> SplitRecursivelyToSubdividePoly(List<Polygon2d> polyList, double acceptableWidth = 10, double circulationFreq = 10, double ratio = 0.5)

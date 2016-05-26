@@ -242,7 +242,6 @@ namespace SpacePlanning
         //finds if line is horizontal or vertical
         public static bool CheckLineOrthogonal(Line2d line, double eps = 0)
         {
-            Trace.WriteLine("Checking orthogonality");
             bool check = false;
             Point2d p1 = line.StartPoint;
             Point2d p2 = line.EndPoint;
@@ -250,24 +249,12 @@ namespace SpacePlanning
             double yDiff = p1.Y - p2.Y;
             if (eps == 0)
             {
-                if (xDiff == 0 || yDiff == 0)
-                {
-                    Trace.WriteLine("eps 0 found");
-                    check = true;
-                }
+                if (xDiff == 0 || yDiff == 0) check = true;
             }
             else
             {
-                if (BasicUtility.CheckWithinRange(0, xDiff, eps) == -1 || BasicUtility.CheckWithinRange(0, yDiff, eps) == -1)
-                {
-                    Trace.WriteLine("withtin range");
-                    check = true;
-                }
-                else
-                {
-                    Trace.WriteLine("not in range");
-                    check = false;
-                }
+                if (BasicUtility.CheckWithinRange(0, xDiff, eps) == -1 || BasicUtility.CheckWithinRange(0, yDiff, eps) == -1) check = true;
+                else check = false;
             }         
             return check;
         }

@@ -6,7 +6,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <StartAction>Program</StartAction>
-    <StartProgram>C:\Program Files\Autodesk\Dynamo Studio 2016\DynamoStudio.exe</StartProgram>
+    <StartProgram>C:\Program Files\Autodesk\Dynamo Studio 2017\DynamoStudio.exe</StartProgram>
   </PropertyGroup>
   <PropertyGroup>
     <ReferencePath>C:\Users\t_dassu\Documents\Visual Studio 2015\Projects\SpacePlanning\src\;C:\Users\t_dassu\Documents\Visual Studio 2015\Projects\SpacePlanning\SpacePlanning\src\Properties\</ReferencePath>

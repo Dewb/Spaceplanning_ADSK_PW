@@ -36,6 +36,9 @@
     <RegisterForComInterop>true</RegisterForComInterop>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DynamoServices">
+      <HintPath>..\..\..\..\..\..\..\Program Files\Dynamo\Dynamo Core\1.0\DynamoServices.dll</HintPath>
+    </Reference>
     <Reference Include="envdte, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
@@ -53,9 +56,6 @@
     </Reference>
     <Reference Include="ProtoImperative">
       <HintPath>D:\SUBHAJIT WORKS\03 DYNAMO RESOURCES\ZeroTouchEssentials-master\ZeroTouchEssentials-master\ProtoImperative.dll</HintPath>
-    </Reference>
-    <Reference Include="ProtoInterface">
-      <HintPath>D:\SUBHAJIT WORKS\03 DYNAMO RESOURCES\ZeroTouchEssentials-master\ZeroTouchEssentials-master\ProtoInterface.dll</HintPath>
     </Reference>
     <Reference Include="ProtoScript">
       <HintPath>D:\SUBHAJIT WORKS\03 DYNAMO RESOURCES\ZeroTouchEssentials-master\ZeroTouchEssentials-master\ProtoScript.dll</HintPath>
