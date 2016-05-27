@@ -35,14 +35,12 @@ namespace SpacePlanning
 
         //checks a polygon2d if its orthogonal or non orthogonal
         public static bool CheckPolygon2dOrtho(Polygon2d nonOrthoPoly, double eps = 0)
-        {
-            
+        {            
             bool result = true;
             Polygon2d polyNew = new Polygon2d(nonOrthoPoly.Points);
             List<Line2d> lineList = polyNew.Lines;
             for (int j = 0; j < lineList.Count; j++) if (!CheckLineOrthogonal(lineList[j])) { result = false; break; }
-            return result;
-            
+            return result;            
         }
 
         //checks a polygon2d if its orthogonal or non orthogonal
@@ -51,16 +49,21 @@ namespace SpacePlanning
             if (!CheckPoly(poly)) return false;
             Polygon2d polyNew = new Polygon2d(poly.Points);
             List<Line2d> lineList = polyNew.Lines;
-            for(int i = 0; i < lineList.Count; i++)
+            for (int i = 0; i < lineList.Count; i++)
             {
-                for(int j= i+1; j < lineList.Count - 1; j++)
-                {
+                int a = i + 1, b = i - 1;
+                if (a > lineList.Count - 1) a = 0;
+                if (b < 0) b = lineList.Count - 1;
+                for (int j = 0; j < lineList.Count; j++)
+                {                   
+                    if (i == j) continue;
+                    if (j == a || j == b) continue;             
                     Point2d intersectPt = GraphicsUtility.LineLineIntersection(lineList[i], lineList[j]);
                     if (intersectPt == null) continue;
-                    else if (CheckOnSegment(lineList[i], intersectPt)) return false;
+                    else if (CheckOnSegment(lineList[i], intersectPt) && CheckOnSegment(lineList[j], intersectPt)) return true;
                 }
             }
-            return true;
+            return false;
 
         }
 
