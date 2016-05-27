@@ -84,7 +84,6 @@ namespace SpacePlanning
             }
             return new Line2d(new Point2d(startPtX, startPtY), new Point2d(endPtX, endPtY));
         }
-
         #endregion
 
 

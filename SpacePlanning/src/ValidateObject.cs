@@ -73,6 +73,8 @@ namespace SpacePlanning
             for (int i = 0; i < polyList.Count; i++)
             {
                 bool lineLength = true;
+                if (!CheckPoly(polyList[i])) continue;
+                if (polyList[i].Lines == null || polyList[i].Lines.Count == 0) continue;
                 for (int j = 0; j < polyList[i].Lines.Count; j++) if (polyList[i].Lines[j].Length < 0.01 && PolygonUtility.AreaPolygon(polyList[i]) < 0.2) lineLength = false;
                 if (CheckPoly(polyList[i]) && lineLength) cleanPolyList.Add(polyList[i]);
             }
