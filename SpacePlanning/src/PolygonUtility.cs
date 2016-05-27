@@ -9,6 +9,21 @@ namespace SpacePlanning
 {
     public static class PolygonUtility
     {
+
+        //checks a polygonlist for non orthogonal polys and removes them if any
+        public static List<Polygon2d> GetOrthoPolys(List<Polygon2d> nonOrthoPolyList, double eps = 0)
+        {
+            if (!ValidateObject.CheckPolyList(nonOrthoPolyList)) return null;            
+            List<Polygon2d> orthoPolyList = new List<Polygon2d>();
+            List<Polygon2d> orthoPoly = new List<Polygon2d>();
+            for(int i = 0; i < nonOrthoPolyList.Count; i++)
+            {
+                Polygon2d polyNew = new Polygon2d(nonOrthoPolyList[i].Points);
+                bool result = ValidateObject.CheckPolygon2dOrtho(polyNew, eps);
+                if (result) orthoPoly.Add(polyNew);
+            }
+            return orthoPoly;
+        }
     
 
         //gives the highest and lowest point from poly points

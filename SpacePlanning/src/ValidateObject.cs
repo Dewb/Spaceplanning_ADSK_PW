@@ -20,21 +20,30 @@ namespace SpacePlanning
         }
 
         //method to check a list of polygon2ds if they have all orthogonal lines or not
-        public static bool CheckPolygon2dOrthogonality(List<Polygon2d> polyList,double eps =0)
+        public static bool CheckPolygon2dListOrtho(List<Polygon2d> polyList,double eps =0)
         {
             if (polyList == null) return false;
+            bool result = true;
             for(int i = 0; i < polyList.Count; i++)
             {
                 if (!CheckPoly(polyList[i])) return false;
-                Polygon2d polySimple = new Polygon2d(polyList[i].Points);               
-                List<Line2d> lineList = polySimple.Lines;
-                for(int j = 0; j < lineList.Count; j++) if (!CheckLineOrthogonal(lineList[j],eps)) return false;
+                Polygon2d polySimple = new Polygon2d(polyList[i].Points);
+                if (!CheckPolygon2dOrtho(polySimple, eps)) { result = false; break; }
             }
-            return true;
-
+            return result;
         }
 
-        //
+        //checks a polygon2d if its orthogonal or non orthogonal
+        public static bool CheckPolygon2dOrtho(Polygon2d nonOrthoPoly, double eps = 0)
+        {
+            
+            bool result = true;
+            Polygon2d polyNew = new Polygon2d(nonOrthoPoly.Points);
+            List<Line2d> lineList = polyNew.Lines;
+            for (int j = 0; j < lineList.Count; j++) if (!CheckLineOrthogonal(lineList[j])) { result = false; break; }
+            return result;
+            
+        }
 
 
         //this checks a polylist for abnormal polys and returns only those which deem fit

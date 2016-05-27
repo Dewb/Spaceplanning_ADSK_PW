@@ -68,7 +68,7 @@ namespace SpacePlanning
                         List<Polygon2d> eachDeptPoly = deptAllPolys[i];
                         if (ValidateObject.CheckPolyList(eachDeptPoly)) deptPlaced = true;
                         else { deptPlaced = false; Trace.WriteLine("dept arrangement bad polys, rejected"); break; }
-                        bool orthoResult = ValidateObject.CheckPolygon2dOrthogonality(deptPolysTogether, eps);
+                        bool orthoResult = ValidateObject.CheckPolygon2dListOrtho(deptPolysTogether, eps);
                         Trace.WriteLine("The poly formed is : " + orthoResult);
                         if (orthoResult) deptPlaced = true;
                         else { deptPlaced = false; Trace.WriteLine("dept arrangement non orthogonal, rejected"); break; }
@@ -600,8 +600,8 @@ namespace SpacePlanning
                 if (i == 1)
                 {
                     List<List<Polygon2d>> polySubDivs = SplitObject.SplitRecursivelyToSubdividePoly(leftOverPoly, acceptableWidth, circulationFreq, ratio);
-                    bool checkPoly1 = ValidateObject.CheckPolygon2dOrthogonality(polySubDivs[0], 0.5);
-                    bool checkPoly2 = ValidateObject.CheckPolygon2dOrthogonality(polySubDivs[1], 0.5);
+                    bool checkPoly1 = ValidateObject.CheckPolygon2dListOrtho(polySubDivs[0], 0.5);
+                    bool checkPoly2 = ValidateObject.CheckPolygon2dListOrtho(polySubDivs[1], 0.5);
                     while (polySubDivs == null || polySubDivs.Count == 0 || !checkPoly1 || !checkPoly2 && count < maxTry)
                     {                 
                         ratio -= 0.01;
