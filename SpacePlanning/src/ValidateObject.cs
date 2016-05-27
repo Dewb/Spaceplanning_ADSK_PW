@@ -45,6 +45,24 @@ namespace SpacePlanning
             
         }
 
+        //checks a polygon2d if its orthogonal or non orthogonal
+        public static bool CheckPolygonSelfIntersection(Polygon2d poly)
+        {
+            if (!CheckPoly(poly)) return false;
+            Polygon2d polyNew = new Polygon2d(poly.Points);
+            List<Line2d> lineList = polyNew.Lines;
+            for(int i = 0; i < lineList.Count; i++)
+            {
+                for(int j= i+1; j < lineList.Count - 1; j++)
+                {
+                    Point2d intersectPt = GraphicsUtility.LineLineIntersection(lineList[i], lineList[j]);
+                    if (intersectPt == null) continue;
+                    else if (CheckOnSegment(lineList[i], intersectPt)) return false;
+                }
+            }
+            return true;
+
+        }
 
         //this checks a polylist for abnormal polys and returns only those which deem fit
         internal static List<Polygon2d>CheckAndCleanPolygon2dList(List<Polygon2d> polyList)

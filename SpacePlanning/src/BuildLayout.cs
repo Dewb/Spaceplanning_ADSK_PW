@@ -37,6 +37,7 @@ namespace SpacePlanning
         /// <param name="minNotchDistance">Minimum distance below which an edge will be considered as a removable notch.</param>
         /// <param name="circulationFreq">Value to consider while checking frequency of cirulation computation polygon2d.</param>
         /// <param name="recompute">Regardless of the recompute value, it is used to restart computing the node every time its value is changed.</param>
+        /// <param name="randomToggle">Boolean toggle to turn on or off randomness to assign departments. Default is off.</param>
         /// <returns name="DeptPolys">Polygon2d's assigned to each department.</returns>
         /// <returns name="LeftOverPolys">Polygon2d's not assigned to any department.</returns>
         /// <returns name="CirculationPolys">Polygon2d's needed to compute circulation networks.</returns>
@@ -47,7 +48,7 @@ namespace SpacePlanning
         /// </search>
         [MultiReturn(new[] { "DeptPolys", "LeftOverPolys", "CirculationPolys","OtherDeptMainPoly", "UpdatedDeptData"})]
         public static Dictionary<string, object> PlaceDeptOnSite(List<DeptData> deptData, Polygon2d buildingOutline,  double primaryDeptDepth, 
-            double acceptableWidth, double minNotchDistance = 20, double circulationFreq = 8, int recompute = 1)
+            double acceptableWidth, double minNotchDistance = 20, double circulationFreq = 8, int recompute = 1, bool randomToggle = false)
         {           
             Dictionary<string, object> deptArrangement = new Dictionary<string, object>();
             double count = 0,eps = minNotchDistance;            
@@ -56,7 +57,7 @@ namespace SpacePlanning
             while(deptPlaced == false && count < MAXCOUNT)
             {
                 Trace.WriteLine("Lets arrange dept again : " + count);
-                deptArrangement = DeptPlacer(deptData, buildingOutline, primaryDeptDepth, acceptableWidth, minNotchDistance, circulationFreq, recompute);
+                deptArrangement = DeptPlacer(deptData, buildingOutline, primaryDeptDepth, acceptableWidth, minNotchDistance, circulationFreq, recompute, randomToggle);
                 if(deptArrangement != null)
                 {
                     List<List<Polygon2d>> deptAllPolys =(List<List<Polygon2d>>) deptArrangement["DeptPolys"];
@@ -554,7 +555,7 @@ namespace SpacePlanning
         //dept assignment new way
         [MultiReturn(new[] { "DeptPolys", "LeftOverPolys","CirculationPolys", "OtherDeptMainPoly", "UpdatedDeptData", })]
         internal static Dictionary<string, object> DeptPlacer(List<DeptData> deptData, Polygon2d poly, double offset, 
-            double acceptableWidth = 20,double minNotchDist = 20, double circulationFreq = 10, double recompute = 5)
+            double acceptableWidth = 20,double minNotchDist = 20, double circulationFreq = 10, double recompute = 5, bool tag = false)
         {
             if (deptData == null) //|| !ValidateObject.CheckPoly(poly)
             {
@@ -571,7 +572,7 @@ namespace SpacePlanning
             List<Polygon2d> otherDeptPoly = new List<Polygon2d>();
             List<Polygon2d> subDividedPoly = new List<Polygon2d>();
             int count = 0, maxTry = 20;
-            double totalDeptProp = 0, areaAvailable = 0, ratio = 0.6;
+            double totalDeptProp = 0, areaAvailable = 0, ratio = 0.6, eps = 2;
             for (int i = 0; i < deptData.Count; i++) if (i > 0) totalDeptProp += deptData[i].DeptAreaProportionNeeded;
 
             for (int i = 0; i < deptData.Count; i++)
@@ -599,7 +600,9 @@ namespace SpacePlanning
                 }
                 if (i == 1)
                 {
-                    List<List<Polygon2d>> polySubDivs = SplitObject.SplitRecursivelyToSubdividePoly(leftOverPoly, acceptableWidth, circulationFreq, ratio);
+                    List<List<Polygon2d>> polySubDivs = new List<List<Polygon2d>>();
+                    if (!tag) polySubDivs = SplitObject.SplitRecursivelyToSubdividePoly(leftOverPoly, acceptableWidth, circulationFreq, ratio);
+                    else polySubDivs = SplitObject.SplitRecursivelyRandomizedToSubdividePoly(leftOverPoly, acceptableWidth, circulationFreq, ratio, eps, recompute);
                     bool checkPoly1 = ValidateObject.CheckPolygon2dListOrtho(polySubDivs[0], 0.5);
                     bool checkPoly2 = ValidateObject.CheckPolygon2dListOrtho(polySubDivs[1], 0.5);
                     while (polySubDivs == null || polySubDivs.Count == 0 || !checkPoly1 || !checkPoly2 && count < maxTry)

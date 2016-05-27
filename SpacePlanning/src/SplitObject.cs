@@ -13,7 +13,7 @@ namespace SpacePlanning
 
         #region - Public Methods
         //subdivide a given poly into smaller parts till acceptable width is met, returns list of polydept grids and list of polys to compute circulation
-        public static List<List<Polygon2d>> SplitRecursivelyToSubdividePoly(List<Polygon2d> polyList, double acceptableWidth = 10, double circulationFreq = 10, double ratio = 0.5)
+        public static List<List<Polygon2d>> SplitRecursivelyToSubdividePoly(List<Polygon2d> polyList, double acceptableWidth = 10, double circulationFreq = 10, double ratio = 0.5, bool tag = false)
         {
             if (!ValidateObject.CheckPolyList(polyList)) return null;
 
@@ -28,11 +28,13 @@ namespace SpacePlanning
                 totalArea += PolygonUtility.AreaPolygon(polyList[i]);
                 polyQueue.Enqueue(polyList[i]);
             }
+            Random rand = new Random();
             double targetArea = totalArea / cirFac;
             while (polyQueue.Count > 0)
             {
                 Polygon2d currentPoly = polyQueue.Dequeue();
-                Dictionary<string, object> splitObj = SplitObject.SplitByRatio(currentPoly, ratio, 0);
+                Dictionary<string, object> splitObj = SplitByRatio(currentPoly, ratio, 0);
+                if (tag) ratio = BasicUtility.RandomBetweenNumbers(rand, 0.7, 0.35);
                 if (splitObj == null) continue;
                 List<Polygon2d> polySplitList = (List<Polygon2d>)splitObj["PolyAfterSplit"];
                 if (ValidateObject.CheckPolyList(polySplitList) && polySplitList.Count > 1)
@@ -50,7 +52,6 @@ namespace SpacePlanning
                     if (bbox2.Lines[0].Length < acceptableWidth || bbox2.Lines[1].Length < acceptableWidth) polyBrokenList.Add(polySplitList[1]);
                     else polyQueue.Enqueue(polySplitList[1]);
                 }
-
                 if (ValidateObject.CheckPolyList(polySplitList) && polySplitList.Count < 2)
                 {
                     Polygon2d bbox1 = Polygon2d.ByPoints(ReadData.FromPointsGetBoundingPoly(polySplitList[0].Points));
@@ -67,7 +68,33 @@ namespace SpacePlanning
             polyAllReturn.Add(polyCirculationList);
             return polyAllReturn;
         }
-        
+
+        //subdivide a given poly into smaller parts till acceptable width is met, returns list of polydept grids and list of polys to compute circulation
+        public static List<List<Polygon2d>> SplitRecursivelyRandomizedToSubdividePoly(List<Polygon2d> polyList, double acceptableWidth = 10, double circulationFreq = 10, double ratio = 0.5, double eps = 0, double iterationCount = 100)
+        {
+            if (!ValidateObject.CheckPolyList(polyList)) return null;
+            bool subDivResult = false;
+            int count = 0;
+            List<List<Polygon2d>> polySubdivs = new List<List<Polygon2d>>();
+            double acceptableWidthMax = acceptableWidth * 1.5, acceptableWidthMin = acceptableWidth * 0.75;
+            double ratioMax = ratio * 1.8, ratioMin = ratio * 0.60;
+            Random ran1 = new Random();
+            Random ran2 = new Random();
+            while (!subDivResult && count < iterationCount)
+            {
+                count += 1;
+                polySubdivs = SplitRecursivelyToSubdividePoly(polyList, acceptableWidth, circulationFreq, ratio);
+                acceptableWidth = BasicUtility.RandomBetweenNumbers(ran1, acceptableWidthMax, acceptableWidthMin);
+                ratio = BasicUtility.RandomBetweenNumbers(ran2, ratioMax, ratioMin);
+                if (ratio > 0.7 || ratio < 0.30) ratio = BasicUtility.RandomBetweenNumbers(ran2, 0.75, 0.25);
+                if (polySubdivs == null) { subDivResult = false; }
+                else if (!ValidateObject.CheckPolyList(polySubdivs[0]) || !ValidateObject.CheckPolygon2dListOrtho(polySubdivs[0])) { subDivResult = false; }
+                else if (!ValidateObject.CheckPolyList(polySubdivs[1]) || !ValidateObject.CheckPolygon2dListOrtho(polySubdivs[1])) { subDivResult = false; }
+                else subDivResult = true;
+            }     
+            return polySubdivs;
+        }
+
         //splits a polygon into two based on ratio and dir
         [MultiReturn(new[] { "PolyAfterSplit", "SplitLine", "IntersectedPoints" })]
         public static Dictionary<string, object> SplitByRatio(Polygon2d polyOutline, double ratio = 0.5, int dir = 0)
