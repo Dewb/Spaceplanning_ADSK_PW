@@ -361,7 +361,7 @@ namespace SpacePlanning
         /// </search>
         [MultiReturn(new[] { "BuildingOutline","WholesomePolys", "SiteArea" , "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells" })]
         public static Dictionary<string, object> FormMakeInSite(Polygon2d borderPoly, Polygon2d origSitePoly, 
-            List<Cell> cellList,double groundCoverage = 0.5, int iteration = 100)
+            List<Cell> cellList,double groundCoverage = 0.5, int iteration = 100, bool randomToggle = false)
         {
             if (cellList == null) return null;
             if (!ValidateObject.CheckPoly(borderPoly)) return null;
@@ -381,7 +381,11 @@ namespace SpacePlanning
                 List<int> indicesList = BasicUtility.GenerateList(0, polysWhole.Count);
                 indicesList = BasicUtility.RandomizeList(indicesList, ran);
                 areaPlaced = 0;
-                for (int i = 0; i < polysWhole.Count; i++) areaPlaced += PolygonUtility.AreaPolygon(polysWhole[indicesList[i]]);
+                for (int i = 0; i < polysWhole.Count; i++)
+                {
+                    if (randomToggle) { areaPlaced += PolygonUtility.AreaPolygon(polysWhole[indicesList[i]]); }
+                    else { areaPlaced += PolygonUtility.AreaPolygon(polysWhole[i]); }                 
+                }
                 if (areaPlaced < areaSite * groundCoverLow || areaPlaced > areaSite * groundCoverHigh) blockPlaced = false;
                 else blockPlaced = true;
                 count += 1;

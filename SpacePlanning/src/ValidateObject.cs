@@ -64,7 +64,6 @@ namespace SpacePlanning
                 }
             }
             return false;
-
         }
 
         //this checks a polylist for abnormal polys and returns only those which deem fit
