@@ -254,6 +254,33 @@ namespace SpacePlanning
 
 
 
+        //arranges program elements inside secondary dept units and updates program data object
+        /// <summary>
+        /// Assigns program elements inside the secondary department polygon2d.
+        /// </summary>
+        /// <param name="deptData">List of Department Data Objects.</param>
+        /// <param name="recompute">Regardless of the recompute value, it is used to restart computing the node every time its value is changed.</param>
+        /// <returns></returns>
+        [MultiReturn(new[] { "UpdatedDeptData" })]
+        public static Dictionary<string, object> PlaceAllSecondaryPrograms(List<DeptData> deptData, int recompute = 0)
+        {
+            if (deptData == null) return null;
+            List<List<Polygon2d>> polyPorgsAdded = new List<List<Polygon2d>>();
+            List<ProgramData> progDataNew = new List<ProgramData>();
+            for(int i = 0; i < deptData.Count; i++)
+            {
+                if (i == 0) continue;
+                Dictionary<string, object> placedSecondaryProg = PlaceSecondaryPrograms(deptData[i].PolyAssignedToDept, deptData[i].ProgramsInDept, recompute);
+                deptData[i].ProgramsInDept = (List<ProgramData>)placedSecondaryProg["UpdatedProgramData"]; 
+            }
+            List<DeptData> newDeptData = new List<DeptData>();
+            for(int i = 0; i < deptData.Count; i++) newDeptData.Add(new DeptData(deptData[i]));
+            return new Dictionary<string, object>
+            {
+                { "UpdatedDeptData",(newDeptData) }
+            };
+        }
+
 
 
         #endregion

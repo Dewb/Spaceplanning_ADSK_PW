@@ -320,8 +320,8 @@ namespace SpacePlanning
                     }
                     else
                     {
-                        progStrings.Add("More than one poly added");
-                        progStrings.Add("More than one poly added");
+                        progStrings.Add("Many Poly");
+                        progStrings.Add("Many Poly");
                     }
                 }
                 
