@@ -424,7 +424,14 @@ namespace SpacePlanning
             //organize the points to make closed poly
             List<Point2d> sortedA = PointUtility.DoSortClockwise(poly, intersectedPoints, pIndexA);
             List<Point2d> sortedB = PointUtility.DoSortClockwise(poly, intersectedPoints, pIndexB);
+            /*
+            double areaA = PolygonUtility.AreaPolygon(new Polygon2d(sortedA));
+            double areaB = PolygonUtility.AreaPolygon(new Polygon2d(sortedB));
+            List<Polygon2d> splittedPoly;
             //List<Polygon2d> splittedPoly = PolygonUtility.OptimizePolyPoints(sortedA, sortedB, true, space);
+            if (areaA>areaB) splittedPoly = new List<Polygon2d> { new Polygon2d(sortedB, 0), new Polygon2d(sortedA, 0) };
+            else splittedPoly = new List<Polygon2d> { new Polygon2d(sortedA, 0), new Polygon2d(sortedB, 0) };
+            */
             List<Polygon2d> splittedPoly = new List<Polygon2d> { new Polygon2d(sortedA, 0), new Polygon2d(sortedB, 0) };
             return new Dictionary<string, object>
             {

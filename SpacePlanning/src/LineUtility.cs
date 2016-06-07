@@ -14,9 +14,9 @@ namespace SpacePlanning
     {
         #region - Public Methods
         //offsets an input line by a given distance 
-        public static Line2d Offset(Line2d lineInp, Polygon2d poly, double distance)
+        public static Line2d Offset(Line2d lineInp,double distance)
         {
-            if (lineInp == null || !ValidateObject.CheckPoly(poly)) return null;
+            if (lineInp == null) return null;
             Point2d ptStart = OffsetLinePoint(lineInp, lineInp.StartPoint, distance);
             Vector2d vec = new Vector2d(lineInp.StartPoint, ptStart);
             Point2d ptEnd = VectorUtility.VectorAddToPoint(lineInp.EndPoint, vec);

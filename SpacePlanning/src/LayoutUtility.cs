@@ -129,7 +129,7 @@ namespace SpacePlanning
             List<Point2d> midPtsOffsets = new List<Point2d>();
             for (int i = 0; i < allSplitLines.Count; i++)
             {
-                offsetLines.Add(LineUtility.Offset(allSplitLines[i], poly, patientRoomDepth));
+                offsetLines.Add(LineUtility.Offset(allSplitLines[i], patientRoomDepth));
                 midPtsOffsets.Add(LineUtility.NudgeLineMidPt(allSplitLines[i], poly, patientRoomDepth));
             }
 
@@ -164,7 +164,7 @@ namespace SpacePlanning
             List<Point2d> midPtsOffsets = new List<Point2d>();
             for (int i = 0; i < allSplitLines.Count; i++)
             {
-                offsetLines.Add(LineUtility.Offset(allSplitLines[i], poly, patientRoomDepth));
+                offsetLines.Add(LineUtility.Offset(allSplitLines[i], patientRoomDepth));
                 midPtsOffsets.Add(LineUtility.NudgeLineMidPt(allSplitLines[i], poly, patientRoomDepth));
             }
 

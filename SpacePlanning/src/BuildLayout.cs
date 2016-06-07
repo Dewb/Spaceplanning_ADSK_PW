@@ -93,8 +93,8 @@ namespace SpacePlanning
         /// </summary>
         /// <param name="deptPoly">Polygon2d's of primary department which needs program arrangement inside.</param>
         /// <param name="progData">Program Data object</param>
-        /// <param name="primaryProgramWidth">Width of the primary program element in the department.</param>
-        /// <param name="recompute">Regardless of the recompute value, it is used to restart computing the node every time its value is changed.</param>
+        /// <param name="primaryProgramWidth">Width of the primary program element in  department.</param>
+        /// <param name="recompute">Regardless of the recompute value, it is used to restart computing the node every time it's value is changed.</param>
         /// <returns name="PolyAfterSplit">Polygon2d's obtained after assigning programs inside the department.</returns>
         /// <returns name="UpdatedProgramData">Updated program data object.</returns>
         /// <returns name="ProgramsAddedCount">Number of program units added.</returns>
@@ -193,108 +193,7 @@ namespace SpacePlanning
             };
         }
 
-        //arranges program elements inside primary dept unit and updates program data object
-        /// <summary>
-        /// Assigns program elements inside the primary department polygon2d.
-        /// </summary>
-        /// <param name="deptPoly">Polygon2d's of primary department which needs program arrangement inside.</param>
-        /// <param name="progData">Program Data object</param>
-        /// <param name="primaryProgramWidth">Width of the primary program element in the department.</param>
-        /// <param name="recompute">Regardless of the recompute value, it is used to restart computing the node every time its value is changed.</param>
-        /// <returns name="PolyAfterSplit">Polygon2d's obtained after assigning programs inside the department.</returns>
-        /// <returns name="UpdatedProgramData">Updated program data object.</returns>
-        /// <returns name="ProgramsAddedCount">Number of program units added.</returns>
-        [MultiReturn(new[] { "PolyAfterSplit", "UpdatedProgramData", "ProgramsAddedCount" })]
-        public static Dictionary<string, object> TestPlacePrimaryPrograms(List<Polygon2d> deptPoly, List<ProgramData> progData, double primaryProgramWidth, int recompute = 1, int iterCount = 10)
-        {
-
-            if (!ValidateObject.CheckPolyList(deptPoly)) return null;
-            if (progData == null || progData.Count == 0) return null;
-            int roomCount = 0;
-            List<Polygon2d> polyList = new List<Polygon2d>();
-            List<Point2d> pointsList = new List<Point2d>();
-            Queue<ProgramData> programDataRetrieved = new Queue<ProgramData>();
-            List<ProgramData> progDataAddedList = new List<ProgramData>();
-            ProgramData copyProgData = new ProgramData(progData[0]);
-
-            for (int i = 0; i < progData.Count; i++) programDataRetrieved.Enqueue(progData[i]);
-            for (int i = 0; i < deptPoly.Count; i++)
-            {
-                Polygon2d poly = deptPoly[i];
-                if (!ValidateObject.CheckPoly(poly)) continue;
-                if (poly.Lines == null || poly.Lines.Count == 0) continue;
-                int lineId = 0, count = 0;
-                if (poly.Lines[0].Length > poly.Lines[1].Length) lineId = 1;
-                else lineId = 0;
-                Line2d inpLine = poly.Lines[lineId];
-                List<double> spans = PolygonUtility.GetSpansXYFromPolygon2d(poly.Points);
-                double setSpan = 1000000000000, fac = 2.1;
-                if (spans[0] > spans[1]) setSpan = spans[0];
-                else setSpan = spans[1];
-                Polygon2d currentPoly = poly;
-                Polygon2d polyAfterSplitting = new Polygon2d(null), leftOverPoly = new Polygon2d(null);
-                ProgramData progItem = new ProgramData(progData[0]);
-                Point2d centerPt = PolygonUtility.CentroidOfPoly(currentPoly);
-                
-                while (setSpan > primaryProgramWidth && count < iterCount)
-                {
-                    double dist = 0;
-                    if (setSpan < fac * primaryProgramWidth) dist = setSpan;
-                    else dist = primaryProgramWidth;
-
-
-                    //Dictionary<string, object> splitReturn = SplitObject.SplitByOffsetFromLine(currentPoly, lineId, dist);
-                    inpLine = LineUtility.OffsetLineInsidePoly(inpLine, poly, dist);
-                    Dictionary<string, object> splitReturn = SplitObject.SplitByLine(currentPoly, inpLine, dist);
-                    List<Polygon2d> polyReturned = (List<Polygon2d>)(splitReturn["PolyAfterSplit"]);
-                    polyAfterSplitting = polyReturned[0];
-                    leftOverPoly = polyReturned[1];
-                    if (ValidateObject.CheckPoly(leftOverPoly))
-                    {
-                        progItem = programDataRetrieved.Dequeue();
-                        currentPoly = leftOverPoly;
-                        Point2d centerPolySplit = PolygonUtility.CentroidOfPoly(polyAfterSplitting);
-                        if (GraphicsUtility.PointInsidePolygonTest(poly, centerPolySplit)) polyList.Add(polyAfterSplitting);
-                        progItem.AreaProvided = PolygonUtility.AreaPolygon(polyAfterSplitting);
-                        setSpan -= dist;
-                        progDataAddedList.Add(progItem);
-                        count += 1;
-                        //Trace.WriteLine("leftover poly all fine : " + count);
-                    }
-                    else
-                    {
-                        //Trace.WriteLine("leftover poly not valid found : " + count);
-                        break;
-                    }
-                    if (programDataRetrieved.Count == 0) programDataRetrieved.Enqueue(copyProgData);
-                }// end of while                 
-                progItem = programDataRetrieved.Dequeue();
-                polyList.Add(leftOverPoly);
-                progItem.AreaProvided = PolygonUtility.AreaPolygon(leftOverPoly);
-                progDataAddedList.Add(progItem);
-                if (programDataRetrieved.Count == 0) programDataRetrieved.Enqueue(copyProgData);
-
-            }// end of for loop
-
-            roomCount = progDataAddedList.Count;
-            List<ProgramData> UpdatedProgramDataList = new List<ProgramData>();
-            for (int i = 0; i < progDataAddedList.Count; i++) //progData.Count
-            {
-                ProgramData progItem = progDataAddedList[i];
-                ProgramData progNew = new ProgramData(progItem);
-                if (i < polyList.Count) progNew.PolyAssignedToProg = new List<Polygon2d> { polyList[i] };
-                else progNew.PolyAssignedToProg = null;
-                UpdatedProgramDataList.Add(progNew);
-            }
-            //List<Polygon2d> cleanPolyList = ValidateObject.CheckAndCleanPolygon2dList(polyList);
-            return new Dictionary<string, object>
-            {
-                { "PolyAfterSplit", (polyList) },
-                { "UpdatedProgramData",(UpdatedProgramDataList) },
-                { "ProgramsAddedCount" , (roomCount) }
-            };
-        }
-
+  
         //arranges program elements inside secondary dept units and updates program data object
         /// <summary>
         /// Assigns program elements inside the secondary department polygon2d.
@@ -352,115 +251,6 @@ namespace SpacePlanning
                 { "UpdatedProgramData",(newProgDataList) }
             };
         }
-
-
-        //blocks are assigne based on offset distance, used for inpatient blocks
-        [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly", "AreaAssignedToBlock", "FalseLines", "LineOptions", "PointAdded" })]
-        public static Dictionary<string, object> TestAssignBlocksBasedOnDistance(Polygon2d poly, double distance = 16, double area = 0, double thresDistance = 10, double recompute = 5)
-        {
-
-            if (!ValidateObject.CheckPoly(poly)) return null;
-            if (distance < 1) return null;
-            Trace.WriteLine("assginblocks by distance in process");
-            bool externalIncude = false;
-            if (recompute > 5) externalIncude = true;
-            int count = 0, maxTry = 100;
-            poly = new Polygon2d(poly.Points);
-            if (area == 0) area = 0.8 * PolygonUtility.AreaPolygon(poly);
-            Stack<Polygon2d> polyLeftList = new Stack<Polygon2d>();
-            double areaAdded = 0, minLength = 200;
-            polyLeftList.Push(poly);
-            Point2d pointAdd = new Point2d(0, 0);
-            List<Polygon2d> blockPolyList = new List<Polygon2d>();
-            List<Polygon2d> leftoverPolyList = new List<Polygon2d>();
-            List<Line2d> falseLines = new List<Line2d>();
-            List<Line2d> lineOptions = new List<Line2d>();
-            bool error = false;
-            while (polyLeftList.Count > 0 && areaAdded < area) //count<recompute count < maxTry
-            {
-                error = false;
-                Polygon2d currentPoly = polyLeftList.Pop();
-                Polygon2d tempPoly = new Polygon2d(currentPoly.Points, 0);
-                Dictionary<string, object> splitObject = CreateBlocksByLines(currentPoly, poly, distance, thresDistance, externalIncude);
-                if (splitObject == null) { count += 1; Trace.WriteLine("Split errored"); continue; }
-                Polygon2d blockPoly = (Polygon2d)splitObject["PolyAfterSplit"];
-                Polygon2d leftPoly = (Polygon2d)splitObject["LeftOverPoly"];
-                lineOptions = (List<Line2d>)splitObject["LineOptions"];
-                Dictionary<string, object> addPtObj = LayoutUtility.AddPointToFitPoly(leftPoly, poly, distance, thresDistance, recompute);
-                leftPoly = (Polygon2d)addPtObj["PolyAddedPts"];
-                falseLines = (List<Line2d>)addPtObj["FalseLineList"];
-                pointAdd = (Point2d)addPtObj["PointAdded"];
-                areaAdded += PolygonUtility.AreaPolygon(blockPoly);
-                polyLeftList.Push(leftPoly);
-                blockPolyList.Add(blockPoly);
-                count += 1;
-                if (lineOptions.Count == 0) error = true;
-                else
-                {
-                    for (int i = 0; i < lineOptions.Count; i++)
-                    {
-                        if (lineOptions[i].Length > thresDistance) { error = false; break; }
-                        else error = true;
-                    }
-                }
-                if (error) break;
-                //Trace.WriteLine("still inside while loop at assgineblocksbydistance");
-            }// end of while loop
-
-
-            /*
-            //added to allow one more poly
-            bool spaceAvailable = false;
-            for (int i = 0; i < lineOptions.Count; i++) { if (lineOptions[i].Length > minLength) spaceAvailable = true; break; }
-
-            if (spaceAvailable && polyLeftList.Count > 0)
-            {
-                Polygon2d currentPoly = polyLeftList.Pop();
-                Polygon2d tempPoly = new Polygon2d(currentPoly.Points, 0);
-                Dictionary<string, object> splitObject = CreateBlocksByLines(currentPoly, poly, distance, thresDistance, externalIncude);
-                Trace.WriteLine("Well found that space is available");
-                if (splitObject != null)
-                {
-                    Polygon2d blockPoly = (Polygon2d)splitObject["PolyAfterSplit"];
-                    Polygon2d leftPoly = (Polygon2d)splitObject["LeftOverPoly"];
-                    lineOptions = (List<Line2d>)splitObject["LineOptions"];
-                    Dictionary<string, object> addPtObj = LayoutUtility.AddPointToFitPoly(leftPoly, poly, distance, thresDistance, recompute);
-                    leftPoly = (Polygon2d)addPtObj["PolyAddedPts"];
-                    falseLines = (List<Line2d>)addPtObj["FalseLineList"];
-                    pointAdd = (Point2d)addPtObj["PointAdded"];
-                    areaAdded += PolygonUtility.AreaPolygon(blockPoly);
-                    polyLeftList.Push(leftPoly);
-                    blockPolyList.Add(blockPoly);
-                    count += 1;
-                    if (lineOptions.Count == 0) error = true;
-                    else
-                    {
-                        for (int i = 0; i < lineOptions.Count; i++)
-                        {
-                            if (lineOptions[i].Length > thresDistance) { error = false; break; }
-                            else error = true;
-                        }
-                    }
-                    Trace.WriteLine("Succesfully assigned one extra");
-                } // end of if loop
-            }
-            */
-
-
-            leftoverPolyList.AddRange(polyLeftList);
-            blockPolyList = PolygonUtility.CleanPolygonList(blockPolyList);
-            leftoverPolyList = PolygonUtility.CleanPolygonList(leftoverPolyList);
-            return new Dictionary<string, object>
-            {
-                { "PolyAfterSplit", (blockPolyList) },
-                { "LeftOverPoly", (leftoverPolyList) },
-                { "AreaAssignedToBlock", (areaAdded)},
-                { "FalseLines", (falseLines) },
-                { "LineOptions", (lineOptions) },
-                { "PointAdded" , (pointAdd)}
-            };
-        }
-
 
 
 

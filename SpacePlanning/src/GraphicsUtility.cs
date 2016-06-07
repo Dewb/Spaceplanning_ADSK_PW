@@ -18,9 +18,8 @@ using System.Diagnostics;
 
 namespace SpacePlanning
 {
-    internal class GraphicsUtility
+    public class GraphicsUtility
     {
-
         #region - Public Methods
         //checks if a point is inside a polygon or not
         public static bool PointInsidePolygonTest(Polygon2d poly, Point2d testPoint)

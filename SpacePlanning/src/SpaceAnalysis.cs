@@ -3,6 +3,10 @@ using stuffer;
 using Autodesk.DesignScript.Runtime;
 using Autodesk.DesignScript.Geometry;
 using System;
+//using Excel = Microsoft.Office.Interop.Excel;
+using System.Runtime.InteropServices;
+
+
 
 namespace SpacePlanning
 {
@@ -273,6 +277,177 @@ namespace SpacePlanning
                 { "InpatientDeptData", (inPatientData) }
             };
         }
+
+
+        //exports data to excel
+        public static List<List<string>>WriteProgramDataToExcel(List<ProgramData> progDataList)
+        {
+            if (progDataList == null) return null;
+            List<List<string>> dataToWriteList = new List<List<string>>();
+            List<string> progStrings = new List<string>();
+            progStrings.Add("DEPT NAME");
+            progStrings.Add("PROG NAME");
+            progStrings.Add("PROG AREA NEEDED");
+            progStrings.Add("PROG AREA PROVIDED");
+            progStrings.Add("PROG NUM POLYS ASSIGNED");
+            progStrings.Add("PROG POLY LENGTH");
+            progStrings.Add("PROG POLY WIDTH");
+            dataToWriteList.Add(progStrings);
+           
+            for (int i = 0; i < progDataList.Count; i++)
+            {
+               
+                if (progDataList[i] == null) continue;
+                progStrings = new List<string>();
+                progStrings.Add(progDataList[i].DeptName.ToString());
+                progStrings.Add(progDataList[i].ProgramName.ToString());
+                progStrings.Add(progDataList[i].AreaNeeded.ToString());
+                progStrings.Add(progDataList[i].AreaProvided.ToString());
+                if(progDataList[i].PolyAssignedToProg == null || progDataList[i].PolyAssignedToProg.Count == 0)
+                {
+                    progStrings.Add(0.ToString());
+                    progStrings.Add("Invalid Length");
+                    progStrings.Add("Invalid Width");
+                }
+                else
+                {
+                    progStrings.Add(progDataList[i].PolyAssignedToProg.Count.ToString());
+                    if(progDataList[i].PolyAssignedToProg.Count == 1)
+                    {
+                        List<double> spans = PolygonUtility.GetSpansXYFromPolygon2d(progDataList[i].PolyAssignedToProg[0].Points);
+                        progStrings.Add(spans[0].ToString());
+                        progStrings.Add(spans[1].ToString());
+                    }
+                    else
+                    {
+                        progStrings.Add("More than one poly added");
+                        progStrings.Add("More than one poly added");
+                    }
+                }
+                
+                dataToWriteList.Add(progStrings);
+            }
+            progDataList.Clear();
+            return dataToWriteList;
+        }
+
+        /*
+        public static bool WriteDeptDataToExcel(List<DeptData> deptData)
+        {
+
+            try
+            {
+
+
+                Excel.Application oXL = new Excel.Application();
+
+
+#if DEBUG
+                oXL.Visible = true;
+                oXL.DisplayAlerts = true;
+#else
+                oXL.Visible = false; 
+                oXL.DisplayAlerts = false;
+#endif
+
+
+                //Open a New Excel File
+                Excel.Workbook oWB = oXL.Workbooks.Add(Type.Missing);
+                Excel._Worksheet oSheet = oWB.ActiveSheet;
+
+                List<String> Name = new List<String>();
+                List<Double> Percentage = new List<Double>();
+
+                Name.Add("Anil");
+                Name.Add("Vikas");
+                Name.Add("Ashwini");
+                Name.Add("Tobias");
+                Name.Add("Stuti");
+                Name.Add("Raghavendra");
+                Name.Add("Chithra");
+                Name.Add("Glen");
+                Name.Add("Darren");
+                Name.Add("Michael");
+
+
+                Percentage.Add(78.5);
+                Percentage.Add(65.3);
+                Percentage.Add(56);
+                Percentage.Add(56);
+                Percentage.Add(97);
+                Percentage.Add(89);
+                Percentage.Add(85);
+                Percentage.Add(76);
+                Percentage.Add(78);
+                Percentage.Add(89);
+
+                oSheet.Cells[1, 1] = "Name";
+                oSheet.Cells[1, 2] = "Percentage(%)"; // Here 1 is the rowIndex and 2 is the columnIndex.
+
+
+                //Enter the Header data in Column A
+                int i = 0;
+                for (i = 0; i < Name.Count; i++)
+                {
+                    oSheet.Cells[i + 2, 1] = Name[i];
+                }
+
+                //Enter the Percentage data in Column B
+                for (i = 0; i < Percentage.Count; i++)
+                {
+                    oSheet.Cells[i + 2, 2] = Percentage[i];
+                }
+
+                oSheet.Cells[Name.Count + 3, 1] = "AVERAGE";
+                //Obtain the Average of the Percentage Data
+                string currentFormula = "=AVERAGE(B2:" + "B" + Convert.ToString(Percentage.Count + 1) + ")";
+
+                oSheet.Cells[Percentage.Count + 3, 2].Formula = currentFormula;
+
+                //Format the Header row to make it Bold and blue
+                //oSheet.get_Range("A1", "B1").Interior.Color = Color.SkyBlue;
+                oSheet.get_Range("A1", "B1").Font.Bold = true;
+                //Set the column widthe of Column A and Column B to 20
+                oSheet.get_Range("A1", "B12").ColumnWidth = 20;
+
+                //String ReportFile = @"D:\Excel\Output.xls";
+                String ReportFile = @"Output.xlsx";
+                oWB.SaveAs(ReportFile, Microsoft.Office.Interop.Excel.XlFileFormat.xlWorkbookDefault,
+                                        Type.Missing, Type.Missing,
+                                        false,
+                                        false,
+                                        Microsoft.Office.Interop.Excel.XlSaveAsAccessMode.xlNoChange,
+                                        Type.Missing,
+                                        Type.Missing,
+                                        Type.Missing,
+                                        Type.Missing,
+                                        Type.Missing);
+
+
+                oXL.Quit();
+
+                Marshal.ReleaseComObject(oSheet);
+                Marshal.ReleaseComObject(oWB);
+                Marshal.ReleaseComObject(oXL);
+
+                oSheet = null;
+                oWB = null;
+                oXL = null;
+                GC.GetTotalMemory(false);
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+                GC.GetTotalMemory(true);
+            }
+            catch (Exception ex)
+            {
+                String errorMessage = "Error reading the Excel file : " + ex.Message;
+                //MessageBox.Show(errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            return true;
+        }
+        */
         #endregion
 
     }
