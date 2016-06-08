@@ -196,7 +196,7 @@ namespace SpacePlanning
             if (dir == 0) splitLine = LineUtility.Move(splitLine, 0, 1 * distance);
             else splitLine = LineUtility.Move(splitLine, 1 * distance, 0);
 
-            Dictionary<string, object> intersectionReturn = MakeIntersections(poly, splitLine, BuildLayout.SPACING2);
+            Dictionary<string, object> intersectionReturn = MakeIntersections(poly, splitLine, space);
             List<Point2d> intersectedPoints = (List<Point2d>)intersectionReturn["IntersectedPoints"];
             List<Polygon2d> splittedPoly = (List<Polygon2d>)intersectionReturn["PolyAfterSplit"];
             List<Point2d> ptA = (List<Point2d>)intersectionReturn["PointASide"];
