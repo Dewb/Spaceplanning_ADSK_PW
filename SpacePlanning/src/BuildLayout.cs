@@ -88,113 +88,7 @@ namespace SpacePlanning
         }
 
 
-        //arranges program elements inside primary dept unit and updates program data object
-        /// <summary>
-        /// Assigns program elements inside the primary department polygon2d.
-        /// </summary>
-        /// <param name="deptPoly">Polygon2d's of primary department which needs program arrangement inside.</param>
-        /// <param name="progData">Program Data object</param>
-        /// <param name="primaryProgramWidth">Width of the primary program element in  department.</param>
-        /// <param name="recompute">Regardless of the recompute value, it is used to restart computing the node every time it's value is changed.</param>
-        /// <returns name="PolyAfterSplit">Polygon2d's obtained after assigning programs inside the department.</returns>
-        /// <returns name="UpdatedProgramData">Updated program data object.</returns>
-        /// <returns name="ProgramsAddedCount">Number of program units added.</returns>
-        [MultiReturn(new[] { "PolyAfterSplit", "UpdatedProgramData", "ProgramsAddedCount" })]
-        public static Dictionary<string, object> PlacePrimaryPrograms(List<Polygon2d> deptPoly, List<ProgramData> progData, double primaryProgramWidth, int recompute = 1, int iterCount = 100)
-        {
-            
-            if (!ValidateObject.CheckPolyList(deptPoly)) return null;
-            if (progData == null || progData.Count == 0) return null;
-            int roomCount = 0;
-            List<Polygon2d> polyList = new List<Polygon2d>();
-            List<Point2d> pointsList = new List<Point2d>();
-            Queue<ProgramData> programDataRetrieved = new Queue<ProgramData>();
-            List<ProgramData> progDataAddedList = new List<ProgramData>();
-            ProgramData copyProgData = new ProgramData(progData[0]);
-
-            for (int i = 0; i < progData.Count; i++) programDataRetrieved.Enqueue(progData[i]);
-            for (int i = 0; i < deptPoly.Count; i++)
-            {
-                Polygon2d poly = deptPoly[i];
-                if (!ValidateObject.CheckPoly(poly)) continue;
-                int lineId = 0, count = 0;
-                if (poly.Lines[0].Length > poly.Lines[1].Length) lineId = 1;
-                else lineId = 0;
-                
-                List<double> spans = PolygonUtility.GetSpansXYFromPolygon2d(poly.Points);
-                double setSpan = 1000000000000, fac = 2.1;
-                if (spans[0] > spans[1]) setSpan = spans[0];
-                else setSpan = spans[1];
-                Polygon2d currentPoly = poly;
-                Polygon2d polyAfterSplitting = new Polygon2d(null), leftOverPoly = new Polygon2d(null);
-                ProgramData progItem = new ProgramData(progData[0]);
-                Point2d centerPt = PolygonUtility.CentroidOfPoly(currentPoly);
-                while (setSpan > primaryProgramWidth && count< iterCount) 
-                {
-                    double dist = 0;
-                    if (setSpan < fac * primaryProgramWidth) dist = setSpan;
-                    else dist = primaryProgramWidth;
-
-                    /*
-                    if (currentPoly.Lines[0].Length > currentPoly.Lines[1].Length) lineId = 1;
-                    else lineId = 0;
-                    int lineIdPlusTwo = lineId + 2;
-                    Point2d midPt1 = LineUtility.LineMidPoint(currentPoly.Lines[lineId]);
-                    Point2d midPt2 = LineUtility.LineMidPoint(currentPoly.Lines[lineIdPlusTwo]);
-                    double dist1 = PointUtility.DistanceBetweenPoints(midPt1, centerPt);
-                    double dist2 = PointUtility.DistanceBetweenPoints(midPt2, centerPt);
-                    if (dist2 < dist1) lineId = lineIdPlusTwo;
-                    */
-                    Dictionary<string, object> splitReturn = SplitObject.SplitByOffsetFromLine(currentPoly,lineId, dist);
-                    polyAfterSplitting = (Polygon2d)splitReturn["PolyAfterSplit"];
-                    leftOverPoly = (Polygon2d)splitReturn["LeftOverPoly"];
-                    if (ValidateObject.CheckPoly(leftOverPoly))
-                    {
-                        progItem = programDataRetrieved.Dequeue();
-                        currentPoly = leftOverPoly;
-                        Point2d centerPolySplit = PolygonUtility.CentroidOfPoly(polyAfterSplitting);
-                        if(GraphicsUtility.PointInsidePolygonTest(poly,centerPolySplit)) polyList.Add(polyAfterSplitting);
-                        progItem.AreaProvided = PolygonUtility.AreaPolygon(polyAfterSplitting);
-                        setSpan -= dist;
-                        progDataAddedList.Add(progItem);
-                        count += 1;
-                        //Trace.WriteLine("leftover poly all fine : " + count);
-                    }
-                    else
-                    {
-                        //Trace.WriteLine("leftover poly not valid found : " + count);
-                        break;
-                    }
-                    if (programDataRetrieved.Count == 0) programDataRetrieved.Enqueue(copyProgData);
-                }// end of while                 
-                progItem = programDataRetrieved.Dequeue();
-                polyList.Add(leftOverPoly);
-                progItem.AreaProvided = PolygonUtility.AreaPolygon(leftOverPoly); 
-                progDataAddedList.Add(progItem);
-                if (programDataRetrieved.Count == 0) programDataRetrieved.Enqueue(copyProgData);
-                
-            }// end of for loop
-
-            roomCount = progDataAddedList.Count;
-            List<ProgramData> UpdatedProgramDataList = new List<ProgramData>();
-            for (int i = 0; i < progDataAddedList.Count; i++) //progData.Count
-            {
-                ProgramData progItem = progDataAddedList[i];
-                ProgramData progNew = new ProgramData(progItem);
-                if (i < polyList.Count) progNew.PolyAssignedToProg = new List<Polygon2d> { polyList[i] };
-                else progNew.PolyAssignedToProg = null;
-                UpdatedProgramDataList.Add(progNew);
-            }
-            List<Polygon2d> cleanPolyList = ValidateObject.CheckAndCleanPolygon2dList(polyList);    
-            return new Dictionary<string, object>
-            {
-                { "PolyAfterSplit", (cleanPolyList) },
-                { "UpdatedProgramData",(UpdatedProgramDataList) },
-                { "ProgramsAddedCount" , (roomCount) }
-            };
-        }
-        
-        
+       
         
         //arranges program elements inside primary dept unit and updates program data object
         /// <summary>
@@ -235,7 +129,7 @@ namespace SpacePlanning
                 List<Polygon2d> polyAfterSplitting = new List<Polygon2d>();
                 ProgramData progItem = new ProgramData(progData[0]);
                 Point2d centerPt = PolygonUtility.CentroidOfPoly(currentPoly);
-                while (setSpan > primaryProgramWidth && count < recompute)
+                while (setSpan > primaryProgramWidth && count < 2000)
                 {
                     Trace.WriteLine("Keep going : " + count);
                     double dist = 0;
@@ -359,6 +253,7 @@ namespace SpacePlanning
                 Point2d centerPt = PolygonUtility.CentroidOfPoly(currentPoly);
                 while (setSpan > primaryProgramWidth && count < recompute)
                 {
+                    if (programDataRetrieved.Count == 0) programDataRetrieved.Enqueue(copyProgData);
                     Trace.WriteLine("Keep going : " + count);
                     double dist = 0;
                     if (setSpan < fac * primaryProgramWidth)
@@ -382,64 +277,23 @@ namespace SpacePlanning
                         Polygon2d polyB = (Polygon2d)splitReturn["LeftOverPoly"];
                         polyAfterSplitting.Add(polyA); polyAfterSplitting.Add(polyB);
                         progItem = programDataRetrieved.Dequeue();
-                        //polyAfterSplitting = PolygonUtility.SortPolygonList(polyAfterSplitting);
                         progItem.AreaProvided = PolygonUtility.AreaPolygon(polyAfterSplitting[0]);
                         polyList.Add(polyAfterSplitting[0]);
                         currentPoly = polyAfterSplitting[1];
                         setSpan -= dist;
                         progDataAddedList.Add(progItem);
                         count += 1;
-                    }
-                   
-                    /*
-                    //Dictionary<string, object> splitReturn = SplitObject.SplitByDistanceFromPoint(currentPoly, dist, dir);
-                    //polyAfterSplitting = (List<Polygon2d>)splitReturn["PolyAfterSplit"];
-                    if (ValidateObject.CheckPolyList(polyAfterSplitting))
-                    {
-
-                        progItem = programDataRetrieved.Dequeue();
-                        polyAfterSplitting = PolygonUtility.SortPolygonList(polyAfterSplitting);
-                        progItem.AreaProvided = PolygonUtility.AreaPolygon(polyAfterSplitting[0]);
-                        polyList.Add(polyAfterSplitting[0]);
-                        currentPoly = polyAfterSplitting[1];
-                        setSpan -= dist;
-                        progDataAddedList.Add(progItem);
-                        count += 1;
-                    }
-                    else
-                    {
-                        Random ran = new Random();
-                        double eps = BasicUtility.RandomBetweenNumbers(ran, 2, -2);
-                        dist = primaryProgramWidth + eps;
-                        Dictionary<string, object> splitReturn2 = SplitObject.SplitByDistanceFromPoint(currentPoly, dist, dir);
-                        polyAfterSplitting = (List<Polygon2d>)splitReturn2["PolyAfterSplit"];
-                        if (ValidateObject.CheckPolyList(polyAfterSplitting))
-                        {
-
-                            progItem = programDataRetrieved.Dequeue();
-                            polyAfterSplitting = PolygonUtility.SortPolygonList(polyAfterSplitting);
-                            progItem.AreaProvided = PolygonUtility.AreaPolygon(polyAfterSplitting[0]);
-                            polyList.Add(polyAfterSplitting[0]);
-                            currentPoly = polyAfterSplitting[1];
-                            setSpan -= dist;
-                            progDataAddedList.Add(progItem);
-
-                        }
-                        count += 1;
-                    }
-                    */
-                    if (programDataRetrieved.Count == 0) programDataRetrieved.Enqueue(copyProgData);
+                    }          
                 }// end of while
                 //add the last left over poly for each dept poly
                 if (polyAfterSplitting.Count > 0)
                 {
                     polyList.Add(polyAfterSplitting[1]);
-                    progItem = programDataRetrieved.Dequeue();
+                    progItem = copyProgData;
                     progItem.AreaProvided = PolygonUtility.AreaPolygon(polyAfterSplitting[1]);
                     progDataAddedList.Add(progItem);
                     count += 1;
                 }
-
             }// end of for loop
 
             roomCount = progDataAddedList.Count;
@@ -550,9 +404,8 @@ namespace SpacePlanning
             for(int i = 0; i < deptData.Count; i++)
             {
                 if (i == 0)
-                {
-                    
-                    Dictionary<string, object> placedPrimaryProg = PlaceInpatientPrograms(deptData[i].PolyAssignedToDept, deptData[i].ProgramsInDept, primaryProgramWidth, recompute);
+                {                    
+                    Dictionary<string, object> placedPrimaryProg = PlaceInpatientPrograms2(deptData[i].PolyAssignedToDept, deptData[i].ProgramsInDept, primaryProgramWidth, recompute);
                     //Dictionary<string, object> placedPrimaryProg = PlacePrimaryPrograms(deptData[i].PolyAssignedToDept, deptData[i].ProgramsInDept, primaryProgramWidth, recompute);
                     deptData[i].ProgramsInDept = (List<ProgramData>)placedPrimaryProg["UpdatedProgramData"];
                 }

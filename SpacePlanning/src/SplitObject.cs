@@ -422,19 +422,16 @@ namespace SpacePlanning
             //organize the points to make closed poly
             List<Point2d> sortedA = PointUtility.DoSortClockwise(poly, intersectedPoints, pIndexA);
             List<Point2d> sortedB = PointUtility.DoSortClockwise(poly, intersectedPoints, pIndexB);
-            List<Polygon2d> splittedPoly = new List<Polygon2d>();
-            if (space == 0)
-            {
-              splittedPoly = new List<Polygon2d> { new Polygon2d(sortedA, 0), new Polygon2d(sortedB, 0) };
-            }
-            else
-            {
-                sortedA = PolygonUtility.SmoothPolygon(new Polygon2d(sortedA,0).Points, space);
-                sortedB = PolygonUtility.SmoothPolygon(new Polygon2d(sortedB,0).Points, space);
-                splittedPoly = new List<Polygon2d> { new Polygon2d(sortedA, 0), new Polygon2d(sortedB, 0) };
-            }
-
-            //List<Polygon2d> splittedPoly = new List<Polygon2d> { new Polygon2d(sortedA, 0), new Polygon2d(sortedB, 0) };
+            /* List<Polygon2d> splittedPoly = new List<Polygon2d>();
+             if (space == 0) splittedPoly = new List<Polygon2d> { new Polygon2d(sortedA, 0), new Polygon2d(sortedB, 0) };
+             else
+             {
+                 sortedA = PolygonUtility.SmoothPolygon(new Polygon2d(sortedA,0).Points, space);
+                 sortedB = PolygonUtility.SmoothPolygon(new Polygon2d(sortedB,0).Points, space);
+                 splittedPoly = new List<Polygon2d> { new Polygon2d(sortedA, 0), new Polygon2d(sortedB, 0) };
+             }
+             */
+            List<Polygon2d> splittedPoly = new List<Polygon2d> { new Polygon2d(sortedA, 0), new Polygon2d(sortedB, 0) };
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (splittedPoly) },
