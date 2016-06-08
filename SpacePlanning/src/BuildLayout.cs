@@ -205,7 +205,7 @@ namespace SpacePlanning
         /// <returns name="UpdatedProgramData">Updated program data object.</returns>
         /// <returns name="ProgramsAddedCount">Number of program units added.</returns>
         [MultiReturn(new[] { "UpdatedProgramData", "ProgramsAddedCount" })]
-        public static Dictionary<string, object> PlaceInpatientPrograms(List<Polygon2d> deptPoly, List<ProgramData> progData, double primaryProgramWidth, int recompute = 1)
+        public static Dictionary<string, object> PlaceInpatientPrograms(List<Polygon2d> deptPoly, List<ProgramData> progData, double primaryProgramWidth, int recompute = 1, int space = 10)
         {
 
             if (!ValidateObject.CheckPolyList(deptPoly)) return null;
@@ -224,7 +224,6 @@ namespace SpacePlanning
                 if (!ValidateObject.CheckPoly(poly)) continue;
                 int dir = 0, count = 0;
              
-
                 List<double> spans = PolygonUtility.GetSpansXYFromPolygon2d(poly.Points);
                 double setSpan = 1000000000000, fac = 1.1;
                 if (spans[0] > spans[1]) { setSpan = spans[0]; dir = 1; } // poly is horizontal, dir should be 1
@@ -233,7 +232,7 @@ namespace SpacePlanning
                 List<Polygon2d> polyAfterSplitting = new List<Polygon2d>();
                 ProgramData progItem = new ProgramData(progData[0]);
                 Point2d centerPt = PolygonUtility.CentroidOfPoly(currentPoly);
-                while (setSpan > primaryProgramWidth && count < recompute)
+                while (setSpan > primaryProgramWidth && count < 1000)
                 {
                     Trace.WriteLine("Keep going : " + count);
                     double dist = 0;
@@ -283,7 +282,16 @@ namespace SpacePlanning
                         count += 1;
                     }
                     if (programDataRetrieved.Count == 0) programDataRetrieved.Enqueue(copyProgData);
-                }// end of while                                               
+                }// end of while
+                //add the last left over poly for each dept poly
+                if (polyAfterSplitting.Count > 0)
+                {
+                    polyList.Add(polyAfterSplitting[1]);
+                    progItem = programDataRetrieved.Dequeue();
+                    progItem.AreaProvided = PolygonUtility.AreaPolygon(polyAfterSplitting[1]);
+                    progDataAddedList.Add(progItem);
+                    count += 1;
+                }                                              
 
             }// end of for loop
           
@@ -384,7 +392,9 @@ namespace SpacePlanning
             {
                 if (i == 0)
                 {
-                    Dictionary<string, object> placedPrimaryProg = PlacePrimaryPrograms(deptData[i].PolyAssignedToDept, deptData[i].ProgramsInDept, primaryProgramWidth, recompute);
+                    
+                    Dictionary<string, object> placedPrimaryProg = PlaceInpatientPrograms(deptData[i].PolyAssignedToDept, deptData[i].ProgramsInDept, primaryProgramWidth, recompute);
+                    //Dictionary<string, object> placedPrimaryProg = PlacePrimaryPrograms(deptData[i].PolyAssignedToDept, deptData[i].ProgramsInDept, primaryProgramWidth, recompute);
                     deptData[i].ProgramsInDept = (List<ProgramData>)placedPrimaryProg["UpdatedProgramData"];
                 }
                 else

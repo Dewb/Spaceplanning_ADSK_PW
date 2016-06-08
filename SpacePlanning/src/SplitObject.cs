@@ -178,15 +178,16 @@ namespace SpacePlanning
 
         //splits a polygon into two based on direction and distance from the lowest point in the poly
         [MultiReturn(new[] { "PolyAfterSplit", "SplitLine", "IntersectedPoints", "PointASide", "PointBSide" })]
-        public static Dictionary<string, object> SplitByDistanceFromPoint(Polygon2d polyOutline, double distance = 10, int dir = 0)
+        public static Dictionary<string, object> SplitByDistanceFromPoint(Polygon2d polyOutline, double distance = 10, int dir = 0, double space =0)
         {
             if (polyOutline == null || polyOutline.Points == null || polyOutline.Points.Count == 0) return null;
+            if (space == 0) space = BuildLayout.SPACING2;
             double extents = 5000;
             int threshValue = 50;
             List<Point2d> polyOrig = polyOutline.Points;
             List<Point2d> poly = new List<Point2d>();
             if (polyOrig.Count > threshValue) { poly = polyOrig; }
-            else { poly = PolygonUtility.SmoothPolygon(polyOrig, BuildLayout.SPACING2); }
+            else { poly = PolygonUtility.SmoothPolygon(polyOrig, space); }
 
             if (poly == null || poly.Count == 0) return null;
             int lowInd = PointUtility.LowestPointFromList(poly);
