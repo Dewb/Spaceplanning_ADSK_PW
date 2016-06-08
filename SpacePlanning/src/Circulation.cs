@@ -21,16 +21,15 @@ namespace SpacePlanning
         /// Builds the department topology matrix internally and finds circulation network lines between department polygon2d's. 
         /// </summary>
         /// <param name="deptData">DeptData Object</param>
-        /// <param name="deptPoly">Polygon2d representing departments in the site</param>
         /// <param name="leftOverPoly">Polygon2d not assigned to any department.</param>
         /// <param name="limit">Maximum distance allowed to be considered as a neighbor of a department.</param>
         /// <returns name="CirculationNetwork">List of line2d geometry representing circulation network between department polygon2d's.</returns>
         /// <search>
         /// Department Circulation Network, Shared Edges between departments
         /// </search>
-        public static List<Line2d> FindDeptCirculationNetwork(List<DeptData> deptData, Polygon2d deptPoly, Polygon2d leftOverPoly = null, double limit = 0)
+        public static List<Line2d> FindDeptCirculationNetwork(List<DeptData> deptData, Polygon2d leftOverPoly = null, double limit = 0)
         {
-            if (deptData == null || deptData.Count == 0 || !ValidateObject.CheckPoly(deptPoly)) return null;
+            if (deptData == null || deptData.Count == 0) return null;
             List<Polygon2d> polygonsAllDeptList = new List<Polygon2d>();
             List<DeptData> deptDataAllDeptList = new List<DeptData>();
             List<List<string>> deptNamesNeighbors = new List<List<string>>();
@@ -46,7 +45,7 @@ namespace SpacePlanning
                 }
             }
             if (leftOverPoly != null) polygonsAllDeptList.Add(leftOverPoly);
-            else Trace.WriteLine("leftover poly found null, so not added");
+            //else Trace.WriteLine("leftover poly found null, so not added");
             List<Line2d> networkLine = new List<Line2d>();
             for (int i = 0; i < polygonsAllDeptList.Count; i++)
             {
@@ -59,8 +58,6 @@ namespace SpacePlanning
                 }
             }
             List<Line2d> cleanNetworkLines = LineUtility.RemoveDuplicateLines(networkLine);
-            cleanNetworkLines = GraphicsUtility.RemoveDuplicateslinesWithPoly(deptPoly, cleanNetworkLines);
-            List<List<string>> deptNeighborNames = new List<List<string>>();
             return cleanNetworkLines;
         }
 
@@ -152,26 +149,25 @@ namespace SpacePlanning
         /// <summary>
         /// Builds the program topology matrix internally and finds circulation network lines between program polygon2d's. 
         /// </summary>
+        /// <param name="deptData">List of department data object.</param>
         /// <param name="buildingOutline">Polygon2d of building outline.</param>
-        /// <param name="polyA">Polygon2d for programs of department A</param>
-        /// <param name="polyB">Polygon2d for programs of department B</param>
-        /// <param name="polyC">Polygon2d for programs of department C</param>
-        /// <param name="polyD">Polygon2d for any left over polygon2d</param>
+        /// <param name="leftOverPoly">Polygon2d for programs of department A</param>
         /// <returns name="CirculationPolygons">Polygon2d's representing circulation areas between programs.</returns>
         /// <returns name="PolygonsForAllPrograms">All program element's polygon2d geometry in one list.</returns>
         [MultiReturn(new[] { "CirculationNetwork", "PolygonsForAllPrograms" })]
-        public static Dictionary<string, object> FindProgCirculationNetwork(Polygon2d buildingOutline, List<Polygon2d> polyA = null,  List<Polygon2d> polyB = null, List<Polygon2d> polyC = null, List<Polygon2d> polyD = null)
+        public static Dictionary<string, object> FindProgCirculationNetwork(List<DeptData> deptData, Polygon2d buildingOutline, List<Polygon2d> leftOverPoly = null)
         {
             if (!ValidateObject.CheckPoly(buildingOutline)) return null;
             List<Polygon2d> polygonsAllProgList = new List<Polygon2d>();
             List<DeptData> deptDataAllDeptList = new List<DeptData>();
             List<List<Line2d>> lineCollection = new List<List<Line2d>>();
 
-            if (polyA != null) polygonsAllProgList.AddRange(polyA);
-            if (polyB != null) polygonsAllProgList.AddRange(polyB);
-            if (polyC != null) polygonsAllProgList.AddRange(polyC);
-            if (polyD != null) polygonsAllProgList.AddRange(polyD);
-
+            for(int i = 0; i < deptData.Count; i++)
+            {
+                if (i == 0) continue;
+                polygonsAllProgList.AddRange(deptData[i].PolyAssignedToDept);
+            }
+            if (leftOverPoly != null) polygonsAllProgList.AddRange(leftOverPoly);
             for(int i = 0; i < polygonsAllProgList.Count; i++) polygonsAllProgList[i] = new Polygon2d(polygonsAllProgList[i].Points);
 
             List<Line2d> networkLine = new List<Line2d>();

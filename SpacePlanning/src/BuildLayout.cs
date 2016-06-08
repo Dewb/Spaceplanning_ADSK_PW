@@ -38,16 +38,15 @@ namespace SpacePlanning
         /// <param name="circulationFreq">Value to consider while checking frequency of cirulation computation polygon2d.</param>
         /// <param name="recompute">Regardless of the recompute value, it is used to restart computing the node every time its value is changed.</param>
         /// <param name="randomToggle">Boolean toggle to turn on or off randomness to assign departments. Default is off.</param>
-        /// <returns name="DeptPolys">Polygon2d's assigned to each department.</returns>
+        /// <returns name="UpdatedDeptData">Updated Dept Data object</returns>
         /// <returns name="LeftOverPolys">Polygon2d's not assigned to any department.</returns>
         /// <returns name="CirculationPolys">Polygon2d's needed to compute circulation networks.</returns>
         /// <returns name="OtherDeptMainPoly">Polygon2d for all other departments except for the primary department.</returns>
-        /// <returns name="UpdatedDeptData">Updated Dept Data object</returns>
         /// <search>
         /// DeptData object, department arrangement on site
         /// </search>
-        [MultiReturn(new[] { "DeptPolys", "LeftOverPolys", "CirculationPolys","OtherDeptMainPoly", "UpdatedDeptData"})]
-        public static Dictionary<string, object> PlaceDeptOnSite(List<DeptData> deptData, Polygon2d buildingOutline,  double primaryDeptDepth, 
+        [MultiReturn(new[] { "UpdatedDeptData","LeftOverPolys", "CirculationPolys","OtherDeptMainPoly"})]
+        public static Dictionary<string, object> PlaceDepartments(List<DeptData> deptData, Polygon2d buildingOutline,  double primaryDeptDepth, 
             double acceptableWidth, double minNotchDistance = 20, double circulationFreq = 8, int recompute = 1, bool randomToggle = false)
         {           
             Dictionary<string, object> deptArrangement = new Dictionary<string, object>();
@@ -60,7 +59,9 @@ namespace SpacePlanning
                 deptArrangement = DeptPlacer(deptData, buildingOutline, primaryDeptDepth, acceptableWidth, minNotchDistance, circulationFreq, recompute, randomToggle);
                 if(deptArrangement != null)
                 {
-                    List<List<Polygon2d>> deptAllPolys =(List<List<Polygon2d>>) deptArrangement["DeptPolys"];
+                    List<DeptData> deptDataUpdated =(List<DeptData>) deptArrangement["UpdatedDeptData"];
+                    List<List<Polygon2d>> deptAllPolys = new List<List<Polygon2d>>();
+                    for(int i = 0; i < deptDataUpdated.Count; i++) deptAllPolys.Add(deptDataUpdated[i].PolyAssignedToDept);
                     List<Polygon2d> deptPolysTogether = new List<Polygon2d>();
                     for (int i = 0; i < deptAllPolys.Count; i++) deptPolysTogether.AddRange(deptAllPolys[i]);
                     if(deptAllPolys.Count>0) Trace.WriteLine("dept arrangement not null, lets check further");
@@ -263,7 +264,7 @@ namespace SpacePlanning
         /// <param name="recompute">Regardless of the recompute value, it is used to restart computing the node every time its value is changed.</param>
         /// <returns></returns>
         [MultiReturn(new[] { "UpdatedDeptData" })]
-        public static Dictionary<string, object> PlaceAllPrograms(List<DeptData> deptData, double primaryProgramWidth = 30, int recompute = 0)
+        public static Dictionary<string, object> PlacePrograms(List<DeptData> deptData, double primaryProgramWidth = 30, int recompute = 0)
         {
             if (deptData == null) return null;
             List<List<Polygon2d>> polyPorgsAdded = new List<List<Polygon2d>>();
@@ -492,7 +493,7 @@ namespace SpacePlanning
         }
            
         //dept assignment new way
-        [MultiReturn(new[] { "DeptPolys", "LeftOverPolys","CirculationPolys", "OtherDeptMainPoly", "UpdatedDeptData", })]
+        [MultiReturn(new[] { "UpdatedDeptData", "LeftOverPolys","CirculationPolys", "OtherDeptMainPoly" })]
         internal static Dictionary<string, object> DeptPlacer(List<DeptData> deptData, Polygon2d poly, double offset, 
             double acceptableWidth = 20,double minNotchDist = 20, double circulationFreq = 10, double recompute = 5, bool tag = false)
         {
@@ -592,11 +593,10 @@ namespace SpacePlanning
 
             return new Dictionary<string, object>
             {
-                { "DeptPolys", (AllDeptPolys) },
+                { "UpdatedDeptData", (UpdatedDeptData) },
                 { "LeftOverPolys", (leftOverPoly) },
                 { "CirculationPolys", (polyCirculation) },
-                { "OtherDeptMainPoly", (otherDeptPoly) },
-                { "UpdatedDeptData", (UpdatedDeptData) }
+                { "OtherDeptMainPoly", (otherDeptPoly) }
             };
         }
 
