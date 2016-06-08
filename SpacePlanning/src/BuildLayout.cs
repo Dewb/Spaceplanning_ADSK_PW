@@ -226,15 +226,16 @@ namespace SpacePlanning
              
 
                 List<double> spans = PolygonUtility.GetSpansXYFromPolygon2d(poly.Points);
-                double setSpan = 1000000000000, fac = 2.1;
+                double setSpan = 1000000000000, fac = 1.1;
                 if (spans[0] > spans[1]) { setSpan = spans[0]; dir = 1; } // poly is horizontal, dir should be 1
                 else { setSpan = spans[1]; dir = 0; }// poly is vertical, dir should be 0
                 Polygon2d currentPoly = poly;
                 List<Polygon2d> polyAfterSplitting = new List<Polygon2d>();
                 ProgramData progItem = new ProgramData(progData[0]);
                 Point2d centerPt = PolygonUtility.CentroidOfPoly(currentPoly);
-                while (setSpan > primaryProgramWidth)
+                while (setSpan > primaryProgramWidth && count < 200)
                 {
+                    Trace.WriteLine("Keep going : " + count);
                     double dist = 0;
                     if (setSpan < fac * primaryProgramWidth)
                     {
@@ -250,6 +251,7 @@ namespace SpacePlanning
                     polyAfterSplitting = (List<Polygon2d>)splitReturn["PolyAfterSplit"];
                     if (ValidateObject.CheckPolyList(polyAfterSplitting))
                     {
+                     
                         progItem = programDataRetrieved.Dequeue();
                         polyAfterSplitting = PolygonUtility.SortPolygonList(polyAfterSplitting);
                         progItem.AreaProvided = PolygonUtility.AreaPolygon(polyAfterSplitting[0]);
@@ -257,6 +259,27 @@ namespace SpacePlanning
                         currentPoly = polyAfterSplitting[1];
                         setSpan -= dist;
                         progDataAddedList.Add(progItem);
+                        count += 1;
+                    }
+                    else
+                    {
+                        Random ran = new Random();
+                        double eps = BasicUtility.RandomBetweenNumbers(ran, 2, -2);
+                        dist = primaryProgramWidth + eps;
+                        Dictionary<string, object> splitReturn2 = SplitObject.SplitByDistanceFromPoint(currentPoly, dist, dir);
+                        polyAfterSplitting = (List<Polygon2d>)splitReturn2["PolyAfterSplit"];
+                        if (ValidateObject.CheckPolyList(polyAfterSplitting))
+                        {
+
+                            progItem = programDataRetrieved.Dequeue();
+                            polyAfterSplitting = PolygonUtility.SortPolygonList(polyAfterSplitting);
+                            progItem.AreaProvided = PolygonUtility.AreaPolygon(polyAfterSplitting[0]);
+                            polyList.Add(polyAfterSplitting[0]);
+                            currentPoly = polyAfterSplitting[1];
+                            setSpan -= dist;
+                            progDataAddedList.Add(progItem);
+                            
+                        }
                         count += 1;
                     }
                     if (programDataRetrieved.Count == 0) programDataRetrieved.Enqueue(copyProgData);

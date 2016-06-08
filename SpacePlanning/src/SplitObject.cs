@@ -182,7 +182,7 @@ namespace SpacePlanning
         {
             if (polyOutline == null || polyOutline.Points == null || polyOutline.Points.Count == 0) return null;
             double extents = 5000;
-            int threshValue = 20;
+            int threshValue = 50;
             List<Point2d> polyOrig = polyOutline.Points;
             List<Point2d> poly = new List<Point2d>();
             if (polyOrig.Count > threshValue) { poly = polyOrig; }
@@ -405,7 +405,7 @@ namespace SpacePlanning
         }// end of function
 
         //makes intersections and returns the two polygon2ds after intersection
-        internal static Dictionary<string, object> MakeIntersections(List<Point2d> poly, Line2d splitLine, double space)
+        internal static Dictionary<string, object> MakeIntersections(List<Point2d> poly, Line2d splitLine, double space = 0)
         {
             List<Point2d> intersectedPoints = GraphicsUtility.LinePolygonIntersection(poly, splitLine);
             //List<Point2d> intersectedPoints = TestGraphicsUtility.LinePolygonIntersectionIndex(poly, splitLine);
@@ -421,8 +421,19 @@ namespace SpacePlanning
             //organize the points to make closed poly
             List<Point2d> sortedA = PointUtility.DoSortClockwise(poly, intersectedPoints, pIndexA);
             List<Point2d> sortedB = PointUtility.DoSortClockwise(poly, intersectedPoints, pIndexB);
+            List<Polygon2d> splittedPoly = new List<Polygon2d>();
+            if (space == 0)
+            {
+              splittedPoly = new List<Polygon2d> { new Polygon2d(sortedA, 0), new Polygon2d(sortedB, 0) };
+            }
+            else
+            {
+                sortedA = PolygonUtility.SmoothPolygon(new Polygon2d(sortedA,0).Points, space);
+                sortedB = PolygonUtility.SmoothPolygon(new Polygon2d(sortedB,0).Points, space);
+                splittedPoly = new List<Polygon2d> { new Polygon2d(sortedA, 0), new Polygon2d(sortedB, 0) };
+            }
 
-            List<Polygon2d> splittedPoly = new List<Polygon2d> { new Polygon2d(sortedA, 0), new Polygon2d(sortedB, 0) };
+            //List<Polygon2d> splittedPoly = new List<Polygon2d> { new Polygon2d(sortedA, 0), new Polygon2d(sortedB, 0) };
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (splittedPoly) },
