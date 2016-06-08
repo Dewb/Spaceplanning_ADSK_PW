@@ -129,7 +129,7 @@ namespace SpacePlanning
                 List<Polygon2d> polyAfterSplitting = new List<Polygon2d>();
                 ProgramData progItem = new ProgramData(progData[0]);
                 Point2d centerPt = PolygonUtility.CentroidOfPoly(currentPoly);
-                while (setSpan > primaryProgramWidth && count < 2000)
+                while (setSpan > primaryProgramWidth && count < recompute)
                 {
                     Trace.WriteLine("Keep going : " + count);
                     double dist = 0;
