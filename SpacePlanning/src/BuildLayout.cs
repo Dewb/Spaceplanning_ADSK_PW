@@ -233,7 +233,7 @@ namespace SpacePlanning
                 List<Polygon2d> polyAfterSplitting = new List<Polygon2d>();
                 ProgramData progItem = new ProgramData(progData[0]);
                 Point2d centerPt = PolygonUtility.CentroidOfPoly(currentPoly);
-                while (setSpan > primaryProgramWidth && count < 200)
+                while (setSpan > primaryProgramWidth && count < recompute)
                 {
                     Trace.WriteLine("Keep going : " + count);
                     double dist = 0;
@@ -283,10 +283,10 @@ namespace SpacePlanning
                         count += 1;
                     }
                     if (programDataRetrieved.Count == 0) programDataRetrieved.Enqueue(copyProgData);
-                }// end of while                 
+                }// end of while                                               
 
             }// end of for loop
-
+          
             roomCount = progDataAddedList.Count;
             List<ProgramData> UpdatedProgramDataList = new List<ProgramData>();
             for (int i = 0; i < progDataAddedList.Count; i++) //progData.Count
@@ -448,8 +448,8 @@ namespace SpacePlanning
             if (!ValidateObject.CheckPoly(poly)) return null;
             if (distance < 1) return null;
             Trace.WriteLine("assginblocks by distance in process");
-            bool externalIncude = false;
-            if (recompute > 5) externalIncude = true;
+            bool externalInclude = false;
+            if (recompute > 5) externalInclude = true;
             int count = 0, maxTry = 100;
             poly = new Polygon2d(poly.Points);
             if (area == 0) area = 0.8 * PolygonUtility.AreaPolygon(poly);
@@ -467,7 +467,7 @@ namespace SpacePlanning
                 error = false;
                 Polygon2d currentPoly = polyLeftList.Pop();
                 Polygon2d tempPoly = new Polygon2d(currentPoly.Points, 0);
-                Dictionary<string, object> splitObject = CreateBlocksByLines(currentPoly, poly, distance, thresDistance, externalIncude);
+                Dictionary<string, object> splitObject = CreateBlocksByLines(currentPoly, poly, distance, thresDistance, externalInclude);
                 if (splitObject == null) { count += 1; Trace.WriteLine("Split errored"); continue; }
                 Polygon2d blockPoly = (Polygon2d)splitObject["PolyAfterSplit"];
                 Polygon2d leftPoly = (Polygon2d)splitObject["LeftOverPoly"];
@@ -636,7 +636,7 @@ namespace SpacePlanning
                     double areaNeeded = deptItem.DeptAreaProportionNeeded * PolygonUtility.AreaPolygon(poly);
                     areaNeeded = 100000;
                     Trace.WriteLine("placing inpatients");
-                    Dictionary<string, object> inpatientObject = AssignBlocksBasedOnDistance(poly, offset, areaNeeded, 10, 30);
+                    Dictionary<string, object> inpatientObject = AssignBlocksBasedOnDistance(poly, offset, areaNeeded, 20, 30);
                     if (inpatientObject == null) return null;
                     List<Polygon2d> inpatienBlocks = (List<Polygon2d>)inpatientObject["PolyAfterSplit"];
                     List<Polygon2d> leftOverBlocks = (List<Polygon2d>)inpatientObject["LeftOverPoly"];
