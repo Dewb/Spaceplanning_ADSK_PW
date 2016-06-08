@@ -99,7 +99,7 @@ namespace SpacePlanning
         /// <returns name="UpdatedProgramData">Updated program data object.</returns>
         /// <returns name="ProgramsAddedCount">Number of program units added.</returns>
         [MultiReturn(new[] { "PolyAfterSplit", "UpdatedProgramData", "ProgramsAddedCount" })]
-        public static Dictionary<string, object> PlacePrimaryPrograms(List<Polygon2d> deptPoly, List<ProgramData> progData, double primaryProgramWidth, int recompute = 1, int iterCount = 10)
+        public static Dictionary<string, object> PlacePrimaryPrograms(List<Polygon2d> deptPoly, List<ProgramData> progData, double primaryProgramWidth, int recompute = 1, int iterCount = 100)
         {
             
             if (!ValidateObject.CheckPolyList(deptPoly)) return null;
@@ -259,19 +259,28 @@ namespace SpacePlanning
         /// Assigns program elements inside the secondary department polygon2d.
         /// </summary>
         /// <param name="deptData">List of Department Data Objects.</param>
+        /// <param name="primaryProgramWidth">Width of the program poly in the primary department</param>
         /// <param name="recompute">Regardless of the recompute value, it is used to restart computing the node every time its value is changed.</param>
         /// <returns></returns>
         [MultiReturn(new[] { "UpdatedDeptData" })]
-        public static Dictionary<string, object> PlaceAllSecondaryPrograms(List<DeptData> deptData, int recompute = 0)
+        public static Dictionary<string, object> PlaceAllPrograms(List<DeptData> deptData, double primaryProgramWidth = 30, int recompute = 0)
         {
             if (deptData == null) return null;
             List<List<Polygon2d>> polyPorgsAdded = new List<List<Polygon2d>>();
             List<ProgramData> progDataNew = new List<ProgramData>();
             for(int i = 0; i < deptData.Count; i++)
             {
-                if (i == 0) continue;
-                Dictionary<string, object> placedSecondaryProg = PlaceSecondaryPrograms(deptData[i].PolyAssignedToDept, deptData[i].ProgramsInDept, recompute);
-                deptData[i].ProgramsInDept = (List<ProgramData>)placedSecondaryProg["UpdatedProgramData"]; 
+                if (i == 0)
+                {
+                    Dictionary<string, object> placedPrimaryProg = PlacePrimaryPrograms(deptData[i].PolyAssignedToDept, deptData[i].ProgramsInDept, primaryProgramWidth, recompute);
+                    deptData[i].ProgramsInDept = (List<ProgramData>)placedPrimaryProg["UpdatedProgramData"];
+                }
+                else
+                {
+                    Dictionary<string, object> placedSecondaryProg = PlaceSecondaryPrograms(deptData[i].PolyAssignedToDept, deptData[i].ProgramsInDept, recompute);
+                    deptData[i].ProgramsInDept = (List<ProgramData>)placedSecondaryProg["UpdatedProgramData"];
+                }
+              
             }
             List<DeptData> newDeptData = new List<DeptData>();
             for(int i = 0; i < deptData.Count; i++) newDeptData.Add(new DeptData(deptData[i]));
