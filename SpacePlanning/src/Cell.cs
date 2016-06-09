@@ -48,6 +48,14 @@ namespace SpacePlanning
         }
 
         /// <summary>
+        /// Returns if the area of the Cell.
+        /// </summary>
+        public double CellArea
+        {
+            get { return _dimX*_dimY; }
+        }
+
+        /// <summary>
         /// Returns a point2d representing the center point of a cell object.
         /// </summary>
         public Point2d CenterPoint
