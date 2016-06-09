@@ -340,7 +340,7 @@ namespace SpacePlanning
                 cellNeighborMatrix = (List<List<int>>)neighborObject["CellNeighborMatrix"];
                 sortedCells = (List<Cell>)neighborObject["SortedCells"];               
 
-                borderObject = CreateBorder(cellNeighborMatrix, cellsInside, true);
+                borderObject = CreateBorder(cellNeighborMatrix, cellsInside, true, true);
                 borderPoly = (Polygon2d)borderObject["BorderPolyLine"];
                 if (!ValidateObject.CheckPoly(borderPoly)) { dimAdjusted -= eps; continue; }
                 borderPoly = new Polygon2d(borderPoly.Points);
@@ -563,11 +563,22 @@ namespace SpacePlanning
 
         //get the cells and make an orthogonal outline poly - not using now, but works best
         [MultiReturn(new[] { "BorderPolyLine", "BorderCellsFound", "BorderPolyPoints" })]
-        public static Dictionary<string, object> CreateBorder(List<List<int>> cellNeighborMatrix, List<Cell> cellList, bool tag = true, bool goReverse = false)
+        public static Dictionary<string, object> CreateBorder(List<List<int>> cellNeighborMatrix, List<Cell> cellListInp, bool tag = true, bool goReverse = false)
         {
-            if (cellList == null || cellList.Count == 0) return null;
-            int minValue ;
-            if (goReverse) minValue = 25; else minValue = 18;
+            if (cellListInp == null || cellListInp.Count == 0) return null;
+
+            // make new copies of cellNeighbormatrix and cellList
+            /*List<List<int>> cellNeighborMatrix = new List<List<int>>();
+            for (int i = 0; i < cellNeighborMatrixInp.Count; i++)
+            {
+                List<int> idsList = new List<int>();
+                for (int j = 0; j < cellNeighborMatrixInp[i].Count; j++) idsList.Add(cellNeighborMatrixInp[i][j]);
+                cellNeighborMatrix.Add(idsList);
+            }
+            */
+            List<Cell> cellList = cellListInp.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy
+            int minValue = 25 ;
+           // if (goReverse) minValue = 25; else minValue = 18;
 
             //get the id of the lowest left cell centroid from all the boundary cells
             List<Point2d> cenPtBorderCells = new List<Point2d>();
@@ -656,24 +667,25 @@ namespace SpacePlanning
                 }
 
 
-
-                //do the following when finding reverse Cell id is set as true
-                if (tag && possibleCellFound && goReverse)
+                if (goReverse)
                 {
-                    visitedCellIndices.Push(currentIndex);
-                    currentCell = cellList[currentIndex];
-                    currentCell.CellAvailable = false;
-                    currentCellPoint = currentCell.LeftDownCorner;
-                    currentCellCenter = currentCell.CenterPoint;
-                    num += 1;
-                    checking = false;
-                    reverseCount = 0;
-                    Trace.WriteLine("Cell id found after checking");
-                }
-                else
-                {
-                    if (goReverse)
+                    Trace.WriteLine("Reverse Mode On +++");
+                    //do the following when finding reverse Cell id is set as true
+                    if (tag && possibleCellFound)
                     {
+                        visitedCellIndices.Push(currentIndex);
+                        currentCell = cellList[currentIndex];
+                        currentCell.CellAvailable = false;
+                        currentCellPoint = currentCell.LeftDownCorner;
+                        currentCellCenter = currentCell.CenterPoint;
+                        num += 1;
+                        checking = false;
+                        reverseCount = 0;
+                        Trace.WriteLine("Cell id found after checking");
+                    }
+                    else
+                    {
+                       
                         if (visitedCellIndices.Count > 0 && reverseCount < minValue)
                         {
                             reverseCount += 1;
@@ -691,28 +703,29 @@ namespace SpacePlanning
                             Trace.WriteLine("No need reversing, lets move on");
                         }
 
-                    }// end if loop inner  
-                }// end of goRevers is true, if else loop
-
-                //do the following when finding reverse Cell id is set as false
-                if (!goReverse)
+                    }// end of goRevers is true, if else loop
+                }
+                else
                 {
+                    Trace.WriteLine("Reverse Mode Off //////////");
+                    //do the following when finding reverse Cell id is set as false
+             
                     if (tag)
                     {
                         currentCell = cellList[currentIndex];
                         currentCell.CellAvailable = false;
                         currentCellPoint = currentCell.LeftDownCorner;
                     }
-
                     currentCellCenter = currentCell.CenterPoint;
                     num += 1;
+                 
                 }
-           
 
                 //currentCellCenter = currentCell.CenterPoint;
                 //num += 1;
             }// end of while loop
 
+            visitedCellIndices.Clear();
             //List<Point> ptList = DynamoGeometry.pointFromPoint2dList(borderPolyThroughCenter);
             List<Polygon2d> cellFound = MakeCellPolysFromIndicesPoint2d(borderPolyThroughCenter, cellList[0].DimX, cellList[0].DimY, null);
             Polygon2d borderPoly = PolygonUtility.CreateOrthoPoly(new Polygon2d(borderPolyPoints));
