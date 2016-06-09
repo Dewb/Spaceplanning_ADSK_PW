@@ -321,15 +321,15 @@ namespace SpacePlanning
         /// bordercells, cellneighbormatrix
         /// </search>
         [MultiReturn(new[] { "BorderPolyLine", "BorderCellsFound","CellNeighborMatrix", "SortedCells"})]
-        public static Dictionary<string, object> BorderAndCellNeighborMatrix(Polygon2d polyOutline, double dim, bool tag = true, int iterationCount = 100)
+        public static Dictionary<string, object> BorderAndCellNeighborMatrix(Polygon2d polyOutline, double dim,int iterationCount = 100, double proportion = 0.75)
         {
             if (!ValidateObject.CheckPoly(polyOutline)) return null;
             Dictionary<string, object> borderObject = new Dictionary<string, object>();
             Polygon2d borderPoly = new Polygon2d(null);
             List<Cell> sortedCells = new List<Cell>();
-            List<List<int>> cellNeighborMatrix = new List<List<int>>();
+            List<List<int>> cellNeighborMatrix = new List<List<int>>(); 
             List<Polygon2d> cellsFound = new List<Polygon2d>();
-            double dimAdjusted = dim, areaPoly = PolygonUtility.AreaPolygon(polyOutline);
+            double dimAdjusted = dim, areaPoly = PolygonUtility.AreaPolygon(polyOutline), eps = 0.01;
             bool checkOut = false;
             int count = 0;
             while (!checkOut && count < iterationCount)
@@ -341,11 +341,12 @@ namespace SpacePlanning
                 sortedCells = (List<Cell>)neighborObject["SortedCells"];               
                 borderObject = CreateBorder(cellNeighborMatrix, cellsInside, true);
                 borderPoly = (Polygon2d)borderObject["BorderPolyLine"];
+                if (!ValidateObject.CheckPoly(borderPoly)) { dimAdjusted -= eps; continue; }
                 borderPoly = new Polygon2d(borderPoly.Points);
                 cellsFound = (List<Polygon2d>)borderObject["BorderCellsFound"];
                 double areaBorder = PolygonUtility.AreaPolygon(borderPoly);
-                if (!ValidateObject.CheckPolygonSelfIntersection(borderPoly) && areaBorder/ areaPoly > 0.70) checkOut = true;
-                else dimAdjusted -= 0.01;
+                if (!ValidateObject.CheckPolygonSelfIntersection(borderPoly) && areaBorder/ areaPoly > proportion) checkOut = true;
+                else dimAdjusted -= eps;
                 Trace.WriteLine("Trying Border Poly again for : " + count);
                 Trace.WriteLine("Dimension Cell used is " + dimAdjusted);
             }// end of while  

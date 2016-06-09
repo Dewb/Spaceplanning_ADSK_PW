@@ -62,8 +62,8 @@ namespace SpacePlanning
             double crossMag = vecA.Cross(vecB);
             if (crossMag != 0) return false;
 
-            bool checkA1 = ValidateObject.CheckOnSegment(lineB, pA, eps), checkA2 = ValidateObject.CheckOnSegment(lineB, qA, eps);
-            bool checkB1 = ValidateObject.CheckOnSegment(lineA, pB, eps), checkB2 = ValidateObject.CheckOnSegment(lineA, qB, eps);
+            bool checkA1 = ValidateObject.CheckOnSegment(lineB, pA), checkA2 = ValidateObject.CheckOnSegment(lineB, qA);
+            bool checkB1 = ValidateObject.CheckOnSegment(lineA, pB), checkB2 = ValidateObject.CheckOnSegment(lineA, qB);
 
             if (checkA1 || checkA2) return true;
             if (checkB1 || checkB2) return true;

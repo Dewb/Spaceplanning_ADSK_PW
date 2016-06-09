@@ -83,7 +83,7 @@ namespace SpacePlanning
 
         // Given three colinear points p, q, r, the function checks if
         // point q lies on line segment 'pr'
-        internal static bool CheckOnSegment(Line2d givenLine, Point2d q, double eps = 0)
+        internal static bool CheckOnSegment(Line2d givenLine, Point2d q)
         {
             if (givenLine == null || q == null) return false;
             Point2d p = givenLine.StartPoint, r = givenLine.EndPoint;
