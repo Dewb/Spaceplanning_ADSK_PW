@@ -644,7 +644,7 @@ namespace SpacePlanning
         }
 
         // returns area of a closed polygon, if area is positive, poly points are counter clockwise and vice versa
-        internal static double AreaPolygon(Polygon2d poly, bool value = true)
+        public static double AreaPolygon(Polygon2d poly, bool value = true)
         {
             if (!ValidateObject.CheckPoly(poly)) return -1;
             List<Point2d> polyPoints = poly.Points;

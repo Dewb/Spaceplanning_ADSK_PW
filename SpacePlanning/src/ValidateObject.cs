@@ -43,7 +43,7 @@ namespace SpacePlanning
             return result;            
         }
 
-        //checks a polygon2d if its orthogonal or non orthogonal
+        //checks a polygon2d if it has self intersecting lines
         public static bool CheckPolygonSelfIntersection(Polygon2d poly)
         {
             if (!CheckPoly(poly)) return false;

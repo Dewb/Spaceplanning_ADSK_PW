@@ -321,16 +321,36 @@ namespace SpacePlanning
         /// bordercells, cellneighbormatrix
         /// </search>
         [MultiReturn(new[] { "BorderPolyLine", "BorderCellsFound","CellNeighborMatrix", "SortedCells"})]
-        public static Dictionary<string, object> BorderAndCellNeighborMatrix(Polygon2d polyOutline, double dim, bool tag = true)
+        public static Dictionary<string, object> BorderAndCellNeighborMatrix(Polygon2d polyOutline, double dim, bool tag = true, int iterationCount = 100)
         {
             if (!ValidateObject.CheckPoly(polyOutline)) return null;
-            List<Cell> cellsInside = CellsInsidePoly(polyOutline.Points, dim);
-            Dictionary<string, object> neighborObject = FormsCellNeighborMatrix(cellsInside);
-            List<List<int>> cellNeighborMatrix = (List<List<int>>)neighborObject["CellNeighborMatrix"];
-            List<Cell> sortedCells = (List<Cell>)neighborObject["SortedCells"];
-            Dictionary<string, object> borderObject = CreateBorder(cellNeighborMatrix, cellsInside, true);
-            Polygon2d borderPoly = (Polygon2d)borderObject["BorderPolyLine"];
-            List<Polygon2d> cellsFound = (List<Polygon2d>)borderObject["BorderCellsFound"];
+            Dictionary<string, object> borderObject = new Dictionary<string, object>();
+            Polygon2d borderPoly = new Polygon2d(null);
+            List<Cell> sortedCells = new List<Cell>();
+            List<List<int>> cellNeighborMatrix = new List<List<int>>();
+            List<Polygon2d> cellsFound = new List<Polygon2d>();
+            double dimAdjusted = dim, areaPoly = PolygonUtility.AreaPolygon(polyOutline);
+            bool checkOut = false;
+            int count = 0;
+            while (!checkOut && count < iterationCount)
+            {
+                count += 1;
+                List<Cell> cellsInside = CellsInsidePoly(polyOutline.Points, dimAdjusted);
+                Dictionary<string, object> neighborObject = FormsCellNeighborMatrix(cellsInside);
+                cellNeighborMatrix = (List<List<int>>)neighborObject["CellNeighborMatrix"];
+                sortedCells = (List<Cell>)neighborObject["SortedCells"];               
+                borderObject = CreateBorder(cellNeighborMatrix, cellsInside, true);
+                borderPoly = (Polygon2d)borderObject["BorderPolyLine"];
+                borderPoly = new Polygon2d(borderPoly.Points);
+                cellsFound = (List<Polygon2d>)borderObject["BorderCellsFound"];
+                double areaBorder = PolygonUtility.AreaPolygon(borderPoly);
+                if (!ValidateObject.CheckPolygonSelfIntersection(borderPoly) && areaBorder/ areaPoly > 0.70) checkOut = true;
+                else dimAdjusted -= 0.01;
+                Trace.WriteLine("Trying Border Poly again for : " + count);
+                Trace.WriteLine("Dimension Cell used is " + dimAdjusted);
+            }// end of while  
+
+           
             return new Dictionary<string, object>
             {
                 { "BorderPolyLine", (borderPoly) },
