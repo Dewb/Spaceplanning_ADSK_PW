@@ -527,6 +527,7 @@ namespace SpacePlanning
             int index = (int)BasicUtility.RandomBetweenNumbers(new Random(), cellList.Count, 0), count =0, count2=0;
             Trace.WriteLine("+++++++++++++++++++++++++++++++++++++++");
             Trace.WriteLine("First Index : " + index);
+            Stack<int> cellsToIndex = new Stack<int>();
             while (areaPlaced < fac * areaBuilding)
             {
                 int preIndex = index;
@@ -549,7 +550,8 @@ namespace SpacePlanning
                     if (cellList[neighborCells[i]].CellAvailable)
                     {
                         if(!indexUpdate) index = neighborCells[i];
-                        indexUpdate = true;
+                        else { cellsToIndex.Push(index); }
+                        indexUpdate = true;                      
                         cellsReview.Add(cellList[neighborCells[i]]);
                         cellList[neighborCells[i]].CellAvailable = false;
                         areaPlaced += cellList[neighborCells[i]].CellArea;
@@ -558,14 +560,17 @@ namespace SpacePlanning
                 if(preIndex == index)
                 {
                     count2 += 1;
+                    if (cellsToIndex.Count > 0) index = cellsToIndex.Pop();
+                    else { break; }
                     Trace.WriteLine("Index did not update : " + count2);
                 }
                 else
                 {
                     selectedCells.AddRange(cellsReview);
                 }
-                if (count2 > 10) break;    
-               
+                Trace.WriteLine("Cells to index on stack is : " + cellsToIndex.Count);
+                //if (count2 > 10) break;    
+
             }
 
             Trace.WriteLine("+++++++++++++++++++++++++++++++++++++++");
