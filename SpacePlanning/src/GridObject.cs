@@ -348,8 +348,8 @@ namespace SpacePlanning
                 double areaBorder = PolygonUtility.AreaPolygon(borderPoly);
                 if (!ValidateObject.CheckPolygonSelfIntersection(borderPoly) && areaBorder/ areaPoly > proportion) checkOut = true;
                 else dimAdjusted -= eps;
-                Trace.WriteLine("Trying Border Poly again for : " + count);
-                Trace.WriteLine("Dimension Cell used is " + dimAdjusted);
+                //Trace.WriteLine("Trying Border Poly again for : " + count);
+                //Trace.WriteLine("Dimension Cell used is " + dimAdjusted);
             }// end of while  
 
            
@@ -448,7 +448,7 @@ namespace SpacePlanning
         /// <search>
         /// form maker, buildingoutline, orthogonal forms
         /// </search>
-        [MultiReturn(new[] { "BuildingOutline", "WholesomePolys", "SiteArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells" })]
+        [MultiReturn(new[] { "BuildingOutline", "SiteArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells" })]
         public static Dictionary<string, object> MakeBuildingOutline(Polygon2d origSitePoly,
             List<Cell> cellList, double groundCoverage = 0.5, int iteration = 100)
         {
@@ -489,6 +489,103 @@ namespace SpacePlanning
         }
 
 
+        //makes orhtogonal form as polygon2d based on input ground coverage
+        /// <summary>
+        /// Builds the building outline form based on input site outline and ground coverage
+        /// </summary>
+        /// <param name="borderPoly">Orthogonal border polygon2d of the site outline</param>
+        /// <param name="origSitePoly">Original polygon2d of the site outline</param>
+        /// <param name="cellList">List of cell objects inside the site</param>
+        /// <param name="groundCoverage">Expected ground coverage, value between 0.2 to 0.8</param>
+        /// <param name="iteration">Number of times the node should iterate untill it retreives form satisfying ground coverage.</param>
+        /// <returns name="BuildingOutline">Polygon2d representing orthogonal poly outline.</returns>
+        /// <returns name="WholesomePolys">List of Polygon2d each wholesame having four sides.</returns>  
+        /// <returns name="SiteArea">Area of the site outline.</returns> 
+        /// <returns name="BuildingOutlineArea">Area of the building outline formed.</returns> 
+        /// <returns name="GroundCoverAchieved">Ground coverage achieved, value between 0.2 to 0.8.</returns> 
+        /// <returns name="SortedCells">Sorted cell objects.</returns> 
+        /// <search>
+        /// form maker, buildingoutline, orthogonal forms
+        /// </search>
+        [MultiReturn(new[] { "BuildingOutline", "SiteArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells" })]
+        public static Dictionary<string, object> MakeBuildingOutline2(Polygon2d origSitePoly,
+            List<Cell> cellList, List<List<int>> cellNeighborMatrixInp, double groundCoverage = 0.5, int iteration = 100)
+        {
+            if (cellList == null) return null;
+            if (!ValidateObject.CheckPoly(origSitePoly)) return null;
+            double eps = 0.05, fac = 0.95;
+
+            if (groundCoverage < eps) groundCoverage = 2 * eps;
+            if (groundCoverage > 0.8) groundCoverage = 0.8;
+            //double groundCoverLow = groundCoverage - eps, groundCoverHigh = groundCoverage + eps;
+            double areaSite = PolygonUtility.AreaPolygon(origSitePoly), areaPlaced = 0;
+            double areaBuilding = groundCoverage * areaSite;
+            Dictionary<string, object> sortCellObj = SortCellList(cellList);
+            cellList = (List<Cell>)sortCellObj["SortedCells"];
+            Random ran = new Random();
+            List<Cell> selectedCells = new List<Cell>();
+            int index = (int)BasicUtility.RandomBetweenNumbers(new Random(), cellList.Count, 0), count =0, count2=0;
+            Trace.WriteLine("+++++++++++++++++++++++++++++++++++++++");
+            Trace.WriteLine("First Index : " + index);
+            while (areaPlaced < fac * areaBuilding)
+            {
+                int preIndex = index;
+                count += 1;
+                Trace.WriteLine("Iterating for : " + count + " Index selected is  : " + index);
+                bool indexUpdate = false;
+                List<Cell> cellsReview = new List<Cell>();
+                count += 1;
+                Cell cellitem = cellList[index];
+                if (cellitem.CellAvailable)
+                {
+                    cellList[index].CellAvailable = false;
+                    cellsReview.Add(cellitem);
+                    areaPlaced += cellitem.CellArea;
+                }
+                List<int> neighborCells = cellNeighborMatrixInp[index];
+                neighborCells.RemoveAll(s => s==-1);
+                for(int i = 0; i < neighborCells.Count; i++)
+                {
+                    if (cellList[neighborCells[i]].CellAvailable)
+                    {
+                        if(!indexUpdate) index = neighborCells[i];
+                        indexUpdate = true;
+                        cellsReview.Add(cellList[neighborCells[i]]);
+                        cellList[neighborCells[i]].CellAvailable = false;
+                        areaPlaced += cellList[neighborCells[i]].CellArea;
+                    }
+                }       
+                if(preIndex == index)
+                {
+                    count2 += 1;
+                    Trace.WriteLine("Index did not update : " + count2);
+                }
+                else
+                {
+                    selectedCells.AddRange(cellsReview);
+                }
+                if (count2 > 10) break;    
+               
+            }
+
+            Trace.WriteLine("+++++++++++++++++++++++++++++++++++++++");
+            Trace.WriteLine("AreaNeeded : " + areaBuilding);
+            Trace.WriteLine("AreaPlaced : " + areaPlaced);
+            Dictionary<string, object> cellNeighborMatrixObject = FormsCellNeighborMatrix(selectedCells);
+            List<List<int>> cellNeighborMatrix = (List<List<int>>)cellNeighborMatrixObject["CellNeighborMatrix"];
+            Dictionary<string, object> borderObject = CreateBorder(cellNeighborMatrix, selectedCells, true, true);
+            Polygon2d borderPoly = (Polygon2d)borderObject["BorderPolyLine"];
+
+
+            return new Dictionary<string, object>
+            {
+                { "BuildingOutline", (borderPoly) },
+                { "SiteArea", (areaSite) },
+                { "BuildingOutlineArea", (areaPlaced) },
+                { "GroundCoverAchieved", (areaPlaced/areaSite) },
+                { "SortedCells", (selectedCells)}
+            };
+        }
 
 
 
@@ -663,7 +760,7 @@ namespace SpacePlanning
             //order of neighbors : right , up , left , down
             while (num < borderCellIdList.Count)
             {
-                Trace.WriteLine("Starting while loop : " + num);
+                //Trace.WriteLine("Starting while loop : " + num);
                 possibleCellFound = false;
                 if(!checking)
                 {
@@ -724,7 +821,7 @@ namespace SpacePlanning
 
                 if (goReverse)
                 {
-                    Trace.WriteLine("Reverse Mode On +++");
+                    //Trace.WriteLine("Reverse Mode On +++");
                     //do the following when finding reverse Cell id is set as true
                     if (tag && possibleCellFound)
                     {
@@ -761,7 +858,7 @@ namespace SpacePlanning
                 }
                 else
                 {
-                    Trace.WriteLine("Reverse Mode Off //////////");
+                    //Trace.WriteLine("Reverse Mode Off //////////");
                     //do the following when finding reverse Cell id is set as false             
                     if (tag)
                     {
