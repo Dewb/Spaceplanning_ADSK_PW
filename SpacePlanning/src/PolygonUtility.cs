@@ -431,6 +431,70 @@ namespace SpacePlanning
 
         }
 
+        //gets a poly and removes small notches based on agiven min distance
+        [MultiReturn(new[] { "PolyNotchRemoved", "NotchFound"})]
+        public static Dictionary<string, object> RemoveAnyNotches(Polygon2d polyInp, double distance = 10)
+        {
+            if (!ValidateObject.CheckPoly(polyInp)) return null;
+
+            bool  found = false;
+            Polygon2d poly = new Polygon2d(polyInp.Points);
+            for (int i = 0; i < poly.Points.Count; i++)
+            {
+                int a = i, b = i + 1, c = i-1, d = i+2;
+                if (i == 0) c = poly.Points.Count - 1;
+                if (i == poly.Points.Count - 1) { b = 0; d = 1; }
+                if (i == poly.Points.Count - 2) { d = 0; }
+                if (poly.Lines[a].Length < distance)
+                {
+                    int orient = ValidateObject.CheckLineOrient(poly.Lines[a]);
+                    if (orient == 0)// horizontal line
+                    {
+                        poly.Points[b] = poly.Points[a];
+                        poly.Points[d] = new Point2d(poly.Points[a].X, poly.Points[d].Y);
+                    }
+                    else // vertical line
+                    {
+                        poly.Points[b] = poly.Points[a];
+                        poly.Points[d] = new Point2d(poly.Points[d].X, poly.Points[a].Y);
+                    }
+                    found = true;
+                }
+             
+            }
+            Polygon2d polyNew = new Polygon2d(poly.Points);         
+            return new Dictionary<string, object>
+            {
+                { "PolyNotchRemoved" , (polyNew) },
+                { "NotchFound" , (found) }
+            };
+
+        }
+
+        //gets a poly and removes small notches based on agiven min distance
+        [MultiReturn(new[] { "PolyNotchRemoved", "NotchFound" })]
+        public static Dictionary<string, object> RemoveAllNotches(Polygon2d polyInp, double distance = 10)
+        {
+            if (!ValidateObject.CheckPoly(polyInp)) return null;
+            bool found = true;
+            int count = 0;
+            Polygon2d currentPoly = new Polygon2d(polyInp.Points);
+            while (found)
+            {
+                count += 1;
+                Dictionary<string, object> notchObj = RemoveAnyNotches(currentPoly, distance);
+                currentPoly = (Polygon2d)notchObj["PolyNotchRemoved"];
+                found = (bool)notchObj["NotchFound"];
+                Trace.WriteLine("still notches : " + count);
+            }
+            Polygon2d polyNew = new Polygon2d(currentPoly.Points);
+            return new Dictionary<string, object>
+            {
+                { "PolyNotchRemoved" , (polyNew) },
+                { "NotchFound" , (found) }
+            };
+
+        }
 
         //gets a poly and removes small notches based on agiven min distance
         [MultiReturn(new[] { "PointStart", "PointEnd", "ConnectingLine", "PointsProjected", "PolyReduced", "FoundSmall" })]

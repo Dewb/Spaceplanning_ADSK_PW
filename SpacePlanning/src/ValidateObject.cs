@@ -147,7 +147,7 @@ namespace SpacePlanning
 
         //iterate multiple times till theres is no notches in the poly
         [MultiReturn(new[] { "PolyReduced", "HasNotches", "Trials" })]
-        internal static Dictionary<string, object> CheckPolyNotches(Polygon2d poly, double distance = 10)
+        public static Dictionary<string, object> CheckPolyNotches(Polygon2d poly, double distance = 10)
         {
             if (!CheckPoly(poly)) return null;
             bool hasNotches = true;
@@ -230,7 +230,7 @@ namespace SpacePlanning
             };
         }
 
-        //checks a line if horizontal or vertical 0 for horizontal, 1 for vertical
+        //checks a line if horizontal or vertical, 0 for horizontal, 1 for vertical
         internal static int CheckLineOrient(Line2d line)
         {
             if (line == null) return -1;
