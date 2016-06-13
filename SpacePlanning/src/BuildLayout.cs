@@ -63,7 +63,11 @@ namespace SpacePlanning
                     List<List<Polygon2d>> deptAllPolys = new List<List<Polygon2d>>();
                     for(int i = 0; i < deptDataUpdated.Count; i++) deptAllPolys.Add(deptDataUpdated[i].PolyAssignedToDept);
                     List<Polygon2d> deptPolysTogether = new List<Polygon2d>();
-                    for (int i = 0; i < deptAllPolys.Count; i++) deptPolysTogether.AddRange(deptAllPolys[i]);
+                    for (int i = 0; i < deptAllPolys.Count; i++)
+                    {
+                        if(ValidateObject.CheckPolyList(deptAllPolys[i])) deptPolysTogether.AddRange(deptAllPolys[i]);
+                    }
+
                     if(deptAllPolys.Count>0) Trace.WriteLine("dept arrangement not null, lets check further");
                     for (int i = 0; i < deptAllPolys.Count; i++)
                     {                       
@@ -544,6 +548,7 @@ namespace SpacePlanning
                     if (inpatientObject == null) return null;
                     List<Polygon2d> inpatienBlocks = (List<Polygon2d>)inpatientObject["PolyAfterSplit"];
                     List<Polygon2d> leftOverBlocks = (List<Polygon2d>)inpatientObject["LeftOverPoly"];
+                    if (!ValidateObject.CheckPolyList(inpatienBlocks) || !ValidateObject.CheckPolyList(leftOverBlocks)) return null;
                     areaAssigned = (double)inpatientObject["AreaAssignedToBlock"];
                     AllDeptPolys.Add(inpatienBlocks);
                     AllDeptAreaAdded.Add(areaAssigned);

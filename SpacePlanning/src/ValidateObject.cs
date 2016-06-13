@@ -69,6 +69,7 @@ namespace SpacePlanning
         //this checks a polylist for abnormal polys and returns only those which deem fit
         internal static List<Polygon2d>CheckAndCleanPolygon2dList(List<Polygon2d> polyList)
         {
+            if (!CheckPolyList(polyList)) return null;
             List<Polygon2d> cleanPolyList = new List<Polygon2d>();
             for (int i = 0; i < polyList.Count; i++)
             {

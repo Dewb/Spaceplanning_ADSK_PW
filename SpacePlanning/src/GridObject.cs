@@ -155,6 +155,7 @@ namespace SpacePlanning
         /// </search>
         public static List<Polygon> MakeCellPolysFromCellObjects(List<Cell> cellList, List<int> indexList = null, double height  = 0)
         {
+            if (cellList == null) return null;
             List<Polygon> cellsPolyList = new List<Polygon>();
             List<Point2d> pointsgrid = new List<Point2d>();
             for (int i = 0; i < cellList.Count; i++)
@@ -612,14 +613,14 @@ namespace SpacePlanning
         /// <search>
         /// form maker, buildingoutline, orthogonal forms
         /// </search>
-        [MultiReturn(new[] { "BuildingOutline", "SiteArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells" })]
+        [MultiReturn(new[] { "BuildingOutline","SelectedPolygons", "SiteArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells" })]
         public static Dictionary<string, object> MakeFormBasedOnSplits(Polygon2d origSitePoly,
-            List<Cell> cellList, double groundCoverage = 0.5, int iteration = 100)
+            List<Cell> cellList, double acceptableWidth = 10, double groundCoverage = 0.5, int iteration = 100)
         {
             if (cellList == null) return null;
             if (!ValidateObject.CheckPoly(origSitePoly)) return null;
-            double eps = 0.05, fac = 0.95;
-
+            double eps = 0.05, fac = 0.95, ratio = 0.6;
+            int count = 0, maxTry = 100, cirFreq = 10;
             if (groundCoverage < eps) groundCoverage = 2 * eps;
             if (groundCoverage > 0.8) groundCoverage = 0.8;
             //double groundCoverLow = groundCoverage - eps, groundCoverHigh = groundCoverage + eps;
@@ -628,26 +629,58 @@ namespace SpacePlanning
             Dictionary<string, object> sortCellObj = SortCellList(cellList);
             cellList = (List<Cell>)sortCellObj["SortedCells"];
             Random ran = new Random();
-            List<Cell> selectedCells = new List<Cell>();
-            for (int i = 0; i < cellList.Count; i++)
+     
+   
+            List<List<Polygon2d>> polySubDivs = new List<List<Polygon2d>>();
+            List<Polygon2d> polyAvailable = new List<Polygon2d> { origSitePoly };
+            polySubDivs = SplitObject.SplitRecursivelyToSubdividePoly(polyAvailable, acceptableWidth, cirFreq, ratio);
+            bool checkPoly1 = ValidateObject.CheckPolygon2dListOrtho(polySubDivs[0], 0.5);
+            bool checkPoly2 = ValidateObject.CheckPolygon2dListOrtho(polySubDivs[1], 0.5);
+            while (polySubDivs == null || polySubDivs.Count == 0 || !checkPoly1 || !checkPoly2 && count < maxTry)
             {
-                selectedCells.Add(cellList[i]);
-                areaPlaced += cellList[i].CellArea;
-                if (areaPlaced > fac * areaBuilding) break;
+                count += 1;
+                ratio -= 0.01;
+                if (ratio < 0) ratio = 0.6; break;
+                //Trace.WriteLine("Ratio problem faced , ratio reduced to : " + ratio);
+                polySubDivs = SplitObject.SplitRecursivelyToSubdividePoly(polyAvailable, acceptableWidth, cirFreq, ratio);
+            }
+            List<Polygon2d> polyList = new List<Polygon2d>(), polySelected = new List<Polygon2d>();
+            for (int i = 0; i<polySubDivs.Count; i++) polyList.AddRange(polySubDivs[i]);
+            for (int i = 0; i < polyList.Count; i++)
+            {
+                areaPlaced += PolygonUtility.AreaPolygon(polyList[i]);
+                polySelected.Add(polyList[i]);                
+                if (areaPlaced > fac * areaBuilding) {Trace.WriteLine("area reached need : " + areaPlaced); break;}
+                else { Trace.WriteLine("Area still needs to be added"); }
+            }
+            List<Cell> selectedCells = new List<Cell>();
+            for(int i = 0; i < cellList.Count; i++)
+            {
+                for (int j = 0; j < polySelected.Count; j++)
+                {
+                    if (GraphicsUtility.PointInsidePolygonTest(polySelected[j], cellList[i].LeftDownCorner))
+                    {
+                        selectedCells.Add(cellList[i]);
+                        break;
+                    }
+                }
             }
 
+               
             Dictionary<string, object> cellNeighborMatrixObject = FormsCellNeighborMatrix(selectedCells);
             List<List<int>> cellNeighborMatrix = (List<List<int>>)cellNeighborMatrixObject["CellNeighborMatrix"];
             Dictionary<string, object> borderObject = CreateBorder(cellNeighborMatrix, selectedCells, true, true);
             Polygon2d borderPoly = (Polygon2d)borderObject["BorderPolyLine"];
+            double areaFinal = PolygonUtility.AreaPolygon(borderPoly);
 
 
             return new Dictionary<string, object>
             {
                 { "BuildingOutline", (borderPoly) },
+                { "SelectedPolygons", (polySelected) },
                 { "SiteArea", (areaSite) },
-                { "BuildingOutlineArea", (areaPlaced) },
-                { "GroundCoverAchieved", (areaPlaced/areaSite) },
+                { "BuildingOutlineArea", (areaFinal) },
+                { "GroundCoverAchieved", (areaFinal/areaSite) },
                 { "SortedCells", (selectedCells)}
             };
         }
