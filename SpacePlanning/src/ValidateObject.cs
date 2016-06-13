@@ -155,9 +155,9 @@ namespace SpacePlanning
             Polygon2d currentPoly = new Polygon2d(poly.Points);
             while (hasNotches && count < maxTry)
             {
-                Dictionary<string, object> notchObject = PolygonUtility.RemoveMultipleNotches(currentPoly, distance);
+                Dictionary<string, object> notchObject = PolygonUtility.RemoveAllNotches(currentPoly, distance);
                 if (notchObject == null) continue;
-                currentPoly = (Polygon2d)notchObject["PolyReduced"];
+                currentPoly = (Polygon2d)notchObject["PolyNotchRemoved"];
                 for (int i = 0; i < poly.Lines.Count; i++)
                 {
                     int a = i, b = i + 1;
@@ -167,13 +167,9 @@ namespace SpacePlanning
                 }
                 count += 1;
             }
-
-            Dictionary<string, object> singleNotchObj = PolygonUtility.RemoveSingleNotch(currentPoly, distance, currentPoly.Points.Count);
-            Polygon2d polyRed = (Polygon2d)singleNotchObj["PolyReduced"];
-            if (!CheckPoly(polyRed)) { polyRed = poly; hasNotches = false; }
             return new Dictionary<string, object>
             {
-                { "PolyReduced", (polyRed) },
+                { "PolyReduced", (poly) },
                 { "HasNotches", (hasNotches) },
                 { "Trials", (count) }
             };

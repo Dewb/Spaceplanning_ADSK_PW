@@ -383,11 +383,17 @@ namespace SpacePlanning
         /// form maker, buildingoutline, orthogonal forms
         /// </search>
         [MultiReturn(new[] { "BuildingOutline","WholesomePolys", "SiteArea" , "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells" })]
-        public static Dictionary<string, object> FormMakeInSite(Polygon2d borderPoly, Polygon2d origSitePoly, 
-            List<Cell> cellList,double groundCoverage = 0.5, int iteration = 100, bool randomToggle = false)
+        public static Dictionary<string, object> FormMakeInSite(Polygon2d borderPolyInp, Polygon2d origSitePoly, 
+            List<Cell> cellList,double groundCoverage = 0.5, int iteration = 100, double notchDist = 10, bool randomToggle = false, bool notchToggle = true)
         {
             if (cellList == null) return null;
-            if (!ValidateObject.CheckPoly(borderPoly)) return null;
+            if (!ValidateObject.CheckPoly(borderPolyInp)) return null;
+            Polygon2d borderPoly = new Polygon2d(null);
+            if(notchToggle)
+            {
+                Dictionary<string, object> notchObj = PolygonUtility.RemoveAllNotches(borderPolyInp, notchDist);
+                borderPoly = (Polygon2d)notchObj["PolyNotchRemoved"];
+            }
             bool blockPlaced = false;
             int count = 0;
             double areaSite = PolygonUtility.AreaPolygon(origSitePoly), eps = 0.05, areaPlaced = 0;
