@@ -56,7 +56,7 @@ namespace SpacePlanning
             while(deptPlaced == false && count < MAXCOUNT)
             {
                 Trace.WriteLine("Lets arrange dept again : " + count);
-                deptArrangement = DeptPlacer(deptData, buildingOutline, primaryDeptDepth, acceptableWidth, minNotchDistance, circulationFreq, recompute, randomToggle);
+                deptArrangement = DeptPlacer(deptData, buildingOutline, primaryDeptDepth, acceptableWidth, minNotchDistance, circulationFreq, recompute);
                 if(deptArrangement != null)
                 {
                     List<DeptData> deptDataUpdated =(List<DeptData>) deptArrangement["UpdatedDeptData"];
@@ -510,7 +510,7 @@ namespace SpacePlanning
         //dept assignment new way
         [MultiReturn(new[] { "UpdatedDeptData", "LeftOverPolys","CirculationPolys", "OtherDeptMainPoly" })]
         internal static Dictionary<string, object> DeptPlacer(List<DeptData> deptData, Polygon2d poly, double offset, 
-            double acceptableWidth = 20,double minNotchDist = 20, double circulationFreq = 10, double recompute = 5, bool tag = false)
+            double acceptableWidth = 20,double minNotchDist = 20, double circulationFreq = 10, double recompute = 5)
         {
             if (deptData == null) //|| !ValidateObject.CheckPoly(poly)
             {
@@ -556,8 +556,7 @@ namespace SpacePlanning
                 if (i == 1)
                 {
                     List<List<Polygon2d>> polySubDivs = new List<List<Polygon2d>>();
-                    if (!tag) polySubDivs = SplitObject.SplitRecursivelyToSubdividePoly(leftOverPoly, acceptableWidth, circulationFreq, ratio);
-                    else polySubDivs = SplitObject.SplitRecursivelyRandomizedToSubdividePoly(leftOverPoly, acceptableWidth, circulationFreq, ratio, eps, recompute);
+                    polySubDivs = SplitObject.SplitRecursivelyToSubdividePoly(leftOverPoly, acceptableWidth, circulationFreq, ratio);
                     bool checkPoly1 = ValidateObject.CheckPolygon2dListOrtho(polySubDivs[0], 0.5);
                     bool checkPoly2 = ValidateObject.CheckPolygon2dListOrtho(polySubDivs[1], 0.5);
                     while (polySubDivs == null || polySubDivs.Count == 0 || !checkPoly1 || !checkPoly2 && count < maxTry)

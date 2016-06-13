@@ -594,6 +594,63 @@ namespace SpacePlanning
 
 
 
+        //makes orhtogonal form as polygon2d based on input ground coverage
+        /// <summary>
+        /// Builds the building outline form based on input site outline and ground coverage
+        /// </summary>
+        /// <param name="borderPoly">Orthogonal border polygon2d of the site outline</param>
+        /// <param name="origSitePoly">Original polygon2d of the site outline</param>
+        /// <param name="cellList">List of cell objects inside the site</param>
+        /// <param name="groundCoverage">Expected ground coverage, value between 0.2 to 0.8</param>
+        /// <param name="iteration">Number of times the node should iterate untill it retreives form satisfying ground coverage.</param>
+        /// <returns name="BuildingOutline">Polygon2d representing orthogonal poly outline.</returns>
+        /// <returns name="WholesomePolys">List of Polygon2d each wholesame having four sides.</returns>  
+        /// <returns name="SiteArea">Area of the site outline.</returns> 
+        /// <returns name="BuildingOutlineArea">Area of the building outline formed.</returns> 
+        /// <returns name="GroundCoverAchieved">Ground coverage achieved, value between 0.2 to 0.8.</returns> 
+        /// <returns name="SortedCells">Sorted cell objects.</returns> 
+        /// <search>
+        /// form maker, buildingoutline, orthogonal forms
+        /// </search>
+        [MultiReturn(new[] { "BuildingOutline", "SiteArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells" })]
+        public static Dictionary<string, object> MakeFormBasedOnSplits(Polygon2d origSitePoly,
+            List<Cell> cellList, double groundCoverage = 0.5, int iteration = 100)
+        {
+            if (cellList == null) return null;
+            if (!ValidateObject.CheckPoly(origSitePoly)) return null;
+            double eps = 0.05, fac = 0.95;
+
+            if (groundCoverage < eps) groundCoverage = 2 * eps;
+            if (groundCoverage > 0.8) groundCoverage = 0.8;
+            //double groundCoverLow = groundCoverage - eps, groundCoverHigh = groundCoverage + eps;
+            double areaSite = PolygonUtility.AreaPolygon(origSitePoly), areaPlaced = 0;
+            double areaBuilding = groundCoverage * areaSite;
+            Dictionary<string, object> sortCellObj = SortCellList(cellList);
+            cellList = (List<Cell>)sortCellObj["SortedCells"];
+            Random ran = new Random();
+            List<Cell> selectedCells = new List<Cell>();
+            for (int i = 0; i < cellList.Count; i++)
+            {
+                selectedCells.Add(cellList[i]);
+                areaPlaced += cellList[i].CellArea;
+                if (areaPlaced > fac * areaBuilding) break;
+            }
+
+            Dictionary<string, object> cellNeighborMatrixObject = FormsCellNeighborMatrix(selectedCells);
+            List<List<int>> cellNeighborMatrix = (List<List<int>>)cellNeighborMatrixObject["CellNeighborMatrix"];
+            Dictionary<string, object> borderObject = CreateBorder(cellNeighborMatrix, selectedCells, true, true);
+            Polygon2d borderPoly = (Polygon2d)borderObject["BorderPolyLine"];
+
+
+            return new Dictionary<string, object>
+            {
+                { "BuildingOutline", (borderPoly) },
+                { "SiteArea", (areaSite) },
+                { "BuildingOutlineArea", (areaPlaced) },
+                { "GroundCoverAchieved", (areaPlaced/areaSite) },
+                { "SortedCells", (selectedCells)}
+            };
+        }
 
         //make cells inside polgon2d
         /// <summary>
