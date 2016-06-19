@@ -288,6 +288,20 @@ namespace SpacePlanning
             return check;
         }
 
+        internal static bool CheckPolyAdjacencyToPolyList(Polygon2d poly, List<Polygon2d> polyList)
+        {
+            if (!CheckPoly(poly)) return false;
+            if (!CheckPolyList(polyList)) return false;
+            bool check = false;
+            for(int i = 0; i < polyList.Count; i++)
+            {
+                Dictionary<string, object> adjObject = PolygonUtility.FindPolyAdjacentEdge(poly, polyList[i]);
+                check = (bool)adjObject["Neighbour"];                
+            }
+            if (check) return true;
+            else return false;
+        }
+
         #endregion
 
 
