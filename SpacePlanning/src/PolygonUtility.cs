@@ -646,7 +646,7 @@ namespace SpacePlanning
         }
 
         //makes a square polygon2d
-        internal static Polygon2d SquareByCenter(Point2d center, double side = 5)
+        public static Polygon2d SquareByCenter(Point2d center, double side = 5)
         {
             Point2d pt1 = Point2d.ByCoordinates(center.X - side / 2, center.Y - side / 2);
             Point2d pt2 = Point2d.ByCoordinates(center.X + side / 2, center.Y - side / 2);
@@ -660,11 +660,11 @@ namespace SpacePlanning
         public static Point2d FindPointOnPolySide(Polygon2d poly, int dir = 0, double dist = 10)
         {
             if (!ValidateObject.CheckPoly(poly)) return null;
-            Point2d centerFound = new Point2d(null);
+            Point2d centerFound = new Point2d(0,0);
             List<Point2d> lowAndHighPt = GetLowestAndHighestPointFromPoly(poly);
             Point2d low = lowAndHighPt[0];
             Point2d high = lowAndHighPt[1];
-
+            // switch based on dir input
             switch (dir)
             {
                 case 0: // go right
@@ -674,10 +674,10 @@ namespace SpacePlanning
                     centerFound = new Point2d(high.X - dist, high.Y + dist);
                     break;
                 case 2: // go left
-                    centerFound = new Point2d(low.X - dist, high.Y + dist);
+                    centerFound = new Point2d(low.X - dist, low.Y + dist);
                     break;
                 case 3: // go down
-                    centerFound = new Point2d(low.X + dist, low.Y + dist);
+                    centerFound = new Point2d(low.X + dist, low.Y - dist);
                     break;
                 default:
                     centerFound = new Point2d(high.X + dist, high.Y - dist);
