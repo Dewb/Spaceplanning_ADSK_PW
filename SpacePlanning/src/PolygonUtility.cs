@@ -345,7 +345,6 @@ namespace SpacePlanning
                 spanList.Add(verticalSpan);
                 spanList.Add(horizontalSpan);
             }
-
             return spanList;
         }
 
@@ -684,6 +683,19 @@ namespace SpacePlanning
                     break;
             }
             return centerFound;
+        }
+
+        //places a point randomly inside a poly | padding should be between 0.2 to 1.0
+        public static Point2d PlaceRandomPointInsidePoly(Polygon2d poly, double pad=1)
+        {
+            if (!ValidateObject.CheckPoly(poly)) return null;
+            Point2d centerFound = new Point2d(0, 0);
+            List<Point2d> lowAndHighPt = GetLowestAndHighestPointFromPoly(poly);
+            Point2d low = lowAndHighPt[0];
+            Point2d high = lowAndHighPt[1];
+            double x = BasicUtility.RandomBetweenNumbers(new Random(), high.X, low.X);
+            double y = BasicUtility.RandomBetweenNumbers(new Random(), high.Y, low.Y);
+            return new Point2d(x, y);       
         }
 
     }

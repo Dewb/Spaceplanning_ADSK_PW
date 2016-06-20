@@ -602,7 +602,7 @@ namespace SpacePlanning
         /// <search>
         /// form maker, buildingoutline, orthogonal forms
         /// </search>
-        [MultiReturn(new[] { "BuildingOutline", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells" })]
+        [MultiReturn(new[] { "BuildingOutline","AreaOfParts", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells" })]
         public static Dictionary<string, object> GrowForm(Polygon2d origSitePoly,
             List<Cell> cellListInp, int hold = 4, double groundCoverage = 0.5, int iteration = 100, bool tag = true)
         {
@@ -638,7 +638,11 @@ namespace SpacePlanning
             List<Polygon2d> polySquares = new List<Polygon2d>();
             List<Point2d> ptSquares = new List<Point2d>();
             Polygon2d currentPoly = new Polygon2d(origSitePoly.Points);
-            Point2d center = PolygonUtility.CentroidOfPoly(origSitePoly);
+            // Point2d center = PolygonUtility.CentroidOfPoly(origSitePoly);
+            Point2d center = PolygonUtility.PlaceRandomPointInsidePoly(origSitePoly);
+
+
+
             for (int i = 0; i < number; i++)
             {
                 count = 0;
@@ -717,19 +721,18 @@ namespace SpacePlanning
                 selectedCells.AddRange(selectedCellsForLeftOverArea);
                 areaPlaced += areaSurplusAdded;
             }// end of tag if loop
-   
-            
-            
-                  
-                            
-            // squares and its center
-            //int ptIndex = GraphicsUtility.FindClosestPointIndex(origSitePoly.Points, center);
-            //double dist = PointUtility.DistanceBetweenPoints(origSitePoly.Points[ptIndex], center);
-            //Polygon2d sqr = PolygonUtility.SquareByCenter(center, dist * 0.95);
-            //Polygon2d firstSqr = new Polygon2d(sqr.Points);
-           
-            //
-          
+
+
+            List<Cell> selectedCellsCopy = selectedCells.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy
+            selectedCellsCopy = SetCellAvailability(selectedCellsCopy);
+            Dictionary<string, object> sortCellObj = SortCellList(selectedCellsCopy);
+            selectedCellsCopy = (List<Cell>)sortCellObj["SortedCells"];
+            Dictionary<string, object> cellNeighborMatrixObject = FormsCellNeighborMatrix(selectedCellsCopy);
+            List<List<int>> cellNeighborMatrix = (List<List<int>>)cellNeighborMatrixObject["CellNeighborMatrix"];
+            Dictionary<string, object> borderObject = CreateBorder(cellNeighborMatrix, selectedCellsCopy, true, true);
+            Polygon2d borderPoly = (Polygon2d)borderObject["BorderPolyLine"];
+
+
             /*
             Dictionary<string, object> mergeObject = MergePoly(polyAdded, cellList);
             Polygon2d borderPoly = (Polygon2d)mergeObject["MergedPoly"];
@@ -738,7 +741,8 @@ namespace SpacePlanning
             */
             return new Dictionary<string, object>
             {
-                { "BuildingOutline", (areaPartsList) },
+                { "BuildingOutline", (borderPoly) },
+                { "AreaOfParts", (areaPartsList) },
                 { "SubdividedPolys", (polySquares) },
                 { "SiteArea", (ptSquares) },
                 { "LeftOverArea", (areaLeft) },
@@ -1405,6 +1409,16 @@ namespace SpacePlanning
             for(int i = 0; i < cellList.Count; i++) area += cellList[i].CellArea; 
             return area;
         }
+
+        //finds the area of a list of cell
+        internal static List<Cell> SetCellAvailability(List<Cell> cellList, bool value = true)
+        {
+            if (cellList == null) return null;
+            List<Cell> cellListCopy = cellList.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy
+            for (int i = 0; i < cellListCopy.Count; i++) cellListCopy[i].CellAvailable = value;
+            return cellListCopy;
+        }
+
 
         //make list of point2d from a bounding box as cell centers
         internal static List<Point2d> GridPointsFromBBoxNew(List<Point2d> bbox, double dimXX, double dimYY, double a, double b)
