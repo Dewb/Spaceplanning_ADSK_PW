@@ -645,6 +645,17 @@ namespace SpacePlanning
 
         }
 
+        //makes a square polygon2d
+        internal static Polygon2d SquareByCenter(Point2d center, double side = 5)
+        {
+            Point2d pt1 = Point2d.ByCoordinates(center.X - side / 2, center.Y - side / 2);
+            Point2d pt2 = Point2d.ByCoordinates(center.X + side / 2, center.Y - side / 2);
+            Point2d pt3 = Point2d.ByCoordinates(center.X + side / 2, center.Y + side / 2);
+            Point2d pt4 = Point2d.ByCoordinates(center.X - side / 2, center.Y + side / 2);
+            List<Point2d> ptList = new List<Point2d>() { pt1, pt2, pt3, pt4 };
+            return new Polygon2d(ptList);
+        }
+
        
 
     }
