@@ -602,9 +602,9 @@ namespace SpacePlanning
         /// <search>
         /// form maker, buildingoutline, orthogonal forms
         /// </search>
-        [MultiReturn(new[] { "BuildingOutline", "SubdividedPolys", "SiteArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells" })]
+        [MultiReturn(new[] { "BuildingOutline", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells" })]
         public static Dictionary<string, object> GrowForm(Polygon2d origSitePoly,
-            List<Cell> cellListInp, int hold = 4, double groundCoverage = 0.5, int iteration = 100)
+            List<Cell> cellListInp, int hold = 4, double groundCoverage = 0.5, int iteration = 100, bool tag = true)
         {
             if (cellListInp == null) return null;
             if (!ValidateObject.CheckPoly(origSitePoly)) return null;
@@ -612,13 +612,13 @@ namespace SpacePlanning
             double eps = 0.05, fac = 0.95, ratio = 0.55, whole  = 1, prop = 0;
             int number = (int)BasicUtility.RandomBetweenNumbers(new Random(), 2, 8);
             number = hold;
-            int count = 0;
+            int count = 0,dir=0;
 
             if (groundCoverage < eps) groundCoverage = 2 * eps;
             if (groundCoverage > 0.8) groundCoverage = 0.8;
             //double groundCoverLow = groundCoverage - eps, groundCoverHigh = groundCoverage + eps;
             double areaSite = PolygonUtility.AreaPolygon(origSitePoly), areaPlaced = 0;
-            double areaBuilding = groundCoverage * areaSite;
+            double areaBuilding = groundCoverage * areaSite, areaLeft =0;
             List<double> areaPartsList = new List<double>();
             for (int i = 0; i < number; i++)
             {
@@ -643,7 +643,7 @@ namespace SpacePlanning
             {
                 count = 0;
                 bool found = false;
-                int dir = 0;           
+                dir = 0; 
                 double dist = Math.Sqrt(areaPartsList[i]);
                 if (i > 0) center = PolygonUtility.FindPointOnPolySide(currentPoly, 0, dist / 2);
                 Trace.WriteLine("++++++++++++++++++++++++++ : " + i);
@@ -658,7 +658,8 @@ namespace SpacePlanning
                     {
                         if (cellList[j].CellAvailable)
                         {
-                            if (GraphicsUtility.PointInsidePolygonTest(currentPoly, cellList[j].LeftDownCorner))
+                            if (GraphicsUtility.PointInsidePolygonTest(currentPoly, cellList[j].CenterPoint) && 
+                                GraphicsUtility.PointInsidePolygonTest(origSitePoly, cellList[j].CenterPoint))
                             {
                                 found = true;
                                 cellList[j].CellAvailable = false;
@@ -677,7 +678,49 @@ namespace SpacePlanning
 
                 // find center on the right side
             }// end of for loop 
-            areaPlaced = AreaFromCells(selectedCells);        
+            areaPlaced = AreaFromCells(selectedCells);
+            areaLeft = areaBuilding - areaPlaced;
+            if (tag)
+            {
+                double areaSurplusAdded = 0;
+                List<Cell> selectedCellsForLeftOverArea = new List<Cell>();
+                dir = 2; count = 0;
+                while (areaLeft > 100 && count < 50)
+                {
+                    count += 1;
+                    Trace.WriteLine("trying to add left over areas : " + count);
+                    List<Cell> moreCellsFound = new List<Cell>();
+                    double dist = Math.Sqrt(areaLeft);
+                    currentPoly = polySquares[0];
+                    center = PolygonUtility.FindPointOnPolySide(currentPoly, dir, dist / 2);
+                    currentPoly = PolygonUtility.SquareByCenter(center, dist);
+                    polySquares.Add(currentPoly);
+                    bool found = false;
+                    for (int j = 0; j < cellList.Count; j++)
+                    {
+                        if (cellList[j].CellAvailable)
+                        {
+                            if (GraphicsUtility.PointInsidePolygonTest(currentPoly, cellList[j].CenterPoint) && 
+                                GraphicsUtility.PointInsidePolygonTest(origSitePoly, cellList[j].CenterPoint))
+                            {
+                                found = true;
+                                cellList[j].CellAvailable = false;
+                                moreCellsFound.Add(cellList[j]);
+                            }
+                        }
+                    }// end of for loop
+                    if (!found) Trace.WriteLine("No cell found , so sad");
+                    areaSurplusAdded += AreaFromCells(moreCellsFound);
+                    areaLeft -= AreaFromCells(moreCellsFound);
+                    selectedCellsForLeftOverArea.AddRange(moreCellsFound);
+                }// end of while loop
+                selectedCells.AddRange(selectedCellsForLeftOverArea);
+                areaPlaced += areaSurplusAdded;
+            }// end of tag if loop
+   
+            
+            
+                  
                             
             // squares and its center
             //int ptIndex = GraphicsUtility.FindClosestPointIndex(origSitePoly.Points, center);
@@ -698,6 +741,7 @@ namespace SpacePlanning
                 { "BuildingOutline", (areaPartsList) },
                 { "SubdividedPolys", (polySquares) },
                 { "SiteArea", (ptSquares) },
+                { "LeftOverArea", (areaLeft) },
                 { "BuildingOutlineArea", (areaPlaced) },
                 { "GroundCoverAchieved", (areaPlaced/areaSite) },
                 { "SortedCells", (selectedCells)}
