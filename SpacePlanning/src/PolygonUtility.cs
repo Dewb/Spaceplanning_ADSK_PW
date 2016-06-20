@@ -656,7 +656,35 @@ namespace SpacePlanning
             return new Polygon2d(ptList);
         }
 
-       
+        //finds a center point with respect to a given poly. Directions are: 0 = right, 1 = up, 2 = left, 3 = down
+        public static Point2d FindPointOnPolySide(Polygon2d poly, int dir = 0, double dist = 10)
+        {
+            if (!ValidateObject.CheckPoly(poly)) return null;
+            Point2d centerFound = new Point2d(null);
+            List<Point2d> lowAndHighPt = GetLowestAndHighestPointFromPoly(poly);
+            Point2d low = lowAndHighPt[0];
+            Point2d high = lowAndHighPt[1];
+
+            switch (dir)
+            {
+                case 0: // go right
+                    centerFound = new Point2d(high.X + dist, high.Y - dist);
+                    break;
+                case 1: // go up
+                    centerFound = new Point2d(high.X - dist, high.Y + dist);
+                    break;
+                case 2: // go left
+                    centerFound = new Point2d(low.X - dist, high.Y + dist);
+                    break;
+                case 3: // go down
+                    centerFound = new Point2d(low.X + dist, low.Y + dist);
+                    break;
+                default:
+                    centerFound = new Point2d(high.X + dist, high.Y - dist);
+                    break;
+            }
+            return centerFound;
+        }
 
     }
 

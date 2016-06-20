@@ -609,57 +609,101 @@ namespace SpacePlanning
             if (cellListInp == null) return null;
             if (!ValidateObject.CheckPoly(origSitePoly)) return null;
             List<Cell> cellList = cellListInp.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy           
-            double eps = 0.05, fac = 0.95, ratio = 0.55;
+            double eps = 0.05, fac = 0.95, ratio = 0.55, whole  = 1, prop = 0;
+            int number = (int)BasicUtility.RandomBetweenNumbers(new Random(),2,8), count = 0;
 
             if (groundCoverage < eps) groundCoverage = 2 * eps;
             if (groundCoverage > 0.8) groundCoverage = 0.8;
             //double groundCoverLow = groundCoverage - eps, groundCoverHigh = groundCoverage + eps;
             double areaSite = PolygonUtility.AreaPolygon(origSitePoly), areaPlaced = 0;
             double areaBuilding = groundCoverage * areaSite;
-
-            // squares and its center
-            Point2d center = PolygonUtility.CentroidOfPoly(origSitePoly);
-            int ptIndex = GraphicsUtility.FindClosestPointIndex(origSitePoly.Points, center);
-            double dist = PointUtility.DistanceBetweenPoints(origSitePoly.Points[ptIndex], center);
-            Polygon2d sqr = PolygonUtility.SquareByCenter(center, dist * 0.95);
-            Polygon2d firstSqr = new Polygon2d(sqr.Points);
+            List<double> areaPartsList = new List<double>();
+            for (int i = 0; i < number; i++)
+            {
+                if (i == number - 1)
+                {
+                    prop = whole;
+                    areaPartsList.Add(areaBuilding * prop);
+                }
+                else
+                {
+                    prop = whole / (2 * (i + 1));
+                    areaPartsList.Add(areaBuilding * prop);
+                    whole -= prop;
+                }
+            }// end of for loop
             List<Cell> selectedCells = new List<Cell>();
             List<Polygon2d> polySquares = new List<Polygon2d>();
-            while (areaPlaced < fac * areaBuilding)
+            Polygon2d currentPoly = new Polygon2d(origSitePoly.Points);
+            Point2d center = PolygonUtility.CentroidOfPoly(origSitePoly);
+            for (int i = 0; i < areaPartsList.Count; i++)
             {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                for (int i = 0; i < cellList.Count; i++)
+                bool found = false;
+                while (!found && count < iteration)
                 {
-                    if (cellList[i].CellAvailable)
+                    double dist = Math.Sqrt(areaPartsList[i]);
+                    currentPoly = PolygonUtility.SquareByCenter(center, dist * 0.95);
+                    polySquares.Add(currentPoly);
+               
+                    count += 1;
+                    for (int j = 0; j < cellList.Count; j++)
                     {
-                        if (GraphicsUtility.PointInsidePolygonTest(sqr, cellList[i].LeftDownCorner))
+                        if (cellList[j].CellAvailable)
                         {
-                            cellList[i].CellAvailable = false;
-                            selectedCells.Add(cellList[i]);
+                            if (GraphicsUtility.PointInsidePolygonTest(currentPoly, cellList[i].LeftDownCorner))
+                            {
+                                found = true;
+                                cellList[j].CellAvailable = false;
+                                selectedCells.Add(cellList[j]);
+                            }
                         }
+                    }// end of for loop
+                    if (!found)
+                    {
+                        currentPoly = polySquares[0];
+                        center = PolygonUtility.GetLowestAndHighestPointFromPoly(currentPoly)[0];
                     }
-                }// end of for loop
+                }// end of while loop
+
+                center = PolygonUtility.GetLowestAndHighestPointFromPoly(currentPoly)[1];
+
+
+            }// end of for loop         
+                            
+            // squares and its center
+            //int ptIndex = GraphicsUtility.FindClosestPointIndex(origSitePoly.Points, center);
+            //double dist = PointUtility.DistanceBetweenPoints(origSitePoly.Points[ptIndex], center);
+            //Polygon2d sqr = PolygonUtility.SquareByCenter(center, dist * 0.95);
+            //Polygon2d firstSqr = new Polygon2d(sqr.Points);
+           
+            //
+          
+         while (areaPlaced > fac * areaBuilding)
+         {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                /*s
+
+         
+           */
             }
-    
-    
+
+
             /*
             Dictionary<string, object> mergeObject = MergePoly(polyAdded, cellList);
             Polygon2d borderPoly = (Polygon2d)mergeObject["MergedPoly"];
@@ -668,7 +712,7 @@ namespace SpacePlanning
             */
             return new Dictionary<string, object>
             {
-                { "BuildingOutline", (sqr) },
+                { "BuildingOutline", (areaPartsList) },
                 { "SubdividedPolys", (center) },
                 { "SiteArea", (areaSite) },
                 { "BuildingOutlineArea", (areaPlaced) },
