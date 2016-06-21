@@ -361,6 +361,7 @@ namespace SpacePlanning
             int count = 0, maxTry = 100;
             poly = new Polygon2d(poly.Points);
             if (area == 0) area = 0.8 * PolygonUtility.AreaPolygon(poly);
+           // if (externalInclude) area = 0.25*area;
             Stack<Polygon2d> polyLeftList = new Stack<Polygon2d>();
             double areaAdded = 0, minLength = 200;
             polyLeftList.Push(poly);
@@ -370,6 +371,7 @@ namespace SpacePlanning
             List<Line2d> falseLines = new List<Line2d>();
             List<Line2d> lineOptions = new List<Line2d>();
             bool error = false;
+            int number = 4;
             while (polyLeftList.Count > 0 && areaAdded < area) //count<recompute count < maxTry
             {
                 error = false;
@@ -398,47 +400,9 @@ namespace SpacePlanning
                     }
                 }
                 if (error) break;
+                if (externalInclude && count > number) break;
                 //Trace.WriteLine("still inside while loop at assgineblocksbydistance");
             }// end of while loop
-
-
-            /*
-            //added to allow one more poly
-            bool spaceAvailable = false;
-            for (int i = 0; i < lineOptions.Count; i++) { if (lineOptions[i].Length > minLength) spaceAvailable = true; break; }
-
-            if (spaceAvailable && polyLeftList.Count > 0)
-            {
-                Polygon2d currentPoly = polyLeftList.Pop();
-                Polygon2d tempPoly = new Polygon2d(currentPoly.Points, 0);
-                Dictionary<string, object> splitObject = CreateBlocksByLines(currentPoly, poly, distance, thresDistance, externalIncude);
-                Trace.WriteLine("Well found that space is available");
-                if (splitObject != null)
-                {
-                    Polygon2d blockPoly = (Polygon2d)splitObject["PolyAfterSplit"];
-                    Polygon2d leftPoly = (Polygon2d)splitObject["LeftOverPoly"];
-                    lineOptions = (List<Line2d>)splitObject["LineOptions"];
-                    Dictionary<string, object> addPtObj = LayoutUtility.AddPointToFitPoly(leftPoly, poly, distance, thresDistance, recompute);
-                    leftPoly = (Polygon2d)addPtObj["PolyAddedPts"];
-                    falseLines = (List<Line2d>)addPtObj["FalseLineList"];
-                    pointAdd = (Point2d)addPtObj["PointAdded"];
-                    areaAdded += PolygonUtility.AreaPolygon(blockPoly);
-                    polyLeftList.Push(leftPoly);
-                    blockPolyList.Add(blockPoly);
-                    count += 1;
-                    if (lineOptions.Count == 0) error = true;
-                    else
-                    {
-                        for (int i = 0; i < lineOptions.Count; i++)
-                        {
-                            if (lineOptions[i].Length > thresDistance) { error = false; break; }
-                            else error = true;
-                        }
-                    }
-                    Trace.WriteLine("Succesfully assigned one extra");
-                } // end of if loop
-            }
-            */
 
 
             leftoverPolyList.AddRange(polyLeftList);

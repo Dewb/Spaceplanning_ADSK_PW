@@ -27,7 +27,7 @@ namespace SpacePlanning
         /// <search>
         /// Department Circulation Network, Shared Edges between departments
         /// </search>
-        public static List<Line2d> FindDeptCirculationNetwork(List<DeptData> deptData, Polygon2d leftOverPoly = null, double limit = 0)
+        public static List<Line2d> FindDeptCirculationNetwork(List<DeptData> deptData, Polygon2d leftOverPoly = null, double limit = 0, bool externalInclude = false)
         {
             if (deptData == null || deptData.Count == 0) return null;
             List<Polygon2d> polygonsAllDeptList = new List<Polygon2d>();
@@ -55,6 +55,22 @@ namespace SpacePlanning
                     Polygon2d polyB = polygonsAllDeptList[j];
                     Dictionary<string, object> checkNeighbor = PolygonUtility.FindPolyAdjacentEdge(polyA, polyB,limit);
                     if(checkNeighbor != null) if ((bool)checkNeighbor["Neighbour"] == true) networkLine.Add((Line2d)checkNeighbor["SharedEdge"]);     
+                }
+            }
+
+            // if externalWalls not necessary
+            if (externalInclude)
+            {
+                List<Polygon2d> polyKeyList= deptData[0].PolyAssignedToDept;
+                for (int i = 0; i < polyKeyList.Count; i++)
+                {
+                    Polygon2d polyA = polyKeyList[i];
+                    for (int j = i + 1; j < polyKeyList.Count; j++)
+                    {
+                        Polygon2d polyB = polyKeyList[j];
+                        Dictionary<string, object> checkNeighbor = PolygonUtility.FindPolyAdjacentEdge(polyA, polyB, limit);
+                        if (checkNeighbor != null) if ((bool)checkNeighbor["Neighbour"] == true) networkLine.Add((Line2d)checkNeighbor["SharedEdge"]);
+                    }
                 }
             }
             List<Line2d> cleanNetworkLines = LineUtility.RemoveDuplicateLines(networkLine);
