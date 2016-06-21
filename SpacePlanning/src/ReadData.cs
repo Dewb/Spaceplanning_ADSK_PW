@@ -36,7 +36,7 @@ namespace SpacePlanning
         /// <search>
         /// make data stack, dept data object, program data object
         /// </search>
-        public static List<DeptData> AutoMakeDataStack(double dimX, double dimY, double circulationFactor = 1, int caseStudy = 0, [ArbitraryDimensionArrayImport]string programDocumentPath = null)
+        public static List<DeptData> AutoMakeDataStack(double dim, double circulationFactor = 1, int caseStudy = 0, string programDocumentPath = "")
         {
             StreamReader reader;
             List<string> progIdList = new List<string>();
@@ -84,7 +84,7 @@ namespace SpacePlanning
                 List<string> adjList = new List<string>();
                 adjList.Add(values[6]);
                 ProgramData progData = new ProgramData(Convert.ToInt16(values[0]), values[1], values[2], Convert.ToInt16(values[3]),
-                    Convert.ToDouble(values[4]), Convert.ToInt16(values[6]), adjList, dummyCell, dimX, dimY); // prev multipled circulationfactor with unit area of prog
+                    Convert.ToDouble(values[4]), Convert.ToInt16(values[6]), adjList, dummyCell, dim, dim); // prev multipled circulationfactor with unit area of prog
                 programDataStack.Add(progData);
             }// end of for each statement
 
@@ -97,7 +97,7 @@ namespace SpacePlanning
                 for (int j = 0; j < programDataStack.Count; j++)
                     if (deptNames[i] == programDataStack[j].DeptName) progInDept.Add(programDataStack[j]);
                 List<ProgramData> programBasedOnQuanity = MakeProgramListBasedOnQuantity(progInDept);
-                deptDataStack.Add(new DeptData(deptNames[i], programBasedOnQuanity, circulationFactor, dimX, dimY));
+                deptDataStack.Add(new DeptData(deptNames[i], programBasedOnQuanity, circulationFactor, dim, dim));
             }// end of for loop statement
 
             //sort the depts by high area
@@ -123,130 +123,37 @@ namespace SpacePlanning
         /// <search>
         /// make site outline, site geometry.
         /// </search>
-        public static Geometry[] AutoMakeSiteOutline(int caseStudy =0)
+        public static Geometry[] AutoMakeSiteOutline(int caseStudy =0, string siteOutlinePath = "")
         {
-            Stream res;
-            if(caseStudy == 1) res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.siteMayo.sat");
-            else if (caseStudy == 2) res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.otherSite.sat");
-            else if (caseStudy == 3) res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.site3.sat");
-            else if (caseStudy == 4) res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.site4.sat");
-            else res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.ATORIGINDK.sat");
-            string saveTo = Path.GetTempFileName();
-            FileStream writeStream = new FileStream(saveTo, FileMode.Create, FileAccess.Write);
-
-            int Length = 256;
-            Byte[] buffer = new Byte[Length];
-            int bytesRead = res.Read(buffer, 0, Length);
-            while (bytesRead > 0)
+            string path;
+            if (siteOutlinePath == "")
             {
-                writeStream.Write(buffer, 0, bytesRead);
-                bytesRead = res.Read(buffer, 0, Length);
+                Stream res;
+                if (caseStudy == 1) res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.siteMayo.sat");
+                else if (caseStudy == 2) res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.otherSite.sat");
+                else if (caseStudy == 3) res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.site3.sat");
+                else if (caseStudy == 4) res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.site4.sat");
+                else res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.ATORIGINDK.sat");
+                path = Path.GetTempFileName();
+                FileStream writeStream = new FileStream(path, FileMode.Create, FileAccess.Write);
+
+                int Length = 256;
+                Byte[] buffer = new Byte[Length];
+                int bytesRead = res.Read(buffer, 0, Length);
+                while (bytesRead > 0)
+                {
+                    writeStream.Write(buffer, 0, bytesRead);
+                    bytesRead = res.Read(buffer, 0, Length);
+                }
+                writeStream.Close();               
             }
-            writeStream.Close();
-            return Geometry.ImportFromSAT(saveTo);
-        }
-
-        //read user input .csv file and make data stack
-        /// <summary>
-        /// Builds the data stack from the embedded program document.
-        /// Returns the Dept Data object
-        /// </summary>
-        /// <param name="path">Path of the input program document</param>
-        /// <param name="dimX">X axis dimension of the cell grid</param>
-        /// <param name="dimY">Y axis dimension of the cell grid</param>
-        /// <param name="circulationFactor">Multiplier to accomodate circulation spaces with the program</param>
-        /// <returns name="DataStackArray">Data Stack from the embedded .csv</returns>
-        /// <returns name="ProgramDataObject">Program Data Object containing information from the input .csv file</returns>
-        /// <returns name="DeptDataObject">Department Data Object containing information from the input .csv file</returns>
-        /// <search>
-        /// make data stack, embedded data
-        /// </search>
-        public static List<DeptData> MakeDataStack([ArbitraryDimensionArrayImport]string path, [ArbitraryDimensionArrayImport]double dimX, [ArbitraryDimensionArrayImport]double dimY, double circulationFactor = 1)
-        {
-
-            var reader = new StreamReader(File.OpenRead(@path));
-            List<string> progIdList = new List<string>();
-            List<string> programList = new List<string>();
-            List<string> deptNameList = new List<string>();
-            List<string> progQuantList = new List<string>();
-            List<string> areaEachProgList = new List<string>();
-            List<string> prefValProgList = new List<string>();
-            List<string> progAdjList = new List<string>();
-            List<List<string>> dataStack = new List<List<string>>();
-            List<ProgramData> programDataStack = new List<ProgramData>();
-
-            int readCount = 0;
-            while (!reader.EndOfStream)
-            {
-                var line = reader.ReadLine();
-                var values = line.Split(',');
-
-                if (readCount == 0) { readCount += 1; continue; }
-                progIdList.Add(values[0]);
-                programList.Add(values[1]);
-                deptNameList.Add(values[2]);
-                progQuantList.Add(values[3]);
-                double areaValue = Convert.ToDouble(values[4]) * circulationFactor;
-                areaEachProgList.Add(areaValue.ToString());
-                prefValProgList.Add(values[5]);
-                progAdjList.Add(values[6]);
-
-                Cell dummyC = new Cell(Point2d.ByCoordinates(0, 0), 0, 0, true);
-                List<Cell> dummyCell = new List<Cell>();
-                dummyCell.Add(dummyC);
-                List<string> adjList = new List<string>();
-                adjList.Add(values[6]);
-                ProgramData progData = new ProgramData(Convert.ToInt16(values[0]), values[1], values[2], Convert.ToInt16(values[3]),
-                    Convert.ToDouble(values[4]), Convert.ToInt16(values[5]), adjList, dummyCell, dimX, dimY);
-                programDataStack.Add(progData);
-            }
-
-            List<string> deptNames = GetDeptNames(deptNameList);
-            List<DeptData> deptDataStack = new List<DeptData>();
-            for (int i = 0; i < deptNames.Count; i++)
-            {
-                List<ProgramData> progInDept = new List<ProgramData>();
-                for (int j = 0; j < programDataStack.Count; j++) if (deptNames[i] == programDataStack[j].DeptName) progInDept.Add(programDataStack[j]);
-                deptDataStack.Add(new DeptData(deptNames[i], progInDept, circulationFactor, dimX, dimY));
-            }
-            dataStack.Add(progIdList);
-            dataStack.Add(programList);
-            dataStack.Add(deptNameList);
-            dataStack.Add(progQuantList);
-            dataStack.Add(areaEachProgList);
-            dataStack.Add(prefValProgList);
-            dataStack.Add(progAdjList);
-
-            //added to compute area percentage for each dept
-            double totalDeptArea = 0;
-            for (int i = 0; i < deptDataStack.Count; i++) totalDeptArea += deptDataStack[i].DeptAreaNeeded;
-            for (int i = 0; i < deptDataStack.Count; i++) deptDataStack[i].DeptAreaProportionNeeded = Math.Round((deptDataStack[i].DeptAreaNeeded / totalDeptArea),3);
-            return SortDeptData(deptDataStack);
-        }
-
-
-
-
-
-
-
-
-        //reads .sat file and returns nurbs geometry
-        /// <summary>
-        /// Reads the site outline from the input path to a .sat file
-        /// Returns list of nurbs curve as geometry representing site outline.
-        /// </summary>
-        /// <param name="path">Path of the input .sat file</param>
-        /// <returns name="nurbsGeometry">List of nurbs curve representing site outline</returns>
-        /// <search>
-        /// nurbs curve, site outline
-        /// </search>
-        public static Geometry[] MakeSiteOutline(string path)
-        {
+            else path = siteOutlinePath;          
             return Geometry.ImportFromSAT(path);
         }
 
-        //get point information from outline
+
+
+         //get point information from outline
         /// <summary>
         /// Retrieves and orders list of point2d geometry from the site outline. 
         /// Returns ordered point2d list geometry.

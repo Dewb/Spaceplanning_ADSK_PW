@@ -604,12 +604,12 @@ namespace SpacePlanning
         /// form maker, buildingoutline, orthogonal forms
         /// </search>
         [MultiReturn(new[] { "BuildingOutline","AreaOfParts", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells" })]
-        public static Dictionary<string, object> GrowForm(Polygon2d buildingOutline,
+        public static Dictionary<string, object> GrowForm(Polygon2d orthoSiteOutline,
             List<Cell> cellListInp,double groundCoverage = 0.5, int iteration = 100)
         {
             bool randomAllow = true, tag = true;
             if (cellListInp == null) return null;
-            if (!ValidateObject.CheckPoly(buildingOutline)) return null;
+            if (!ValidateObject.CheckPoly(orthoSiteOutline)) return null;
             List<Cell> cellList = cellListInp.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy           
             double eps = 0.05, fac = 0.95, ratio = 0.55, whole  = 1, prop = 0;
             int number = (int)BasicUtility.RandomBetweenNumbers(new Random(iteration), 2, 6);
@@ -618,7 +618,7 @@ namespace SpacePlanning
             if (groundCoverage < eps) groundCoverage = 2 * eps;
             if (groundCoverage > 0.8) groundCoverage = 0.8;
             //double groundCoverLow = groundCoverage - eps, groundCoverHigh = groundCoverage + eps;
-            double areaSite = PolygonUtility.AreaPolygon(buildingOutline), areaPlaced = 0;
+            double areaSite = PolygonUtility.AreaPolygon(orthoSiteOutline), areaPlaced = 0;
             double areaBuilding = groundCoverage * areaSite, areaLeft =0;
             List<double> areaPartsList = new List<double>();
             for (int i = 0; i < number; i++)
@@ -638,9 +638,9 @@ namespace SpacePlanning
             List<Cell> selectedCells = new List<Cell>();
             List<Polygon2d> polySquares = new List<Polygon2d>();
             List<Point2d> ptSquares = new List<Point2d>();
-            Polygon2d currentPoly = new Polygon2d(buildingOutline.Points);
-            Point2d center = PolygonUtility.CentroidOfPoly(buildingOutline);
-            if(randomAllow) center = PolygonUtility.PlaceRandomPointInsidePoly(buildingOutline, iteration);
+            Polygon2d currentPoly = new Polygon2d(orthoSiteOutline.Points);
+            Point2d center = PolygonUtility.CentroidOfPoly(orthoSiteOutline);
+            if(randomAllow) center = PolygonUtility.PlaceRandomPointInsidePoly(orthoSiteOutline, iteration);
 
 
 
@@ -664,7 +664,7 @@ namespace SpacePlanning
                         if (cellList[j].CellAvailable)
                         {
                             if (GraphicsUtility.PointInsidePolygonTest(currentPoly, cellList[j].CenterPoint) && 
-                                GraphicsUtility.PointInsidePolygonTest(buildingOutline, cellList[j].CenterPoint))
+                                GraphicsUtility.PointInsidePolygonTest(orthoSiteOutline, cellList[j].CenterPoint))
                             {
                                 found = true;
                                 cellList[j].CellAvailable = false;
@@ -706,7 +706,7 @@ namespace SpacePlanning
                         if (cellList[j].CellAvailable)
                         {
                             if (GraphicsUtility.PointInsidePolygonTest(currentPoly, cellList[j].CenterPoint) && 
-                                GraphicsUtility.PointInsidePolygonTest(buildingOutline, cellList[j].CenterPoint))
+                                GraphicsUtility.PointInsidePolygonTest(orthoSiteOutline, cellList[j].CenterPoint))
                             {
                                 found = true;
                                 cellList[j].CellAvailable = false;

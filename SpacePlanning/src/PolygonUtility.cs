@@ -609,7 +609,7 @@ namespace SpacePlanning
 
         //find if two polys are adjacent, and if yes, then returns the common edge between them
         [MultiReturn(new[] { "Neighbour", "SharedEdge" })]
-        public static Dictionary<string, object> FindPolyAdjacentEdge(Polygon2d polyA, Polygon2d polyB, double eps = 0)
+        internal static Dictionary<string, object> FindPolyAdjacentEdge(Polygon2d polyA, Polygon2d polyB, double eps = 0)
         {
             if (!ValidateObject.CheckPoly(polyA) || !ValidateObject.CheckPoly(polyB)) return null;
             Line2d joinedLine = null;
@@ -646,7 +646,7 @@ namespace SpacePlanning
 
         //find if two polys are adjacent, and if yes, then returns the common edge between them
         [MultiReturn(new[] { "Neighbour", "SharedEdge" })]
-        public static Dictionary<string, object> FindPolyAdjacentEdgeEdit(Polygon2d polyA, Polygon2d polyB, double eps = 0)
+        internal static Dictionary<string, object> FindPolyAdjacentEdgeEdit(Polygon2d polyA, Polygon2d polyB, double eps = 0)
         {
             if (!ValidateObject.CheckPoly(polyA) || !ValidateObject.CheckPoly(polyB)) return null;
             Line2d joinedLine = null;
