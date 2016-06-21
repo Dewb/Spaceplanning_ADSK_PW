@@ -53,7 +53,7 @@ namespace SpacePlanning
             int readCount = 0;
             Stream res;
             //string[] csvText = Properties.Resources.PROGRAMCSV.Split('\n'); 
-            if(caseStudy == 1)res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.MayoProgram.csv");
+            if(caseStudy == 1)res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.MayoProgram_1.csv");
             else res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.ProgramDocument.csv");
        
             StreamReader reader = new StreamReader(res);
