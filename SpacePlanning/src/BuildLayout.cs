@@ -47,7 +47,7 @@ namespace SpacePlanning
         /// </search>
         [MultiReturn(new[] { "UpdatedDeptData","LeftOverPolys", "CirculationPolys","OtherDeptMainPoly"})]
         public static Dictionary<string, object> PlaceDepartments(List<DeptData> deptData, Polygon2d buildingOutline,  double primaryDeptDepth, 
-            double acceptableWidth, double minNotchDistance = 20, double circulationFreq = 8, int recompute = 1, bool randomToggle = false)
+            double acceptableWidth, double minNotchDistance = 20, double circulationFreq = 8, int recompute = 1, bool externalWall = false)
         {           
             Dictionary<string, object> deptArrangement = new Dictionary<string, object>();
             double count = 0,eps = minNotchDistance;            
@@ -56,7 +56,7 @@ namespace SpacePlanning
             while(deptPlaced == false && count < MAXCOUNT)
             {
                 Trace.WriteLine("Lets arrange dept again : " + count);
-                deptArrangement = DeptPlacer(deptData, buildingOutline, primaryDeptDepth, acceptableWidth, minNotchDistance, circulationFreq, recompute);
+                deptArrangement = DeptPlacer(deptData, buildingOutline, primaryDeptDepth, acceptableWidth, minNotchDistance, circulationFreq, recompute,externalWall);
                 if(deptArrangement != null)
                 {
                     List<DeptData> deptDataUpdated =(List<DeptData>) deptArrangement["UpdatedDeptData"];
@@ -153,9 +153,7 @@ namespace SpacePlanning
                         break;
                     }
                     else dist = primaryProgramWidth;
-                    //int lineId = 0;
-                    //if (currentPoly.Lines[0].Length > currentPoly.Lines[1].Length) lineId = 1;
-                    //else lineId = 0;
+           
                     Dictionary<string, object> splitReturn = SplitObject.SplitByOffsetFromLine(currentPoly, lineId, dist, 10);
                     if(splitReturn != null)
                     {
@@ -352,14 +350,14 @@ namespace SpacePlanning
 
         //blocks are assigne based on offset distance, used for inpatient blocks
         [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly", "AreaAssignedToBlock", "FalseLines", "LineOptions", "PointAdded" })]
-        internal static Dictionary<string, object> AssignBlocksBasedOnDistance(Polygon2d poly, double distance = 16, double area = 0, double thresDistance = 10, double recompute = 5)
+        internal static Dictionary<string, object> AssignBlocksBasedOnDistance(Polygon2d poly, double distance = 16, double area = 0, double thresDistance = 10, double recompute = 5, bool externalInclude = false)
         {
 
             if (!ValidateObject.CheckPoly(poly)) return null;
             if (distance < 1) return null;
             Trace.WriteLine("assginblocks by distance in process");
-            bool externalInclude = false;
-            if (recompute > 5) externalInclude = true;
+            //bool externalInclude = false;
+            //if (recompute > 5) externalInclude = true;
             int count = 0, maxTry = 100;
             poly = new Polygon2d(poly.Points);
             if (area == 0) area = 0.8 * PolygonUtility.AreaPolygon(poly);
@@ -516,7 +514,7 @@ namespace SpacePlanning
         //dept assignment new way
         [MultiReturn(new[] { "UpdatedDeptData", "LeftOverPolys","CirculationPolys", "OtherDeptMainPoly" })]
         internal static Dictionary<string, object> DeptPlacer(List<DeptData> deptData, Polygon2d poly, double offset, 
-            double acceptableWidth = 20,double minNotchDist = 20, double circulationFreq = 10, double recompute = 5)
+            double acceptableWidth = 20,double minNotchDist = 20, double circulationFreq = 10, double recompute = 5, bool tag = false)
         {
             if (deptData == null) //|| !ValidateObject.CheckPoly(poly)
             {
@@ -540,13 +538,13 @@ namespace SpacePlanning
             {            
                 double areaAssigned = 0;
                 DeptData deptItem = deptData[i];
-                if (i == 0) // inpatient dept
+                if (i == 0) // key planning unit
                 {
                     //double areaNeeded = deptItem.DeptAreaNeeded;
                     double areaNeeded = deptItem.DeptAreaProportionNeeded * PolygonUtility.AreaPolygon(poly);
                     areaNeeded = 100000;
                     Trace.WriteLine("placing inpatients");
-                    Dictionary<string, object> inpatientObject = AssignBlocksBasedOnDistance(poly, offset, areaNeeded, 20, 30);
+                    Dictionary<string, object> inpatientObject = AssignBlocksBasedOnDistance(poly, offset, areaNeeded, 20, 30, tag);
                     if (inpatientObject == null) return null;
                     List<Polygon2d> inpatienBlocks = (List<Polygon2d>)inpatientObject["PolyAfterSplit"];
                     List<Polygon2d> leftOverBlocks = (List<Polygon2d>)inpatientObject["LeftOverPoly"];
