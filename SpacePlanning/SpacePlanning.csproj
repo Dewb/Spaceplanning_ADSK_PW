@@ -197,6 +197,12 @@
   <ItemGroup>
     <EmbeddedResource Include="src\Asset\otherSite.sat" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="src\Asset\site3.sat" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="src\Asset\site4.sat" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
