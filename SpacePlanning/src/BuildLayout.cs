@@ -661,8 +661,7 @@ namespace SpacePlanning
                     if (leftOverPoly == null) break;
                 }
 
-                if (i > 0) // other depts
-                {
+                
                     double areaFactor = deptItem.DeptAreaProportionNeeded / totalDeptProp;
                     Dictionary<string, object> assignedByRatioObj = AssignBlocksBasedOnRatio(areaFactor, areaAvailable, leftOverPoly, acceptableWidth, 0.5);
                     List<Polygon2d> everyDeptPoly = (List<Polygon2d>)assignedByRatioObj["DeptPoly"];
@@ -671,7 +670,7 @@ namespace SpacePlanning
                     List<Node> AllNodesList = (List<Node>)assignedByRatioObj["AllNodes"];
                     AllDeptAreaAdded.Add(areaAssigned);
                     AllDeptPolys.Add(everyDeptPoly);
-                }
+                
             }
             //clean dept polys based on their fitness
             for (int i = 0; i < AllDeptPolys.Count; i++) AllDeptPolys[i] = ValidateObject.CheckAndCleanPolygon2dList(AllDeptPolys[i]);

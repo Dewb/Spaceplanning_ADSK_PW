@@ -54,6 +54,7 @@ namespace SpacePlanning
             Stream res;
             //string[] csvText = Properties.Resources.PROGRAMCSV.Split('\n'); 
             if(caseStudy == 1)res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.MayoProgram_1.csv");
+            if (caseStudy == 2) res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.OtherProgram.csv");
             else res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.ProgramDocument.csv");
        
             StreamReader reader = new StreamReader(res);
@@ -117,8 +118,9 @@ namespace SpacePlanning
         public static Geometry[] AutoMakeSiteOutline(int caseStudy =0)
         {
             Stream res;
-            if(caseStudy == 0) res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.ATORIGINDK.sat");
-            else res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.siteMayo.sat");
+            if(caseStudy == 1) res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.siteMayo.sat");
+            else if (caseStudy == 2) res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.otherSite.sat");
+            else res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.ATORIGINDK.sat");
             string saveTo = Path.GetTempFileName();
             FileStream writeStream = new FileStream(saveTo, FileMode.Create, FileAccess.Write);
 
