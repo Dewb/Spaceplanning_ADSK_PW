@@ -314,14 +314,14 @@ namespace SpacePlanning
         /// <param name="polyOutline">Polygon2d as the border outline.</param>
         /// <param name="dim">Dimension of the cell object in X and Y direction.</param>
         /// <param name="tag">Boolean item to activate two separate modes of calculation.</param>
-        /// <returns name="BorderPolyLine">Polygon2d representing orthogonal poly outline.</returns>
+        /// <returns name="OrthoSiteOutline">Polygon2d representing orthogonal poly outline.</returns>
         /// <returns name="BorderCellsFound">Cell objects at the border of the outline.</returns>  
         /// <returns name="CellNeighborMatrix">Cell NeighborMatrix object.</returns> 
         /// <returns name="SortedCells">Sorted cell objects.</returns> 
         /// <search>
         /// bordercells, cellneighbormatrix
         /// </search>
-        [MultiReturn(new[] { "BorderPolyLine", "BorderCellsFound","CellNeighborMatrix", "SortedCells"})]
+        [MultiReturn(new[] { "OrthoSiteOutline", "BorderCellsFound","CellNeighborMatrix", "SortedCells"})]
         public static Dictionary<string, object> BorderAndCellNeighborMatrix(Polygon2d polyOutline, double dim, int iteration = 100 )
         {
             double proportion = 0.75;
@@ -357,7 +357,7 @@ namespace SpacePlanning
            
             return new Dictionary<string, object>
             {
-                { "BorderPolyLine", (borderPoly) },
+                { "OrthoSiteOutline", (borderPoly) },
                 { "BorderCellsFound", (cellsFound) },
                 { "CellNeighborMatrix", (cellNeighborMatrix) },
                 { "SortedCells", (sortedCells) }
@@ -384,7 +384,7 @@ namespace SpacePlanning
         /// form maker, buildingoutline, orthogonal forms
         /// </search>
         [MultiReturn(new[] { "BuildingOutline","WholesomePolys", "SiteArea" , "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells" })]
-        public static Dictionary<string, object> FormMakeInSite(Polygon2d borderPolyInp, Polygon2d origSitePoly, 
+        internal static Dictionary<string, object> FormMakeInSite(Polygon2d borderPolyInp, Polygon2d origSitePoly, 
             List<Cell> cellList,double groundCoverage = 0.5, int iteration = 100, double notchDist = 10, bool randomToggle = false, bool notchToggle = true)
         {
             if (cellList == null) return null;
@@ -586,40 +586,24 @@ namespace SpacePlanning
         }
 
         //makes orhtogonal form as polygon2d based on input ground coverage
-        /// <summary>
-        /// Builds the building outline form based on input site outline and ground coverage
-        /// </summary>
-        /// <param name="borderPoly">Orthogonal border polygon2d of the site outline</param>
-        /// <param name="origSitePoly">Original polygon2d of the site outline</param>
-        /// <param name="cellList">List of cell objects inside the site</param>
-        /// <param name="groundCoverage">Expected ground coverage, value between 0.2 to 0.8</param>
-        /// <param name="iteration">Number of times the node should iterate untill it retreives form satisfying ground coverage.</param>
-        /// <returns name="BuildingOutline">Polygon2d representing orthogonal poly outline.</returns>
-        /// <returns name="WholesomePolys">List of Polygon2d each wholesame having four sides.</returns>  
-        /// <returns name="SiteArea">Area of the site outline.</returns> 
-        /// <returns name="BuildingOutlineArea">Area of the building outline formed.</returns> 
-        /// <returns name="GroundCoverAchieved">Ground coverage achieved, value between 0.2 to 0.8.</returns> 
-        /// <returns name="SortedCells">Sorted cell objects.</returns> 
-        /// <search>
-        /// form maker, buildingoutline, orthogonal forms
-        /// </search>
-        [MultiReturn(new[] { "BuildingOutline","AreaOfParts", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells" })]
-        public static Dictionary<string, object> GrowForm(Polygon2d orthoSiteOutline,
-            List<Cell> cellListInp,double groundCoverage = 0.5, int iteration = 100)
+
+     
+        [MultiReturn(new[] { "BuildingOutline", "AreaOfParts", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells", "CellNeighborMatrix"})]
+        public static Dictionary<string, object> FormBuildingOutline(Polygon2d orthoSiteOutline, List<Cell> cellListInp, double groundCoverage = 0.5, int iteration = 100)
         {
             bool randomAllow = true, tag = true;
             if (cellListInp == null) return null;
             if (!ValidateObject.CheckPoly(orthoSiteOutline)) return null;
             List<Cell> cellList = cellListInp.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy           
-            double eps = 0.05, fac = 0.95, ratio = 0.55, whole  = 1, prop = 0;
+            double eps = 0.05, fac = 0.95, ratio = 0.55, whole = 1, prop = 0;
             int number = (int)BasicUtility.RandomBetweenNumbers(new Random(iteration), 2, 6);
-            int count = 0,dir=0;
+            int count = 0, dir = 0;
 
             if (groundCoverage < eps) groundCoverage = 2 * eps;
             if (groundCoverage > 0.8) groundCoverage = 0.8;
             //double groundCoverLow = groundCoverage - eps, groundCoverHigh = groundCoverage + eps;
             double areaSite = PolygonUtility.AreaPolygon(orthoSiteOutline), areaPlaced = 0;
-            double areaBuilding = groundCoverage * areaSite, areaLeft =0;
+            double areaBuilding = groundCoverage * areaSite, areaLeft = 0;
             List<double> areaPartsList = new List<double>();
             for (int i = 0; i < number; i++)
             {
@@ -640,7 +624,7 @@ namespace SpacePlanning
             List<Point2d> ptSquares = new List<Point2d>();
             Polygon2d currentPoly = new Polygon2d(orthoSiteOutline.Points);
             Point2d center = PolygonUtility.CentroidOfPoly(orthoSiteOutline);
-            if(randomAllow) center = PolygonUtility.PlaceRandomPointInsidePoly(orthoSiteOutline, iteration);
+            if (randomAllow) center = PolygonUtility.PlaceRandomPointInsidePoly(orthoSiteOutline, iteration);
 
 
 
@@ -648,12 +632,12 @@ namespace SpacePlanning
             {
                 count = 0;
                 bool found = false;
-                dir = 0; 
+                dir = 0;
                 double dist = Math.Sqrt(areaPartsList[i]);
                 if (i > 0) center = PolygonUtility.FindPointOnPolySide(currentPoly, 0, dist / 2);
                 Trace.WriteLine("++++++++++++++++++++++++++ : " + i);
                 while (!found && count < 200)
-                {              
+                {
                     count += 1;
                     Trace.WriteLine("lets place square again : " + count);
                     currentPoly = PolygonUtility.SquareByCenter(center, dist);
@@ -663,7 +647,7 @@ namespace SpacePlanning
                     {
                         if (cellList[j].CellAvailable)
                         {
-                            if (GraphicsUtility.PointInsidePolygonTest(currentPoly, cellList[j].CenterPoint) && 
+                            if (GraphicsUtility.PointInsidePolygonTest(currentPoly, cellList[j].CenterPoint) &&
                                 GraphicsUtility.PointInsidePolygonTest(orthoSiteOutline, cellList[j].CenterPoint))
                             {
                                 found = true;
@@ -675,7 +659,7 @@ namespace SpacePlanning
                     if (!found && dir < 4)
                     {
                         currentPoly = polySquares[0];
-                        center = PolygonUtility.FindPointOnPolySide(currentPoly, dir, dist/2);
+                        center = PolygonUtility.FindPointOnPolySide(currentPoly, dir, dist / 2);
                         dir += 1;
                         Trace.WriteLine("Found is  : " + found + "   Direction toggled to : " + dir);
                     }
@@ -705,7 +689,7 @@ namespace SpacePlanning
                     {
                         if (cellList[j].CellAvailable)
                         {
-                            if (GraphicsUtility.PointInsidePolygonTest(currentPoly, cellList[j].CenterPoint) && 
+                            if (GraphicsUtility.PointInsidePolygonTest(currentPoly, cellList[j].CenterPoint) &&
                                 GraphicsUtility.PointInsidePolygonTest(orthoSiteOutline, cellList[j].CenterPoint))
                             {
                                 found = true;
@@ -742,7 +726,8 @@ namespace SpacePlanning
                 { "LeftOverArea", (areaLeft) },
                 { "BuildingOutlineArea", (areaPlaced) },
                 { "GroundCoverAchieved", (areaPlaced/areaSite) },
-                { "SortedCells", (selectedCells)}
+                { "SortedCells", (selectedCells)},
+                { "CellNeighborMatrix", (cellNeighborMatrix) }
             };
         }
 

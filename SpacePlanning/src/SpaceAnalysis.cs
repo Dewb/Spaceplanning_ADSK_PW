@@ -278,7 +278,102 @@ namespace SpacePlanning
             };
         }
 
+        //scores the space plan layout. currently there are four individual scores and total score is the summation of them.
+        /// <summary>
+        /// Scores the space plan layout based on four key metrics, program fitness score, external view score, travel distance score, percentage of key planning units score.
+        /// </summary>
+        /// <param name="deptData">Department data object.</param>
+        /// <param name="primaryProgPoly">Primary program element polygon2d list.</param>
+        /// <param name="cellList">List of cell objects for the building outline.</param>
+        /// <param name="siteArea">Area of the site.</param>
+        /// <param name="programFitWeight">User assigned weight for program fitness score.</param>
+        /// <param name="extViewWeight">User assigned weight for external view score.</param>
+        /// <param name="traveDistWeight">User assigned weight for travel distance score.</param>
+        /// <param name="percKPUWeight">User assigned weight for percentage of key planning units score.</param>
+        /// <returns name="TotalScore">Total score of the space plan layout.</returns>
+        /// <returns name="ProgramFitScore">Program fitness score of the space plan layout.</returns>
+        /// <returns name="ExtViewKPUScore">External view score of the space plan layout.</returns>
+        /// <returns name="TravelDistanceScore">Travel distance score of the space plan layout.</returns>
+        /// <returns name="PercentageKPUScore">Percentage KPU score of the space plan layout.</returns>
+        /// <returns name="InpatientDeptData">Department data of primary department.</returns>
+        /// <search>
+        /// space plane scoring, space plan metrics
+        /// </search>
+       
+        public static List<List<string>> CellDataExport(List<DeptData> deptData, List<Cell> cellList, List<List<int>> cellNeighborMatrix)
+        {
+            if (deptData == null) return null;
+            if (cellList == null) return null;
 
+            List<List<string>> dataToWriteList = new List<List<string>>();
+            List<string> cellStrings = new List<string>();
+            cellStrings.Add("CELL ID");
+            cellStrings.Add("CELL TYPE");
+            cellStrings.Add("PRORGAM ASSIGNED");
+            cellStrings.Add("DEPT ASSIGNED");
+            cellStrings.Add("CELL AVAILABILITY");
+            dataToWriteList.Add(cellStrings);
+
+            List<Polygon2d> polyList = new List<Polygon2d>();
+            List<string> progrNameList = new List<string>(), deptNameList = new List<string>();
+            for (int i = 0; i < deptData.Count; i++)
+            {
+                for (int j = 0; j < deptData[i].ProgramsInDept.Count; j++)
+                {
+                    polyList.AddRange(deptData[i].ProgramsInDept[j].PolyAssignedToProg);
+                    progrNameList.Add(deptData[i].ProgramsInDept[j].ProgramName);
+                    deptNameList.Add(deptData[i].DepartmentName);
+                }
+            }
+
+            List<Polygon2d> polyListinCell = new List<Polygon2d>();
+            List<string> progrNameListinCell = new List<string>(), deptNameListinCell = new List<string>();
+            List<string> cellIdList = new List<string>(), cellTypeList = new List<string>(), cellAvailList = new List<string>();
+            for (int i = 0; i < cellList.Count; i++)
+            {
+                List<int> neighborCells = cellNeighborMatrix[i];
+                neighborCells.RemoveAll(s => s == -1);
+                for (int j =0;j< polyList.Count; j++)
+                {
+                    if (GraphicsUtility.PointInsidePolygonTest(polyList[j], cellList[i].LeftDownCorner))
+                    {
+                        progrNameListinCell.Add(progrNameList[j]);
+                        deptNameListinCell.Add(deptNameList[j]);
+                        cellIdList.Add(i.ToString());
+                        if (neighborCells.Count == 2) cellTypeList.Add("CornerCell");
+                        else if (neighborCells.Count == 3) cellTypeList.Add("EdgeCell");
+                        else  cellTypeList.Add("CoreCell");
+                        cellList[i].CellAvailable = false;
+                        cellAvailList.Add("False");
+                        break;
+                    }             
+                }
+
+                //cell not inside any prorgam
+                progrNameListinCell.Add("Not Assigned");
+                deptNameListinCell.Add("Not Assigned");
+                cellIdList.Add(i.ToString());
+                if (neighborCells.Count == 2) cellTypeList.Add("CornerCell");
+                else if (neighborCells.Count == 3) cellTypeList.Add("EdgeCell");
+                else cellTypeList.Add("CoreCell");
+                cellList[i].CellAvailable = true;
+                cellAvailList.Add("True");
+            }
+
+            for(int i = 0; i < cellList.Count; i++)
+            {
+                cellStrings = new List<string>();
+                cellStrings.Add(cellIdList[i]);
+                cellStrings.Add(cellTypeList[i]);
+                cellStrings.Add(progrNameListinCell[i]);
+                cellStrings.Add(deptNameListinCell[i]);
+                cellStrings.Add(cellAvailList[i]);
+                dataToWriteList.Add(cellStrings);
+            }
+            return dataToWriteList;
+        }
+
+ 
         //exports data to excel
         public static List<List<string>>WriteProgramDataToExcel(List<ProgramData> progDataList)
         {
