@@ -322,8 +322,9 @@ namespace SpacePlanning
         /// bordercells, cellneighbormatrix
         /// </search>
         [MultiReturn(new[] { "BorderPolyLine", "BorderCellsFound","CellNeighborMatrix", "SortedCells"})]
-        public static Dictionary<string, object> BorderAndCellNeighborMatrix(Polygon2d polyOutline, double dim,int iterationCount = 100, double proportion = 0.75)
+        public static Dictionary<string, object> BorderAndCellNeighborMatrix(Polygon2d polyOutline, double dim, int iteration = 100 )
         {
+            double proportion = 0.75;
             if (!ValidateObject.CheckPoly(polyOutline)) return null;
             Dictionary<string, object> borderObject = new Dictionary<string, object>();
             Polygon2d borderPoly = new Polygon2d(null);
@@ -333,7 +334,7 @@ namespace SpacePlanning
             double dimAdjusted = dim, areaPoly = PolygonUtility.AreaPolygon(polyOutline), eps = 0.01;
             bool checkOut = false;
             int count = 0;
-            while (!checkOut && count < iterationCount)
+            while (!checkOut && count < iteration)
             {
                 count += 1;
                 List<Cell> cellsInside = CellsInsidePoly(polyOutline.Points, dimAdjusted);
@@ -456,7 +457,7 @@ namespace SpacePlanning
         /// form maker, buildingoutline, orthogonal forms
         /// </search>
         [MultiReturn(new[] { "BuildingOutline", "SiteArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells" })]
-        public static Dictionary<string, object> MakeBuildingOutline(Polygon2d origSitePoly,
+        internal static Dictionary<string, object> MakeBuildingOutline(Polygon2d origSitePoly,
             List<Cell> cellList, double groundCoverage = 0.5, int iteration = 100)
         {
             if (cellList == null) return null;
@@ -514,7 +515,7 @@ namespace SpacePlanning
         /// form maker, buildingoutline, orthogonal forms
         /// </search>
         [MultiReturn(new[] { "BuildingOutline", "SubdividedPolys", "SiteArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells" })]
-        public static Dictionary<string, object> PlaceFormOnSite(Polygon2d origSitePoly,
+        internal static Dictionary<string, object> PlaceFormOnSite(Polygon2d origSitePoly,
             List<Cell> cellListInp, double acceptableWidth = 12, double groundCoverage = 0.5, int iteration = 100)
         {
             if (cellListInp == null) return null;
@@ -603,21 +604,21 @@ namespace SpacePlanning
         /// form maker, buildingoutline, orthogonal forms
         /// </search>
         [MultiReturn(new[] { "BuildingOutline","AreaOfParts", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells" })]
-        public static Dictionary<string, object> GrowForm(Polygon2d origSitePoly,
-            List<Cell> cellListInp, int hold = 4, double groundCoverage = 0.5, int iteration = 100, bool tag = true, bool randomAllow = true)
+        public static Dictionary<string, object> GrowForm(Polygon2d buildingOutline,
+            List<Cell> cellListInp,double groundCoverage = 0.5, int iteration = 100)
         {
+            bool randomAllow = true, tag = true;
             if (cellListInp == null) return null;
-            if (!ValidateObject.CheckPoly(origSitePoly)) return null;
+            if (!ValidateObject.CheckPoly(buildingOutline)) return null;
             List<Cell> cellList = cellListInp.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy           
             double eps = 0.05, fac = 0.95, ratio = 0.55, whole  = 1, prop = 0;
-            int number = (int)BasicUtility.RandomBetweenNumbers(new Random(), 2, 8);
-            number = hold;
+            int number = (int)BasicUtility.RandomBetweenNumbers(new Random(iteration), 2, 6);
             int count = 0,dir=0;
 
             if (groundCoverage < eps) groundCoverage = 2 * eps;
             if (groundCoverage > 0.8) groundCoverage = 0.8;
             //double groundCoverLow = groundCoverage - eps, groundCoverHigh = groundCoverage + eps;
-            double areaSite = PolygonUtility.AreaPolygon(origSitePoly), areaPlaced = 0;
+            double areaSite = PolygonUtility.AreaPolygon(buildingOutline), areaPlaced = 0;
             double areaBuilding = groundCoverage * areaSite, areaLeft =0;
             List<double> areaPartsList = new List<double>();
             for (int i = 0; i < number; i++)
@@ -637,9 +638,9 @@ namespace SpacePlanning
             List<Cell> selectedCells = new List<Cell>();
             List<Polygon2d> polySquares = new List<Polygon2d>();
             List<Point2d> ptSquares = new List<Point2d>();
-            Polygon2d currentPoly = new Polygon2d(origSitePoly.Points);
-            Point2d center = PolygonUtility.CentroidOfPoly(origSitePoly);
-            if(randomAllow) center = PolygonUtility.PlaceRandomPointInsidePoly(origSitePoly);
+            Polygon2d currentPoly = new Polygon2d(buildingOutline.Points);
+            Point2d center = PolygonUtility.CentroidOfPoly(buildingOutline);
+            if(randomAllow) center = PolygonUtility.PlaceRandomPointInsidePoly(buildingOutline, iteration);
 
 
 
@@ -663,7 +664,7 @@ namespace SpacePlanning
                         if (cellList[j].CellAvailable)
                         {
                             if (GraphicsUtility.PointInsidePolygonTest(currentPoly, cellList[j].CenterPoint) && 
-                                GraphicsUtility.PointInsidePolygonTest(origSitePoly, cellList[j].CenterPoint))
+                                GraphicsUtility.PointInsidePolygonTest(buildingOutline, cellList[j].CenterPoint))
                             {
                                 found = true;
                                 cellList[j].CellAvailable = false;
@@ -705,7 +706,7 @@ namespace SpacePlanning
                         if (cellList[j].CellAvailable)
                         {
                             if (GraphicsUtility.PointInsidePolygonTest(currentPoly, cellList[j].CenterPoint) && 
-                                GraphicsUtility.PointInsidePolygonTest(origSitePoly, cellList[j].CenterPoint))
+                                GraphicsUtility.PointInsidePolygonTest(buildingOutline, cellList[j].CenterPoint))
                             {
                                 found = true;
                                 cellList[j].CellAvailable = false;
@@ -732,13 +733,6 @@ namespace SpacePlanning
             Dictionary<string, object> borderObject = CreateBorder(cellNeighborMatrix, selectedCellsCopy, true, true);
             Polygon2d borderPoly = (Polygon2d)borderObject["BorderPolyLine"];
 
-
-            /*
-            Dictionary<string, object> mergeObject = MergePoly(polyAdded, cellList);
-            Polygon2d borderPoly = (Polygon2d)mergeObject["MergedPoly"];
-            List<Cell> sortedCells = (List<Cell>)mergeObject["SortedCells"];
-            borderPoly = new Polygon2d(borderPoly.Points);
-            */
             return new Dictionary<string, object>
             {
                 { "BuildingOutline", (borderPoly) },
@@ -772,7 +766,7 @@ namespace SpacePlanning
         /// form maker, buildingoutline, orthogonal forms
         /// </search>
         [MultiReturn(new[] { "BuildingOutline", "SiteArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells" })]
-        public static Dictionary<string, object> MakeBuildingOutline2(Polygon2d origSitePoly,
+        internal static Dictionary<string, object> MakeBuildingOutline2(Polygon2d origSitePoly,
             List<Cell> cellList, List<List<int>> cellNeighborMatrixInp, double groundCoverage = 0.5, int iteration = 100)
         {
             if (cellList == null) return null;
@@ -877,7 +871,7 @@ namespace SpacePlanning
         /// form maker, buildingoutline, orthogonal forms
         /// </search>
         [MultiReturn(new[] { "BuildingOutline","SelectedPolygons", "SiteArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells" })]
-        public static Dictionary<string, object> MakeFormBasedOnSplits(Polygon2d origSitePoly,
+        internal static Dictionary<string, object> MakeFormBasedOnSplits(Polygon2d origSitePoly,
             List<Cell> cellList, double acceptableWidth = 10, double groundCoverage = 0.5, int iteration = 100)
         {
             if (cellList == null) return null;

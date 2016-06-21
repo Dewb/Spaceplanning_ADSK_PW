@@ -44,9 +44,9 @@ namespace SpacePlanning
         }
 
         //returns a random object
-        public static Random RandomMaker()
+        public static Random RandomMaker(int seed =0)
         {
-            return new Random();
+            return new Random(seed);
         }
 
         //sorts input list of double and returns the indices 

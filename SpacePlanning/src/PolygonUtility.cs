@@ -609,7 +609,7 @@ namespace SpacePlanning
 
         //find if two polys are adjacent, and if yes, then returns the common edge between them
         [MultiReturn(new[] { "Neighbour", "SharedEdge" })]
-        internal static Dictionary<string, object> FindPolyAdjacentEdge(Polygon2d polyA, Polygon2d polyB, double eps = 0)
+        public static Dictionary<string, object> FindPolyAdjacentEdge(Polygon2d polyA, Polygon2d polyB, double eps = 0)
         {
             if (!ValidateObject.CheckPoly(polyA) || !ValidateObject.CheckPoly(polyB)) return null;
             Line2d joinedLine = null;
@@ -634,6 +634,56 @@ namespace SpacePlanning
                         isNeighbour = true;
                         break;
                     }
+                }
+            }
+            return new Dictionary<string, object>
+            {
+                { "Neighbour", (isNeighbour) },
+                { "SharedEdge", (joinedLine) }
+            };
+
+        }
+
+        //find if two polys are adjacent, and if yes, then returns the common edge between them
+        [MultiReturn(new[] { "Neighbour", "SharedEdge" })]
+        public static Dictionary<string, object> FindPolyAdjacentEdgeEdit(Polygon2d polyA, Polygon2d polyB, double eps = 0)
+        {
+            if (!ValidateObject.CheckPoly(polyA) || !ValidateObject.CheckPoly(polyB)) return null;
+            Line2d joinedLine = null;
+            bool isNeighbour = false;
+            Polygon2d polyAReg = new Polygon2d(polyA.Points);
+            Polygon2d polyBReg = new Polygon2d(polyB.Points);
+
+            for (int i = 0; i < polyAReg.Points.Count; i++)
+            {
+                int a = i + 1;
+                if (i == polyAReg.Points.Count - 1) a = 0;
+                Line2d lineA = new Line2d(polyAReg.Points[i], polyAReg.Points[a]);
+                for (int j = 0; j < polyBReg.Points.Count; j++)
+                {
+                    int b = j + 1;
+                    if (j == polyBReg.Points.Count - 1) b = 0;
+                    Line2d lineB = new Line2d(polyBReg.Points[j], polyBReg.Points[b]);
+                    if(lineA.StartPoint.Compare(lineB.StartPoint) && lineA.EndPoint.Compare(lineB.EndPoint))
+                    {
+                        joinedLine = lineA;
+                        isNeighbour = true;
+                    }
+                    else if (lineA.EndPoint.Compare(lineB.StartPoint) && lineA.StartPoint.Compare(lineB.EndPoint))
+                    {
+                        joinedLine = lineB;
+                        isNeighbour = true;
+                    }
+                   /* bool checkAdj = GraphicsUtility.LineAdjacencyCheck(lineA, lineB, eps);
+                    if (checkAdj)
+                    {
+                        if (lineA.Length > lineB.Length) joinedLine = lineA;
+                        else joinedLine = lineB;
+                        //joinedLine = GraphicsUtility.JoinCollinearLines(lineA, lineB);
+                        isNeighbour = true;
+                        break;
+                    }
+                    */
                 }
             }
             return new Dictionary<string, object>
@@ -686,15 +736,16 @@ namespace SpacePlanning
         }
 
         //places a point randomly inside a poly | padding should be between 0.2 to 1.0
-        public static Point2d PlaceRandomPointInsidePoly(Polygon2d poly, double pad=1)
+        public static Point2d PlaceRandomPointInsidePoly(Polygon2d poly, int seed = 1)
         {
             if (!ValidateObject.CheckPoly(poly)) return null;
             Point2d centerFound = new Point2d(0, 0);
             List<Point2d> lowAndHighPt = GetLowestAndHighestPointFromPoly(poly);
             Point2d low = lowAndHighPt[0];
             Point2d high = lowAndHighPt[1];
-            double x = BasicUtility.RandomBetweenNumbers(new Random(), high.X, low.X);
-            double y = BasicUtility.RandomBetweenNumbers(new Random(), high.Y, low.Y);
+            Random rnd = new Random(seed);
+            double x = BasicUtility.RandomBetweenNumbers(rnd, high.X, low.X);
+            double y = BasicUtility.RandomBetweenNumbers(rnd, high.Y, low.Y);
             return new Point2d(x, y);       
         }
 

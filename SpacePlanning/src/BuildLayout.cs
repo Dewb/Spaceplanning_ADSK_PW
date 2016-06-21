@@ -47,16 +47,17 @@ namespace SpacePlanning
         /// </search>
         [MultiReturn(new[] { "UpdatedDeptData","LeftOverPolys", "CirculationPolys","OtherDeptMainPoly"})]
         public static Dictionary<string, object> PlaceDepartments(List<DeptData> deptData, Polygon2d buildingOutline,  double primaryDeptDepth, 
-            double acceptableWidth, double minNotchDistance = 20, double circulationFreq = 8, int recompute = 1, bool externalWall = false, bool keyPlanUnit = true)
+            double acceptableWidth,double circulationFreq = 8, int iteration = 1, bool noExternalWall = false )
         {           
             Dictionary<string, object> deptArrangement = new Dictionary<string, object>();
-            double count = 0,eps = minNotchDistance;            
+            double count = 0,eps = 5;            
             Random rand = new Random();
             bool deptPlaced = false;
-            while(deptPlaced == false && count < MAXCOUNT)
+            bool keyPlanUnit = true;
+            while (deptPlaced == false && count < MAXCOUNT)
             {
                 Trace.WriteLine("Lets arrange dept again : " + count);
-                deptArrangement = DeptPlacer(deptData, buildingOutline, primaryDeptDepth, acceptableWidth, minNotchDistance, circulationFreq, recompute,externalWall, keyPlanUnit);
+                deptArrangement = DeptPlacer(deptData, buildingOutline, primaryDeptDepth, acceptableWidth, circulationFreq, iteration, noExternalWall);
                 if(deptArrangement != null)
                 {
                     List<DeptData> deptDataUpdated =(List<DeptData>) deptArrangement["UpdatedDeptData"];
@@ -350,7 +351,7 @@ namespace SpacePlanning
 
         //blocks are assigne based on offset distance, used for inpatient blocks
         [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly", "AreaAssignedToBlock", "FalseLines", "LineOptions", "PointAdded" })]
-        internal static Dictionary<string, object> AssignBlocksBasedOnDistance(Polygon2d poly, double distance = 16, double area = 0, double thresDistance = 10, double recompute = 5, bool externalInclude = false)
+        internal static Dictionary<string, object> AssignBlocksBasedOnDistance(Polygon2d poly, double distance = 16, double area = 0, double thresDistance = 10, int recompute = 5, bool externalInclude = false)
         {
 
             if (!ValidateObject.CheckPoly(poly)) return null;
@@ -371,7 +372,8 @@ namespace SpacePlanning
             List<Line2d> falseLines = new List<Line2d>();
             List<Line2d> lineOptions = new List<Line2d>();
             bool error = false;
-            int number = 4;
+            //int number = 4;
+            int number = (int)BasicUtility.RandomBetweenNumbers(new Random(recompute), 7, 4);
             while (polyLeftList.Count > 0 && areaAdded < area) //count<recompute count < maxTry
             {
                 error = false;
@@ -478,19 +480,21 @@ namespace SpacePlanning
         //dept assignment new way
         [MultiReturn(new[] { "UpdatedDeptData", "LeftOverPolys", "CirculationPolys", "OtherDeptMainPoly" })]
         internal static Dictionary<string, object> DeptPlacer(List<DeptData> deptData, Polygon2d poly, double offset,
-            double acceptableWidth = 20, double minNotchDist = 20, double circulationFreq = 10, double recompute = 5, bool tag = false, bool keyPlanUnit = true)
+            double acceptableWidth = 20, double circulationFreq = 10, int recompute = 5, bool tag = false)
         {
+            bool keyPlanUnit = true;
             if (deptData == null) { Trace.WriteLine("Null found poly or deptdata"); return null; }                        
-            if (!keyPlanUnit) return DeptPlacerNoKeyPlanUnit(deptData, poly, offset, acceptableWidth, minNotchDist, circulationFreq, recompute, tag);
-            else return DeptPlacerKeyPlanUnit(deptData, poly, offset, acceptableWidth, minNotchDist, circulationFreq, recompute, tag);           
+            if (!keyPlanUnit) return DeptPlacerNoKeyPlanUnit(deptData, poly, offset, acceptableWidth, circulationFreq, recompute, tag);
+            else return DeptPlacerKeyPlanUnit(deptData, poly, offset, acceptableWidth, circulationFreq, recompute, tag);           
         }
 
 
         //dept assignment new way
         [MultiReturn(new[] { "UpdatedDeptData", "LeftOverPolys", "CirculationPolys", "OtherDeptMainPoly" })]
         internal static Dictionary<string, object> DeptPlacerKeyPlanUnit(List<DeptData> deptData, Polygon2d poly, double offset,
-            double acceptableWidth = 20, double minNotchDist = 20, double circulationFreq = 10, double recompute = 5, bool tag = false, bool keyPlanUnit = true)
+            double acceptableWidth = 20,double circulationFreq = 10, int recompute = 5, bool tag = false)
         {
+            bool keyPlanUnit = true;
             if (deptData == null) //|| !ValidateObject.CheckPoly(poly)
             {
                 Trace.WriteLine("Null found poly or deptdata");
@@ -518,7 +522,7 @@ namespace SpacePlanning
                     double areaNeeded = deptItem.DeptAreaProportionNeeded * PolygonUtility.AreaPolygon(poly);
                     areaNeeded = 100000;
                     Trace.WriteLine("placing inpatients");
-                    Dictionary<string, object> inpatientObject = AssignBlocksBasedOnDistance(poly, offset, areaNeeded, 20, 30, tag);
+                    Dictionary<string, object> inpatientObject = AssignBlocksBasedOnDistance(poly, offset, areaNeeded, 20, recompute, tag);
                     if (inpatientObject == null) return null;
                     List<Polygon2d> inpatienBlocks = (List<Polygon2d>)inpatientObject["PolyAfterSplit"];
                     List<Polygon2d> leftOverBlocks = (List<Polygon2d>)inpatientObject["LeftOverPoly"];
@@ -596,7 +600,7 @@ namespace SpacePlanning
         //dept assignment new way
         [MultiReturn(new[] { "UpdatedDeptData", "LeftOverPolys", "CirculationPolys", "OtherDeptMainPoly" })]
         internal static Dictionary<string, object> DeptPlacerNoKeyPlanUnit(List<DeptData> deptData, Polygon2d poly, double offset,
-            double acceptableWidth = 20, double minNotchDist = 20, double circulationFreq = 10, double recompute = 5, bool tag = false)
+            double acceptableWidth = 20, double circulationFreq = 10, double recompute = 5, bool tag = false)
         {
             if (deptData == null) //|| !ValidateObject.CheckPoly(poly)
             {
