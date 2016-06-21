@@ -36,7 +36,7 @@ namespace SpacePlanning
         /// <search>
         /// make data stack, dept data object, program data object
         /// </search>
-        public static List<DeptData> AutoMakeDataStack(double dimX, double dimY, double circulationFactor = 1)
+        public static List<DeptData> AutoMakeDataStack(double dimX, double dimY, double circulationFactor = 1, int caseStudy = 0)
         {
 
             List<string> progIdList = new List<string>();
@@ -51,8 +51,11 @@ namespace SpacePlanning
             List<ProgramData> programDataStack = new List<ProgramData>();
 
             int readCount = 0;
+            Stream res;
             //string[] csvText = Properties.Resources.PROGRAMCSV.Split('\n'); 
-            Stream res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.ProgramDocument.csv");
+            if(caseStudy == 1)res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.MayoProgram.csv");
+            else res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.ProgramDocument.csv");
+       
             StreamReader reader = new StreamReader(res);
             string docInfo = reader.ReadToEnd();
             string[] csvText = docInfo.Split('\n');
@@ -111,9 +114,11 @@ namespace SpacePlanning
         /// <search>
         /// make site outline, site geometry.
         /// </search>
-        public static Geometry[] AutoMakeSiteOutline()
+        public static Geometry[] AutoMakeSiteOutline(int caseStudy =0)
         {
-            Stream res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.ATORIGINDK.sat");
+            Stream res;
+            if(caseStudy == 0) res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.ATORIGINDK.sat");
+            else res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.siteMayo.sat");
             string saveTo = Path.GetTempFileName();
             FileStream writeStream = new FileStream(saveTo, FileMode.Create, FileAccess.Write);
 
@@ -206,6 +211,13 @@ namespace SpacePlanning
             for (int i = 0; i < deptDataStack.Count; i++) deptDataStack[i].DeptAreaProportionNeeded = Math.Round((deptDataStack[i].DeptAreaNeeded / totalDeptArea),3);
             return SortDeptData(deptDataStack);
         }
+
+
+
+
+
+
+
 
         //reads .sat file and returns nurbs geometry
         /// <summary>

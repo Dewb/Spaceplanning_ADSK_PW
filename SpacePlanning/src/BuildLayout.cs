@@ -298,7 +298,9 @@ namespace SpacePlanning
                 else
                 {
                     Dictionary<string, object> placedSecondaryProg = PlaceSecondaryPrograms(deptData[i].PolyAssignedToDept, deptData[i].ProgramsInDept, recompute);
-                    deptData[i].ProgramsInDept = (List<ProgramData>)placedSecondaryProg["UpdatedProgramData"];
+                    if (placedSecondaryProg != null) deptData[i].ProgramsInDept = (List<ProgramData>)placedSecondaryProg["UpdatedProgramData"];
+                    else deptData[i].ProgramsInDept = null;
+
                 }
               
             }

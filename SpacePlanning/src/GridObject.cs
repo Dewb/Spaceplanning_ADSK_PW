@@ -604,7 +604,7 @@ namespace SpacePlanning
         /// </search>
         [MultiReturn(new[] { "BuildingOutline","AreaOfParts", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells" })]
         public static Dictionary<string, object> GrowForm(Polygon2d origSitePoly,
-            List<Cell> cellListInp, int hold = 4, double groundCoverage = 0.5, int iteration = 100, bool tag = true)
+            List<Cell> cellListInp, int hold = 4, double groundCoverage = 0.5, int iteration = 100, bool tag = true, bool randomAllow = true)
         {
             if (cellListInp == null) return null;
             if (!ValidateObject.CheckPoly(origSitePoly)) return null;
@@ -638,8 +638,8 @@ namespace SpacePlanning
             List<Polygon2d> polySquares = new List<Polygon2d>();
             List<Point2d> ptSquares = new List<Point2d>();
             Polygon2d currentPoly = new Polygon2d(origSitePoly.Points);
-            // Point2d center = PolygonUtility.CentroidOfPoly(origSitePoly);
-            Point2d center = PolygonUtility.PlaceRandomPointInsidePoly(origSitePoly);
+            Point2d center = PolygonUtility.CentroidOfPoly(origSitePoly);
+            if(randomAllow) center = PolygonUtility.PlaceRandomPointInsidePoly(origSitePoly);
 
 
 
@@ -651,7 +651,7 @@ namespace SpacePlanning
                 double dist = Math.Sqrt(areaPartsList[i]);
                 if (i > 0) center = PolygonUtility.FindPointOnPolySide(currentPoly, 0, dist / 2);
                 Trace.WriteLine("++++++++++++++++++++++++++ : " + i);
-                while (!found && count < iteration)
+                while (!found && count < 200)
                 {              
                     count += 1;
                     Trace.WriteLine("lets place square again : " + count);
@@ -689,7 +689,7 @@ namespace SpacePlanning
                 double areaSurplusAdded = 0;
                 List<Cell> selectedCellsForLeftOverArea = new List<Cell>();
                 dir = 2; count = 0;
-                while (areaLeft > 100 && count < 50)
+                while (areaLeft > 100 && count < iteration)
                 {
                     count += 1;
                     Trace.WriteLine("trying to add left over areas : " + count);

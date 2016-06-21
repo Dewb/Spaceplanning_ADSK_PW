@@ -383,7 +383,7 @@ namespace SpacePlanning
         
         //gets a poly and removes small notches based on agiven min distance
         [MultiReturn(new[] { "PolyNotchRemoved", "NotchFound"})]
-        public static Dictionary<string, object> RemoveAnyNotches(Polygon2d polyInp, double distance = 10)
+        internal static Dictionary<string, object> RemoveAnyNotches(Polygon2d polyInp, double distance = 10)
         {
             if (!ValidateObject.CheckPoly(polyInp)) return null;
 
@@ -437,7 +437,7 @@ namespace SpacePlanning
                 found = (bool)notchObj["NotchFound"];
                 Trace.WriteLine("still notches : " + count);
             }
-            Polygon2d polyNew = new Polygon2d(currentPoly.Points);
+            Polygon2d polyNew = CreateOrthoPoly(currentPoly);
             return new Dictionary<string, object>
             {
                 { "PolyNotchRemoved" , (polyNew) },
