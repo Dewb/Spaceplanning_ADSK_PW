@@ -36,9 +36,9 @@ namespace SpacePlanning
         /// <search>
         /// make data stack, dept data object, program data object
         /// </search>
-        public static List<DeptData> AutoMakeDataStack(double dimX, double dimY, double circulationFactor = 1, int caseStudy = 0)
+        public static List<DeptData> AutoMakeDataStack(double dimX, double dimY, double circulationFactor = 1, int caseStudy = 0, [ArbitraryDimensionArrayImport]string programDocumentPath = null)
         {
-
+            StreamReader reader;
             List<string> progIdList = new List<string>();
             List<string> programList = new List<string>();
             List<string> deptNameList = new List<string>();
@@ -49,17 +49,23 @@ namespace SpacePlanning
 
             List<List<string>> dataStack = new List<List<string>>();
             List<ProgramData> programDataStack = new List<ProgramData>();
-
-            int readCount = 0;
             Stream res;
-            //string[] csvText = Properties.Resources.PROGRAMCSV.Split('\n'); 
-            if(caseStudy == 1)res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.MayoProgram_1.csv");
-            if (caseStudy == 2) res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.OtherProgram.csv");
-            if (caseStudy == 3) res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.MayoProgram_1.csv");
-            if (caseStudy == 4) res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.OtherProgram.csv");
-            else res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.ProgramDocument.csv");
+            if (programDocumentPath == "")
+            {               
+                //string[] csvText = Properties.Resources.PROGRAMCSV.Split('\n'); 
+                if (caseStudy == 1) res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.MayoProgram_1.csv");
+                else if (caseStudy == 2) res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.OtherProgram.csv");
+                else if (caseStudy == 3) res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.MayoProgram_1.csv");
+                else if (caseStudy == 4) res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.OtherProgram.csv");
+                else res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.ProgramDocument.csv");
+
+                reader = new StreamReader(res);
+            }
+            else reader = new StreamReader(File.OpenRead(@programDocumentPath));
+            int readCount = 0;
+            
        
-            StreamReader reader = new StreamReader(res);
+            //StreamReader reader = new StreamReader(res);
             string docInfo = reader.ReadToEnd();
             string[] csvText = docInfo.Split('\n');
             Trace.WriteLine(csvText);
