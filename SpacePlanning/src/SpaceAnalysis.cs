@@ -290,16 +290,11 @@ namespace SpacePlanning
         /// <param name="extViewWeight">User assigned weight for external view score.</param>
         /// <param name="traveDistWeight">User assigned weight for travel distance score.</param>
         /// <param name="percKPUWeight">User assigned weight for percentage of key planning units score.</param>
-        /// <returns name="TotalScore">Total score of the space plan layout.</returns>
-        /// <returns name="ProgramFitScore">Program fitness score of the space plan layout.</returns>
-        /// <returns name="ExtViewKPUScore">External view score of the space plan layout.</returns>
-        /// <returns name="TravelDistanceScore">Travel distance score of the space plan layout.</returns>
-        /// <returns name="PercentageKPUScore">Percentage KPU score of the space plan layout.</returns>
-        /// <returns name="InpatientDeptData">Department data of primary department.</returns>
+        /// <returns name="CellData">Total score of the space plan layout.</returns>
+        /// <returns name="SheetNumber">Program fitness score of the space plan layout.</returns>   
         /// <search>
         /// space plane scoring, space plan metrics
         /// </search>
-       
         public static List<List<string>> CellDataExport(List<DeptData> deptData, List<Cell> cellList, List<List<int>> cellNeighborMatrix)
         {
             if (deptData == null) return null;
@@ -331,6 +326,7 @@ namespace SpacePlanning
             List<string> cellIdList = new List<string>(), cellTypeList = new List<string>(), cellAvailList = new List<string>();
             for (int i = 0; i < cellList.Count; i++)
             {
+                bool cellAssigned = false;
                 List<int> neighborCells = cellNeighborMatrix[i];
                 neighborCells.RemoveAll(s => s == -1);
                 for (int j =0;j< polyList.Count; j++)
@@ -345,19 +341,23 @@ namespace SpacePlanning
                         else  cellTypeList.Add("CoreCell");
                         cellList[i].CellAvailable = false;
                         cellAvailList.Add("False");
+                        cellAssigned = true;
                         break;
-                    }             
+                    }            
                 }
-
                 //cell not inside any prorgam
-                progrNameListinCell.Add("Not Assigned");
-                deptNameListinCell.Add("Not Assigned");
-                cellIdList.Add(i.ToString());
-                if (neighborCells.Count == 2) cellTypeList.Add("CornerCell");
-                else if (neighborCells.Count == 3) cellTypeList.Add("EdgeCell");
-                else cellTypeList.Add("CoreCell");
-                cellList[i].CellAvailable = true;
-                cellAvailList.Add("True");
+                if (!cellAssigned)
+                {
+                    progrNameListinCell.Add("Not Assigned");
+                    deptNameListinCell.Add("Not Assigned");
+                    cellIdList.Add(i.ToString());
+                    if (neighborCells.Count == 2) cellTypeList.Add("CornerCell");
+                    else if (neighborCells.Count == 3) cellTypeList.Add("EdgeCell");
+                    else cellTypeList.Add("CoreCell");
+                    cellList[i].CellAvailable = true;
+                    cellAvailList.Add("True");
+                }
+            
             }
 
             for(int i = 0; i < cellList.Count; i++)

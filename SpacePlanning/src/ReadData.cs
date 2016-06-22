@@ -133,7 +133,7 @@ namespace SpacePlanning
                 else if (caseStudy == 2) res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.otherSite.sat");
                 else if (caseStudy == 3) res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.site3.sat");
                 else if (caseStudy == 4) res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.site4.sat");
-                else res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.ATORIGINDK.sat");
+                else res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.site1.sat"); //"SpacePlanning.src.Asset.ATORIGINDK.sat"
                 path = Path.GetTempFileName();
                 FileStream writeStream = new FileStream(path, FileMode.Create, FileAccess.Write);
 
