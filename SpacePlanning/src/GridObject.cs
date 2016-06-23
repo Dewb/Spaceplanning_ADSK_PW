@@ -740,13 +740,14 @@ namespace SpacePlanning
             List<Cell> cellList = cellListInp.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy           
             double eps = 0.05, fac = 0.95, whole = 1, prop = 0;
             int number = (int)BasicUtility.RandomBetweenNumbers(new Random(iteration), 2, 6);
-            int count = 0, dir = 0, index =0;
+            number = dummy;
+            int count = 0, dir = 0, prevDir = 0, index =0, countInner =0;
 
             if (groundCoverage < eps) groundCoverage = 2 * eps;
             if (groundCoverage > 0.8) groundCoverage = 0.8;
             //double groundCoverLow = groundCoverage - eps, groundCoverHigh = groundCoverage + eps;
             double areaSite = PolygonUtility.AreaPolygon(orthoSiteOutline), areaPlaced = 0;
-            double areaBuilding = groundCoverage * areaSite, areaLeft = 0;
+            double areaBuilding = groundCoverage * areaSite, areaLeft = 10000;
             List<double> areaPartsList = new List<double>();
             for (int i = 0; i < number; i++)
             {
@@ -768,23 +769,42 @@ namespace SpacePlanning
             Polygon2d currentPoly = new Polygon2d(orthoSiteOutline.Points);
             Point2d center = PolygonUtility.CentroidOfPoly(orthoSiteOutline);
             if (randomAllow) center = PolygonUtility.PlaceRandomPointInsidePoly(orthoSiteOutline, iteration);
-            
-
+            Queue<Polygon2d> polySqrStack = new Queue<Polygon2d>();
+            dir = 0; // 0- right, 1 - up, 2 - left, 3 - down, 4 - down
             for (int i = 0; i < number; i++)
             {
                 count = 0;
-                bool found = false;
+                bool found = false, popped = false;
                 dir = 0;
                 double dist = Math.Sqrt(areaPartsList[i]);
-                if (i > 0) center = PolygonUtility.FindPointOnPolySide(currentPoly, 0, dist / 2);
-                Trace.WriteLine("++++++++++++++++++++++++++ : " + i);
-                while (!found && count < 200)
+                if (i > 0) center = PolygonUtility.FindPointOnPolySide(currentPoly, dir, dist / 2);
+                Trace.WriteLine("++++++++++++++++++++++++++ Area part  : " + i);
+                while (areaLeft > 500 && count < 5000) //count < 200
                 {
+                    prevDir = dir;
                     count += 1;
                     //Trace.WriteLine("lets place square again : " + count);
-                    currentPoly = PolygonUtility.SquareByCenter(center, dist);
-                    polySquares.Add(currentPoly);
-                    ptSquares.Add(center);
+                    if (!popped)
+                    {
+                        currentPoly = PolygonUtility.SquareByCenter(center, dist);
+                        polySqrStack.Enqueue(currentPoly);
+                        polySquares.Add(currentPoly);
+                        ptSquares.Add(center);
+                    }
+                    else
+                    {
+                        if (dir == 0) dir = 1;
+                        else if (dir == 1) dir = 2;
+                        else if (dir == 2) dir = 3;                       
+                        else if (dir == 3) dir = 0;
+                        center = PolygonUtility.FindPointOnPolySide(currentPoly, dir, dist / 2);
+                        currentPoly = PolygonUtility.SquareByCenter(center, dist);
+                        Trace.WriteLine("After popped , Direction set is now :  " + dir);
+                        polySqrStack.Enqueue(currentPoly);
+                        popped = false;
+                    }
+
+                
                     for (int j = 0; j < cellList.Count; j++)
                     {
                         if (cellList[j].CellAvailable)
@@ -792,24 +812,31 @@ namespace SpacePlanning
                             if (GraphicsUtility.PointInsidePolygonTest(currentPoly, cellList[j].CenterPoint) &&
                                 GraphicsUtility.PointInsidePolygonTest(orthoSiteOutline, cellList[j].CenterPoint))
                             {
+                                //Trace.WriteLine("Cell Found, count = " + count);
                                 found = true;
                                 cellList[j].CellAvailable = false;
                                 selectedCells.Add(cellList[j]);
                             }
                         }
                     }// end of for loop
-                    if (!found && dir < 4)
+                    if(!found) Trace.WriteLine("No Cell Found, Area Still left = " + areaLeft);
+                    else Trace.WriteLine("Cell Found, count = " + count + "!! Area left: " + areaLeft);
+                    if (polySqrStack.Count > 0) { popped = true; Trace.WriteLine("Popped , Stack has : " + polySqrStack.Count);  currentPoly = polySqrStack.Dequeue(); }
+                    else { Trace.WriteLine("Breaking , When count is : " + count); break;}
+                    /*if (!found && dir < 4)
                     {
                         currentPoly = polySquares[0];
                         center = PolygonUtility.FindPointOnPolySide(currentPoly, dir, dist / 2);
                         dir += 1;
-                        //Trace.WriteLine("Found is  : " + found + "   Direction toggled to : " + dir);
+                        Trace.WriteLine("Found is  : " + found + "   Direction toggled to : " + dir);
                     }
+                    */
+                    areaPlaced = AreaFromCells(selectedCells);
+                    areaLeft = areaBuilding - areaPlaced;
                 }// end of while loop
 
             }// end of for loop 
-            areaPlaced = AreaFromCells(selectedCells);
-            areaLeft = areaBuilding - areaPlaced;
+            /*
             bool cellAvail = true;
             if (!tag)
             {
@@ -871,18 +898,18 @@ namespace SpacePlanning
             List<List<int>> cellNeighborMatrix = (List<List<int>>)cellNeighborMatrixObject["CellNeighborMatrix"];
             Dictionary<string, object> borderObject = CreateBorder(cellNeighborMatrix, selectedCellsCopy, true, true);
             Polygon2d borderPoly = (Polygon2d)borderObject["BorderPolyLine"];
-
+            */
             return new Dictionary<string, object>
             {
-                { "BuildingOutline", (borderPoly) },
-                { "AreaOfParts", (areaPartsList) },
+                { "BuildingOutline", (polySqrStack) },
+                { "AreaOfParts", (currentPoly) },
                 { "SubdividedPolys", (polySquares) },
                 { "SiteArea", (ptSquares) },
                 { "LeftOverArea", (areaLeft) },
                 { "BuildingOutlineArea", (areaPlaced) },
                 { "GroundCoverAchieved", (areaPlaced/areaSite) },
                 { "SortedCells", (selectedCells)},
-                { "CellNeighborMatrix", (cellNeighborMatrix) }
+                { "CellNeighborMatrix", (null) }
             };
         }
         //makes orhtogonal form as polygon2d based on input ground coverage
