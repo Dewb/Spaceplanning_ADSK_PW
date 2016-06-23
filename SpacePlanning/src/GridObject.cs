@@ -731,7 +731,161 @@ namespace SpacePlanning
             };
         }
 
+        [MultiReturn(new[] { "BuildingOutline", "AreaOfParts", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells", "CellNeighborMatrix" })]
+        public static Dictionary<string, object> FormBuildingOutlineTest(Polygon2d orthoSiteOutline, List<Cell> cellListInp, double groundCoverage = 0.5, int iteration = 100, int dummy=100)
+        {
+            bool randomAllow = true, tag = true;
+            if (cellListInp == null) return null;
+            if (!ValidateObject.CheckPoly(orthoSiteOutline)) return null;
+            List<Cell> cellList = cellListInp.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy           
+            double eps = 0.05, fac = 0.95, whole = 1, prop = 0;
+            int number = (int)BasicUtility.RandomBetweenNumbers(new Random(iteration), 2, 6);
+            int count = 0, dir = 0, index =0;
 
+            if (groundCoverage < eps) groundCoverage = 2 * eps;
+            if (groundCoverage > 0.8) groundCoverage = 0.8;
+            //double groundCoverLow = groundCoverage - eps, groundCoverHigh = groundCoverage + eps;
+            double areaSite = PolygonUtility.AreaPolygon(orthoSiteOutline), areaPlaced = 0;
+            double areaBuilding = groundCoverage * areaSite, areaLeft = 0;
+            List<double> areaPartsList = new List<double>();
+            for (int i = 0; i < number; i++)
+            {
+                if (i == number - 1)
+                {
+                    prop = whole;
+                    areaPartsList.Add(areaBuilding * prop);
+                }
+                else
+                {
+                    prop = whole / (2 * (i + 1));
+                    areaPartsList.Add(areaBuilding * prop);
+                    whole -= prop;
+                }
+            }// end of for loop
+            List<Cell> selectedCells = new List<Cell>();
+            List<Polygon2d> polySquares = new List<Polygon2d>();
+            List<Point2d> ptSquares = new List<Point2d>();
+            Polygon2d currentPoly = new Polygon2d(orthoSiteOutline.Points);
+            Point2d center = PolygonUtility.CentroidOfPoly(orthoSiteOutline);
+            if (randomAllow) center = PolygonUtility.PlaceRandomPointInsidePoly(orthoSiteOutline, iteration);
+
+
+
+            for (int i = 0; i < number; i++)
+            {
+                count = 0;
+                bool found = false;
+                dir = 0;
+                double dist = Math.Sqrt(areaPartsList[i]);
+                if (i > 0) center = PolygonUtility.FindPointOnPolySide(currentPoly, 0, dist / 2);
+                Trace.WriteLine("++++++++++++++++++++++++++ : " + i);
+                while (!found && count < 200)
+                {
+                    count += 1;
+                    //Trace.WriteLine("lets place square again : " + count);
+                    currentPoly = PolygonUtility.SquareByCenter(center, dist);
+                    polySquares.Add(currentPoly);
+                    ptSquares.Add(center);
+                    for (int j = 0; j < cellList.Count; j++)
+                    {
+                        if (cellList[j].CellAvailable)
+                        {
+                            if (GraphicsUtility.PointInsidePolygonTest(currentPoly, cellList[j].CenterPoint) &&
+                                GraphicsUtility.PointInsidePolygonTest(orthoSiteOutline, cellList[j].CenterPoint))
+                            {
+                                found = true;
+                                cellList[j].CellAvailable = false;
+                                selectedCells.Add(cellList[j]);
+                            }
+                        }
+                    }// end of for loop
+                    if (!found && dir < 4)
+                    {
+                        currentPoly = polySquares[0];
+                        center = PolygonUtility.FindPointOnPolySide(currentPoly, dir, dist / 2);
+                        dir += 1;
+                        //Trace.WriteLine("Found is  : " + found + "   Direction toggled to : " + dir);
+                    }
+                }// end of while loop
+
+            }// end of for loop 
+            areaPlaced = AreaFromCells(selectedCells);
+            areaLeft = areaBuilding - areaPlaced;
+            bool cellAvail = true;
+            if (tag)
+            {
+                double areaSurplusAdded = 0;
+                List<Cell> selectedCellsForLeftOverArea = new List<Cell>();
+                //dir set to 2 to make it go left
+                dir = 2; count = 0;
+                while (areaLeft > 500 && cellAvail && count < dummy)//count < iteration
+                {
+                    count += 1;
+                    Trace.WriteLine("trying to add left over areas : " + count);
+                    List<Cell> moreCellsFound = new List<Cell>();
+                    double dist = Math.Sqrt(areaLeft);
+                    currentPoly = polySquares[index];
+                    center = PolygonUtility.FindPointOnPolySide(currentPoly, dir, dist / 2);
+                    currentPoly = PolygonUtility.SquareByCenter(center, dist);
+                    polySquares.Add(currentPoly);
+                    bool cellInsideFound = false;
+                    for (int j = 0; j < cellList.Count; j++)
+                    {
+                        if (cellList[j].CellAvailable)
+                        {
+                            if (GraphicsUtility.PointInsidePolygonTest(currentPoly, cellList[j].CenterPoint) &&
+                                GraphicsUtility.PointInsidePolygonTest(orthoSiteOutline, cellList[j].CenterPoint))
+                            {
+                                cellInsideFound = true;
+                                cellList[j].CellAvailable = false;
+                                moreCellsFound.Add(cellList[j]);
+                            }
+                        }
+                    }// end of for loop
+                    if (!cellInsideFound) Trace.WriteLine("No cell found , so sad.");
+                    areaSurplusAdded += AreaFromCells(moreCellsFound);
+                    areaLeft -= AreaFromCells(moreCellsFound);
+                    selectedCellsForLeftOverArea.AddRange(moreCellsFound);
+                    //check if there is any cell thats available
+                    for (int i = 0; i < cellList.Count; i++)
+                    {
+                        if (cellList[i].CellAvailable) { cellAvail = true; Trace.WriteLine("We stil have empty cells"); break; }
+                        else { Trace.WriteLine("No available cells.  Area Still left is : " + areaLeft); cellAvail = false; }
+                    }
+                    index += 1;
+                    if (index > polySquares.Count) break;
+                }// end of while loop
+
+
+                selectedCells.AddRange(selectedCellsForLeftOverArea);
+                areaPlaced += areaSurplusAdded;
+               
+                
+            }// end of tag if loop
+
+
+            List<Cell> selectedCellsCopy = selectedCells.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy
+            selectedCellsCopy = SetCellAvailability(selectedCellsCopy);
+            Dictionary<string, object> sortCellObj = SortCellList(selectedCellsCopy);
+            selectedCellsCopy = (List<Cell>)sortCellObj["SortedCells"];
+            Dictionary<string, object> cellNeighborMatrixObject = FormsCellNeighborMatrix(selectedCellsCopy);
+            List<List<int>> cellNeighborMatrix = (List<List<int>>)cellNeighborMatrixObject["CellNeighborMatrix"];
+            Dictionary<string, object> borderObject = CreateBorder(cellNeighborMatrix, selectedCellsCopy, true, true);
+            Polygon2d borderPoly = (Polygon2d)borderObject["BorderPolyLine"];
+
+            return new Dictionary<string, object>
+            {
+                { "BuildingOutline", (borderPoly) },
+                { "AreaOfParts", (areaPartsList) },
+                { "SubdividedPolys", (polySquares) },
+                { "SiteArea", (ptSquares) },
+                { "LeftOverArea", (areaLeft) },
+                { "BuildingOutlineArea", (areaPlaced) },
+                { "GroundCoverAchieved", (areaPlaced/areaSite) },
+                { "SortedCells", (selectedCells)},
+                { "CellNeighborMatrix", (cellNeighborMatrix) }
+            };
+        }
         //makes orhtogonal form as polygon2d based on input ground coverage
         /// <summary>
         /// Builds the building outline form based on input site outline and ground coverage
