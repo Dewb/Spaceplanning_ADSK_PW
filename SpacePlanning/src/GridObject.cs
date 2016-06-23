@@ -768,8 +768,7 @@ namespace SpacePlanning
             Polygon2d currentPoly = new Polygon2d(orthoSiteOutline.Points);
             Point2d center = PolygonUtility.CentroidOfPoly(orthoSiteOutline);
             if (randomAllow) center = PolygonUtility.PlaceRandomPointInsidePoly(orthoSiteOutline, iteration);
-
-
+            
 
             for (int i = 0; i < number; i++)
             {
@@ -812,7 +811,7 @@ namespace SpacePlanning
             areaPlaced = AreaFromCells(selectedCells);
             areaLeft = areaBuilding - areaPlaced;
             bool cellAvail = true;
-            if (tag)
+            if (!tag)
             {
                 double areaSurplusAdded = 0;
                 List<Cell> selectedCellsForLeftOverArea = new List<Cell>();
