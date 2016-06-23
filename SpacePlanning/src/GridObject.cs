@@ -741,7 +741,7 @@ namespace SpacePlanning
             double eps = 0.05, fac = 0.95, whole = 1, prop = 0;
             int number = (int)BasicUtility.RandomBetweenNumbers(new Random(iteration), 2, 6);
             number = dummy;
-            int count = 0, dir = 0, prevDir = 0, index =0, countInner =0, countPopped=0;
+            int count = 0, dir = 0, prevDir = 0, index =0, countInner =0, countCircleMode = 0;
 
             if (groundCoverage < eps) groundCoverage = 2 * eps;
             if (groundCoverage > 0.8) groundCoverage = 0.8;
@@ -795,18 +795,19 @@ namespace SpacePlanning
                 }
                 else
                 {
-                    countPopped += 1;
+                    //deQueue Mode On
+                    countCircleMode += 1;
                     circleMode = true;
                     if (dir == 0) dir = 1;
                     else if (dir == 1) dir = 2;
                     else if (dir == 2) dir = 3;
                     else if (dir == 3) dir = 0;
-                    if (countPopped > 4) circleMode = false;
+                    if (countCircleMode > 4) { circleMode = false; countCircleMode = 0; }
                     center = PolygonUtility.FindPointOnPolySide(currentPoly, dir, dist / 2);
                     currentPoly = PolygonUtility.SquareByCenter(center, dist);
                     Trace.WriteLine("After popped , Direction set is now :  " + dir);
-                    //polySqrStack.Enqueue(currentPoly);
-                    //polySqrStackCopy.Enqueue(currentPoly);
+                    polySqrStack.Enqueue(currentPoly);
+                    polySqrStackCopy.Enqueue(currentPoly);
                     //popped = false;
                 }
 
@@ -838,6 +839,7 @@ namespace SpacePlanning
 
 
                 if (areaLeft == areaPrevLeft) { Trace.WriteLine("No change in area@@@@@@@@@@@@@@@@@@@@@@@@  " + countInner); countInner += 1; }
+                else countInner = 0;
             }// end of while loop
 
 
