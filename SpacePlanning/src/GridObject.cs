@@ -741,7 +741,7 @@ namespace SpacePlanning
             double eps = 0.05, fac = 0.95, whole = 1, prop = 0;
             int number = (int)BasicUtility.RandomBetweenNumbers(new Random(iteration), 2, 6);
             number = dummy;
-            int count = 0, dir = 0, prevDir = 0, index =0, countInner =0;
+            int count = 0, dir = 0, prevDir = 0, index =0, countInner =0, countPopped=0;
 
             if (groundCoverage < eps) groundCoverage = 2 * eps;
             if (groundCoverage > 0.8) groundCoverage = 0.8;
@@ -769,11 +769,11 @@ namespace SpacePlanning
             Polygon2d currentPoly = new Polygon2d(orthoSiteOutline.Points);
             Point2d center = PolygonUtility.CentroidOfPoly(orthoSiteOutline);
             if (randomAllow) center = PolygonUtility.PlaceRandomPointInsidePoly(orthoSiteOutline, iteration);
-            Queue<Polygon2d> polySqrStack = new Queue<Polygon2d>();
+            Queue<Polygon2d> polySqrStack = new Queue<Polygon2d>(), polySqrStackCopy = new Queue<Polygon2d>();
             dir = 0; // 0- right, 1 - up, 2 - left, 3 - down, 4 - down
      
             count = 0;
-            bool found = false, popped = false;
+            bool found = false, deQueueMode = false, circleMode = false;
             dir = 0;
             double dist = Math.Sqrt(areaBuilding / dummy);
             //center = PolygonUtility.FindPointOnPolySide(currentPoly, dir, dist / 2);
@@ -784,25 +784,30 @@ namespace SpacePlanning
                 prevDir = dir;
                 count += 1;
                 Trace.WriteLine("lets place square again  ========================== : " + count);
-                if (!popped)
+                if (!deQueueMode)
                 {
                     currentPoly = PolygonUtility.SquareByCenter(center, dist);
                     polySqrStack.Enqueue(currentPoly);
+                    polySqrStackCopy.Enqueue(currentPoly);
                     polySquares.Add(currentPoly);
                     ptSquares.Add(center);
                     center = PolygonUtility.FindPointOnPolySide(currentPoly, dir, dist / 2);
                 }
                 else
                 {
+                    countPopped += 1;
+                    circleMode = true;
                     if (dir == 0) dir = 1;
                     else if (dir == 1) dir = 2;
                     else if (dir == 2) dir = 3;
                     else if (dir == 3) dir = 0;
+                    if (countPopped > 4) circleMode = false;
                     center = PolygonUtility.FindPointOnPolySide(currentPoly, dir, dist / 2);
                     currentPoly = PolygonUtility.SquareByCenter(center, dist);
                     Trace.WriteLine("After popped , Direction set is now :  " + dir);
-                    polySqrStack.Enqueue(currentPoly);
-                    popped = false;
+                    //polySqrStack.Enqueue(currentPoly);
+                    //polySqrStackCopy.Enqueue(currentPoly);
+                    //popped = false;
                 }
 
                 found = false;
@@ -820,9 +825,9 @@ namespace SpacePlanning
                         }
                     }
                 }// end of for loop
-                if (!found) { Trace.WriteLine("No Cell Found, Area Still left = " + areaLeft); popped = true; }
+                if (!found) { Trace.WriteLine("No Cell Found, Area Still left = " + areaLeft); deQueueMode = true; }
                 else Trace.WriteLine("Cell Found, count = " + count + "!! Area left: " + areaLeft);
-                if (popped)
+                if (deQueueMode && !circleMode)
                 {
                     if (polySqrStack.Count > 0) { currentPoly = polySqrStack.Dequeue(); Trace.WriteLine("After Popped , Stack has : " + polySqrStack.Count); }
                     else { Trace.WriteLine("Breaking , When count is : " + count); break; }
@@ -843,7 +848,7 @@ namespace SpacePlanning
                 { "SubdividedPolys", (polySquares) },
                 { "SiteArea", (ptSquares) },
                 { "LeftOverArea", (areaLeft) },
-                { "BuildingOutlineArea", (areaPlaced) },
+                { "BuildingOutlineArea", (polySqrStackCopy) },
                 { "GroundCoverAchieved", (areaPlaced/areaSite) },
                 { "SortedCells", (selectedCells)},
                 { "CellNeighborMatrix", (null) }
