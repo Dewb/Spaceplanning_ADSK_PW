@@ -771,134 +771,71 @@ namespace SpacePlanning
             if (randomAllow) center = PolygonUtility.PlaceRandomPointInsidePoly(orthoSiteOutline, iteration);
             Queue<Polygon2d> polySqrStack = new Queue<Polygon2d>();
             dir = 0; // 0- right, 1 - up, 2 - left, 3 - down, 4 - down
-            for (int i = 0; i < number; i++)
+     
+            count = 0;
+            bool found = false, popped = false;
+            dir = 0;
+            double dist = Math.Sqrt(areaBuilding / dummy);
+            //center = PolygonUtility.FindPointOnPolySide(currentPoly, dir, dist / 2);
+            Trace.WriteLine("++++++++++++++++++++++++++");
+            while (areaLeft > 500 && countInner < 10) //count < 200
             {
-                count = 0;
-                bool found = false, popped = false;
-                dir = 0;
-                double dist = Math.Sqrt(areaPartsList[i]);
-                if (i > 0) center = PolygonUtility.FindPointOnPolySide(currentPoly, dir, dist / 2);
-                Trace.WriteLine("++++++++++++++++++++++++++ Area part  : " + i);
-                while (areaLeft > 500 && count < 5000) //count < 200
+               
+                prevDir = dir;
+                count += 1;
+                Trace.WriteLine("lets place square again  ========================== : " + count);
+                if (!popped)
                 {
-                    prevDir = dir;
-                    count += 1;
-                    //Trace.WriteLine("lets place square again : " + count);
-                    if (!popped)
-                    {
-                        currentPoly = PolygonUtility.SquareByCenter(center, dist);
-                        polySqrStack.Enqueue(currentPoly);
-                        polySquares.Add(currentPoly);
-                        ptSquares.Add(center);
-                    }
-                    else
-                    {
-                        if (dir == 0) dir = 1;
-                        else if (dir == 1) dir = 2;
-                        else if (dir == 2) dir = 3;                       
-                        else if (dir == 3) dir = 0;
-                        center = PolygonUtility.FindPointOnPolySide(currentPoly, dir, dist / 2);
-                        currentPoly = PolygonUtility.SquareByCenter(center, dist);
-                        Trace.WriteLine("After popped , Direction set is now :  " + dir);
-                        polySqrStack.Enqueue(currentPoly);
-                        popped = false;
-                    }
-
-                
-                    for (int j = 0; j < cellList.Count; j++)
-                    {
-                        if (cellList[j].CellAvailable)
-                        {
-                            if (GraphicsUtility.PointInsidePolygonTest(currentPoly, cellList[j].CenterPoint) &&
-                                GraphicsUtility.PointInsidePolygonTest(orthoSiteOutline, cellList[j].CenterPoint))
-                            {
-                                //Trace.WriteLine("Cell Found, count = " + count);
-                                found = true;
-                                cellList[j].CellAvailable = false;
-                                selectedCells.Add(cellList[j]);
-                            }
-                        }
-                    }// end of for loop
-                    if(!found) Trace.WriteLine("No Cell Found, Area Still left = " + areaLeft);
-                    else Trace.WriteLine("Cell Found, count = " + count + "!! Area left: " + areaLeft);
-                    if (polySqrStack.Count > 0) { popped = true; Trace.WriteLine("Popped , Stack has : " + polySqrStack.Count);  currentPoly = polySqrStack.Dequeue(); }
-                    else { Trace.WriteLine("Breaking , When count is : " + count); break;}
-                    /*if (!found && dir < 4)
-                    {
-                        currentPoly = polySquares[0];
-                        center = PolygonUtility.FindPointOnPolySide(currentPoly, dir, dist / 2);
-                        dir += 1;
-                        Trace.WriteLine("Found is  : " + found + "   Direction toggled to : " + dir);
-                    }
-                    */
-                    areaPlaced = AreaFromCells(selectedCells);
-                    areaLeft = areaBuilding - areaPlaced;
-                }// end of while loop
-
-            }// end of for loop 
-            /*
-            bool cellAvail = true;
-            if (!tag)
-            {
-                double areaSurplusAdded = 0;
-                List<Cell> selectedCellsForLeftOverArea = new List<Cell>();
-                //dir set to 2 to make it go left
-                dir = 2; count = 0;
-                while (areaLeft > 500 && cellAvail && count < dummy)//count < iteration
+                    currentPoly = PolygonUtility.SquareByCenter(center, dist);
+                    polySqrStack.Enqueue(currentPoly);
+                    polySquares.Add(currentPoly);
+                    ptSquares.Add(center);
+                    center = PolygonUtility.FindPointOnPolySide(currentPoly, dir, dist / 2);
+                }
+                else
                 {
-                    count += 1;
-                    Trace.WriteLine("trying to add left over areas : " + count);
-                    List<Cell> moreCellsFound = new List<Cell>();
-                    double dist = Math.Sqrt(areaLeft);
-                    currentPoly = polySquares[index];
+                    if (dir == 0) dir = 1;
+                    else if (dir == 1) dir = 2;
+                    else if (dir == 2) dir = 3;
+                    else if (dir == 3) dir = 0;
                     center = PolygonUtility.FindPointOnPolySide(currentPoly, dir, dist / 2);
                     currentPoly = PolygonUtility.SquareByCenter(center, dist);
-                    polySquares.Add(currentPoly);
-                    bool cellInsideFound = false;
-                    for (int j = 0; j < cellList.Count; j++)
+                    Trace.WriteLine("After popped , Direction set is now :  " + dir);
+                    polySqrStack.Enqueue(currentPoly);
+                    popped = false;
+                }
+
+                found = false;
+                for (int j = 0; j < cellList.Count; j++)
+                {
+                    if (cellList[j].CellAvailable)
                     {
-                        if (cellList[j].CellAvailable)
+                        if (GraphicsUtility.PointInsidePolygonTest(currentPoly, cellList[j].CenterPoint) &&
+                            GraphicsUtility.PointInsidePolygonTest(orthoSiteOutline, cellList[j].CenterPoint))
                         {
-                            if (GraphicsUtility.PointInsidePolygonTest(currentPoly, cellList[j].CenterPoint) &&
-                                GraphicsUtility.PointInsidePolygonTest(orthoSiteOutline, cellList[j].CenterPoint))
-                            {
-                                cellInsideFound = true;
-                                cellList[j].CellAvailable = false;
-                                moreCellsFound.Add(cellList[j]);
-                            }
+                            //Trace.WriteLine("Cell Found, count = " + count);
+                            found = true;
+                            cellList[j].CellAvailable = false;
+                            selectedCells.Add(cellList[j]);
                         }
-                    }// end of for loop
-                    if (!cellInsideFound) Trace.WriteLine("No cell found , so sad.");
-                    areaSurplusAdded += AreaFromCells(moreCellsFound);
-                    areaLeft -= AreaFromCells(moreCellsFound);
-                    selectedCellsForLeftOverArea.AddRange(moreCellsFound);
-                    //check if there is any cell thats available
-                    for (int i = 0; i < cellList.Count; i++)
-                    {
-                        if (cellList[i].CellAvailable) { cellAvail = true; Trace.WriteLine("We stil have empty cells"); break; }
-                        else { Trace.WriteLine("No available cells.  Area Still left is : " + areaLeft); cellAvail = false; }
                     }
-                    index += 1;
-                    if (index > polySquares.Count) break;
-                }// end of while loop
+                }// end of for loop
+                if (!found) { Trace.WriteLine("No Cell Found, Area Still left = " + areaLeft); popped = true; }
+                else Trace.WriteLine("Cell Found, count = " + count + "!! Area left: " + areaLeft);
+                if (popped)
+                {
+                    if (polySqrStack.Count > 0) { currentPoly = polySqrStack.Dequeue(); Trace.WriteLine("After Popped , Stack has : " + polySqrStack.Count); }
+                    else { Trace.WriteLine("Breaking , When count is : " + count); break; }
+                }
+                double areaPrevLeft = areaLeft;
+                areaPlaced = AreaFromCells(selectedCells);
+                areaLeft = areaBuilding - areaPlaced;
 
 
-                selectedCells.AddRange(selectedCellsForLeftOverArea);
-                areaPlaced += areaSurplusAdded;
-               
-                
-            }// end of tag if loop
+                if (areaLeft == areaPrevLeft) { Trace.WriteLine("No change in area@@@@@@@@@@@@@@@@@@@@@@@@  " + countInner); countInner += 1; }
+            }// end of while loop
 
 
-            List<Cell> selectedCellsCopy = selectedCells.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy
-            selectedCellsCopy = SetCellAvailability(selectedCellsCopy);
-            Dictionary<string, object> sortCellObj = SortCellList(selectedCellsCopy);
-            selectedCellsCopy = (List<Cell>)sortCellObj["SortedCells"];
-            Dictionary<string, object> cellNeighborMatrixObject = FormsCellNeighborMatrix(selectedCellsCopy);
-            List<List<int>> cellNeighborMatrix = (List<List<int>>)cellNeighborMatrixObject["CellNeighborMatrix"];
-            Dictionary<string, object> borderObject = CreateBorder(cellNeighborMatrix, selectedCellsCopy, true, true);
-            Polygon2d borderPoly = (Polygon2d)borderObject["BorderPolyLine"];
-            */
             return new Dictionary<string, object>
             {
                 { "BuildingOutline", (polySqrStack) },
