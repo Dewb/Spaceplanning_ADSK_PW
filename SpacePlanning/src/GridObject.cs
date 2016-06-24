@@ -738,14 +738,15 @@ namespace SpacePlanning
         }
 
         [MultiReturn(new[] { "BuildingOutline", "AreaOfParts", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells", "CellNeighborMatrix" })]
-        public static Dictionary<string, object> FormBuildingOutlineTest(Polygon2d orthoSiteOutline, List<Cell> cellListInp, List<Point2d> attractorPoints = default(List<Point2d>), List<double>weightList = default(List<double>), double groundCoverage = 0.5, int iteration = 100, int dummy=100)
+        public static Dictionary<string, object> FormBuildingOutlineTest(Polygon2d orthoSiteOutline, List<Cell> cellListInp, List<Point2d> attractorPoints = default(List<Point2d>), 
+            List<double>weightList = default(List<double>), double groundCoverage = 0.5, int iteration = 100, bool removeNotch = false, double minNotchDistance  = 10,int dummy=100)
         {
             if (iteration < 1) iteration = 0;
             bool randomAllow = true, tag = true;
             if (cellListInp == null) return null;
             if (!ValidateObject.CheckPoly(orthoSiteOutline)) return null;
             List<Cell> cellList = cellListInp.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy 
-            //if(attractorPoints != null && weightList!= null) cellList = RemoveCellsBasedOnAttractors(cellList, attractorPoints, weightList);        
+            if(attractorPoints != null && weightList!= null) cellList = RemoveCellsBasedOnAttractors(cellList, attractorPoints, weightList);        
             double eps = 0.05, fac = 0.95, whole = 1, prop = 0;
             int number = (int)BasicUtility.RandomBetweenNumbers(new Random(iteration), 2, 6);
             number = dummy;
@@ -865,6 +866,12 @@ namespace SpacePlanning
             List<List<int>> cellNeighborMatrix = (List<List<int>>)cellNeighborMatrixObject["CellNeighborMatrix"];
             Dictionary<string, object> borderObject = CreateBorder(cellNeighborMatrix, selectedCellsCopy, true, true);
             Polygon2d borderPoly = (Polygon2d)borderObject["BorderPolyLine"];
+
+            if (removeNotch)
+            {
+                Dictionary<string,object> notchObj = PolygonUtility.RemoveAllNotches(borderPoly, minNotchDistance);
+                borderPoly = (Polygon2d)notchObj["PolyNotchRemoved"];
+            }
             return new Dictionary<string, object>
             {
                 { "BuildingOutline", (borderPoly) },
@@ -882,7 +889,8 @@ namespace SpacePlanning
 
 
         [MultiReturn(new[] { "BuildingOutline", "AreaOfParts", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells", "CellNeighborMatrix" })]
-        public static Dictionary<string, object> FormBuildingIterator(Polygon2d orthoSiteOutline, List<Cell> cellListInp, List<Point2d> attractorPoints = default(List<Point2d>), List<double> weightList = default(List<double>), double groundCoverage = 0.5, int iteration = 100, int dummy = 100)
+        public static Dictionary<string, object> FormBuildingIterator(Polygon2d orthoSiteOutline, List<Cell> cellListInp, List<Point2d> attractorPoints = default(List<Point2d>), List<double> weightList = default(List<double>), 
+            double groundCoverage = 0.5, int iteration = 100, bool removeNotch = false, double minNotchDistance = 10, int dummy = 100)
         {
             if (iteration < 1) iteration = 1;
             int count = 0, maxTry = 600;
@@ -894,7 +902,7 @@ namespace SpacePlanning
             {
                 count += 1;
                 Trace.WriteLine("||||||||||||||||||||||||||||||trying to get the form we want : " + count);
-                formBuildingOutlineObj = FormBuildingOutlineTest(orthoSiteOutline, cellListInp, attractorPoints, weightList, groundCoverage, iteration, dummy);
+                formBuildingOutlineObj = FormBuildingOutlineTest(orthoSiteOutline, cellListInp, attractorPoints, weightList, groundCoverage, iteration, removeNotch, minNotchDistance, dummy);
 
                 if (formBuildingOutlineObj == null)
                 {

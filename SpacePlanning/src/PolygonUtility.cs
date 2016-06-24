@@ -712,9 +712,10 @@ namespace SpacePlanning
             List<Point2d> ptList = new List<Point2d>();
             for (int i = 0; i < segments; i++)
             {
-                //double x = radius * Math.Cos(360 * (i+1) / segments), y = radius * Math.Sin(360 * (i+1)/ segments);
                 double x = center.X + radius * Math.Cos((Math.PI/ 180) *(360 * (i + 1) / segments)), y = center.Y + radius * Math.Sin((Math.PI/ 180)*(360 * (i + 1) / segments));
-                ptList.Add(new Point2d(x, y));
+                Point2d pt = new Point2d(x, y);
+                Trace.WriteLine("Points are : " + pt.X + " , " + pt.Y);
+                ptList.Add(pt);
             }            
             return new Polygon2d(ptList);
         }

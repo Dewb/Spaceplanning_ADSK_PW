@@ -8,11 +8,14 @@ namespace stuffer
   {
     protected double m_x;
     protected double m_y;
+    int number = 4;
 
     internal Point2d(double x, double y)
-    {
-      m_x = x;
-      m_y = y;
+    {  
+      m_x = Math.Round(x,number, MidpointRounding.AwayFromZero);//, number, MidpointRounding.AwayFromZero
+      m_y = Math.Round(y,number, MidpointRounding.AwayFromZero);//
+       //m_x = x;
+       //m_y = y;
     }
 
     internal Point2d(Point2d other)
@@ -21,9 +24,10 @@ namespace stuffer
       m_y = other.Y;
     }
 
-    public static Point2d ByCoordinates(double x, double y)
+    public static Point2d ByCoordinates(double x, double y, int number = 4)
     {
-      return new Point2d(x, y);
+      return new Point2d(Math.Round(x,number),  Math.Round(y,number));
+      //return new Point2d(x, y);
     }
 
     public double X
