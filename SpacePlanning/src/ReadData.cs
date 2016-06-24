@@ -36,8 +36,9 @@ namespace SpacePlanning
         /// <search>
         /// make data stack, dept data object, program data object
         /// </search>
-        public static List<DeptData> AutoMakeDataStack(double dim, double circulationFactor = 1, int caseStudy = 0, string programDocumentPath = "")
+        public static List<DeptData> AutoMakeDataStack(double circulationFactor = 1, int caseStudy = 0, string programDocumentPath = "")
         {
+            double dim = 5;
             StreamReader reader;
             List<string> progIdList = new List<string>();
             List<string> programList = new List<string>();

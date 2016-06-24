@@ -322,7 +322,7 @@ namespace SpacePlanning
         /// bordercells, cellneighbormatrix
         /// </search>
         [MultiReturn(new[] { "OrthoSiteOutline", "BorderCellsFound","CellNeighborMatrix", "SortedCells"})]
-        public static Dictionary<string, object> BorderAndCellNeighborMatrix(Polygon2d polyOutline, double dim, int iteration = 100 )
+        public static Dictionary<string, object> BorderAndCellNeighborMatrix(Polygon2d polyOutline, double cellDim, int iteration = 100 )
         {
             double proportion = 0.75;
             if (!ValidateObject.CheckPoly(polyOutline)) return null;
@@ -331,7 +331,11 @@ namespace SpacePlanning
             List<Cell> sortedCells = new List<Cell>();
             List<List<int>> cellNeighborMatrix = new List<List<int>>(); 
             List<Polygon2d> cellsFound = new List<Polygon2d>();
-            double dimAdjusted = dim, areaPoly = PolygonUtility.AreaPolygon(polyOutline), eps = 0.01;
+            int minCells = 250;
+            double dimAdjusted = cellDim;
+            double areaPoly = PolygonUtility.AreaPolygon(polyOutline), eps = 0.01;
+            int numCells = (int)(areaPoly/(dimAdjusted*dimAdjusted));
+            if (numCells < minCells) dimAdjusted = Math.Sqrt(areaPoly / minCells);
             bool checkOut = false;
             int count = 0;
             while (!checkOut && count < iteration)
@@ -591,6 +595,7 @@ namespace SpacePlanning
         [MultiReturn(new[] { "BuildingOutline", "AreaOfParts", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells", "CellNeighborMatrix"})]
         public static Dictionary<string, object> FormBuildingOutline(Polygon2d orthoSiteOutline, List<Cell> cellListInp, double groundCoverage = 0.5, int iteration = 100)
         {
+            if (iteration < 1) iteration = 0;
             bool randomAllow = true, tag = true;
             if (cellListInp == null) return null;
             if (!ValidateObject.CheckPoly(orthoSiteOutline)) return null;
@@ -734,6 +739,7 @@ namespace SpacePlanning
         [MultiReturn(new[] { "BuildingOutline", "AreaOfParts", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells", "CellNeighborMatrix" })]
         public static Dictionary<string, object> FormBuildingOutlineTest(Polygon2d orthoSiteOutline, List<Cell> cellListInp, List<Point2d> attractorPoints = default(List<Point2d>), List<double>weightList = default(List<double>), double groundCoverage = 0.5, int iteration = 100, int dummy=100)
         {
+            if (iteration < 1) iteration = 0;
             bool randomAllow = true, tag = true;
             if (cellListInp == null) return null;
             if (!ValidateObject.CheckPoly(orthoSiteOutline)) return null;
@@ -778,7 +784,7 @@ namespace SpacePlanning
             double dist = Math.Sqrt(areaBuilding / dummy);
             //center = PolygonUtility.FindPointOnPolySide(currentPoly, dir, dist / 2);
             Trace.WriteLine("++++++++++++++++++++++++++");
-            while (areaLeft > 500 && countInner < 10) //count < 200
+            while (areaLeft > 500 && countInner < 100) //count < 200
             {
                
                 prevDir = dir;
@@ -849,10 +855,18 @@ namespace SpacePlanning
                 else countInner = 0;
             }// end of while loop
 
-
+            List<Cell> selectedCellsCopy = selectedCells.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy
+            selectedCellsCopy = SetCellAvailability(selectedCellsCopy);
+            Dictionary<string, object> sortCellObj = SortCellList(selectedCellsCopy);
+            if (sortCellObj == null) return null;
+            selectedCellsCopy = (List<Cell>)sortCellObj["SortedCells"];
+            Dictionary<string, object> cellNeighborMatrixObject = FormsCellNeighborMatrix(selectedCellsCopy);
+            List<List<int>> cellNeighborMatrix = (List<List<int>>)cellNeighborMatrixObject["CellNeighborMatrix"];
+            Dictionary<string, object> borderObject = CreateBorder(cellNeighborMatrix, selectedCellsCopy, true, true);
+            Polygon2d borderPoly = (Polygon2d)borderObject["BorderPolyLine"];
             return new Dictionary<string, object>
             {
-                { "BuildingOutline", (polySqrStack) },
+                { "BuildingOutline", (borderPoly) },
                 { "AreaOfParts", (currentPoly) },
                 { "SubdividedPolys", (polySquares) },
                 { "SiteArea", (ptSquares) },
@@ -860,7 +874,7 @@ namespace SpacePlanning
                 { "BuildingOutlineArea", (polySqrStackCopy) },
                 { "GroundCoverAchieved", (areaPlaced/areaSite) },
                 { "SortedCells", (selectedCells)},
-                { "CellNeighborMatrix", (null) }
+                { "CellNeighborMatrix", (cellNeighborMatrix) }
             };
         }
 
@@ -869,18 +883,21 @@ namespace SpacePlanning
         [MultiReturn(new[] { "BuildingOutline", "AreaOfParts", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells", "CellNeighborMatrix" })]
         public static Dictionary<string, object> FormBuildingIterator(Polygon2d orthoSiteOutline, List<Cell> cellListInp, List<Point2d> attractorPoints = default(List<Point2d>), List<double> weightList = default(List<double>), double groundCoverage = 0.5, int iteration = 100, int dummy = 100)
         {
-            int count = 0, maxTry = 100;
+            if (iteration < 1) iteration = 1;
+            int count = 0, maxTry = 200;
             bool worked = false;
+            double groundCoverAchieved = 0;
             Dictionary<string, object> formBuildingOutlineObj = new Dictionary<string, object>();
             while (count < maxTry && !worked)
             {
                 count += 1;
                 Trace.WriteLine("||||||||||||||||||||||||||||||trying to get the form we want : " + count);
                 formBuildingOutlineObj = FormBuildingOutlineTest(orthoSiteOutline, cellListInp, attractorPoints, weightList, groundCoverage, iteration, dummy);
-                double groundCoverAchieved = (double)formBuildingOutlineObj["GroundCoverAchieved"];
+              
                 if (formBuildingOutlineObj == null) iteration += 1;
                 else
                 {
+                    groundCoverAchieved = (double)formBuildingOutlineObj["GroundCoverAchieved"];
                     if (Math.Abs(groundCoverAchieved - groundCoverage) < 0.05) worked = true;
                     else iteration += 1;
                 }
@@ -956,6 +973,7 @@ namespace SpacePlanning
         [MultiReturn(new[] { "SortedCells", "SortedCellIndices", "XYEqualtionList" })]
         public static Dictionary<string, object> SortCellList(List<Cell> cellLists)
         {
+            if (cellLists == null || cellLists.Count == 0) return null;
             List<Cell> newCellLists = new List<Cell>();
             for (int i = 0; i < cellLists.Count; i++) newCellLists.Add(new Cell(cellLists[i]));
             List<Point2d> cellCenterPtLists = new List<Point2d>();

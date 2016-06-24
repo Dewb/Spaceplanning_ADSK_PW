@@ -188,6 +188,7 @@ namespace SpacePlanning
         public static Dictionary<string, object> FindProgCirculationNetwork(List<DeptData> deptData, Polygon2d buildingOutline, List<Polygon2d> leftOverPoly = null)
         {
             if (!ValidateObject.CheckPoly(buildingOutline)) return null;
+            if (deptData == null) return null;
             List<Polygon2d> polygonsAllProgList = new List<Polygon2d>();
             List<DeptData> deptDataAllDeptList = new List<DeptData>();
             List<List<Line2d>> lineCollection = new List<List<Line2d>>();
