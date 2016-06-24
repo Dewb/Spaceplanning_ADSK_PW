@@ -331,11 +331,12 @@ namespace SpacePlanning
             List<Cell> sortedCells = new List<Cell>();
             List<List<int>> cellNeighborMatrix = new List<List<int>>(); 
             List<Polygon2d> cellsFound = new List<Polygon2d>();
-            int minCells = 350;
+            int minCells = 500, maxCells = 900;
             double dimAdjusted = cellDim;
             double areaPoly = PolygonUtility.AreaPolygon(polyOutline), eps = 0.01;
             int numCells = (int)(areaPoly/(dimAdjusted*dimAdjusted));
             if (numCells < minCells) dimAdjusted = Math.Sqrt(areaPoly / minCells);
+            if (numCells > maxCells) dimAdjusted = Math.Sqrt(areaPoly / maxCells);
             bool checkOut = false;
             int count = 0;
             while (!checkOut && count < iteration)
@@ -884,26 +885,40 @@ namespace SpacePlanning
         public static Dictionary<string, object> FormBuildingIterator(Polygon2d orthoSiteOutline, List<Cell> cellListInp, List<Point2d> attractorPoints = default(List<Point2d>), List<double> weightList = default(List<double>), double groundCoverage = 0.5, int iteration = 100, int dummy = 100)
         {
             if (iteration < 1) iteration = 1;
-            int count = 0, maxTry = 200;
+            int count = 0, maxTry = 600;
             bool worked = false;
-            double groundCoverAchieved = 0;
+            double groundCoverAchieved = 0, gcDifference = 0, gcDifferenceBest = 10000;
             Dictionary<string, object> formBuildingOutlineObj = new Dictionary<string, object>();
+            Dictionary<string, object> formBuildingOutlineObjBest = new Dictionary<string, object>();
             while (count < maxTry && !worked)
             {
                 count += 1;
                 Trace.WriteLine("||||||||||||||||||||||||||||||trying to get the form we want : " + count);
                 formBuildingOutlineObj = FormBuildingOutlineTest(orthoSiteOutline, cellListInp, attractorPoints, weightList, groundCoverage, iteration, dummy);
-              
-                if (formBuildingOutlineObj == null) iteration += 1;
-                else
+
+                if (formBuildingOutlineObj == null)
                 {
+                  if (dummy < 1) dummy = (int)BasicUtility.RandomBetweenNumbers(new Random(iteration), 20, 7);
+                  iteration += 1;
+                  dummy -= 1;
+                }
+                else
+                {                   
                     groundCoverAchieved = (double)formBuildingOutlineObj["GroundCoverAchieved"];
-                    if (Math.Abs(groundCoverAchieved - groundCoverage) < 0.05) worked = true;
-                    else iteration += 1;
+                    gcDifference = Math.Abs(groundCoverAchieved - groundCoverage);
+                    if (gcDifference < 0.05) worked = true;
+                    else
+                    {
+                        if (dummy < 1) dummy = (int)BasicUtility.RandomBetweenNumbers(new Random(iteration), 20, 7);
+                        iteration += 1;
+                        dummy -= 1;
+                    }
+                    if (gcDifference < gcDifferenceBest) { formBuildingOutlineObjBest = formBuildingOutlineObj; gcDifferenceBest = gcDifference; }
                 }
                 Trace.WriteLine("+++++++++++++++Difference in GC is : " + Math.Abs(groundCoverAchieved - groundCoverage));
             }// end of while loop
-            return formBuildingOutlineObj;
+            formBuildingOutlineObjBest["BuildingOutlineArea"] = count;
+            return formBuildingOutlineObjBest;
         }
 
 

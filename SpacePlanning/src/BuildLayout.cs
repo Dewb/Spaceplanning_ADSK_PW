@@ -19,7 +19,7 @@ namespace SpacePlanning
         internal static Random RANGENERATE = new Random();
         internal static double RECURSE = 0;
         internal static Point2d REFERENCEPOINT = new Point2d(0,0);
-        internal static int MAXCOUNT = 40, MAXROUND = 50;
+        internal static int MAXCOUNT = 20, MAXROUND = 50;
 
         #region - Public Methods
 
