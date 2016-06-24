@@ -331,7 +331,7 @@ namespace SpacePlanning
             List<Cell> sortedCells = new List<Cell>();
             List<List<int>> cellNeighborMatrix = new List<List<int>>(); 
             List<Polygon2d> cellsFound = new List<Polygon2d>();
-            int minCells = 250;
+            int minCells = 350;
             double dimAdjusted = cellDim;
             double areaPoly = PolygonUtility.AreaPolygon(polyOutline), eps = 0.01;
             int numCells = (int)(areaPoly/(dimAdjusted*dimAdjusted));
