@@ -738,15 +738,14 @@ namespace SpacePlanning
             if (cellListInp == null) return null;
             if (!ValidateObject.CheckPoly(orthoSiteOutline)) return null;
             List<Cell> cellList = cellListInp.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy 
-            if(attractorPoints != null && weightList!= null) cellList = RemoveCellsBasedOnAttractors(cellList, attractorPoints, weightList);        
+            //if(attractorPoints != null && weightList!= null) cellList = RemoveCellsBasedOnAttractors(cellList, attractorPoints, weightList);        
             double eps = 0.05, fac = 0.95, whole = 1, prop = 0;
             int number = (int)BasicUtility.RandomBetweenNumbers(new Random(iteration), 2, 6);
             number = dummy;
-            int count = 0, dir = 0, prevDir = 0, index =0, countInner =0, countCircleMode = 0;
+            int count = 0, dir = 0, prevDir = 0, countInner =0, countCircleMode = 0;
 
             if (groundCoverage < eps) groundCoverage = 2 * eps;
             if (groundCoverage > 0.8) groundCoverage = 0.8;
-            //double groundCoverLow = groundCoverage - eps, groundCoverHigh = groundCoverage + eps;
             double areaSite = PolygonUtility.AreaPolygon(orthoSiteOutline), areaPlaced = 0;
             double areaBuilding = groundCoverage * areaSite, areaLeft = 10000;
             List<double> areaPartsList = new List<double>();
@@ -840,7 +839,13 @@ namespace SpacePlanning
                 areaLeft = areaBuilding - areaPlaced;
 
 
-                if (areaLeft == areaPrevLeft) { Trace.WriteLine("No change in area@@@@@@@@@@@@@@@@@@@@@@@@  " + countInner); countInner += 1; }
+                if (areaLeft == areaPrevLeft)
+                {
+                    Trace.WriteLine("No change in area@@@@@@@@@@@@@@@@@@@@@@@@  " + countInner);
+                    Trace.WriteLine("Poly Count in Queue@@@@@@@@@@@@@@@@@@@@@@@@  " + polySqrStack.Count);
+                    if (polySqrStack.Count > 0) currentPoly = polySqrStack.Dequeue();
+                    countInner += 1;
+                }
                 else countInner = 0;
             }// end of while loop
 
@@ -858,6 +863,32 @@ namespace SpacePlanning
                 { "CellNeighborMatrix", (null) }
             };
         }
+
+
+
+        [MultiReturn(new[] { "BuildingOutline", "AreaOfParts", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells", "CellNeighborMatrix" })]
+        public static Dictionary<string, object> FormBuildingIterator(Polygon2d orthoSiteOutline, List<Cell> cellListInp, List<Point2d> attractorPoints = default(List<Point2d>), List<double> weightList = default(List<double>), double groundCoverage = 0.5, int iteration = 100, int dummy = 100)
+        {
+            int count = 0, maxTry = 100;
+            bool worked = false;
+            Dictionary<string, object> formBuildingOutlineObj = new Dictionary<string, object>();
+            while (count < maxTry && !worked)
+            {
+                count += 1;
+                Trace.WriteLine("||||||||||||||||||||||||||||||trying to get the form we want : " + count);
+                formBuildingOutlineObj = FormBuildingOutlineTest(orthoSiteOutline, cellListInp, attractorPoints, weightList, groundCoverage, iteration, dummy);
+                double groundCoverAchieved = (double)formBuildingOutlineObj["GroundCoverAchieved"];
+                if (formBuildingOutlineObj == null) iteration += 1;
+                else
+                {
+                    if (Math.Abs(groundCoverAchieved - groundCoverage) < 0.05) worked = true;
+                    else iteration += 1;
+                }
+                Trace.WriteLine("+++++++++++++++Difference in GC is : " + Math.Abs(groundCoverAchieved - groundCoverage));
+            }// end of while loop
+            return formBuildingOutlineObj;
+        }
+
 
         //checks if cells are withing the range of given attractor points, with respective weight values.
         public static List<Cell> RemoveCellsBasedOnAttractors( List<Cell> cellListInp,List<Point2d> attractorPointList, List<double> weightList)
