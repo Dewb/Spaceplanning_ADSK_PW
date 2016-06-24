@@ -732,12 +732,13 @@ namespace SpacePlanning
         }
 
         [MultiReturn(new[] { "BuildingOutline", "AreaOfParts", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells", "CellNeighborMatrix" })]
-        public static Dictionary<string, object> FormBuildingOutlineTest(Polygon2d orthoSiteOutline, List<Cell> cellListInp, double groundCoverage = 0.5, int iteration = 100, int dummy=100)
+        public static Dictionary<string, object> FormBuildingOutlineTest(Polygon2d orthoSiteOutline, List<Cell> cellListInp, List<Point2d> attractorPoints = default(List<Point2d>), List<double>weightList = default(List<double>), double groundCoverage = 0.5, int iteration = 100, int dummy=100)
         {
             bool randomAllow = true, tag = true;
             if (cellListInp == null) return null;
             if (!ValidateObject.CheckPoly(orthoSiteOutline)) return null;
-            List<Cell> cellList = cellListInp.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy           
+            List<Cell> cellList = cellListInp.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy 
+            if(attractorPoints != null && weightList!= null) cellList = RemoveCellsBasedOnAttractors(cellList, attractorPoints, weightList);        
             double eps = 0.05, fac = 0.95, whole = 1, prop = 0;
             int number = (int)BasicUtility.RandomBetweenNumbers(new Random(iteration), 2, 6);
             number = dummy;
@@ -786,6 +787,7 @@ namespace SpacePlanning
                 Trace.WriteLine("lets place square again  ========================== : " + count);
                 if (!deQueueMode)
                 {
+                    dir = 0;
                     currentPoly = PolygonUtility.SquareByCenter(center, dist);
                     polySqrStack.Enqueue(currentPoly);
                     polySqrStackCopy.Enqueue(currentPoly);
@@ -856,201 +858,30 @@ namespace SpacePlanning
                 { "CellNeighborMatrix", (null) }
             };
         }
-        //makes orhtogonal form as polygon2d based on input ground coverage
-        /// <summary>
-        /// Builds the building outline form based on input site outline and ground coverage
-        /// </summary>
-        /// <param name="borderPoly">Orthogonal border polygon2d of the site outline</param>
-        /// <param name="origSitePoly">Original polygon2d of the site outline</param>
-        /// <param name="cellList">List of cell objects inside the site</param>
-        /// <param name="groundCoverage">Expected ground coverage, value between 0.2 to 0.8</param>
-        /// <param name="iteration">Number of times the node should iterate untill it retreives form satisfying ground coverage.</param>
-        /// <returns name="BuildingOutline">Polygon2d representing orthogonal poly outline.</returns>
-        /// <returns name="WholesomePolys">List of Polygon2d each wholesame having four sides.</returns>  
-        /// <returns name="SiteArea">Area of the site outline.</returns> 
-        /// <returns name="BuildingOutlineArea">Area of the building outline formed.</returns> 
-        /// <returns name="GroundCoverAchieved">Ground coverage achieved, value between 0.2 to 0.8.</returns> 
-        /// <returns name="SortedCells">Sorted cell objects.</returns> 
-        /// <search>
-        /// form maker, buildingoutline, orthogonal forms
-        /// </search>
-        [MultiReturn(new[] { "BuildingOutline", "SiteArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells" })]
-        internal static Dictionary<string, object> MakeBuildingOutline2(Polygon2d origSitePoly,
-            List<Cell> cellList, List<List<int>> cellNeighborMatrixInp, double groundCoverage = 0.5, int iteration = 100)
+
+        //checks if cells are withing the range of given attractor points, with respective weight values.
+        public static List<Cell> RemoveCellsBasedOnAttractors( List<Cell> cellListInp,List<Point2d> attractorPointList, List<double> weightList)
         {
-            if (cellList == null) return null;
-            if (!ValidateObject.CheckPoly(origSitePoly)) return null;
-            double eps = 0.05, fac = 0.95;
-
-            if (groundCoverage < eps) groundCoverage = 2 * eps;
-            if (groundCoverage > 0.8) groundCoverage = 0.8;
-            //double groundCoverLow = groundCoverage - eps, groundCoverHigh = groundCoverage + eps;
-            double areaSite = PolygonUtility.AreaPolygon(origSitePoly), areaPlaced = 0;
-            double areaBuilding = groundCoverage * areaSite;
-            Dictionary<string, object> sortCellObj = SortCellList(cellList);
-            cellList = (List<Cell>)sortCellObj["SortedCells"];
-            Random ran = new Random();
+            if (cellListInp == null || attractorPointList == null || weightList == null) return null;
+            List<Cell> cellList = cellListInp.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy           
             List<Cell> selectedCells = new List<Cell>();
-            int index = (int)BasicUtility.RandomBetweenNumbers(new Random(), cellList.Count, 0), count =0, count2=0;
-            Trace.WriteLine("+++++++++++++++++++++++++++++++++++++++");
-            Trace.WriteLine("First Index : " + index);
-            Stack<int> cellsToIndex = new Stack<int>();
-            while (areaPlaced < fac * areaBuilding)
+            List<Polygon2d> circleList = new List<Polygon2d>();
+            for(int i = 0; i < attractorPointList.Count; i++) circleList.Add(PolygonUtility.CircleByRadius(attractorPointList[i], weightList[i]));
+            for (int i = 0; i < cellList.Count; i++)
             {
-                int preIndex = index;
-                count += 1;
-                Trace.WriteLine("Iterating for : " + count + " Index selected is  : " + index);
-                bool indexUpdate = false;
-                List<Cell> cellsReview = new List<Cell>();
-                count += 1;
-                Cell cellitem = cellList[index];
-                if (cellitem.CellAvailable)
+                bool inside = false;
+                for(int j = 0; j < circleList.Count; j++)
                 {
-                    cellList[index].CellAvailable = false;
-                    cellsReview.Add(cellitem);
-                    areaPlaced += cellitem.CellArea;
+                    Polygon2d currentPoly = circleList[j];
+                    if (GraphicsUtility.PointInsidePolygonTest(currentPoly, cellList[i].CenterPoint)) { inside = true; break; }            
                 }
-                List<int> neighborCells = cellNeighborMatrixInp[index];
-                neighborCells.RemoveAll(s => s==-1);
-                for(int i = 0; i < neighborCells.Count; i++)
-                {
-                    if (cellList[neighborCells[i]].CellAvailable)
-                    {
-                        if(!indexUpdate) index = neighborCells[i];
-                        else { cellsToIndex.Push(index); }
-                        indexUpdate = true;                      
-                        cellsReview.Add(cellList[neighborCells[i]]);
-                        cellList[neighborCells[i]].CellAvailable = false;
-                        areaPlaced += cellList[neighborCells[i]].CellArea;
-                    }
-                }       
-                if(preIndex == index)
-                {
-                    count2 += 1;
-                    if (cellsToIndex.Count > 0) index = cellsToIndex.Pop();
-                    else { break; }
-                    Trace.WriteLine("Index did not update : " + count2);
-                }
-                else
-                {
-                    selectedCells.AddRange(cellsReview);
-                }
-                Trace.WriteLine("Cells to index on stack is : " + cellsToIndex.Count);
-                //if (count2 > 10) break;    
+                if (!inside) selectedCells.Add(cellList[i]);
 
-            }
-
-            Trace.WriteLine("+++++++++++++++++++++++++++++++++++++++");
-            Trace.WriteLine("AreaNeeded : " + areaBuilding);
-            Trace.WriteLine("AreaPlaced : " + areaPlaced);
-            Dictionary<string, object> cellNeighborMatrixObject = FormsCellNeighborMatrix(selectedCells);
-            List<List<int>> cellNeighborMatrix = (List<List<int>>)cellNeighborMatrixObject["CellNeighborMatrix"];
-            Dictionary<string, object> borderObject = CreateBorder(cellNeighborMatrix, selectedCells, true, true);
-            Polygon2d borderPoly = (Polygon2d)borderObject["BorderPolyLine"];
-
-
-            return new Dictionary<string, object>
-            {
-                { "BuildingOutline", (borderPoly) },
-                { "SiteArea", (areaSite) },
-                { "BuildingOutlineArea", (areaPlaced) },
-                { "GroundCoverAchieved", (areaPlaced/areaSite) },
-                { "SortedCells", (selectedCells)}
-            };
+            }// end of for loop
+            return selectedCells;
         }
 
-
-
-        //makes orhtogonal form as polygon2d based on input ground coverage
-        /// <summary>
-        /// Builds the building outline form based on input site outline and ground coverage
-        /// </summary>
-        /// <param name="borderPoly">Orthogonal border polygon2d of the site outline</param>
-        /// <param name="origSitePoly">Original polygon2d of the site outline</param>
-        /// <param name="cellList">List of cell objects inside the site</param>
-        /// <param name="groundCoverage">Expected ground coverage, value between 0.2 to 0.8</param>
-        /// <param name="iteration">Number of times the node should iterate untill it retreives form satisfying ground coverage.</param>
-        /// <returns name="BuildingOutline">Polygon2d representing orthogonal poly outline.</returns>
-        /// <returns name="WholesomePolys">List of Polygon2d each wholesame having four sides.</returns>  
-        /// <returns name="SiteArea">Area of the site outline.</returns> 
-        /// <returns name="BuildingOutlineArea">Area of the building outline formed.</returns> 
-        /// <returns name="GroundCoverAchieved">Ground coverage achieved, value between 0.2 to 0.8.</returns> 
-        /// <returns name="SortedCells">Sorted cell objects.</returns> 
-        /// <search>
-        /// form maker, buildingoutline, orthogonal forms
-        /// </search>
-        [MultiReturn(new[] { "BuildingOutline","SelectedPolygons", "SiteArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells" })]
-        internal static Dictionary<string, object> MakeFormBasedOnSplits(Polygon2d origSitePoly,
-            List<Cell> cellList, double acceptableWidth = 10, double groundCoverage = 0.5, int iteration = 100)
-        {
-            if (cellList == null) return null;
-            if (!ValidateObject.CheckPoly(origSitePoly)) return null;
-            double eps = 0.05, fac = 0.95, ratio = 0.6;
-            int count = 0, maxTry = 100, cirFreq = 10;
-            if (groundCoverage < eps) groundCoverage = 2 * eps;
-            if (groundCoverage > 0.8) groundCoverage = 0.8;
-            //double groundCoverLow = groundCoverage - eps, groundCoverHigh = groundCoverage + eps;
-            double areaSite = PolygonUtility.AreaPolygon(origSitePoly), areaPlaced = 0;
-            double areaBuilding = groundCoverage * areaSite;
-            Dictionary<string, object> sortCellObj = SortCellList(cellList);
-            cellList = (List<Cell>)sortCellObj["SortedCells"];
-            Random ran = new Random();
-     
-   
-            List<List<Polygon2d>> polySubDivs = new List<List<Polygon2d>>();
-            List<Polygon2d> polyAvailable = new List<Polygon2d> { origSitePoly };
-            polySubDivs = SplitObject.SplitRecursivelyToSubdividePoly(polyAvailable, acceptableWidth, cirFreq, ratio);
-            bool checkPoly1 = ValidateObject.CheckPolygon2dListOrtho(polySubDivs[0], 0.5);
-            bool checkPoly2 = ValidateObject.CheckPolygon2dListOrtho(polySubDivs[1], 0.5);
-            while (polySubDivs == null || polySubDivs.Count == 0 || !checkPoly1 || !checkPoly2 && count < maxTry)
-            {
-                count += 1;
-                ratio -= 0.01;
-                if (ratio < 0) ratio = 0.6; break;
-                //Trace.WriteLine("Ratio problem faced , ratio reduced to : " + ratio);
-                polySubDivs = SplitObject.SplitRecursivelyToSubdividePoly(polyAvailable, acceptableWidth, cirFreq, ratio);
-            }
-            List<Polygon2d> polyList = new List<Polygon2d>(), polySelected = new List<Polygon2d>();
-            for (int i = 0; i<polySubDivs.Count; i++) polyList.AddRange(polySubDivs[i]);
-            for (int i = 0; i < polyList.Count; i++)
-            {
-                areaPlaced += PolygonUtility.AreaPolygon(polyList[i]);
-                polySelected.Add(polyList[i]);                
-                if (areaPlaced > fac * areaBuilding) {Trace.WriteLine("area reached need : " + areaPlaced); break;}
-                else { Trace.WriteLine("Area still needs to be added"); }
-            }
-            List<Cell> selectedCells = new List<Cell>();
-            for(int i = 0; i < cellList.Count; i++)
-            {
-                for (int j = 0; j < polySelected.Count; j++)
-                {
-                    if (GraphicsUtility.PointInsidePolygonTest(polySelected[j], cellList[i].LeftDownCorner))
-                    {
-                        selectedCells.Add(cellList[i]);
-                        break;
-                    }
-                }
-            }
-
-               
-            Dictionary<string, object> cellNeighborMatrixObject = FormsCellNeighborMatrix(selectedCells);
-            List<List<int>> cellNeighborMatrix = (List<List<int>>)cellNeighborMatrixObject["CellNeighborMatrix"];
-            Dictionary<string, object> borderObject = CreateBorder(cellNeighborMatrix, selectedCells, true, true);
-            Polygon2d borderPoly = (Polygon2d)borderObject["BorderPolyLine"];
-            double areaFinal = PolygonUtility.AreaPolygon(borderPoly);
-
-
-            return new Dictionary<string, object>
-            {
-                { "BuildingOutline", (borderPoly) },
-                { "SelectedPolygons", (polySelected) },
-                { "SiteArea", (areaSite) },
-                { "BuildingOutlineArea", (areaFinal) },
-                { "GroundCoverAchieved", (areaFinal/areaSite) },
-                { "SortedCells", (selectedCells)}
-            };
-        }
-
+       
         //make cells inside polgon2d
         /// <summary>
         /// Builds cell objects inside a given polygon2d

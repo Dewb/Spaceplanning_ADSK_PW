@@ -705,6 +705,21 @@ namespace SpacePlanning
             return new Polygon2d(ptList);
         }
 
+        //makes a square polygon2d
+        public static Polygon2d CircleByRadius(Point2d center, double radius = 5, int segments = 10)
+        {
+            if (center == null) return null;
+            List<Point2d> ptList = new List<Point2d>();
+            for (int i = 0; i < segments; i++)
+            {
+                //double x = radius * Math.Cos(360 * (i+1) / segments), y = radius * Math.Sin(360 * (i+1)/ segments);
+                double x = center.X + radius * Math.Cos((Math.PI/ 180) *(360 * (i + 1) / segments)), y = center.Y + radius * Math.Sin((Math.PI/ 180)*(360 * (i + 1) / segments));
+                ptList.Add(new Point2d(x, y));
+            }            
+            return new Polygon2d(ptList);
+        }
+
+
         //finds a center point with respect to a given poly. Directions are: 0 = right, 1 = up, 2 = left, 3 = down
         public static Point2d FindPointOnPolySide(Polygon2d poly, int dir = 0, double dist = 10)
         {
