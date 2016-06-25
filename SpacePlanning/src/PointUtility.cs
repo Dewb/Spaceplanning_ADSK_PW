@@ -179,7 +179,8 @@ namespace SpacePlanning
             int index = 0;
             for (int i = 0; i < size; i++)
             {
-                if ((highestPoint.X < ptList[i].X) || (highestPoint.X == ptList[i].X && highestPoint.Y < ptList[i].Y))
+                //if ((highestPoint.X < ptList[i].X) || (highestPoint.X == ptList[i].X && highestPoint.Y < ptList[i].Y))
+                if ((highestPoint.Y < ptList[i].Y) || (highestPoint.Y == ptList[i].Y && highestPoint.X < ptList[i].X))
                 {
                     highestPoint = ptList[i];
                     index = i;
@@ -412,6 +413,21 @@ namespace SpacePlanning
             Range2d xyRange = new Range2d(x, y);
 
             return xyRange;
+        }
+
+
+        //returns the points on the required side of a given line, 0 is left or up, 1 is right or down
+        internal static List<Point2d> PointOnSide(Line2d line, List<Point2d> ptList, int side)
+        {
+            if (line == null || !ValidateObject.CheckPointList(ptList)) return null;
+            List<Point2d> selectedPts = new List<Point2d>();
+            if(side == 0)
+            {
+
+            }
+
+            return selectedPts;
+
         }
         #endregion
 

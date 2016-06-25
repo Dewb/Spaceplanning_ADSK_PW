@@ -8,7 +8,7 @@ namespace stuffer
   {
     protected double m_x;
     protected double m_y;
-    int number = 4;
+    int number = 10; // rounded to this many places
 
     internal Point2d(double x, double y)
     {  
@@ -24,7 +24,7 @@ namespace stuffer
       m_y = other.Y;
     }
 
-    public static Point2d ByCoordinates(double x, double y, int number = 4)
+    public static Point2d ByCoordinates(double x, double y, int number = 10)
     {
       return new Point2d(Math.Round(x,number),  Math.Round(y,number));
       //return new Point2d(x, y);

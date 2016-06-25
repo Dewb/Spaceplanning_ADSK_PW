@@ -27,7 +27,7 @@ namespace SpacePlanning
     
 
         //gives the highest and lowest point from poly points
-        internal static List<Point2d> GetLowestAndHighestPointFromPoly(Polygon2d poly)
+        public static List<Point2d> GetLowestAndHighestPointFromPoly(Polygon2d poly)
         {
             List<Point2d> returnPts = new List<Point2d>();
             List<Point2d> ptList = poly.Points;
@@ -714,11 +714,21 @@ namespace SpacePlanning
             {
                 double x = center.X + radius * Math.Cos((Math.PI/ 180) *(360 * (i + 1) / segments)), y = center.Y + radius * Math.Sin((Math.PI/ 180)*(360 * (i + 1) / segments));
                 Point2d pt = new Point2d(x, y);
-                Trace.WriteLine("Points are : " + pt.X + " , " + pt.Y);
+                //Trace.WriteLine("Points are : " + pt.X + " , " + pt.Y);
                 ptList.Add(pt);
             }            
             return new Polygon2d(ptList);
         }
+
+        //makes a square polygon2d
+        public static Polygon2d RectangleByLowHighPoint(Point2d low, Point2d high)
+        {
+            Point2d lowOne = Point2d.ByCoordinates(high.X, low.Y);
+            Point2d highOne = Point2d.ByCoordinates(low.X,high.Y);
+            List<Point2d> ptList = new List<Point2d>() { low,lowOne,high,highOne};
+            return new Polygon2d(ptList);
+        }
+
 
 
         //finds a center point with respect to a given poly. Directions are: 0 = right, 1 = up, 2 = left, 3 = down
@@ -751,18 +761,179 @@ namespace SpacePlanning
             return centerFound;
         }
 
-        //places a point randomly inside a poly | padding should be between 0.2 to 1.0
-        public static Point2d PlaceRandomPointInsidePoly(Polygon2d poly, int seed = 1)
+        //places a point randomly inside a poly | padding should be between 0.2 to 1.0. -1 = anywhere, 0 = towards upper right, 1 = towards lower left
+        public static Point2d PlaceRandomPointInsidePoly(Polygon2d poly, int seed = 1, int side = -1)
         {
             if (!ValidateObject.CheckPoly(poly)) return null;
-            Point2d centerFound = new Point2d(0, 0);
+            Point2d centerFound = new Point2d(0, 0), low = new Point2d(0, 0), high = new Point2d(0, 0);
             List<Point2d> lowAndHighPt = GetLowestAndHighestPointFromPoly(poly);
-            Point2d low = lowAndHighPt[0];
-            Point2d high = lowAndHighPt[1];
+            if (side == 0) // upper right
+            {
+                low = centerFound;
+                high = lowAndHighPt[1];
+            }
+            else if ( side == 1) // loower left
+            {
+                low = lowAndHighPt[0];
+                high = centerFound;
+            }
+            else // default, anywhere
+            {
+                low = lowAndHighPt[0];
+                high = lowAndHighPt[1];
+            }
+           
             Random rnd = new Random(seed);
             double x = BasicUtility.RandomBetweenNumbers(rnd, high.X, low.X);
             double y = BasicUtility.RandomBetweenNumbers(rnd, high.Y, low.Y);
-            return new Point2d(x, y);       
+            Point2d pointFound = new Point2d(x, y);
+            bool pointInside = false;
+            int count = 0, maxTry = 100;
+            while (!pointInside && count < maxTry)
+            {
+                count += 1;
+                if (GraphicsUtility.PointInsidePolygonTest(poly, pointFound)) pointInside = true;
+            }
+            return pointFound;
+
+        }
+
+
+        //places a point randomly inside a poly | padding should be between 0.2 to 1.0. -1 = anywhere, 0 = towards upper right, 1 = towards lower left
+        [MultiReturn(new[] { "RandomPoint", "LowPoint", "HighPoint" })]
+        public static Dictionary<string,object> PlaceRandomPointInsidePolyTest(Polygon2d poly, int seed = 1, int side = -1)
+        {
+            if (!ValidateObject.CheckPoly(poly)) return null;
+            Point2d centerFound = new Point2d(0, 0), low = new Point2d(0, 0), high = new Point2d(0, 0);
+            List<Point2d> lowAndHighPt = GetLowestAndHighestPointFromPoly(poly);
+            if (side == 0) // upper right
+            {
+                low = centerFound;
+                high = lowAndHighPt[1];
+            }
+            else if (side == 1) // loower left
+            {
+                low = lowAndHighPt[0];
+                high = centerFound;
+            }
+            else // default, anywhere
+            {
+                low = lowAndHighPt[0];
+                high = lowAndHighPt[1];
+            }
+
+            Random rnd = new Random(seed);
+            double x = BasicUtility.RandomBetweenNumbers(rnd, high.X, low.X);
+            double y = BasicUtility.RandomBetweenNumbers(rnd, high.Y, low.Y);
+            Point2d pointFound = new Point2d(x, y);
+            bool pointInside = false;
+            int count = 0, maxTry = 100;
+            while (!pointInside && count < maxTry)
+            {
+                count += 1;
+                if (GraphicsUtility.PointInsidePolygonTest(poly, pointFound)) pointInside = true;
+            }
+            //return pointFound;
+            return new Dictionary<string, object>
+            {
+                { "RandomPoint", (pointFound) },
+                { "LowPoint", (low) },
+                { "HighPoint", (high) }
+
+            };
+        }
+
+
+        //places a point randomly inside a poly | padding should be between 0.2 to 1.0. -1 = anywhere, 0 = towards upper right, 1 = towards lower left
+        [MultiReturn(new[] { "RandomPoint", "FoundPointList", "LineSelected"})]
+        public static Dictionary<string, object> GetPointOnOneQuadrantTest(Polygon2d poly, int seed = 1, int side = -1, double scale = 0.5)
+        {
+            if (!ValidateObject.CheckPoly(poly)) return null;
+            Point2d centerFound = CentroidOfPoly(poly);
+            //Point2d ptA = new Point2d(centerFound.X, centerFound.Y + 2000), ptB = new Point2d(centerFound.X, centerFound.Y - 2000);
+            //Line2d centerVertLine = Line2d.ByStartPointEndPoint(ptA, ptB);
+            List<Point2d> pointLowerList = new List<Point2d>();
+            poly = new Polygon2d(SmoothPolygon(poly.Points, 3),0);
+         
+
+            
+          
+            if (side == 0) // upper right
+            {
+                for (int i = 0; i < poly.Points.Count; i++)
+                {
+                    if (poly.Points[i].X < centerFound.X && poly.Points[i].Y > centerFound.Y) pointLowerList.Add(poly.Points[i]);
+                }
+            }
+            else if (side == 1) // loower left
+            {
+                for (int i = 0; i < poly.Points.Count; i++)
+                {
+                    if (poly.Points[i].X < centerFound.X && poly.Points[i].Y < centerFound.Y) pointLowerList.Add(poly.Points[i]);
+                }
+            }
+            else // default, anywhere
+            {
+                pointLowerList = poly.Points;
+            }
+            int index = (int)BasicUtility.RandomBetweenNumbers(new Random(seed), pointLowerList.Count, 0);
+            Line2d lineSelected = new Line2d(centerFound, pointLowerList[index]);
+            Vector2d vec = new Vector2d(centerFound, pointLowerList[index]);
+            scale = BasicUtility.RandomBetweenNumbers(new Random(seed), 1, 0);
+            Point2d selectedPt = VectorUtility.VectorAddToPoint(centerFound, vec, scale);
+            return new Dictionary<string, object>
+            {
+                { "RandomPoint", (selectedPt) },    
+                { "FoundPointList", (pointLowerList) },
+                { "LineSelected", (lineSelected) }
+            };
+        }
+
+
+        //places a point randomly inside a poly | padding should be between 0.2 to 1.0. -1 = anywhere, 0 = towards upper right, 1 = towards lower left
+        [MultiReturn(new[] { "RandomPoint", "LowPoint", "HighPoint" })]
+        public static Dictionary<string, object> GetPointOnOneQuadrant(Polygon2d poly, int seed = 1, int side = -1)
+        {
+            if (!ValidateObject.CheckPoly(poly)) return null;
+            Point2d centerFound = CentroidOfPoly(poly), low = new Point2d(0, 0), high = new Point2d(0, 0);
+            Point2d ptA = new Point2d(centerFound.X, centerFound.Y + 2000), ptB = new Point2d(centerFound.X, centerFound.Y - 2000);
+            Line2d centerVertLine = Line2d.ByStartPointEndPoint(ptA, ptB);
+            List<Point2d> lowAndHighPt = GetLowestAndHighestPointFromPoly(poly);
+            if (side == 0) // upper right
+            {
+                low = centerFound;
+                high = lowAndHighPt[1];
+            }
+            else if (side == 1) // loower left
+            {
+                low = lowAndHighPt[0];
+                high = centerFound;
+            }
+            else // default, anywhere
+            {
+                low = lowAndHighPt[0];
+                high = lowAndHighPt[1];
+            }
+
+            Random rnd = new Random(seed);
+            double x = BasicUtility.RandomBetweenNumbers(rnd, high.X, low.X);
+            double y = BasicUtility.RandomBetweenNumbers(rnd, high.Y, low.Y);
+            Point2d pointFound = new Point2d(x, y);
+            bool pointInside = false;
+            int count = 0, maxTry = 100;
+            while (!pointInside && count < maxTry)
+            {
+                count += 1;
+                if (GraphicsUtility.PointInsidePolygonTest(poly, pointFound)) pointInside = true;
+            }
+            //return pointFound;
+            return new Dictionary<string, object>
+            {
+                { "RandomPoint", (pointFound) },
+                { "LowPoint", (low) },
+                { "HighPoint", (high) }
+
+            };
         }
 
     }
