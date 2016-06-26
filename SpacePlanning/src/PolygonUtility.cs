@@ -838,28 +838,31 @@ namespace SpacePlanning
             };
         }
 
-        //places a point randomly inside a poly | padding should be between 0.2 to 1.0. -1 = anywhere, 0 = towards upper right, 1 = towards lower left
+        //gets the extreme points from cell list, top right, top left, bottom right, bottom left
         [MultiReturn(new[] { "TopRightPoint", "TopLeftPoint", "BottomRightPoint", "BottomLeftPoint" })]
-        public static Dictionary<string, object> GetExtremePointsFromCells(List<Cell> cellList, bool whileMode = true)
+        public static Dictionary<string, object> GetExtremePointsFromCells(List<Cell> cellList)
         {
             if (cellList == null) return null;
             List<Point2d> ptLists = new List<Point2d>();
             for(int i = 0; i < cellList.Count; i++) ptLists.Add(cellList[i].CenterPoint);
+            return GetExtremePointsFromPoints(ptLists); 
+        }
+
+
+        //gets the extreme points from apoint list, top right, top left, bottom right, bottom left
+        [MultiReturn(new[] { "TopRightPoint", "TopLeftPoint", "BottomRightPoint", "BottomLeftPoint" })]
+        public static Dictionary<string, object> GetExtremePointsFromPoints(List<Point2d> ptLists)
+        {
+            if (!ValidateObject.CheckPointList(ptLists)) return null;
             Point2d topRight = ptLists[0], topLeft = ptLists[1], bottomRight = ptLists[0], bottomLeft = ptLists[0];
-            int count = 0, maxTry = 100;
-            if (!whileMode) maxTry = 1;
-            while(count < maxTry)
+            for (int i = 0; i < ptLists.Count; i++)
             {
-                count += 1;
-                for (int i = 0; i < ptLists.Count; i++)
-                {
-                    if (ptLists[i].X >= topRight.X && ptLists[i].Y >= topRight.Y) topRight = ptLists[i]; //top right corner point 
-                    if (ptLists[i].X <= topLeft.X && ptLists[i].Y >= topLeft.Y) topLeft = ptLists[i]; //top left corner point 
-                    if (ptLists[i].X >= bottomRight.X && ptLists[i].Y <= bottomRight.Y) bottomRight = ptLists[i]; //top right corner point 
-                    if (ptLists[i].X <= bottomLeft.X && ptLists[i].Y <= bottomLeft.Y) bottomLeft = ptLists[i]; //top right corner point 
-                }
+                if (ptLists[i].X >= topRight.X && ptLists[i].Y >= topRight.Y) topRight = ptLists[i]; //top right corner point 
+                if (ptLists[i].X <= topLeft.X && ptLists[i].Y >= topLeft.Y) topLeft = ptLists[i]; //top left corner point 
+                if (ptLists[i].X >= bottomRight.X && ptLists[i].Y <= bottomRight.Y) bottomRight = ptLists[i]; //bottom right corner point 
+                if (ptLists[i].X <= bottomLeft.X && ptLists[i].Y <= bottomLeft.Y) bottomLeft = ptLists[i]; //bottom right corner point 
             }
- 
+
             return new Dictionary<string, object>
             {
                 { "TopRightPoint", (topRight) },
@@ -868,7 +871,6 @@ namespace SpacePlanning
                 { "BottomLeftPoint", (bottomLeft) }
             };
         }
-
 
     }
 

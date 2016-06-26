@@ -750,7 +750,7 @@ namespace SpacePlanning
             double eps = 0.05, fac = 0.95, whole = 1, prop = 0;
             int number = (int)BasicUtility.RandomBetweenNumbers(new Random(iteration), 2, 6);
             number = dummy;
-            int count = 0, dir = 0, prevDir = 0, countInner =0, countCircleMode = 0;
+            int count = 0, dir = 0, prevDir = 0, countInner =0, countCircleMode = 0, countExtremeMode = 0, extremePointIndex = 0;
 
             if (groundCoverage < eps) groundCoverage = 2 * eps;
             if (groundCoverage > 0.8) groundCoverage = 0.8;
@@ -786,16 +786,18 @@ namespace SpacePlanning
                 center = (Point2d)quadrantObj["RandomPoint"];
                 //if(value > 0.75) center = PolygonUtility.PlaceRandomPointInsidePoly(orthoSiteOutline, iteration);
             }
+
+            Point2d topRight = new Point2d(0, 0), topLeft = topRight, bottomRight = topRight, bottomLeft = topRight;
             Queue<Polygon2d> polySqrStack = new Queue<Polygon2d>(), polySqrStackCopy = new Queue<Polygon2d>();
             dir = 0; // 0- right, 1 - up, 2 - left, 3 - down, 4 - down
      
             count = 0;
-            bool found = false, deQueueMode = false, circleMode = false;
+            bool found = false, deQueueMode = false, circleMode = false, sqrFinishedModed = false;
             dir = 0;
             double dist = Math.Sqrt(areaBuilding / dummy);
             //center = PolygonUtility.FindPointOnPolySide(currentPoly, dir, dist / 2);
             Trace.WriteLine("++++++++++++++++++++++++++");
-            while (areaLeft > 500 && countInner < 500) //count < 200
+            while (areaLeft > 500 && countInner < 50 && countExtremeMode < 50) 
             {               
                 prevDir = dir;
                 count += 1;
@@ -857,10 +859,35 @@ namespace SpacePlanning
 
                 if (areaLeft == areaPrevLeft)
                 {
-                    Trace.WriteLine("No change in area@@@@@@@@@@@@@@@@@@@@@@@@  " + countInner);
-                    Trace.WriteLine("Poly Count in Queue@@@@@@@@@@@@@@@@@@@@@@@@  " + polySqrStack.Count);
-                    if (polySqrStack.Count > 0) currentPoly = polySqrStack.Dequeue();
-                    countInner += 1;
+                    if (polySqrStack.Count > 0)
+                    {
+                        Trace.WriteLine("No change in area@@@@@@@@@@@@@@@@@@@@@@@@  " + countInner);
+                        countInner += 1;
+                        currentPoly = polySqrStack.Dequeue();
+                    }
+                    else
+                    {
+                        Trace.WriteLine("Poly Count in Queue@@@@@@@@@@@@@@@@@@@@@@@@  " + polySqrStack.Count);
+                        // do this when all modes tried
+                        //sqrFinishedModed = true;
+                        dist = Math.Sqrt(areaLeft);
+                        Dictionary<string, object> extremePtObj = PolygonUtility.GetExtremePointsFromCells(selectedCells);
+                        if(extremePtObj != null)
+                        {
+                            topRight = (Point2d)extremePtObj["TopRightPoint"];
+                            topLeft = (Point2d)extremePtObj["TopLeftPoint"];
+                            bottomRight = (Point2d)extremePtObj["BottomRightPoint"];
+                            bottomLeft = (Point2d)extremePtObj["BottomLeftPoint"];
+                            if (extremePointIndex == 0) { center = bottomLeft; extremePointIndex += 1; }
+                            else if (extremePointIndex == 1) { center = bottomRight; extremePointIndex += 1; }
+                            else if (extremePointIndex == 2) { center = topLeft; extremePointIndex += 1; }
+                            else { center = topRight; extremePointIndex += 1; }
+                            if (extremePointIndex > 3) extremePointIndex = 0;
+                            currentPoly = PolygonUtility.SquareByCenter(center, dist);
+                            polySqrStack.Enqueue(currentPoly);
+                        }                
+                        countExtremeMode += 1;
+                    }                    
                 }
                 else countInner = 0;
             }// end of while loop
@@ -898,7 +925,7 @@ namespace SpacePlanning
 
         [MultiReturn(new[] { "BuildingOutline", "AreaOfParts", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells", "CellNeighborMatrix" })]
         public static Dictionary<string, object> FormBuildingIterator(Polygon2d orthoSiteOutline, List<Cell> cellListInp, List<Point2d> attractorPoints = default(List<Point2d>), List<double> weightList = default(List<double>), 
-            double groundCoverage = 0.5, int iteration = 100, bool removeNotch = false, double minNotchDistance = 10, int dummy = 100)
+            double groundCoverage = 0.5, int iteration = 100, bool removeNotch = false, double minNotchDistance = 10)
         {
             if (iteration < 1) iteration = 1;
             int count = 0, maxTry = 600;
@@ -906,6 +933,7 @@ namespace SpacePlanning
             double groundCoverAchieved = 0, gcDifference = 0, gcDifferenceBest = 10000;
             Dictionary<string, object> formBuildingOutlineObj = new Dictionary<string, object>();
             Dictionary<string, object> formBuildingOutlineObjBest = new Dictionary<string, object>();
+            int dummy = (int)BasicUtility.RandomBetweenNumbers(new Random(iteration), 12, 3);
             while (count < maxTry && !worked)
             {
                 count += 1;
@@ -914,7 +942,7 @@ namespace SpacePlanning
 
                 if (formBuildingOutlineObj == null)
                 {
-                  if (dummy < 1) dummy = (int)BasicUtility.RandomBetweenNumbers(new Random(iteration), 20, 7);
+                  if (dummy < 1) dummy = (int)BasicUtility.RandomBetweenNumbers(new Random(iteration), 12, 3);
                   iteration += 1;
                   dummy -= 1;
                 }
