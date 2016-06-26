@@ -729,8 +729,6 @@ namespace SpacePlanning
             return new Polygon2d(ptList);
         }
 
-
-
         //finds a center point with respect to a given poly. Directions are: 0 = right, 1 = up, 2 = left, 3 = down
         public static Point2d FindPointOnPolySide(Polygon2d poly, int dir = 0, double dist = 10)
         {
@@ -840,8 +838,38 @@ namespace SpacePlanning
             };
         }
 
+        //places a point randomly inside a poly | padding should be between 0.2 to 1.0. -1 = anywhere, 0 = towards upper right, 1 = towards lower left
+        [MultiReturn(new[] { "TopRightPoint", "TopLeftPoint", "BottomRightPoint", "BottomLeftPoint" })]
+        public static Dictionary<string, object> GetExtremePointsFromCells(List<Cell> cellList, bool whileMode = true)
+        {
+            if (cellList == null) return null;
+            List<Point2d> ptLists = new List<Point2d>();
+            for(int i = 0; i < cellList.Count; i++) ptLists.Add(cellList[i].CenterPoint);
+            Point2d topRight = ptLists[0], topLeft = ptLists[1], bottomRight = ptLists[0], bottomLeft = ptLists[0];
+            int count = 0, maxTry = 100;
+            if (!whileMode) maxTry = 1;
+            while(count < maxTry)
+            {
+                count += 1;
+                for (int i = 0; i < ptLists.Count; i++)
+                {
+                    if (ptLists[i].X >= topRight.X && ptLists[i].Y >= topRight.Y) topRight = ptLists[i]; //top right corner point 
+                    if (ptLists[i].X <= topLeft.X && ptLists[i].Y >= topLeft.Y) topLeft = ptLists[i]; //top left corner point 
+                    if (ptLists[i].X >= bottomRight.X && ptLists[i].Y <= bottomRight.Y) bottomRight = ptLists[i]; //top right corner point 
+                    if (ptLists[i].X <= bottomLeft.X && ptLists[i].Y <= bottomLeft.Y) bottomLeft = ptLists[i]; //top right corner point 
+                }
+            }
+ 
+            return new Dictionary<string, object>
+            {
+                { "TopRightPoint", (topRight) },
+                { "TopLeftPoint", (topLeft) },
+                { "BottomRightPoint", (bottomRight) },
+                { "BottomLeftPoint", (bottomLeft) }
+            };
+        }
 
-      
+
     }
 
 }

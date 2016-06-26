@@ -795,7 +795,7 @@ namespace SpacePlanning
             double dist = Math.Sqrt(areaBuilding / dummy);
             //center = PolygonUtility.FindPointOnPolySide(currentPoly, dir, dist / 2);
             Trace.WriteLine("++++++++++++++++++++++++++");
-            while (areaLeft > 500 && countInner < 100) //count < 200
+            while (areaLeft > 500 && countInner < 500) //count < 200
             {               
                 prevDir = dir;
                 count += 1;
