@@ -776,7 +776,16 @@ namespace SpacePlanning
             List<Point2d> ptSquares = new List<Point2d>();
             Polygon2d currentPoly = new Polygon2d(orthoSiteOutline.Points);
             Point2d center = PolygonUtility.CentroidOfPoly(orthoSiteOutline);
-            if (randomAllow) center = PolygonUtility.PlaceRandomPointInsidePoly(orthoSiteOutline, iteration);
+            if (randomAllow)
+            {
+                int side = 0;                
+                double value = BasicUtility.RandomBetweenNumbers(new Random(iteration), 1, 0);
+                if (value > 0.5) side = 1;
+                else side = 0;
+                Dictionary<string, object> quadrantObj = PolygonUtility.GetPointOnOneQuadrantTest(orthoSiteOutline, iteration,side);
+                center = (Point2d)quadrantObj["RandomPoint"];
+                //if(value > 0.75) center = PolygonUtility.PlaceRandomPointInsidePoly(orthoSiteOutline, iteration);
+            }
             Queue<Polygon2d> polySqrStack = new Queue<Polygon2d>(), polySqrStackCopy = new Queue<Polygon2d>();
             dir = 0; // 0- right, 1 - up, 2 - left, 3 - down, 4 - down
      
@@ -787,8 +796,7 @@ namespace SpacePlanning
             //center = PolygonUtility.FindPointOnPolySide(currentPoly, dir, dist / 2);
             Trace.WriteLine("++++++++++++++++++++++++++");
             while (areaLeft > 500 && countInner < 100) //count < 200
-            {
-               
+            {               
                 prevDir = dir;
                 count += 1;
                 Trace.WriteLine("lets place square again  ========================== : " + count);
