@@ -1355,6 +1355,33 @@ namespace SpacePlanning
             };
         }
 
+        //adds more cells inside a cell , 0 =  4 cell, 1 = 16 cells
+        public static List<Cell> CellsAddinCell(Cell cell)
+        {
+            if (cell == null) return null;
+            double dimX = 0, dimY =0, num = 2;
+            List<Cell> cellAddedList = new List<Cell>();
+            Point2d centerPt = new Point2d(0, 0);
+
+            dimX = cell.DimX* 0.25; dimY = cell.DimY * 0.25;
+            centerPt = new Point2d(cell.LeftDownCorner.X + dimX, cell.LeftDownCorner.Y + dimY);
+            cellAddedList.Add(new Cell(centerPt, cell.DimX/ num, cell.DimY/ num, cell.CellAvailable));
+
+            dimX = cell.DimX * 0.75; dimY = cell.DimY * 0.25;
+            centerPt = new Point2d(cell.LeftDownCorner.X + dimX, cell.LeftDownCorner.Y + dimY);
+            cellAddedList.Add(new Cell(centerPt, cell.DimX / num, cell.DimY / num, cell.CellAvailable));
+
+            dimX = cell.DimX * 0.75; dimY = cell.DimY * 0.75;
+            centerPt = new Point2d(cell.LeftDownCorner.X + dimX, cell.LeftDownCorner.Y + dimY);
+            cellAddedList.Add(new Cell(centerPt, cell.DimX / num, cell.DimY / num, cell.CellAvailable));
+
+            dimX = cell.DimX * 0.25; dimY = cell.DimY * 0.75;
+            centerPt = new Point2d(cell.LeftDownCorner.X + dimX, cell.LeftDownCorner.Y + dimY);
+            cellAddedList.Add(new Cell(centerPt, cell.DimX / num, cell.DimY / num, cell.CellAvailable));
+            return cellAddedList;
+
+        }
+
         //finds any id issues in the cellNeighborMatrix
         internal static List<bool> FindProblemsInCellNeighbors(List<List<int>> cellNeighborMatrix)
         {
