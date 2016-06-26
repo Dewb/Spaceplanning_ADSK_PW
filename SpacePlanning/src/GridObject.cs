@@ -739,7 +739,8 @@ namespace SpacePlanning
 
         [MultiReturn(new[] { "BuildingOutline", "AreaOfParts", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells", "CellNeighborMatrix" })]
         public static Dictionary<string, object> FormBuildingOutlineTest(Polygon2d orthoSiteOutline, List<Cell> cellListInp, List<Point2d> attractorPoints = default(List<Point2d>), 
-            List<double>weightList = default(List<double>), double groundCoverage = 0.5, int iteration = 100, bool removeNotch = false, double minNotchDistance  = 10,int dummy=100)
+            List<double>weightList = default(List<double>), double groundCoverage = 0.5, int iteration = 100, 
+            bool removeNotch = false, double minNotchDistance  = 10,int dummy=100, bool cellRefine = false)
         {
             if (iteration < 1) iteration = 0;
             bool randomAllow = true, tag = true;
@@ -784,7 +785,7 @@ namespace SpacePlanning
                 else side = 0;
                 Dictionary<string, object> quadrantObj = PolygonUtility.GetPointOnOneQuadrantTest(orthoSiteOutline, iteration,side);
                 center = (Point2d)quadrantObj["RandomPoint"];
-                //if(value > 0.75) center = PolygonUtility.PlaceRandomPointInsidePoly(orthoSiteOutline, iteration);
+                if(value > 0.65) center = PolygonUtility.PlaceRandomPointInsidePoly(orthoSiteOutline, iteration);
             }
 
             Point2d topRight = new Point2d(0, 0), topLeft = topRight, bottomRight = topRight, bottomLeft = topRight;
@@ -797,7 +798,7 @@ namespace SpacePlanning
             double dist = Math.Sqrt(areaBuilding / dummy);
             //center = PolygonUtility.FindPointOnPolySide(currentPoly, dir, dist / 2);
             Trace.WriteLine("++++++++++++++++++++++++++");
-            while (areaLeft > 500 && countInner < 50 && countExtremeMode < 50) 
+            while (areaLeft > areaBuilding/20 && countInner < 10 && countExtremeMode < 10) 
             {               
                 prevDir = dir;
                 count += 1;
@@ -867,6 +868,7 @@ namespace SpacePlanning
                     }
                     else
                     {
+                        
                         Trace.WriteLine("Poly Count in Queue@@@@@@@@@@@@@@@@@@@@@@@@  " + polySqrStack.Count);
                         // do this when all modes tried
                         //sqrFinishedModed = true;
@@ -885,12 +887,19 @@ namespace SpacePlanning
                             if (extremePointIndex > 3) extremePointIndex = 0;
                             currentPoly = PolygonUtility.SquareByCenter(center, dist);
                             polySqrStack.Enqueue(currentPoly);
-                        }                
+                        }                                       
                         countExtremeMode += 1;
                     }                    
                 }
                 else countInner = 0;
             }// end of while loop
+            List<Cell> preSelectedCellsCopy = selectedCells.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy
+            if (cellRefine)
+            {
+                List<Cell> cellRefinedList = new List<Cell>();
+                for (int i = 0; i < selectedCells.Count; i++) cellRefinedList.AddRange(CellsAddinCell(selectedCells[i]));
+                selectedCells = cellRefinedList;
+            }        
 
             List<Cell> selectedCellsCopy = selectedCells.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy
             selectedCellsCopy = SetCellAvailability(selectedCellsCopy);
@@ -916,7 +925,7 @@ namespace SpacePlanning
                 { "LeftOverArea", (areaLeft) },
                 { "BuildingOutlineArea", (polySqrStackCopy) },
                 { "GroundCoverAchieved", (areaPlaced/areaSite) },
-                { "SortedCells", (selectedCells)},
+                { "SortedCells", (preSelectedCellsCopy)},
                 { "CellNeighborMatrix", (cellNeighborMatrix) }
             };
         }
@@ -925,10 +934,10 @@ namespace SpacePlanning
 
         [MultiReturn(new[] { "BuildingOutline", "AreaOfParts", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells", "CellNeighborMatrix" })]
         public static Dictionary<string, object> FormBuildingIterator(Polygon2d orthoSiteOutline, List<Cell> cellListInp, List<Point2d> attractorPoints = default(List<Point2d>), List<double> weightList = default(List<double>), 
-            double groundCoverage = 0.5, int iteration = 100, bool removeNotch = false, double minNotchDistance = 10)
+            double groundCoverage = 0.5, int iteration = 100, bool removeNotch = false, double minNotchDistance = 10, bool cellRefine = false)
         {
             if (iteration < 1) iteration = 1;
-            int count = 0, maxTry = 600;
+            int count = 0, maxTry = 40;
             bool worked = false;
             double groundCoverAchieved = 0, gcDifference = 0, gcDifferenceBest = 10000;
             Dictionary<string, object> formBuildingOutlineObj = new Dictionary<string, object>();
@@ -938,7 +947,7 @@ namespace SpacePlanning
             {
                 count += 1;
                 Trace.WriteLine("||||||||||||||||||||||||||||||trying to get the form we want : " + count);
-                formBuildingOutlineObj = FormBuildingOutlineTest(orthoSiteOutline, cellListInp, attractorPoints, weightList, groundCoverage, iteration, removeNotch, minNotchDistance, dummy);
+                formBuildingOutlineObj = FormBuildingOutlineTest(orthoSiteOutline, cellListInp, attractorPoints, weightList, groundCoverage, iteration, removeNotch, minNotchDistance, dummy, cellRefine);
 
                 if (formBuildingOutlineObj == null)
                 {
