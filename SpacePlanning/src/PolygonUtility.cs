@@ -427,17 +427,19 @@ namespace SpacePlanning
         {
             if (!ValidateObject.CheckPoly(polyInp)) return null;
             bool found = true;
-            int count = 0;
+            int count = 0, maxTry = polyInp.Lines.Count;
+            
             Polygon2d currentPoly = new Polygon2d(polyInp.Points);
-            while (found)
+            while (found && count <maxTry)
             {
                 count += 1;
                 Dictionary<string, object> notchObj = RemoveAnyNotches(currentPoly, distance);
                 currentPoly = (Polygon2d)notchObj["PolyNotchRemoved"];
                 found = (bool)notchObj["NotchFound"];
-                //Trace.WriteLine("still notches : " + count);
+                Trace.WriteLine("still notches : " + count);
             }
             Polygon2d polyNew = CreateOrthoPoly(currentPoly);
+            if (!ValidateObject.CheckPoly(polyNew)) { polyNew = polyInp; found = false; }
             return new Dictionary<string, object>
             {
                 { "PolyNotchRemoved" , (polyNew) },
@@ -854,7 +856,7 @@ namespace SpacePlanning
         public static Dictionary<string, object> GetExtremePointsFromPoints(List<Point2d> ptLists)
         {
             if (!ValidateObject.CheckPointList(ptLists)) return null;
-            Point2d topRight = ptLists[0], topLeft = ptLists[1], bottomRight = ptLists[0], bottomLeft = ptLists[0];
+            Point2d topRight = ptLists[0], topLeft = ptLists[0], bottomRight = ptLists[0], bottomLeft = ptLists[0];
             for (int i = 0; i < ptLists.Count; i++)
             {
                 if (ptLists[i].X >= topRight.X && ptLists[i].Y >= topRight.Y) topRight = ptLists[i]; //top right corner point 

@@ -24,6 +24,8 @@ namespace SpacePlanning
         private double _dimX;
         private double _dimY;
 
+        private static int MINCELL = 700, MAXCELL = 1200;
+
         //constructor
         internal GridObject(List<Point2d> siteOutline, List<Point2d> siteBoundingBox, double dimensionX, double dimensionY)
         {
@@ -331,7 +333,7 @@ namespace SpacePlanning
             List<Cell> sortedCells = new List<Cell>();
             List<List<int>> cellNeighborMatrix = new List<List<int>>(); 
             List<Polygon2d> cellsFound = new List<Polygon2d>();
-            int minCells = 500, maxCells = 900;
+            int minCells = MINCELL, maxCells = MAXCELL;
             double dimAdjusted = cellDim;
             double areaPoly = PolygonUtility.AreaPolygon(polyOutline), eps = 0.01;
             int numCells = (int)(areaPoly/(dimAdjusted*dimAdjusted));
@@ -938,7 +940,7 @@ namespace SpacePlanning
 
         [MultiReturn(new[] { "BuildingOutline", "AreaOfParts", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells", "CellNeighborMatrix" })]
         public static Dictionary<string, object> FormBuildingIterator(Polygon2d orthoSiteOutline, List<Cell> cellListInp, List<Point2d> attractorPoints = default(List<Point2d>), List<double> weightList = default(List<double>), 
-            double groundCoverage = 0.5, int iteration = 100, bool removeNotch = false, double minNotchDistance = 10, bool cellRefine = false)
+            double groundCoverage = 0.5, int iteration = 100, bool removeNotch = false, double minNotchDistance = 10, bool cellRefine = false, int scanResolution = 0)
         {
             if (iteration < 1) iteration = 1;
             int count = 0, maxTry = 40;
@@ -946,7 +948,10 @@ namespace SpacePlanning
             double groundCoverAchieved = 0, gcDifference = 0, gcDifferenceBest = 10000;
             Dictionary<string, object> formBuildingOutlineObj = new Dictionary<string, object>();
             Dictionary<string, object> formBuildingOutlineObjBest = new Dictionary<string, object>();
-            int dummy = (int)BasicUtility.RandomBetweenNumbers(new Random(iteration), 40, 3);
+            int dummy = 0;
+            if (scanResolution == 0) dummy = (int)BasicUtility.RandomBetweenNumbers(new Random(iteration), 40, 3);
+            else dummy = scanResolution; 
+             
             while (count < maxTry && !worked)
             {
                 count += 1;
