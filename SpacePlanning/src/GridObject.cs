@@ -773,7 +773,7 @@ namespace SpacePlanning
                 }
             }// end of for loop
             List<Cell> selectedCells = new List<Cell>();
-            List<Polygon2d> polySquares = new List<Polygon2d>();
+            List<Polygon2d> polySquares = new List<Polygon2d>(), polyExtra = new List<Polygon2d>();
             List<Point2d> ptSquares = new List<Point2d>();
             Polygon2d currentPoly = new Polygon2d(orthoSiteOutline.Points);
             Point2d center = PolygonUtility.CentroidOfPoly(orthoSiteOutline);
@@ -850,13 +850,12 @@ namespace SpacePlanning
                 else Trace.WriteLine("Cell Found, count = " + count + "!! Area left: " + areaLeft);
                 if (deQueueMode && !circleMode)
                 {
-                    if (polySqrStack.Count > 0) { currentPoly = polySqrStack.Dequeue(); Trace.WriteLine("After Popped , Stack has : " + polySqrStack.Count); }
+                    if (polySqrStack.Count > 0) { currentPoly = polySqrStack.Dequeue(); Trace.WriteLine("After Popped , Stack has : " + polySqrStack.Count); polySquares.Add(currentPoly); }
                     else { Trace.WriteLine("Breaking , When count is : " + count); break; }
                 }
                 double areaPrevLeft = areaLeft;
                 areaPlaced = AreaFromCells(selectedCells);
                 areaLeft = areaBuilding - areaPlaced;
-
 
                 if (areaLeft == areaPrevLeft)
                 {
@@ -865,6 +864,7 @@ namespace SpacePlanning
                         Trace.WriteLine("No change in area@@@@@@@@@@@@@@@@@@@@@@@@  " + countInner);
                         countInner += 1;
                         currentPoly = polySqrStack.Dequeue();
+                        polySquares.Add(currentPoly);
                     }
                     else
                     {
@@ -886,6 +886,8 @@ namespace SpacePlanning
                             else { center = topRight; extremePointIndex += 1; }
                             if (extremePointIndex > 3) extremePointIndex = 0;
                             currentPoly = PolygonUtility.SquareByCenter(center, dist);
+                            polySquares.Add(currentPoly);
+                            polyExtra.Add(currentPoly);
                             polySqrStack.Enqueue(currentPoly);
                         }                                       
                         countExtremeMode += 1;
@@ -899,7 +901,9 @@ namespace SpacePlanning
                 List<Cell> cellRefinedList = new List<Cell>();
                 for (int i = 0; i < selectedCells.Count; i++) cellRefinedList.AddRange(CellsAddinCell(selectedCells[i]));
                 selectedCells = cellRefinedList;
-            }        
+            }
+
+            polySquares.AddRange(polySqrStack);
 
             List<Cell> selectedCellsCopy = selectedCells.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY)).ToList(); // example of deep copy
             selectedCellsCopy = SetCellAvailability(selectedCellsCopy);
@@ -919,7 +923,7 @@ namespace SpacePlanning
             return new Dictionary<string, object>
             {
                 { "BuildingOutline", (borderPoly) },
-                { "AreaOfParts", (currentPoly) },
+                { "AreaOfParts", (polyExtra) },
                 { "SubdividedPolys", (polySquares) },
                 { "SiteArea", (ptSquares) },
                 { "LeftOverArea", (areaLeft) },
@@ -942,7 +946,7 @@ namespace SpacePlanning
             double groundCoverAchieved = 0, gcDifference = 0, gcDifferenceBest = 10000;
             Dictionary<string, object> formBuildingOutlineObj = new Dictionary<string, object>();
             Dictionary<string, object> formBuildingOutlineObjBest = new Dictionary<string, object>();
-            int dummy = (int)BasicUtility.RandomBetweenNumbers(new Random(iteration), 12, 3);
+            int dummy = (int)BasicUtility.RandomBetweenNumbers(new Random(iteration), 40, 3);
             while (count < maxTry && !worked)
             {
                 count += 1;
