@@ -434,8 +434,11 @@ namespace SpacePlanning
             {
                 count += 1;
                 Dictionary<string, object> notchObj = RemoveAnyNotches(currentPoly, distance);
-                currentPoly = (Polygon2d)notchObj["PolyNotchRemoved"];
-                found = (bool)notchObj["NotchFound"];
+                if(notchObj != null)
+                {
+                    currentPoly = (Polygon2d)notchObj["PolyNotchRemoved"];
+                    found = (bool)notchObj["NotchFound"];
+                }             
                 Trace.WriteLine("still notches : " + count);
             }
             Polygon2d polyNew = CreateOrthoPoly(currentPoly);

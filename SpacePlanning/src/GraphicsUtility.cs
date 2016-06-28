@@ -24,6 +24,7 @@ namespace SpacePlanning
         //checks if a point is inside a polygon or not
         public static bool PointInsidePolygonTest(Polygon2d poly, Point2d testPoint)
         {
+            if (!ValidateObject.CheckPoly(poly) || testPoint == null) return false;
             bool check = false;
             List<Point2d> pointsPolygon = poly.Points;
             int numPolyPts = pointsPolygon.Count;
