@@ -446,7 +446,7 @@ namespace SpacePlanning
 
 
 
-        [MultiReturn(new[] { "BuildingOutline", "AreaOfParts", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells", "CellNeighborMatrix" })]
+        [MultiReturn(new[] { "ListBuildingOutlines","BuildingOutline", "AreaOfParts", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells", "CellNeighborMatrix" })]
         public static Dictionary<string, object> FormBuildingIterator(Polygon2d orthoSiteOutline, List<Cell> cellListInp, List<Point2d> attractorPoints = default(List<Point2d>), List<double> weightList = default(List<double>),
      double groundCoverage = 0.5, int iteration = 100, bool removeNotch = false, double minNotchDistance = 10, bool cellRefine = false, int scanResolution = 0)
         {
@@ -494,7 +494,7 @@ namespace SpacePlanning
 
 
 
-        [MultiReturn(new[] { "BuildingOutline", "AreaOfParts", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells", "CellNeighborMatrix" })]
+        [MultiReturn(new[] { "ListBuildingOutlines", "BuildingOutline", "AreaOfParts", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells", "CellNeighborMatrix" })]
         public static Dictionary<string, object> FormBuildingOutlineTest(Polygon2d orthoSiteOutline, List<Cell> cellListInp, List<Point2d> attractorPoints = default(List<Point2d>), 
             List<double>weightList = default(List<double>), double groundCoverage = 0.5, int iteration = 100, 
             bool removeNotch = false, double minNotchDistance  = 10,int dummy=100, bool cellRefine = false)
@@ -669,6 +669,8 @@ namespace SpacePlanning
 
             polySquares.AddRange(polySqrStack);
 
+            int numCells = selectedCells.Count;
+            List<Cell> cellInsideBorderPoly = new List<Cell>();
             List<Cell> selectedCellsCopy = selectedCells.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY,x.CellID)).ToList(); // example of deep copy
             selectedCellsCopy = SetCellAvailability(selectedCellsCopy);
             Dictionary<string, object> sortCellObj = SortCellList(selectedCellsCopy);
@@ -679,6 +681,26 @@ namespace SpacePlanning
             Dictionary<string, object> borderObject = CreateBorder(cellNeighborMatrix, selectedCellsCopy, true, true);
             Polygon2d borderPoly = (Polygon2d)borderObject["BorderPolyLine"];
 
+            Polygon2d offsetBorder = PolygonUtility.OffsetPoly(borderPoly, selectedCells[0].DimX / 2);
+
+            for (int i = 0; i < selectedCells.Count; i++)
+                if (!GraphicsUtility.PointInsidePolygonTest(offsetBorder, selectedCells[i].LeftDownCorner)) cellInsideBorderPoly.Add(selectedCells[i]);
+            List<Polygon2d> borders = new List<Polygon2d>();
+            borders.Add(borderPoly);
+            //implement a while loop such that if there is any cells left which are not inside a poly you run border poly again
+            if (cellInsideBorderPoly.Count > 0)
+            {
+                selectedCellsCopy = selectedCells.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY, x.CellID)).ToList(); // example of deep copy
+                selectedCellsCopy = SetCellAvailability(selectedCellsCopy);
+                sortCellObj = SortCellList(selectedCellsCopy);
+                if (sortCellObj == null) return null;
+                selectedCellsCopy = (List<Cell>)sortCellObj["SortedCells"];
+                cellNeighborMatrixObject = FormsCellNeighborMatrix(selectedCellsCopy);
+                cellNeighborMatrix = (List<List<int>>)cellNeighborMatrixObject["CellNeighborMatrix"];
+                borderObject = CreateBorder(cellNeighborMatrix, selectedCellsCopy, true, true);
+                borderPoly = (Polygon2d)borderObject["BorderPolyLine"];
+                borders.Add(borderPoly);
+            }
             if (removeNotch)
             {
                 Dictionary<string,object> notchObj = PolygonUtility.RemoveAllNotches(borderPoly, minNotchDistance);
@@ -686,6 +708,7 @@ namespace SpacePlanning
             }
             return new Dictionary<string, object>
             {
+                { "ListBuildingOutlines", (cellInsideBorderPoly) },
                 { "BuildingOutline", (borderPoly) },
                 { "AreaOfParts", (polyExtra) },
                 { "SubdividedPolys", (polySquares) },
@@ -694,7 +717,7 @@ namespace SpacePlanning
                 { "BuildingOutlineArea", (cellsGrouped) },
                 { "GroundCoverAchieved", (areaPlaced/areaSite) },
                 { "SortedCells", (selectedCells)},
-                { "CellNeighborMatrix", (cellNeighborMatrix) }
+                { "CellNeighborMatrix", (borders) }
             };
         }
 
