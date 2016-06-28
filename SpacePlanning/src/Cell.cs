@@ -10,6 +10,7 @@ namespace SpacePlanning
         private double _dimX;
         private double _dimY;
         private bool _cellAvailable;
+        private int _cellId;
 
         private  enum _cellType{
             CORNER,
@@ -19,12 +20,13 @@ namespace SpacePlanning
         };
 
         #region - Private Constructor
-        internal Cell(Point2d centerPt, double dimensionX, double dimensionY, bool cellAvail = true)
+        internal Cell(Point2d centerPt, double dimensionX, double dimensionY, int cellId, bool cellAvail = true)
         {
             _centerPoint = centerPt;
             _dimX = dimensionX;
             _dimY = dimensionY;
             _cellAvailable = cellAvail;
+            _cellId = cellId;
         }
 
         internal Cell(Cell other)
@@ -33,6 +35,7 @@ namespace SpacePlanning
             _dimX = other.DimX;
             _dimY = other.DimY;
             _cellAvailable = other.CellAvailable;
+            _cellId = other.CellID;
         }
         #endregion
 
@@ -109,6 +112,15 @@ namespace SpacePlanning
         public double DimY
         {
             get { return _dimY; }
+        }
+
+        /// <summary>
+        /// Id value of the Cell
+        /// </summary>
+        public int CellID
+        {
+            get { return _cellId; }
+            set { _cellId = value; }
         }
         #endregion
 

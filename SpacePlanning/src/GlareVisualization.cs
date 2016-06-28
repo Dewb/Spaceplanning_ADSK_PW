@@ -129,7 +129,7 @@ namespace SpacePlanning
             {
                 Point2d center = cellList[i].CenterPoint;
                 Point2d centerNew = new Point2d(center.X + (dim / 2), center.Y + (dim / 2));
-                Cell cl = new Cell(centerNew, dim, dim, true);
+                Cell cl = new Cell(centerNew, dim, dim, i,true);
                 cellNewList.Add(cl);
             }
             return cellNewList;

@@ -81,7 +81,7 @@ namespace SpacePlanning
                 progQuantList.Add(values[3]);
                 prefValProgList.Add(values[5]);
                 progAdjList.Add(values[6]);
-                List<Cell> dummyCell = new List<Cell> { new Cell(Point2d.ByCoordinates(0, 0), 0, 0, true) };
+                List<Cell> dummyCell = new List<Cell> { new Cell(Point2d.ByCoordinates(0, 0), 0, 0,0, true) };
                 List<string> adjList = new List<string>();
                 adjList.Add(values[6]);
                 ProgramData progData = new ProgramData(Convert.ToInt16(values[0]), values[1], values[2], Convert.ToInt16(values[3]),
