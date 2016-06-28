@@ -690,6 +690,7 @@ namespace SpacePlanning
             //implement a while loop such that if there is any cells left which are not inside a poly you run border poly again
             if (cellInsideBorderPoly.Count > 0)
             {
+                selectedCells = cellInsideBorderPoly;
                 selectedCellsCopy = selectedCells.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY, x.CellID)).ToList(); // example of deep copy
                 selectedCellsCopy = SetCellAvailability(selectedCellsCopy);
                 sortCellObj = SortCellList(selectedCellsCopy);
