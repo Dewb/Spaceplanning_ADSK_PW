@@ -693,7 +693,7 @@ namespace SpacePlanning
                 borders.Add(borderPoly);
             }
 
-
+            Polygon2d polyOrig = borderPoly;
             for (int i = 0; i < selectedCells.Count; i++)
                 if (!GraphicsUtility.PointInsidePolygonTest(offsetBorder, selectedCells[i].LeftDownCorner)) cellInsideBorderPoly.Add(selectedCells[i]);
             
@@ -715,7 +715,7 @@ namespace SpacePlanning
                 if (borderObject != null)
                 {
                     borderPoly = (Polygon2d)borderObject["BorderPolyLine"];
-                    if (PolygonUtility.AreaPolygon(borderPoly) < areaBuilding * 0.2) continue;
+                    //if (PolygonUtility.AreaPolygon(borderPoly) < areaBuilding * 0.2) continue;
                     offsetBorder = PolygonUtility.OffsetPoly(borderPoly, selectedCells[0].DimX / 2);
                     if (removeNotch)
                     {
@@ -724,23 +724,25 @@ namespace SpacePlanning
 
                     }
                     borders.Add(borderPoly);
-                }
-                
+                }                
                 cellInsideBorderPoly.Clear();
                 for (int i = 0; i < selectedCells.Count; i++)
                     if (!GraphicsUtility.PointInsidePolygonTest(offsetBorder, selectedCells[i].LeftDownCorner)) cellInsideBorderPoly.Add(selectedCells[i]);
             }// end while loop
-         
+
+            double areaBorder = 0;
+            for (int i = 0; i < borders.Count; i++) areaBorder += PolygonUtility.AreaPolygon(borders[i]);
+            double groundCovAchieved = areaBorder / areaSite;
             return new Dictionary<string, object>
             {
                
-                { "BuildingOutline", (borders) },
+                { "BuildingOutline", (borders) },//borders
                 { "ExtraPoly", (polyExtra) },
                 { "SubdividedPolys", (polySquares) },
                 { "SiteArea", (ptSquares) },
                 { "LeftOverArea", (areaLeft) },
                 { "BuildingOutlineArea", (cellsGrouped) },
-                { "GroundCoverAchieved", (areaPlaced/areaSite) },
+                { "GroundCoverAchieved", (areaPlaced/areaSite) },//areaPlaced/areaSite
                 { "SortedCells", (preSelectedCellsCopy)},
                 { "CellNeighborMatrix", (cellNeighborMatrix) }
             };

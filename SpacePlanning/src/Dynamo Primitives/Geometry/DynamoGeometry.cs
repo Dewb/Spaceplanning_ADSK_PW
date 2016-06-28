@@ -380,42 +380,7 @@ namespace stuffer
         }
 
 
-        internal static Polygon PolygonByPolygon2da(Polygon2d polygon,double height)
-        {
-            List<Point> pt = new List<Point>();
-            pt.Add(Point.ByCoordinates(0, 0));
-            pt.Add(Point.ByCoordinates(0, 100));
-            pt.Add(Point.ByCoordinates(100, 0));
-            Polygon pol = Polygon.ByPoints(pt);
-            bool polyFormed = false;
-            if (polygon == null || polygon.Points == null)
-            {
-                return null;
-            }
-
-            List<Point> points = new List<Point>();
-            foreach (Point2d point in polygon.Points)
-            {
-                points.Add(Point.ByCoordinates(point.X, point.Y, height));
-            }
-            try
-            {
-                pol = Polygon.ByPoints(points);
-                polyFormed = true;
-                //return pol;
-            }
-            catch (Exception)
-            {
-                polyFormed = false;
-                //throw;
-            }
-
-            if (polyFormed) return pol;
-            else { pol.Dispose(); pt.Clear(); return null; }
-        }
-
-
-        public static Polygon PolygonByPolygon2d(Polygon2d polygon, double height)
+           public static Polygon PolygonByPolygon2d(Polygon2d polygon, double height)
         {
    
             if (polygon == null || polygon.Points == null)
