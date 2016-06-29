@@ -127,7 +127,7 @@ namespace SpacePlanning
         /// <search>
         /// make site outline, site geometry.
         /// </search>
-        public static Polygon2d MakeSiteOutlineFromSat(int caseStudy =0, string siteOutlinePath = "")
+        public static Geometry[] GetSiteOutline(int caseStudy =0, string siteOutlinePath = "")
         {
             string path;
             if (siteOutlinePath == "")
@@ -149,26 +149,49 @@ namespace SpacePlanning
                     writeStream.Write(buffer, 0, bytesRead);
                     bytesRead = res.Read(buffer, 0, Length);
                 }
-                writeStream.Close();               
+                writeStream.Close();
+                return Geometry.ImportFromSAT(path);
             }
             else path = siteOutlinePath;
-            //return Geometry.ImportFromSAT(path);
-            //return (Line[])Geometry.ImportFromSAT(path);
-            List<Point2d> pointList = new List<Point2d>();              
-            //Geometry[] geom = Geometry.ImportFromSAT(path);
-            //NurbsCurve[] nurbs = (NurbsCurve[])geom.ToArray();
-            NurbsCurve[] nurbs = (NurbsCurve[])Geometry.ImportFromSAT(path).ToArray();
-           
-            for (int i = 0; i < nurbs.Length; i++)
-            {
-                Point2d pointPerCurve = Point2d.ByCoordinates(nurbs[i].StartPoint.X, nurbs[i].StartPoint.Y);
-                pointList.Add(pointPerCurve);
-                if (i == nurbs.Length) pointList.Add(Point2d.ByCoordinates(nurbs[i].EndPoint.X, nurbs[i].EndPoint.Y));
-            }
-            
 
+            if(path.IndexOf(".sat") != -1)
+            {
+                return Geometry.ImportFromSAT(path);
+            }
+            else if (path.IndexOf(".dwg") != -1)
+            {
+                FileLoader file = FileLoader.FromPath(path);
+                ImportedObject[] impObj = file.GetImportedObjects().ToArray();
+                return ImportedObject.ConvertToGeometries(impObj).ToArray();
+            }
+            else
+            {
+                return null;
+            }   
+        }
+
+
+        //get point information from outline
+        /// <summary>
+        /// Retrieves and orders list of point2d geometry from the site outline. 
+        /// Returns ordered point2d list geometry.
+        /// </summary>
+        /// <param name="nurbList">List of nurbs geometry</param>
+        /// <returns name="pointList">List of point2d representing site outline</returns>
+        /// <search>
+        /// get points of site outline
+        /// </search>
+        public static Polygon2d ConvertSiteOutlineToPolygon2d(List<NurbsCurve> nurbList)
+        {
+            Trace.WriteLine("list found is");
+            List<Point2d> pointList = new List<Point2d>();
+            for (int i = 0; i < nurbList.Count; i++)
+            {
+                Point2d pointPerCurve = Point2d.ByCoordinates(nurbList[i].StartPoint.X, nurbList[i].StartPoint.Y);
+                pointList.Add(pointPerCurve);
+                if (i == nurbList.Count) pointList.Add(Point2d.ByCoordinates(nurbList[i].EndPoint.X, nurbList[i].EndPoint.Y));
+            }
             return new Polygon2d(pointList);
-            //return new Polygon2d(FromSiteOutlineGetPoints2(nurbs.ToList()));  
         }
 
         //get point information from outline
