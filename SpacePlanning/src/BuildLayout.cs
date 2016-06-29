@@ -642,6 +642,7 @@ namespace SpacePlanning
             for (int i = 0; i < deptData.Count; i++) if (i > 0) totalDeptProp += deptData[i].DeptAreaProportionNeeded;
 
             SortedDictionary<double, Polygon2d> sortedPolyAvailable = new SortedDictionary<double, Polygon2d>();
+            PriorityQueue<double, Polygon2d> priorityPolyQueue = new PriorityQueue<double, Polygon2d>();
             List<double> areaPolyKeys = new List<double>();
             double totalAreaInPoly = 0;
             for (int i = 0; i < polyList.Count; i++)
@@ -650,6 +651,7 @@ namespace SpacePlanning
                 sortedPolyAvailable.Add(areaPoly, polyList[i]);
                 areaPolyKeys.Add(areaPoly);
                 totalAreaInPoly += Math.Abs(areaPoly);
+                priorityPolyQueue.Enqueue(Math.Abs(areaPoly), polyList[i]);
                 //Trace.WriteLine("sorted poly adding : " + sortedPolyAvailable[areaPoly].ToString());
                 //Trace.WriteLine("++++++++++");
             }
@@ -755,7 +757,7 @@ namespace SpacePlanning
             {
                 { "UpdatedDeptData", (UpdatedDeptData) },
                 { "LeftOverPolys", (leftOverPoly) },
-                { "CirculationPolys", (areaPolyKeys) },
+                { "CirculationPolys", (priorityPolyQueue) },
                 { "OtherDeptMainPoly", (sortedPolyAvailable) }
             };
         }
