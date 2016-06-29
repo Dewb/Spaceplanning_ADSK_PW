@@ -29,8 +29,8 @@ namespace SpacePlanning
         private double _deptAreaProportionAchieved;
         private double _cirFactor;
 
-        const string KPU = "kpu";
-        const string REGULAR = "regular";
+        public const string KPU = "kpu";
+        public const string REGULAR = "regular";
 
         #region - internal constructor
         internal DeptData(string deptName, List<ProgramData> programDataList, double circulationFactor, double dimX, double dimY)

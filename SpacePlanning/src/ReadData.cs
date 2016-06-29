@@ -273,7 +273,7 @@ namespace SpacePlanning
             return uniqueItemsList;
         }
 
-        //sorts a program data inside dept data based on pREFERENCEPOINT 
+        //sorts a program data inside dept data based on PREFERENCEPOINT 
         internal static List<DeptData> SortProgramsByPrefInDept(List<DeptData> deptDataInp)
         {
             if (deptDataInp == null) return null;
@@ -303,11 +303,20 @@ namespace SpacePlanning
             return newDept;
         }
 
-        //sorts a deptdata based on area 
-        internal static List<DeptData> SortDeptData(List<DeptData> deptData)
+         //sorts a deptdata based on area 
+        internal static List<DeptData> SortDeptData(List<DeptData> deptData, bool deptType = true)
         {
             SortedDictionary<double, DeptData> sortedD = new SortedDictionary<double, DeptData>();
-            for (int i = 0; i < deptData.Count; i++) sortedD.Add(deptData[i].DeptAreaNeeded, deptData[i]);
+            for (int i = 0; i < deptData.Count; i++)
+            {
+                string KPU = "kpu";
+                double surpluss = 0;
+                if(deptType)
+                    if (deptData[i].DepartmentType.IndexOf(KPU.ToLower()) != -1 || deptData[i].DepartmentType.IndexOf(KPU.ToUpper()) != -1)
+                        surpluss = 100000;
+                double area = deptData[i].DeptAreaNeeded + surpluss;
+                sortedD.Add(area, deptData[i]);
+            }
 
             List<DeptData> sortedDepartmentData = new List<DeptData>();
             foreach (KeyValuePair<double, DeptData> p in sortedD) sortedDepartmentData.Add(p.Value);
