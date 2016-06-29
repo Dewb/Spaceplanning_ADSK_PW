@@ -117,6 +117,7 @@
     <Compile Include="src\LayoutUtility.cs" />
     <Compile Include="src\LineUtility.cs" />
     <Compile Include="src\PointUtility.cs" />
+    <Compile Include="src\Helpers\PriorityQueue.cs" />
     <Compile Include="src\Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -124,7 +125,7 @@
     </Compile>
     <Compile Include="src\SpaceAnalysis.cs" />
     <Compile Include="src\PolygonUtility.cs" />
-    <Compile Include="src\CustomVariables.cs" />
+    <Compile Include="src\Helpers\CustomVariables.cs" />
     <Compile Include="src\DeptData.cs" />
     <Compile Include="src\SplitObject.cs" />
     <Compile Include="src\CodeToBeTested.cs" />
