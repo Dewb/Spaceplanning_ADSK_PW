@@ -249,7 +249,7 @@ namespace SpacePlanning
 
         //compute the type of the department
         internal string CalcDepartmentType()
-        {
+        {         
             if (_progDataList == null) return "";
             int count = 0;
             for(int i = 0; i < _progDataList.Count; i++)
