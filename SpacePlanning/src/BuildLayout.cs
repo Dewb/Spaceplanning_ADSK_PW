@@ -326,17 +326,18 @@ namespace SpacePlanning
         #region - Private Methods  
         //blocks are assigned based on ratio of split, used for assigning other depts
         [MultiReturn(new[] { "DeptPoly", "LeftOverPoly", "AllPolys", "AreaAdded", "AllNodes" })]
-        internal static Dictionary<string, object> AssignBlocksBasedOnRatio(double areaFactor, double areaAvailable, List<Polygon2d> polyList, double acceptableWidth = 10, double ratio = 0.5)
+        internal static Dictionary<string, object> AssignBlocksBasedOnRatio(double areaNeeded, List<Polygon2d> polyList, double acceptableWidth = 10, double ratio = 0.5)
         {
             //if (!ValidateObject.CheckPolyList(polyList)) return null;           
             //for (int i = 0; i < polyList.Count; i++) areaAvailable += PolygonUtility.AreaPolygon(polyList[i]);
             Queue<Polygon2d> polyAvailable = new Queue<Polygon2d>();
             List<Polygon2d> polysToDept = new List<Polygon2d>(), leftOverPoly = new List<Polygon2d>();
             for (int i = 0; i < polyList.Count; i++) polyAvailable.Enqueue(polyList[i]);
-            double deptAreaTarget = areaFactor * areaAvailable, areaAssigned = 0;
+            //double deptAreaTarget = areaFactor * areaAvailable;
+            double areaAssigned = 0;
             //deptAreaTarget = areaFactor;
             //double deptAreaTarget = deptItem.DeptAreaNeeded,areaAssigned = 0;
-            while (areaAssigned < deptAreaTarget && polyAvailable.Count > 0)
+            while (areaAssigned < areaNeeded && polyAvailable.Count > 0)
             {
                 Polygon2d currentPoly = polyAvailable.Dequeue();
                 areaAssigned += PolygonUtility.AreaPolygon(currentPoly);
@@ -526,6 +527,7 @@ namespace SpacePlanning
             List<Polygon2d> otherDeptPoly = new List<Polygon2d>();
             List<Polygon2d> subDividedPoly = new List<Polygon2d>();
             int count = 0, maxTry = 20;
+            bool prepareReg = false;
             double totalDeptProp = 0, areaAvailable = 0, ratio = 0.6, eps = 2;
             for (int i = 0; i < deptData.Count; i++) if (i > 0) totalDeptProp += deptData[i].DeptAreaProportionNeeded;
 
@@ -557,9 +559,10 @@ namespace SpacePlanning
                     double areaAvailablePoly = 0;
                     for (int j = 0; j < polyList.Count; j++) areaAvailablePoly += PolygonUtility.AreaPolygon(polyList[j]);
                     //double areaNeeded = deptItem.DeptAreaProportionNeeded * PolygonUtility.AreaPolygon(currentPoly);
-                    double areaNeeded = deptItem.DeptAreaProportionNeeded * totalAreaInPoly;
+                    //double areaNeeded = deptItem.DeptAreaProportionNeeded * totalAreaInPoly;
+                    double areaNeeded = areaNeededDept[i];
                     if (unlimitedKPU) areaNeeded = 100000;
-                    else areaNeeded = 1000;
+                    else areaNeeded = 4000;
                     Trace.WriteLine("placing inpatients");
                     Dictionary<string, object> inpatientObject = AssignBlocksBasedOnDistance(leftOverBlocks, offset, areaNeeded, 20, iteration, noExternalWall);
                     if (inpatientObject == null) return null;
@@ -574,31 +577,31 @@ namespace SpacePlanning
                         otherDeptPoly.Add(new Polygon2d(leftOverBlocks[j].Points));// just for debugging
                         leftOverPoly.Add(leftOverBlocks[j]);
                     }
-                }
-                if (i == 1)
+                }else // regular depts
                 {
-                    List<List<Polygon2d>> polySubDivs = new List<List<Polygon2d>>();
-                    polySubDivs = SplitObject.SplitRecursivelyToSubdividePoly(leftOverPoly, acceptableWidth, circulationFreq, ratio);
-                    bool checkPoly1 = ValidateObject.CheckPolygon2dListOrtho(polySubDivs[0], 0.5);
-                    bool checkPoly2 = ValidateObject.CheckPolygon2dListOrtho(polySubDivs[1], 0.5);
-                    while (polySubDivs == null || polySubDivs.Count == 0 || !checkPoly1 || !checkPoly2 && count < maxTry)
+                    if (!prepareReg) // only need to do once, places a grid of rectangles before other depts get alloted
                     {
-                        ratio -= 0.01;
-                        if (ratio < 0) ratio = 0.6; break;
-                        Trace.WriteLine("Ratio problem faced , ratio reduced to : " + ratio);
+                        List<List<Polygon2d>> polySubDivs = new List<List<Polygon2d>>();
                         polySubDivs = SplitObject.SplitRecursivelyToSubdividePoly(leftOverPoly, acceptableWidth, circulationFreq, ratio);
-                        count += 1;
+                        bool checkPoly1 = ValidateObject.CheckPolygon2dListOrtho(polySubDivs[0], 0.5);
+                        bool checkPoly2 = ValidateObject.CheckPolygon2dListOrtho(polySubDivs[1], 0.5);
+                        while (polySubDivs == null || polySubDivs.Count == 0 || !checkPoly1 || !checkPoly2 && count < maxTry)
+                        {
+                            ratio -= 0.01;
+                            if (ratio < 0) ratio = 0.6; break;
+                            Trace.WriteLine("Ratio problem faced , ratio reduced to : " + ratio);
+                            polySubDivs = SplitObject.SplitRecursivelyToSubdividePoly(leftOverPoly, acceptableWidth, circulationFreq, ratio);
+                            count += 1;
+                        }
+                        leftOverPoly = polySubDivs[0];
+                        polyCirculation = polySubDivs[1];
+                        for (int j = 0; j < leftOverPoly.Count; j++) areaAvailable += PolygonUtility.AreaPolygon(leftOverPoly[j]);
+                        if (leftOverPoly == null) break;
+                        prepareReg = true;
                     }
-                    leftOverPoly = polySubDivs[0];
-                    polyCirculation = polySubDivs[1];
-                    for (int j = 0; j < leftOverPoly.Count; j++) areaAvailable += PolygonUtility.AreaPolygon(leftOverPoly[j]);
-                    if (leftOverPoly == null) break;
-                }
-
-                if (i > 0) // other depts
-                {
+                    double areaNeeded = areaNeededDept[i];
                     double areaFactor = deptItem.DeptAreaProportionNeeded / totalDeptProp;
-                    Dictionary<string, object> assignedByRatioObj = AssignBlocksBasedOnRatio(areaFactor, areaAvailable, leftOverPoly, acceptableWidth, 0.5);
+                    Dictionary<string, object> assignedByRatioObj = AssignBlocksBasedOnRatio(areaNeededDept[i], leftOverPoly, acceptableWidth, 0.5);
                     List<Polygon2d> everyDeptPoly = (List<Polygon2d>)assignedByRatioObj["DeptPoly"];
                     leftOverPoly = (List<Polygon2d>)assignedByRatioObj["LeftOverPoly"];
                     areaAssigned = (double)assignedByRatioObj["AreaAdded"];
@@ -706,7 +709,7 @@ namespace SpacePlanning
 
                 
                     double areaFactor = deptItem.DeptAreaProportionNeeded / totalDeptProp;
-                    Dictionary<string, object> assignedByRatioObj = AssignBlocksBasedOnRatio(areaFactor, areaAvailable, leftOverPoly, acceptableWidth, 0.5);
+                    Dictionary<string, object> assignedByRatioObj = AssignBlocksBasedOnRatio(10000,leftOverPoly, acceptableWidth, 0.5);
                     List<Polygon2d> everyDeptPoly = (List<Polygon2d>)assignedByRatioObj["DeptPoly"];
                     leftOverPoly = (List<Polygon2d>)assignedByRatioObj["LeftOverPoly"];
                     areaAssigned = (double)assignedByRatioObj["AreaAdded"];

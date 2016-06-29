@@ -307,11 +307,10 @@ namespace SpacePlanning
         {
             SortedDictionary<double, DeptData> sortedD = new SortedDictionary<double, DeptData>();
             for (int i = 0; i < deptData.Count; i++)
-            {
-                string KPU = "kpu";
+            {               
                 double surpluss = 0;
                 if(deptType)
-                    if (deptData[i].DepartmentType.IndexOf(KPU.ToLower()) != -1 || deptData[i].DepartmentType.IndexOf(KPU.ToUpper()) != -1)
+                    if (deptData[i].DepartmentType.IndexOf(BuildLayout.KPU.ToLower()) != -1 || deptData[i].DepartmentType.IndexOf(BuildLayout.KPU.ToUpper()) != -1)
                         surpluss = 100000;
                 double area = deptData[i].DeptAreaNeeded + surpluss;
                 sortedD.Add(area, deptData[i]);
