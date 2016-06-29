@@ -181,7 +181,51 @@ namespace SpacePlanning
         /// <search>
         /// get points of site outline
         /// </search>
-        public static Polygon2d ConvertSiteOutlineToPolygon2d(List<NurbsCurve> nurbList)
+        public static Polygon2d ConvertSiteOutlineToPolygon2d(Geometry[] nurbLists)
+        {
+            string type = nurbLists[0].GetType().ToString();
+            List<Point2d> pointList = new List<Point2d>();
+            Trace.WriteLine("list found is + " + type);
+            if(type.IndexOf("Line") != -1)
+            {
+                Line[] lineList = (Line[])(nurbLists.ToArray());
+                for (int i = 0; i < lineList.Length; i++)
+                {
+                    Point2d pointPerCurve = Point2d.ByCoordinates(lineList[i].StartPoint.X, lineList[i].StartPoint.Y);
+                    pointList.Add(pointPerCurve);
+                    if (i == lineList.Length) pointList.Add(Point2d.ByCoordinates(lineList[i].EndPoint.X, lineList[i].EndPoint.Y));
+                }
+            }
+            else if(type.IndexOf("NurbsCurve") != -1)
+            {
+                NurbsCurve[] nurbList = (NurbsCurve[])nurbLists.ToArray();
+                for (int i = 0; i < nurbList.Length; i++)
+                {
+                    Point2d pointPerCurve = Point2d.ByCoordinates(nurbList[i].StartPoint.X, nurbList[i].StartPoint.Y);
+                    pointList.Add(pointPerCurve);
+                    if (i == nurbList.Length) pointList.Add(Point2d.ByCoordinates(nurbList[i].EndPoint.X, nurbList[i].EndPoint.Y));
+                }
+            }
+            else
+            {
+                return null;
+            }
+
+            return new Polygon2d(pointList);
+        }
+
+
+        //get point information from outline
+        /// <summary>
+        /// Retrieves and orders list of point2d geometry from the site outline. 
+        /// Returns ordered point2d list geometry.
+        /// </summary>
+        /// <param name="nurbList">List of nurbs geometry</param>
+        /// <returns name="pointList">List of point2d representing site outline</returns>
+        /// <search>
+        /// get points of site outline
+        /// </search>
+        public static Polygon2d ConvertSiteOutlineToPolygon2d1(List<NurbsCurve> nurbList)
         {
             Trace.WriteLine("list found is");
             List<Point2d> pointList = new List<Point2d>();
@@ -193,7 +237,6 @@ namespace SpacePlanning
             }
             return new Polygon2d(pointList);
         }
-
         //get point information from outline
         /// <summary>
         /// Retrieves and orders list of point2d geometry from the site outline. 
