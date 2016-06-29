@@ -23,10 +23,14 @@ namespace SpacePlanning
         private List<Cell> _CellsAssigned;
         private double _gridX;
         private double _gridY;
+        private string _deptType;
         private List<Polygon2d> _polyDepts;
         private double _deptAreaProportion;
         private double _deptAreaProportionAchieved;
         private double _cirFactor;
+
+        const string KPU = "kpu";
+        const string REGULAR = "regular";
 
         #region - internal constructor
         internal DeptData(string deptName, List<ProgramData> programDataList, double circulationFactor, double dimX, double dimY)
@@ -42,6 +46,7 @@ namespace SpacePlanning
             _CellsAssigned = new List<Cell>();
             _gridX = dimX;
             _gridY = dimY;
+            _deptType = CalcDepartmentType();
             _polyDepts = null;
             _deptAreaProportion = 0;
             _deptAreaProportionAchieved = 0;
@@ -61,6 +66,7 @@ namespace SpacePlanning
             _CellsAssigned = other.DepartmentCells;
             _gridX = other._gridX;
             _gridY = other._gridY;
+            _deptType = other.DepartmentType;
             _deptAreaProportion = other.DeptAreaProportionNeeded;
             _deptAreaProportionAchieved = other.DeptAreaProportionAchieved;
 
@@ -96,6 +102,14 @@ namespace SpacePlanning
         public double AreaPercentageAchieved
         {
             get { return Math.Round(AreaProvided / DeptAreaNeeded, 3); }
+        }
+
+        /// <summary>
+        /// Type of Department (either KPU or Regular ).
+        /// </summary>
+        public string DepartmentType
+        {
+            get { return _deptType; }
         }
 
         /// <summary>
@@ -232,6 +246,19 @@ namespace SpacePlanning
             _numCellAdded += 1;
             _areaGivenDept = _gridX * _gridY * _numCellAdded;
 
+        }
+
+
+        //compute the type of the department
+        internal string CalcDepartmentType()
+        {
+            if (_progDataList == null) return "";
+            int count = 0;
+            for(int i = 0; i < _progDataList.Count; i++)
+                if (_progDataList[i].ProgramType.IndexOf(KPU.ToLower()) != -1 || _progDataList[i].ProgramType.IndexOf(KPU.ToUpper()) != -1) count += 1;
+            int perc = count / _progDataList.Count;
+            if (perc > 0.50) return KPU.ToUpper();
+            else return REGULAR.ToUpper();
         }
 
         #endregion

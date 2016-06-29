@@ -91,7 +91,7 @@ namespace SpacePlanning
         }
 
         /// <summary>
-        /// Name of the program.
+        /// Type of Program (either KPU or Regular ).
         /// </summary>
         public string ProgramType
         {

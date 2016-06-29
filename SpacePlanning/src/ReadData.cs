@@ -101,7 +101,8 @@ namespace SpacePlanning
                 for (int j = 0; j < programDataStack.Count; j++)
                     if (deptNames[i] == programDataStack[j].DeptName) progInDept.Add(programDataStack[j]);
                 List<ProgramData> programBasedOnQuanity = MakeProgramListBasedOnQuantity(progInDept);
-                deptDataStack.Add(new DeptData(deptNames[i], programBasedOnQuanity, circulationFactor, dim, dim));
+                DeptData dept = new DeptData(deptNames[i], programBasedOnQuanity, circulationFactor, dim, dim);
+                deptDataStack.Add(dept);
             }// end of for loop statement
 
             //sort the depts by high area
