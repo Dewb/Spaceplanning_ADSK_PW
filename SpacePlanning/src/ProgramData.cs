@@ -19,6 +19,7 @@ namespace SpacePlanning
         private List<string> _progAdjList;
         private double _gridX;
         private double _gridY;
+        private string _progType;
         private int _numCellAdded;
         private List<Cell> _CellsAssigned;
         private List<Cell> _progrCell;
@@ -29,7 +30,7 @@ namespace SpacePlanning
 
 
         internal ProgramData(int programID,string programName,string programDept,
-            int programQuant,double programUnitArea, int programPrefValue, List<string> programAdjList,List<Cell> programCell, double dimX, double dimY)
+            int programQuant,double programUnitArea, int programPrefValue, List<string> programAdjList,List<Cell> programCell, double dimX, double dimY, string progType)
         {
             _progrID = programID;
             _progName = programName;
@@ -42,6 +43,7 @@ namespace SpacePlanning
             _numCells = NumCellsNeeded();
             _gridX = dimX;
             _gridY = dimY;
+            _progType = progType;
 
             _numCellAdded = 0;
             _areaGiven = 0;
@@ -67,6 +69,7 @@ namespace SpacePlanning
             _numCells = other.NumCellsNeeded();
             _gridX = other._gridX;
             _gridY = other._gridY;
+            _progType = other.ProgramType;
 
             _numCellAdded = other.NumberofCellsAdded;
             _areaGiven = other.AreaProvided;
@@ -86,6 +89,15 @@ namespace SpacePlanning
         {
             get { return _progName; }
         }
+
+        /// <summary>
+        /// Name of the program.
+        /// </summary>
+        public string ProgramType
+        {
+            get { return _progType; }
+        }
+
 
         /// <summary>
         /// Polygon2d's assigned to each program.

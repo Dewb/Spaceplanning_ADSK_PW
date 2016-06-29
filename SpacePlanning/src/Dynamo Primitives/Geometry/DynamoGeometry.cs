@@ -388,7 +388,7 @@ namespace stuffer
                 return null;
             }
 
-            Polygon2d polyNew = new Polygon2d(polygon.Points,0);
+            Polygon2d polyNew = new Polygon2d(polygon.Points);
             List<Point> points = new List<Point>();
             foreach (Point2d point in polyNew.Points)
             {
