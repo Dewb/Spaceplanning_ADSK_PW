@@ -549,7 +549,7 @@ namespace SpacePlanning
             List<Polygon2d> otherDeptPoly = new List<Polygon2d>();
             List<Polygon2d> subDividedPoly = new List<Polygon2d>();
             int count = 0, maxTry = 20;
-            bool prepareReg = false, kpuPlaced = false; // to disable multiple KPU
+            bool prepareReg = false, kpuPlaced = false, noKpuMode = false; // to disable multiple KPU
             double totalDeptProp = 0, areaAvailable = 0, ratio = 0.6, eps = 2;
             for (int i = 0; i < deptData.Count; i++) if (i > 0) totalDeptProp += deptData[i].DeptAreaProportionNeeded;
 
@@ -605,6 +605,7 @@ namespace SpacePlanning
                     kpuPlaced = true;
                 }else // regular depts
                 {
+                    if (!kpuPlaced) { leftOverPoly = leftOverBlocks; kpuPlaced = true; noKpuMode = true; }
                     if (!prepareReg) // only need to do once, places a grid of rectangles before other depts get alloted
                     {
                         List<List<Polygon2d>> polySubDivs = new List<List<Polygon2d>>();
@@ -627,6 +628,11 @@ namespace SpacePlanning
                     }
                     double areaNeeded = areaNeededDept[i];
                     double areaFactor = deptItem.DeptAreaProportionNeeded / totalDeptProp;
+                    if (noKpuMode)
+                    {
+                        double fac = BasicUtility.RandomBetweenNumbers(new Random(iteration), 0.60, 0.25);
+                        if (areaFactor > fac) areaFactor = fac;
+                    }
                     //Dictionary<string, object> assignedByRatioObj = AssignBlocksBasedOnRatio(areaNeededDept[i], leftOverPoly, acceptableWidth, 0.5);
                     Dictionary<string, object> assignedByRatioObj = AssignBlocksBasedOnRatio(areaFactor, areaAvailable, leftOverPoly, acceptableWidth, 0.5);
                     List<Polygon2d> everyDeptPoly = (List<Polygon2d>)assignedByRatioObj["DeptPoly"];

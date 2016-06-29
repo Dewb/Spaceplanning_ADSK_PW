@@ -39,6 +39,7 @@ namespace SpacePlanning
             for (int i = 0; i < deptData.Count; i++)
             {
                 List<Polygon2d> polyList = deptData[i].PolyAssignedToDept;
+                if (!ValidateObject.CheckPolyList(polyList)) continue;
                 for (int j = 0; j < polyList.Count; j++)
                 {
                     polygonsAllDeptList.Add(polyList[j]);
@@ -81,6 +82,9 @@ namespace SpacePlanning
                 }
             }
             List<Line2d> cleanNetworkLines = LineUtility.RemoveDuplicateLines(networkLine);
+            // extend the lines found
+            for(int i = 0; i < cleanNetworkLines.Count; i++) cleanNetworkLines[i] = LineUtility.ExtendLine(cleanNetworkLines[i], 2000);
+
             //return cleanNetworkLines;
             return new Dictionary<string, object>
             {
