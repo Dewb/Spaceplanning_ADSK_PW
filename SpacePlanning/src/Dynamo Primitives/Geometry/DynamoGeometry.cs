@@ -383,7 +383,7 @@ namespace stuffer
            public static Polygon PolygonByPolygon2d(Polygon2d polygon, double height)
         {
    
-            if (polygon == null || polygon.Points == null)
+            if (polygon == null || polygon.Points == null || polygon.Points.Count < 3)
             {
                 return null;
             }
