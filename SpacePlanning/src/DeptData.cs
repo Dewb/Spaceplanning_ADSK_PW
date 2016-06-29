@@ -29,8 +29,6 @@ namespace SpacePlanning
         private double _deptAreaProportionAchieved;
         private double _cirFactor;
 
-        public const string KPU = "kpu";
-        public const string REGULAR = "regular";
 
         #region - internal constructor
         internal DeptData(string deptName, List<ProgramData> programDataList, double circulationFactor, double dimX, double dimY)
@@ -255,10 +253,10 @@ namespace SpacePlanning
             if (_progDataList == null) return "";
             int count = 0;
             for(int i = 0; i < _progDataList.Count; i++)
-                if (_progDataList[i].ProgramType.IndexOf(KPU.ToLower()) != -1 || _progDataList[i].ProgramType.IndexOf(KPU.ToUpper()) != -1) count += 1;
+                if (_progDataList[i].ProgramType.IndexOf(BuildLayout.KPU.ToLower()) != -1 || _progDataList[i].ProgramType.IndexOf(BuildLayout.KPU.ToUpper()) != -1) count += 1;
             int perc = count / _progDataList.Count;
-            if (perc > 0.50) return KPU.ToUpper();
-            else return REGULAR.ToUpper();
+            if (perc > 0.50) return BuildLayout.KPU.ToUpper();
+            else return BuildLayout.REG.ToUpper();
         }
 
         #endregion

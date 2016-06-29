@@ -113,8 +113,7 @@ namespace SpacePlanning
             for(int i = 0; i < deptDataStack.Count; i++) totalDeptArea += deptDataStack[i].DeptAreaNeeded;
             for (int i = 0; i < deptDataStack.Count; i++) deptDataStack[i].DeptAreaProportionNeeded = Math.Round((deptDataStack[i].DeptAreaNeeded / totalDeptArea), 3);
 
-            return SortProgramsByPrefInDept(deptDataStack);
-       
+            return SortProgramsByPrefInDept(deptDataStack);    
 
         }
 
@@ -177,7 +176,7 @@ namespace SpacePlanning
         /// Retrieves and orders list of point2d geometry from the site outline. 
         /// Returns ordered point2d list geometry.
         /// </summary>
-        /// <param name="nurbList">List of nurbs geometry</param>
+        /// <param name="geomList">List of nurbs geometry</param>
         /// <returns name="pointList">List of point2d representing site outline</returns>
         /// <search>
         /// get points of site outline

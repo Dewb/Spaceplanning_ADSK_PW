@@ -21,6 +21,9 @@ namespace SpacePlanning
         internal static Point2d REFERENCEPOINT = new Point2d(0,0);
         internal static int MAXCOUNT = 20, MAXROUND = 50;
 
+        internal const string KPU = "kpu";
+        internal const string REG = "regular";
+
         #region - Public Methods
 
 
@@ -485,24 +488,21 @@ namespace SpacePlanning
         {
             bool keyPlanUnit = true;
             if (deptData == null) { Trace.WriteLine("Null found poly or deptdata"); return null; }                        
-            if (!keyPlanUnit) return DeptPlacerNoKeyPlanUnit(deptData, poly, offset, acceptableWidth, circulationFreq, recompute, tag);
-            else return DeptPlacerKeyPlanUnit(deptData, poly, offset, acceptableWidth, circulationFreq, recompute, tag);           
+            if (!keyPlanUnit) return DeptPlacerREG(deptData, poly, offset, acceptableWidth, circulationFreq, recompute, tag);
+            else return DeptPlacerKPU(deptData, poly, offset, acceptableWidth, circulationFreq, recompute, tag);           
         }
 
 
         //dept assignment new way
         [MultiReturn(new[] { "UpdatedDeptData", "LeftOverPolys", "CirculationPolys", "OtherDeptMainPoly" })]
-        internal static Dictionary<string, object> DeptPlacerKeyPlanUnit(List<DeptData> deptData, Polygon2d poly, double offset,
+        internal static Dictionary<string, object> DeptPlacerKPU(List<DeptData> deptData, Polygon2d poly, double offset,
             double acceptableWidth = 20,double circulationFreq = 10, int recompute = 5, bool tag = false)
         {
-            bool keyPlanUnit = true;
             if (deptData == null) //|| !ValidateObject.CheckPoly(poly)
             {
                 Trace.WriteLine("Null found poly or deptdata");
                 return null;
-            }
-
-            
+            }            
             Trace.WriteLine("Dept placer is good to go");
             List<double> AllDeptAreaAdded = new List<double>();
             List<List<Polygon2d>> AllDeptPolys = new List<List<Polygon2d>>();
@@ -513,17 +513,20 @@ namespace SpacePlanning
             double totalDeptProp = 0, areaAvailable = 0, ratio = 0.6, eps = 2;
             for (int i = 0; i < deptData.Count; i++) if (i > 0) totalDeptProp += deptData[i].DeptAreaProportionNeeded;
 
+
+            Polygon2d currentPoly = poly;
             for (int i = 0; i < deptData.Count; i++)
             {
                 double areaAssigned = 0;
                 DeptData deptItem = deptData[i];
-                if (i == 0) // key planning unit
+                if (deptItem.DepartmentType.IndexOf(KPU.ToLower()) != -1 ||
+                    deptItem.DepartmentType.IndexOf(KPU.ToUpper()) != -1)// key planning unit
                 {
                     //double areaNeeded = deptItem.DeptAreaNeeded;
-                    double areaNeeded = deptItem.DeptAreaProportionNeeded * PolygonUtility.AreaPolygon(poly);
+                    double areaNeeded = deptItem.DeptAreaProportionNeeded * PolygonUtility.AreaPolygon(currentPoly);
                     areaNeeded = 100000;
                     Trace.WriteLine("placing inpatients");
-                    Dictionary<string, object> inpatientObject = AssignBlocksBasedOnDistance(poly, offset, areaNeeded, 20, recompute, tag);
+                    Dictionary<string, object> inpatientObject = AssignBlocksBasedOnDistance(currentPoly, offset, areaNeeded, 20, recompute, tag);
                     if (inpatientObject == null) return null;
                     List<Polygon2d> inpatienBlocks = (List<Polygon2d>)inpatientObject["PolyAfterSplit"];
                     List<Polygon2d> leftOverBlocks = (List<Polygon2d>)inpatientObject["LeftOverPoly"];
@@ -533,7 +536,7 @@ namespace SpacePlanning
                     AllDeptAreaAdded.Add(areaAssigned);
                     for (int j = 0; j < leftOverBlocks.Count; j++)
                     {
-                        otherDeptPoly.Add(new Polygon2d(leftOverBlocks[j].Points));
+                        otherDeptPoly.Add(new Polygon2d(leftOverBlocks[j].Points));// just for debugging
                         leftOverPoly.Add(leftOverBlocks[j]);
                     }
                 }
@@ -600,7 +603,7 @@ namespace SpacePlanning
 
         //dept assignment new way
         [MultiReturn(new[] { "UpdatedDeptData", "LeftOverPolys", "CirculationPolys", "OtherDeptMainPoly" })]
-        internal static Dictionary<string, object> DeptPlacerNoKeyPlanUnit(List<DeptData> deptData, Polygon2d poly, double offset,
+        internal static Dictionary<string, object> DeptPlacerREG(List<DeptData> deptData, Polygon2d poly, double offset,
             double acceptableWidth = 20, double circulationFreq = 10, double recompute = 5, bool tag = false)
         {
             if (deptData == null) //|| !ValidateObject.CheckPoly(poly)
