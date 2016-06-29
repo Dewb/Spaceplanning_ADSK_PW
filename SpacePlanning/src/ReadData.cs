@@ -8,6 +8,9 @@ using System.IO;
 using stuffer;
 using System.Diagnostics;
 using System.Reflection;
+using Dynamo.Translation;
+
+
 
 
 namespace SpacePlanning
@@ -54,11 +57,11 @@ namespace SpacePlanning
             if (programDocumentPath == "")
             {               
                 //string[] csvText = Properties.Resources.PROGRAMCSV.Split('\n'); 
-                if (caseStudy == 1) res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.MayoProgram_1.csv");
-                else if (caseStudy == 2) res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.OtherProgram.csv");
-                else if (caseStudy == 3) res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.MayoProgram_1.csv");
-                else if (caseStudy == 4) res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.OtherProgram.csv");
-                else res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.ProgramDocument.csv");
+                if (caseStudy == 1) res = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.MayoProgram_1.csv");
+                else if (caseStudy == 2) res = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.OtherProgram.csv");
+                else if (caseStudy == 3) res = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.MayoProgram_1.csv");
+                else if (caseStudy == 4) res = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.OtherProgram.csv");
+                else res = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.ProgramDocument.csv");
 
                 reader = new StreamReader(res);
             }
@@ -115,7 +118,7 @@ namespace SpacePlanning
         }
 
 
-        //read embedded .sat file and make site outline
+        //read embedded .sat file and make site outline || 0 = .sat file, 1 = .dwg file
         /// <summary>
         /// Forms site outline from the embedded .sat file.
         /// Returns list of nurbs curve geometry.
@@ -124,17 +127,17 @@ namespace SpacePlanning
         /// <search>
         /// make site outline, site geometry.
         /// </search>
-        public static Geometry[] AutoMakeSiteOutline(int caseStudy =0, string siteOutlinePath = "")
+        public static Polygon2d MakeSiteOutlineFromSat(int caseStudy =0, string siteOutlinePath = "")
         {
             string path;
             if (siteOutlinePath == "")
             {
                 Stream res;
-                if (caseStudy == 1) res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.siteMayo.sat");
-                else if (caseStudy == 2) res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.otherSite.sat");
-                else if (caseStudy == 3) res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.site3.sat");
-                else if (caseStudy == 4) res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.site4.sat");
-                else res = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.site1.sat"); //"SpacePlanning.src.Asset.ATORIGINDK.sat"
+                if (caseStudy == 1) res = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.siteMayo.sat");
+                else if (caseStudy == 2) res = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.otherSite.sat");
+                else if (caseStudy == 3) res = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.site3.sat");
+                else if (caseStudy == 4) res = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.site4.sat");
+                else res = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.site1.sat"); //"SpacePlanning.src.Asset.ATORIGINDK.sat"
                 path = Path.GetTempFileName();
                 FileStream writeStream = new FileStream(path, FileMode.Create, FileAccess.Write);
 
@@ -148,13 +151,27 @@ namespace SpacePlanning
                 }
                 writeStream.Close();               
             }
-            else path = siteOutlinePath;          
-            return Geometry.ImportFromSAT(path);
+            else path = siteOutlinePath;
+            //return Geometry.ImportFromSAT(path);
+            //return (Line[])Geometry.ImportFromSAT(path);
+            List<Point2d> pointList = new List<Point2d>();              
+            //Geometry[] geom = Geometry.ImportFromSAT(path);
+            //NurbsCurve[] nurbs = (NurbsCurve[])geom.ToArray();
+            NurbsCurve[] nurbs = (NurbsCurve[])Geometry.ImportFromSAT(path).ToArray();
+           
+            for (int i = 0; i < nurbs.Length; i++)
+            {
+                Point2d pointPerCurve = Point2d.ByCoordinates(nurbs[i].StartPoint.X, nurbs[i].StartPoint.Y);
+                pointList.Add(pointPerCurve);
+                if (i == nurbs.Length) pointList.Add(Point2d.ByCoordinates(nurbs[i].EndPoint.X, nurbs[i].EndPoint.Y));
+            }
+            
+
+            return new Polygon2d(pointList);
+            //return new Polygon2d(FromSiteOutlineGetPoints2(nurbs.ToList()));  
         }
 
-
-
-         //get point information from outline
+        //get point information from outline
         /// <summary>
         /// Retrieves and orders list of point2d geometry from the site outline. 
         /// Returns ordered point2d list geometry.
@@ -164,7 +181,7 @@ namespace SpacePlanning
         /// <search>
         /// get points of site outline
         /// </search>
-        public static List<Point2d> FromSiteOutlineGetPoints(List<NurbsCurve> nurbList)
+        public static List<Point2d> FromSiteOutlineGetPoints2(List<NurbsCurve> nurbList)
         {
             List<Point2d> pointList = new List<Point2d>();
             for (int i = 0; i < nurbList.Count; i++)
@@ -177,6 +194,122 @@ namespace SpacePlanning
         }
 
 
+
+        //read embedded .sat file and make site outline || 0 = .sat file, 1 = .dwg file
+        /// <summary>
+        /// Forms site outline from the embedded .sat file.
+        /// Returns list of nurbs curve geometry.
+        /// </summary>
+        /// <returns name="NurbsGeometry">List of nurbs curve representing the site outline</returns>
+        /// <search>
+        /// make site outline, site geometry.
+        /// </search>
+        public static Polygon2d MakeSiteOutlineFromDwg(int caseStudy = 0, string siteOutlinePath = "")
+        {
+            string path;
+            if (siteOutlinePath == "")
+            {
+                Stream res;
+                if (caseStudy == 1) res = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.siteMayo.sat");
+                else if (caseStudy == 2) res = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.otherSite.sat");
+                else if (caseStudy == 3) res = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.site3.sat");
+                else if (caseStudy == 4) res = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.site4.sat");
+                else res = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.site1.sat"); //"SpacePlanning.src.Asset.ATORIGINDK.sat"
+                path = Path.GetTempFileName();
+                FileStream writeStream = new FileStream(path, FileMode.Create, FileAccess.Write);
+
+                int Length = 256;
+                Byte[] buffer = new Byte[Length];
+                int bytesRead = res.Read(buffer, 0, Length);
+                while (bytesRead > 0)
+                {
+                    writeStream.Write(buffer, 0, bytesRead);
+                    bytesRead = res.Read(buffer, 0, Length);
+                }
+                writeStream.Close();
+            }
+            else path = siteOutlinePath;
+
+          
+            FileLoader file = FileLoader.FromPath(path);
+            ImportedObject[] impObj = file.GetImportedObjects().ToArray();
+            Line[] lines = (Line[])ImportedObject.ConvertToGeometries(impObj).ToArray();
+            //List<Line> lines = (List<Line>)ImportedObject.ConvertToGeometries(impObj);
+            List<Point2d> pointList = new List<Point2d>();
+            for (int i = 0; i < lines.Count(); i++)
+            {
+                Point2d pointPerCurve = Point2d.ByCoordinates(lines[i].StartPoint.X, lines.ElementAt(i).StartPoint.Y);
+                pointList.Add(pointPerCurve);
+                if (i == lines.Count()) pointList.Add(Point2d.ByCoordinates(lines.ElementAt(i).EndPoint.X, lines.ElementAt(i).EndPoint.Y));
+            }
+            return new Polygon2d(pointList);
+        }
+
+        
+
+        //get point information from outline
+        /// <summary>
+        /// Retrieves and orders list of point2d geometry from the site outline. 
+        /// Returns ordered point2d list geometry.
+        /// </summary>
+        /// <param name="lineList">List of nurbs geometry</param>
+        /// <returns name="pointList">List of point2d representing site outline</returns>
+        /// <search>
+        /// get points of site outline
+        /// </search>
+        public static List<Point2d> FromSiteOutlineGetPoints(Geometry[] lineList)
+        {
+            string str = lineList.GetType().ToString();
+            Trace.WriteLine("str is " + str);
+            List<Point2d> pointList = new List<Point2d>();
+            if (lineList.GetType().ToString() != "NurbsCurve")
+            {                
+                NurbsCurve[] nurbs = (NurbsCurve[])lineList.ToArray();
+                for (int i = 0; i < nurbs.Length; i++)
+                {
+                    Point2d pointPerCurve = Point2d.ByCoordinates(nurbs[i].StartPoint.X, nurbs[i].StartPoint.Y);
+                    pointList.Add(pointPerCurve);
+                    if (i == nurbs.Length) pointList.Add(Point2d.ByCoordinates(nurbs[i].EndPoint.X, nurbs[i].EndPoint.Y));
+                }
+            }
+            else
+            {
+                Line[] lines = (Line[])lineList;
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    Point2d pointPerCurve = Point2d.ByCoordinates(lines[i].StartPoint.X, lines[i].StartPoint.Y);
+                    pointList.Add(pointPerCurve);
+                    if (i == lines.Length) pointList.Add(Point2d.ByCoordinates(lines[i].EndPoint.X, lines[i].EndPoint.Y));
+                }
+            }
+            return pointList;
+        }
+
+
+        //get point information from outline
+        /// <summary>
+        /// Retrieves and orders list of point2d geometry from the site outline. 
+        /// Returns ordered point2d list geometry.
+        /// </summary>
+        /// <param name="nurbList">List of nurbs geometry</param>
+        /// <returns name="pointList">List of point2d representing site outline</returns>
+        /// <search>
+        /// get points of site outline
+        /// </search>
+        public static List<Point2d> ConvertImportGeomToPolygon2d(List<Geometry> geomList, int fileType = 0)
+        {
+            /*
+            geomList[0].
+            List<Point2d> pointList = new List<Point2d>();
+            for (int i = 0; i < geomList.Count; i++)
+            {
+                Point2d pointPerCurve = Point2d.ByCoordinates(geomList[i].StartPoint.X, geomList[i].StartPoint.Y);
+                pointList.Add(pointPerCurve);
+                if (i == geomList.Count) pointList.Add(Point2d.ByCoordinates(geomList[i].EndPoint.X, geomList[i].EndPoint.Y));
+            }
+            */
+            return null;
+        }
         //builds the bounding box for a closed polygon2d
         /// <summary>
         /// Builds a bounding box polygon2d from input point2d representing site outline.
