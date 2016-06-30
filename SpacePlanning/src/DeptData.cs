@@ -68,6 +68,8 @@ namespace SpacePlanning
             _deptAreaProportion = other.DeptAreaProportionNeeded;
             _deptAreaProportionAchieved = other.DeptAreaProportionAchieved;
 
+            _areaGivenDept = other.DeptAreaProvided;
+
             if (other.PolyAssignedToDept != null && other.PolyAssignedToDept.Count > 0) _polyDepts = other.PolyAssignedToDept;
             else _polyDepts = null;
         }
