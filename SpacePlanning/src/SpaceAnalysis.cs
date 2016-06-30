@@ -306,11 +306,17 @@ namespace SpacePlanning
             List<string> progrNameList = new List<string>(), deptNameList = new List<string>();
             for (int i = 0; i < deptData.Count; i++)
             {
+                if (deptData[i].ProgramsInDept == null) continue;
                 for (int j = 0; j < deptData[i].ProgramsInDept.Count; j++)
                 {
                     polyList.AddRange(deptData[i].ProgramsInDept[j].PolyAssignedToProg);
-                    progrNameList.Add(deptData[i].ProgramsInDept[j].ProgramName);
-                    deptNameList.Add(deptData[i].DepartmentName);
+                    for(int k=0;k< deptData[i].ProgramsInDept[j].PolyAssignedToProg.Count; k++)
+                    {
+                        progrNameList.Add(deptData[i].ProgramsInDept[j].ProgramName);
+                        deptNameList.Add(deptData[i].DepartmentName);
+                    }
+                    
+                    
                 }
             }
 
@@ -326,7 +332,7 @@ namespace SpacePlanning
                 {
                     if (GraphicsUtility.PointInsidePolygonTest(polyList[j], cellList[i].LeftDownCorner))
                     {
-                        progrNameListinCell.Add(progrNameList[j]);
+                        progrNameListinCell.Add(progrNameList[j]); // error
                         deptNameListinCell.Add(deptNameList[j]);
                         cellIdList.Add(i.ToString());
                         if (neighborCells.Count == 2) cellTypeList.Add("CornerCell");

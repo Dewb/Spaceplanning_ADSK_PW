@@ -8,7 +8,7 @@ using System.IO;
 using stuffer;
 using System.Diagnostics;
 using System.Reflection;
-using Dynamo.Translation;
+//using Dynamo.Translation;
 
 
 
@@ -127,7 +127,7 @@ namespace SpacePlanning
         /// <search>
         /// make site outline, site geometry.
         /// </search>
-        public static Geometry[] GetSiteOutline(int caseStudy =0, string siteOutlinePath = "")
+        internal static Geometry[] GetSiteOutline(int caseStudy =0, string siteOutlinePath = "")
         {
             string path;
             if (siteOutlinePath == "")
@@ -162,10 +162,57 @@ namespace SpacePlanning
             }
             else if (path.IndexOf(".dwg") != -1)
             {
+                return null;
+                /*
                 FileLoader file = FileLoader.FromPath(path);
                 ImportedObject[] impObj = file.GetImportedObjects().ToArray();
                 return ImportedObject.ConvertToGeometries(impObj).ToArray();
                 //return ConvertSiteOutlineToPolygon2d(ImportedObject.ConvertToGeometries(impObj).ToList());
+                */
+            }
+            else return null;
+        }
+        //read embedded .sat file and make site outline || 0 = .sat file, 1 = .dwg file
+        /// <summary>
+        /// Forms site outline from the embedded .sat file.
+        /// Returns list of nurbs curve geometry.
+        /// </summary>
+        /// <returns name="NurbsGeometry">List of nurbs curve representing the site outline</returns>
+        /// <search>
+        /// make site outline, site geometry, site.
+        /// </search>
+        public static Geometry[] GetSiteOutlineFromSat(int caseStudy = 0, string siteOutlinePath = "")
+        {
+            string path;
+            if (siteOutlinePath == "")
+            {
+                Stream res;
+                if (caseStudy == 1) res = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.siteMayo.sat");
+                else if (caseStudy == 2) res = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.otherSite.sat");
+                else if (caseStudy == 3) res = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.site3.sat");
+                else if (caseStudy == 4) res = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.site4.sat");
+                else res = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.site1.sat"); //"SpacePlanning.src.Asset.ATORIGINDK.sat"
+                path = Path.GetTempFileName();
+                FileStream writeStream = new FileStream(path, FileMode.Create, FileAccess.Write);
+
+                int Length = 256;
+                Byte[] buffer = new Byte[Length];
+                int bytesRead = res.Read(buffer, 0, Length);
+                while (bytesRead > 0)
+                {
+                    writeStream.Write(buffer, 0, bytesRead);
+                    bytesRead = res.Read(buffer, 0, Length);
+                }
+                writeStream.Close();
+                return Geometry.ImportFromSAT(path);
+                //return ConvertSiteOutlineToPolygon2d(Geometry.ImportFromSAT(path).ToList());
+            }
+            else path = siteOutlinePath;
+
+            if (path.IndexOf(".sat") != -1)
+            {
+                return Geometry.ImportFromSAT(path);
+                //return ConvertSiteOutlineToPolygon2d(Geometry.ImportFromSAT(path).ToList());
             }
             else return null;
         }

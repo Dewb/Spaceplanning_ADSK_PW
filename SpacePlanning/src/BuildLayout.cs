@@ -299,6 +299,16 @@ namespace SpacePlanning
                 }
               
             }
+            /*
+            for (int i = 0; i < deptData.Count; i++)
+            {
+                List<ProgramData> progData = deptData[i].ProgramsInDept;
+                for(int j = 0; j < progData.Count; j++)
+                {
+                    //progData[j].PolyAssignedToProg
+                }
+            }
+            */
             List<DeptData> newDeptData = new List<DeptData>();
             for(int i = 0; i < deptData.Count; i++) newDeptData.Add(new DeptData(deptData[i]));
             return new Dictionary<string, object>

@@ -463,7 +463,7 @@ namespace SpacePlanning
         /// <search>
         /// form maker, buildingoutline, orthogonal forms
         /// </search>
-        [MultiReturn(new[] { "BuildingOutline", "ExtraPoly", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells", "CellNeighborMatrix" })]
+        [MultiReturn(new[] { "BuildingOutline", "ExtraPoly", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "SiteCoverageAchieved", "CellList", "CellNeighborMatrix" })]
         public static Dictionary<string, object> FormBuildingOutline(Polygon2d orthoSiteOutline, List<Cell> cellList, List<Point2d> attractorPoints = default(List<Point2d>), List<double> weightList = default(List<double>),
      double siteCoverage = 0.5, int iteration = 100, bool removeNotch = false, double minNotchDistance = 10, bool cellRefine = false, int scanResolution = 0)
         {
@@ -492,7 +492,7 @@ namespace SpacePlanning
                 }
                 else
                 {
-                    siteCoverAchieved = (double)formBuildingOutlineObj["GroundCoverAchieved"];
+                    siteCoverAchieved = (double)formBuildingOutlineObj["SiteCoverageAchieved"];
                     scDifference = Math.Abs(siteCoverAchieved - siteCoverage);
                     if (scDifference < 0.05) worked = true;
                     else
@@ -513,7 +513,7 @@ namespace SpacePlanning
 
 
 
-        [MultiReturn(new[] { "BuildingOutline", "ExtraPoly", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells", "CellNeighborMatrix" })]
+        [MultiReturn(new[] { "BuildingOutline", "ExtraPoly", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "SiteCoverageAchieved", "CellList", "CellNeighborMatrix" })]
         internal static Dictionary<string, object> BuildOutline(Polygon2d orthoSiteOutline, List<Cell> cellListInp, List<Point2d> attractorPoints = default(List<Point2d>), 
             List<double>weightList = default(List<double>), double groundCoverage = 0.5, int iteration = 100, 
             bool removeNotch = false, double minNotchDistance  = 10,int dummy=100, bool cellRefine = false)
@@ -679,6 +679,9 @@ namespace SpacePlanning
 
 
             List<Cell> preSelectedCellsCopy = selectedCells.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY,x.CellID)).ToList(); // example of deep copy
+            Dictionary<string, object> cellNeighborMatrixObjectPre = BuildCellNeighborMatrix(preSelectedCellsCopy);
+            List<List<int>> cellNeighborMatrixPre = (List<List<int>>)cellNeighborMatrixObjectPre["CellNeighborMatrix"];
+
             if (cellRefine)
             {
                 List<Cell> cellRefinedList = new List<Cell>();
@@ -734,7 +737,7 @@ namespace SpacePlanning
                 if (borderObject != null)
                 {
                     borderPoly = (Polygon2d)borderObject["BorderPolygon"];
-                    if (PolygonUtility.AreaPolygon(borderPoly) < areaBuilding * 0.2) continue;
+                    if (PolygonUtility.AreaPolygon(borderPoly) < areaBuilding * 0.2) continue; // checks if area for the poly is too less then need nt add it
                     offsetBorder = PolygonUtility.OffsetPoly(borderPoly, selectedCells[0].DimX / 2);
                     if (removeNotch)
                     {
@@ -761,9 +764,9 @@ namespace SpacePlanning
                 { "SiteArea", (ptSquares) },
                 { "LeftOverArea", (areaLeft) },
                 { "BuildingOutlineArea", (cellsGrouped) },
-                { "GroundCoverAchieved", (areaPlaced/areaSite) },//areaPlaced/areaSite
-                { "SortedCells", (preSelectedCellsCopy)},
-                { "CellNeighborMatrix", (cellNeighborMatrix) }
+                { "SiteCoverageAchieved", (areaPlaced/areaSite) },//areaPlaced/areaSite
+                { "CellList", (preSelectedCellsCopy)},
+                { "CellNeighborMatrix", (cellNeighborMatrixPre) }
             };
         }
 
