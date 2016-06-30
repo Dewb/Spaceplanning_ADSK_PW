@@ -119,6 +119,7 @@ namespace SpacePlanning
             for (int i = 0; i < deptData.Count; i++)
             {
                 List<Polygon2d> deptPolyList = deptData[i].PolyAssignedToDept;
+                if (!ValidateObject.CheckPolyList(deptPolyList)) continue;
                 for (int j = 0; j < deptPolyList.Count; j++)
                 {
                     deptIdList.Add(i);

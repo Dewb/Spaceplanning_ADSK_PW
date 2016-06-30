@@ -226,7 +226,7 @@ namespace SpacePlanning
         /// <search>
         /// make convex hull based on grahams scan algorithm
         /// </search>
-        public static List<Point2d> ConvexHullFromPoint2dList(List<Point2d> pointList)
+        internal static List<Point2d> ConvexHullFromPoint2dList(List<Point2d> pointList)
         {
             List<Point2d> convexHullPtList = new List<Point2d>();
             int sizePtList = pointList.Count;
@@ -265,7 +265,7 @@ namespace SpacePlanning
         /// grid lines
         /// </search>
         [MultiReturn(new[] { "GridXLines", "GridYLines"})]
-        public static Dictionary<string, object> CreateGridLines(Polygon2d polyOutline, double dim = 10, int scale = 1)
+        internal static Dictionary<string, object> CreateGridLines(Polygon2d polyOutline, double dim = 10, int scale = 1)
         {
             if (scale < 1) scale = 1;
             double eps = 25, extension = 300;
@@ -316,8 +316,8 @@ namespace SpacePlanning
         /// Builds the Cell NeighborMatrix
         /// </summary>
         /// <param name="polyOutline">Polygon2d as the border outline.</param>
-        /// <param name="dim">Dimension of the cell object in X and Y direction.</param>
-        /// <param name="tag">Boolean item to activate two separate modes of calculation.</param>
+        /// <param name="cellDim">Dimension of the cell object in X and Y direction.</param>
+        /// <param name="iteration">Boolean item to activate two separate modes of calculation.</param>
         /// <returns name="OrthoSiteOutline">Polygon2d representing orthogonal poly outline.</returns>
         /// <returns name="BorderCellsFound">Cell objects at the border of the outline.</returns>  
         /// <returns name="CellNeighborMatrix">Cell NeighborMatrix object.</returns> 
@@ -347,7 +347,7 @@ namespace SpacePlanning
             {
                 count += 1;
                 List<Cell> cellsInside = CellsInsidePoly(polyOutline.Points, dimAdjusted);
-                Dictionary<string, object> neighborObject = FormsCellNeighborMatrix(cellsInside);
+                Dictionary<string, object> neighborObject = BuildCellNeighborMatrix(cellsInside);
                 cellNeighborMatrix = (List<List<int>>)neighborObject["CellNeighborMatrix"];
                 sortedCells = (List<Cell>)neighborObject["SortedCells"];               
 
@@ -445,15 +445,31 @@ namespace SpacePlanning
         }
 
 
-
+        /// <summary>
+        /// Iteratively builds the building outline as per the input site coverage.
+        /// </summary>
+        /// <param name="orthoSiteOutline">Orthogonal site outline Polygon2d.</param>
+        /// <param name="cellListInp">List of cell objects on the site outline.</param>
+        /// <param name="attractorPoints">List of Point2d representing points where building outline should not be placed.</param>
+        /// <param name="weightList">List of double's representing weights of the attractor points.</param>
+        /// <param name="siteCoverage">Expected site coverage.</param>
+        /// <param name="iteration">Seed value representing design choice.</param>
+        /// <param name="removeNotch">True or False toggling notch removal from the building outline.</param>
+        /// <param name="minNotchDistance">Threshold distance below which , side of the building outline will be considered a notch and will be removed.</param>
+        /// <param name="cellRefine">True or False toggle to allow addition of extra cell objects for precise building outline computation.</param>
+        /// <param name="scanResolution">Integer value representing size of the box to scan possible cell objects to form the building outline.</param>
+        /// <returns name = "BuildingOutline">Building outline as a Polygon2d.</returns>
+        /// <search>
+        /// form maker, buildingoutline, orthogonal forms
+        /// </search>
         [MultiReturn(new[] { "BuildingOutline", "ExtraPoly", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells", "CellNeighborMatrix" })]
         public static Dictionary<string, object> FormBuildingIterator(Polygon2d orthoSiteOutline, List<Cell> cellListInp, List<Point2d> attractorPoints = default(List<Point2d>), List<double> weightList = default(List<double>),
-     double groundCoverage = 0.5, int iteration = 100, bool removeNotch = false, double minNotchDistance = 10, bool cellRefine = false, int scanResolution = 0)
+     double siteCoverage = 0.5, int iteration = 100, bool removeNotch = false, double minNotchDistance = 10, bool cellRefine = false, int scanResolution = 0)
         {
             if (iteration < 1) iteration = 1;
             int count = 0, maxTry = 40;
             bool worked = false;
-            double groundCoverAchieved = 0, gcDifference = 0, gcDifferenceBest = 10000;
+            double siteCoverAchieved = 0, scDifference = 0, scDifferenceBest = 10000;
             Dictionary<string, object> formBuildingOutlineObj = new Dictionary<string, object>();
             Dictionary<string, object> formBuildingOutlineObjBest = new Dictionary<string, object>();
             int dummy = 0;
@@ -464,7 +480,7 @@ namespace SpacePlanning
             {
                 count += 1;
                 Trace.WriteLine("||||||||||||||||||||||||||||||trying to get the form we want : " + count);
-                formBuildingOutlineObj = FormBuildingOutlineTest(orthoSiteOutline, cellListInp, attractorPoints, weightList, groundCoverage, iteration, removeNotch, minNotchDistance, dummy, cellRefine);
+                formBuildingOutlineObj = FormBuildingOutlineTest(orthoSiteOutline, cellListInp, attractorPoints, weightList, siteCoverage, iteration, removeNotch, minNotchDistance, dummy, cellRefine);
 
                 if (formBuildingOutlineObj == null)
                 {
@@ -474,18 +490,18 @@ namespace SpacePlanning
                 }
                 else
                 {
-                    groundCoverAchieved = (double)formBuildingOutlineObj["GroundCoverAchieved"];
-                    gcDifference = Math.Abs(groundCoverAchieved - groundCoverage);
-                    if (gcDifference < 0.05) worked = true;
+                    siteCoverAchieved = (double)formBuildingOutlineObj["GroundCoverAchieved"];
+                    scDifference = Math.Abs(siteCoverAchieved - siteCoverage);
+                    if (scDifference < 0.05) worked = true;
                     else
                     {
                         if (dummy < 1) dummy = (int)BasicUtility.RandomBetweenNumbers(new Random(iteration), 20, 7);
                         iteration += 1;
                         dummy -= 1;
                     }
-                    if (gcDifference < gcDifferenceBest) { formBuildingOutlineObjBest = formBuildingOutlineObj; gcDifferenceBest = gcDifference; }
+                    if (scDifference < scDifferenceBest) { formBuildingOutlineObjBest = formBuildingOutlineObj; scDifferenceBest = scDifference; }
                 }
-                Trace.WriteLine("+++++++++++++++Difference in GC is : " + Math.Abs(groundCoverAchieved - groundCoverage));
+                Trace.WriteLine("+++++++++++++++Difference in GC is : " + Math.Abs(siteCoverAchieved - siteCoverage));
             }// end of while loop
             //formBuildingOutlineObjBest["BuildingOutlineArea"] = count;
             return formBuildingOutlineObjBest;
@@ -678,7 +694,7 @@ namespace SpacePlanning
             Dictionary<string, object> sortCellObj = SortCellList(selectedCellsCopy);
             if (sortCellObj == null) return null;
             selectedCellsCopy = (List<Cell>)sortCellObj["SortedCells"];
-            Dictionary<string, object> cellNeighborMatrixObject = FormsCellNeighborMatrix(selectedCellsCopy);
+            Dictionary<string, object> cellNeighborMatrixObject = BuildCellNeighborMatrix(selectedCellsCopy);
             List<List<int>> cellNeighborMatrix = (List<List<int>>)cellNeighborMatrixObject["CellNeighborMatrix"];
             Dictionary<string, object> borderObject = CreateBorder(cellNeighborMatrix, selectedCellsCopy, true, true);
             if (borderObject != null)
@@ -709,7 +725,7 @@ namespace SpacePlanning
                 sortCellObj = SortCellList(selectedCellsCopy);
                 if (sortCellObj == null) return null;
                 selectedCellsCopy = (List<Cell>)sortCellObj["SortedCells"];
-                cellNeighborMatrixObject = FormsCellNeighborMatrix(selectedCellsCopy);
+                cellNeighborMatrixObject = BuildCellNeighborMatrix(selectedCellsCopy);
                 cellNeighborMatrix = (List<List<int>>)cellNeighborMatrixObject["CellNeighborMatrix"];
                 borderObject = CreateBorder(cellNeighborMatrix, selectedCellsCopy, true, true);
                 if (borderObject != null)
@@ -751,7 +767,7 @@ namespace SpacePlanning
 
 
         //bounding box from a group of cells
-        public static Polygon2d FromCellsGetBoundingPoly(List<Cell> cellList)
+        internal static Polygon2d FromCellsGetBoundingPoly(List<Cell> cellList)
         {
             if (cellList == null || cellList.Count == 0) return null;
             List<Point2d> ptList = new List<Point2d>();
@@ -762,7 +778,7 @@ namespace SpacePlanning
 
  
         //checks if cells are withing the range of given attractor points, with respective weight values.
-        public static List<Cell> RemoveCellsBasedOnAttractors( List<Cell> cellListInp,List<Point2d> attractorPointList, List<double> weightList)
+        internal static List<Cell> RemoveCellsBasedOnAttractors( List<Cell> cellListInp,List<Point2d> attractorPointList, List<double> weightList)
         {
             if (cellListInp == null || attractorPointList == null || weightList == null) return null;
             List<Cell> cellList = cellListInp.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY,x.CellID)).ToList(); // example of deep copy           
@@ -813,11 +829,8 @@ namespace SpacePlanning
         public static List<Cell> CellsByIndex(List<Cell> cellLists, List<int> cellIdLists)
         {
             List<Cell> cellSelectedList = new List<Cell>();
-            for(int i = 0; i < cellIdLists.Count; i++)
-            {
-                cellSelectedList.Add(cellLists[cellIdLists[i]]);
-            }
-            return cellSelectedList;
+            for(int i = 0; i < cellIdLists.Count; i++) cellSelectedList.Add(cellLists[cellIdLists[i]]); 
+            return cellSelectedList;         
         }
         #endregion
 
@@ -825,7 +838,7 @@ namespace SpacePlanning
         #region - Private Methods
         //sorts a list of cells based on a equation
         [MultiReturn(new[] { "SortedCells", "SortedCellIndices", "XYEqualtionList" })]
-        public static Dictionary<string, object> SortCellList(List<Cell> cellLists)
+        internal static Dictionary<string, object> SortCellList(List<Cell> cellLists)
         {
             if (cellLists == null || cellLists.Count < 2) return null;
             List<Cell> newCellLists = new List<Cell>();
@@ -860,7 +873,7 @@ namespace SpacePlanning
 
         //make cell neighbor matrix
         [MultiReturn(new[] { "CellNeighborMatrix", "XYEqualtionList", "SortedCells" })]
-        public static Dictionary<string, object> FormsCellNeighborMatrix(List<Cell> cellLists)
+        internal static Dictionary<string, object> BuildCellNeighborMatrix(List<Cell> cellLists)
         {
             double dimX = cellLists[0].DimX, dimY = cellLists[0].DimY;
             List<List<int>> cellNeighborMatrix = new List<List<int>>();
@@ -923,20 +936,28 @@ namespace SpacePlanning
         }
 
         //get the cells and make an orthogonal outline poly - not using now, but works best
-        [MultiReturn(new[] { "BorderPolyLine", "BorderCellsFound", "BorderPolyPoints" })]
-        public static Dictionary<string, object> CreateBorder(List<List<int>> cellNeighborMatrix, List<Cell> cellListInp, bool tag = true, bool goReverse = false)
+        /// <summary>
+        /// Creates the orthogonal border Polygon2d for a list of cell objects.
+        /// </summary>
+        /// <param name="cellNeighborMatrix"> Cell neighbor matrix represented as a list of list of integers.</param>
+        /// <param name="cellList">List of cell objects.</param>
+        /// <param name="tag">Bool value to allow same cell corner Point2d to computer border Polygon2d. Recommended value is true.</param>
+        /// <param name="goReverse">Bool value to enable reverse tracking cells to find best fit border Polygon2d.Recommended value is true.</param>
+        /// <returns name ="BorderPolygon">Border polygon as a Polygon2d.</returns>
+        [MultiReturn(new[] { "BorderPolygon", "BorderCells" })]
+        public static Dictionary<string, object> CreateBorder(List<List<int>> cellNeighborMatrix, List<Cell> cellList, bool tag = true, bool goReverse = true)
         {
-            if (cellListInp == null || cellListInp.Count == 0) return null;
+            if (cellList == null || cellList.Count == 0) return null;
 
-            List<Cell> cellList = cellListInp.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY,x.CellID)).ToList(); // example of deep copy
+            List<Cell> cellListNew = cellList.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY,x.CellID)).ToList(); // example of deep copy
             int minValue = 25 ;
             //get the id of the lowest left cell centroid from all the boundary cells
             List<Point2d> cenPtBorderCells = new List<Point2d>();
             List<Point2d> borderPolyPoints = new List<Point2d>();
             List<Point2d> borderPolyThroughCenter = new List<Point2d>();
-            for (int i = 0; i < cellList.Count; i++) cenPtBorderCells.Add(cellList[i].CenterPoint);
+            for (int i = 0; i < cellListNew.Count; i++) cenPtBorderCells.Add(cellListNew[i].CenterPoint);
             int lowestCellId = PointUtility.LowestPointFromList(cenPtBorderCells);
-            Cell currentCell = cellList[lowestCellId];
+            Cell currentCell = cellListNew[lowestCellId];
             Point2d currentCellPoint = currentCell.LeftDownCorner;
             Point2d currentCellCenter = currentCell.CenterPoint;
             int currentIndex = lowestCellId, num = 0, reverseCount =0;
@@ -949,7 +970,7 @@ namespace SpacePlanning
             }
             List<int> borderCellIdList = GetCornerAndEdgeCellId(cellNeighborMatrixCopy);
             List<bool> isBorderCellList = new List<bool>();
-            for (int i = 0; i < cellList.Count; i++) isBorderCellList.Add(false);
+            for (int i = 0; i < cellListNew.Count; i++) isBorderCellList.Add(false);
             for (int i = 0; i < borderCellIdList.Count; i++) isBorderCellList[borderCellIdList[i]] = true;
 
             Stack<int> visitedCellIndices = new Stack<int>();
@@ -967,55 +988,54 @@ namespace SpacePlanning
                 }             
               
                 if (cellNeighborMatrix[currentIndex][0] > -1 &&
-                    cellList[cellNeighborMatrix[currentIndex][0]].CellAvailable && isBorderCellList[cellNeighborMatrix[currentIndex][0]])
+                    cellListNew[cellNeighborMatrix[currentIndex][0]].CellAvailable && isBorderCellList[cellNeighborMatrix[currentIndex][0]])
                 {
                     currentIndex = cellNeighborMatrix[currentIndex][0]; // right
                     possibleCellFound = true;
                     if (!tag)
                     {
-                        currentCell = cellList[currentIndex];
+                        currentCell = cellListNew[currentIndex];
                         currentCell.CellAvailable = false;
                         currentCellPoint = currentCell.RightDownCorner;
                     }
 
                 }
                 else if (cellNeighborMatrix[currentIndex][1] > -1 &&
-                    cellList[cellNeighborMatrix[currentIndex][1]].CellAvailable && isBorderCellList[cellNeighborMatrix[currentIndex][1]])
+                    cellListNew[cellNeighborMatrix[currentIndex][1]].CellAvailable && isBorderCellList[cellNeighborMatrix[currentIndex][1]])
                 {
                     currentIndex = cellNeighborMatrix[currentIndex][1]; // up
                     possibleCellFound = true;
                     if (!tag)
                     {
-                        currentCell = cellList[currentIndex];
+                        currentCell = cellListNew[currentIndex];
                         currentCell.CellAvailable = false;
                         currentCellPoint = currentCell.RightUpCorner;
                     }
                 }
                 else if (cellNeighborMatrix[currentIndex][2] > -1 &&
-                    cellList[cellNeighborMatrix[currentIndex][2]].CellAvailable && isBorderCellList[cellNeighborMatrix[currentIndex][2]])
+                    cellListNew[cellNeighborMatrix[currentIndex][2]].CellAvailable && isBorderCellList[cellNeighborMatrix[currentIndex][2]])
                 {
                     currentIndex = cellNeighborMatrix[currentIndex][2]; // left
                     possibleCellFound = true;
                     if (!tag)
                     {
-                        currentCell = cellList[currentIndex];
+                        currentCell = cellListNew[currentIndex];
                         currentCell.CellAvailable = false;
                         currentCellPoint = currentCell.LeftUpCorner;
                     }
                 }
                 else if (cellNeighborMatrix[currentIndex][3] > -1 &&
-                    cellList[cellNeighborMatrix[currentIndex][3]].CellAvailable && isBorderCellList[cellNeighborMatrix[currentIndex][3]])
+                    cellListNew[cellNeighborMatrix[currentIndex][3]].CellAvailable && isBorderCellList[cellNeighborMatrix[currentIndex][3]])
                 {
                     currentIndex = cellNeighborMatrix[currentIndex][3]; // down
                     possibleCellFound = true;
                     if (!tag)
                     {
-                        currentCell = cellList[currentIndex];
+                        currentCell = cellListNew[currentIndex];
                         currentCell.CellAvailable = false;
                         currentCellPoint = currentCell.LeftDownCorner;
                     }
                 }
-
 
                 if (goReverse)
                 {
@@ -1024,7 +1044,7 @@ namespace SpacePlanning
                     if (tag && possibleCellFound)
                     {
                         visitedCellIndices.Push(currentIndex);
-                        currentCell = cellList[currentIndex];
+                        currentCell = cellListNew[currentIndex];
                         currentCell.CellAvailable = false;
                         currentCellPoint = currentCell.LeftDownCorner;
                         currentCellCenter = currentCell.CenterPoint;
@@ -1039,7 +1059,7 @@ namespace SpacePlanning
                         {
                             reverseCount += 1;
                             currentIndex = visitedCellIndices.Pop();
-                            currentCell = cellList[currentIndex];
+                            currentCell = cellListNew[currentIndex];
                             currentCell.CellAvailable = false;
                             currentCellPoint = currentCell.LeftDownCorner;
                             currentCellCenter = currentCell.CenterPoint;
@@ -1060,7 +1080,7 @@ namespace SpacePlanning
                     //do the following when finding reverse Cell id is set as false             
                     if (tag)
                     {
-                        currentCell = cellList[currentIndex];
+                        currentCell = cellListNew[currentIndex];
                         currentCell.CellAvailable = false;
                         currentCellPoint = currentCell.LeftDownCorner;
                     }
@@ -1070,17 +1090,24 @@ namespace SpacePlanning
                 }
             }// end of while loop
             //List<Point> ptList = DynamoGeometry.pointFromPoint2dList(borderPolyThroughCenter);
-            List<Polygon2d> cellFound = MakeCellPolysFromIndicesPoint2d(borderPolyThroughCenter, cellList[0].DimX, cellList[0].DimY, null);
+            List<Polygon2d> cellFound = MakeCellPolysFromIndicesPoint2d(borderPolyThroughCenter, cellListNew[0].DimX, cellListNew[0].DimY, null);
             Polygon2d borderPoly = PolygonUtility.CreateOrthoPoly(new Polygon2d(borderPolyPoints));
             return new Dictionary<string, object>
             {
-                { "BorderPolyLine", (borderPoly) },
-                { "BorderCellsFound", (cellFound) },
-                { "BorderPolyPoints", (borderPolyPoints) }
+                { "BorderPolygon", (borderPoly) },
+                { "BorderCells", (cellFound) }
             };
         }
 
         //get only corner and edge cells
+        /// <summary>
+        /// Returns the cell indices of corner and edge cells from the input cell neighbor matrix.
+        /// </summary>
+        /// <param name="cellNeighborMatrix">Cell Neighbor Matrix represented as list of list of integers.</param>
+        /// <returns name = "cellIndices">List of integers representing corner and edge cell indices.</returns>
+        /// <search>
+        /// border cells, corner cells, cell ids
+        /// </search>
         public static List<int> GetCornerAndEdgeCellId(List<List<int>> cellNeighborMatrix)
         {
             List<int> cellIdList = new List<int>();
@@ -1136,13 +1163,13 @@ namespace SpacePlanning
                     }
                 }
             }
-            Dictionary<string, object> cellNeighborData = FormsCellNeighborMatrix(cellsInsideList);
+            Dictionary<string, object> cellNeighborData = BuildCellNeighborMatrix(cellsInsideList);
             List<List<int>> cellNeighborMatrix = (List<List<int>>)cellNeighborData["CellNeighborMatrix"];//---
             List<Cell> sortedCells = (List<Cell>)cellNeighborData["SortedCells"];
 
 
 
-            Dictionary<string, object> cellNeighborData2 = FormsCellNeighborMatrix(sortedCells);
+            Dictionary<string, object> cellNeighborData2 = BuildCellNeighborMatrix(sortedCells);
             List<List<int>> cellNeighborMatrix2 = (List<List<int>>)cellNeighborData2["CellNeighborMatrix"];//---
             Dictionary<string, object> borderObject = CreateBorder(cellNeighborMatrix2, sortedCells);
             Polygon2d mergePoly = (Polygon2d)borderObject["BorderPolyLine"];
@@ -1154,7 +1181,7 @@ namespace SpacePlanning
         }
 
         //adds more cells inside a cell , 0 =  4 cell, 1 = 16 cells
-        public static List<Cell> CellsAddinCell(Cell cell)
+        internal static List<Cell> CellsAddinCell(Cell cell)
         {
             if (cell == null) return null;
             double dimX = 0, dimY =0, num = 2;
@@ -1269,7 +1296,15 @@ namespace SpacePlanning
         }
 
         //finds the area of a list of cell
-        internal static double AreaFromCells(List<Cell> cellList)
+        /// <summary>
+        /// Computes total area of the input cells.
+        /// </summary>
+        /// <param name="cellList">List of cell objects.</param>
+        /// <returns name="Area">Total area covered by the cell.</returns>
+        /// <search>
+        /// cell areas, area from cells
+        /// </search>
+        public static double AreaFromCells(List<Cell> cellList)
         {
             if (cellList == null) return -1;
             double area = 0;

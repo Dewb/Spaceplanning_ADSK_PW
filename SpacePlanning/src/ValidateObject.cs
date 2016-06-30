@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace SpacePlanning
 {
-    public static class ValidateObject
+    internal static class ValidateObject
     {
         #region - Private Methods
         // Given three colinear points p, q, r, the function checks if

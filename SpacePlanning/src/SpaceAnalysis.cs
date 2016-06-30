@@ -221,7 +221,7 @@ namespace SpacePlanning
             inPatientData.Add(inPatientDeptData.AreaProvided);          
 
 
-            Dictionary<string,object> cellNeighborObj = GridObject.FormsCellNeighborMatrix(cellList);
+            Dictionary<string,object> cellNeighborObj = GridObject.BuildCellNeighborMatrix(cellList);
             List<List<int>> cellNeighborMatrix = (List<List<int>>)cellNeighborObj["CellNeighborMatrix"];
             List<Cell> sortedCells = (List<Cell>)cellNeighborObj["SortedCells"];
             List<int> borderCellIndices = GridObject.GetCornerAndEdgeCellId(cellNeighborMatrix);
@@ -280,20 +280,14 @@ namespace SpacePlanning
 
         //scores the space plan layout. currently there are four individual scores and total score is the summation of them.
         /// <summary>
-        /// Scores the space plan layout based on four key metrics, program fitness score, external view score, travel distance score, percentage of key planning units score.
+        /// Exports Cell Data in excel format.
         /// </summary>
-        /// <param name="deptData">Department data object.</param>
-        /// <param name="primaryProgPoly">Primary program element polygon2d list.</param>
-        /// <param name="cellList">List of cell objects for the building outline.</param>
-        /// <param name="siteArea">Area of the site.</param>
-        /// <param name="programFitWeight">User assigned weight for program fitness score.</param>
-        /// <param name="extViewWeight">User assigned weight for external view score.</param>
-        /// <param name="traveDistWeight">User assigned weight for travel distance score.</param>
-        /// <param name="percKPUWeight">User assigned weight for percentage of key planning units score.</param>
-        /// <returns name="CellData">Total score of the space plan layout.</returns>
-        /// <returns name="SheetNumber">Program fitness score of the space plan layout.</returns>   
+        /// <param name="deptData">List of Department data object.</param>
+        /// <param name="cellList">List of Cell Object.</param>
+        /// <param name="cellNeighborMatrix">List of list of integers representing cell neighboring matrix.</param>    
+        /// <returns name="CellData">Export of cell data in excel format</returns> 
         /// <search>
-        /// space plane scoring, space plan metrics
+        /// export data, cell data
         /// </search>
         public static List<List<string>> CellDataExport(List<DeptData> deptData, List<Cell> cellList, List<List<int>> cellNeighborMatrix)
         {
@@ -373,9 +367,17 @@ namespace SpacePlanning
             return dataToWriteList;
         }
 
- 
+
         //exports data to excel
-        public static List<List<string>>WriteProgramDataToExcel(List<ProgramData> progDataList)
+        /// <summary>
+        /// Exports Program Data in excel format.
+        /// </summary>
+        /// <param name="progDataList"> List of program data object.</param>
+        /// <returns name="ProgramData">Export of program data in excel format.</returns>
+        /// <search>
+        /// export data, program data
+        /// </search>
+        public static List<List<string>>ProgramDataExport(List<ProgramData> progDataList)
         {
             if (progDataList == null) return null;
             List<List<string>> dataToWriteList = new List<List<string>>();
@@ -426,123 +428,6 @@ namespace SpacePlanning
             return dataToWriteList;
         }
 
-        /*
-        public static bool WriteDeptDataToExcel(List<DeptData> deptData)
-        {
-
-            try
-            {
-
-
-                Excel.Application oXL = new Excel.Application();
-
-
-#if DEBUG
-                oXL.Visible = true;
-                oXL.DisplayAlerts = true;
-#else
-                oXL.Visible = false; 
-                oXL.DisplayAlerts = false;
-#endif
-
-
-                //Open a New Excel File
-                Excel.Workbook oWB = oXL.Workbooks.Add(Type.Missing);
-                Excel._Worksheet oSheet = oWB.ActiveSheet;
-
-                List<String> Name = new List<String>();
-                List<Double> Percentage = new List<Double>();
-
-                Name.Add("Anil");
-                Name.Add("Vikas");
-                Name.Add("Ashwini");
-                Name.Add("Tobias");
-                Name.Add("Stuti");
-                Name.Add("Raghavendra");
-                Name.Add("Chithra");
-                Name.Add("Glen");
-                Name.Add("Darren");
-                Name.Add("Michael");
-
-
-                Percentage.Add(78.5);
-                Percentage.Add(65.3);
-                Percentage.Add(56);
-                Percentage.Add(56);
-                Percentage.Add(97);
-                Percentage.Add(89);
-                Percentage.Add(85);
-                Percentage.Add(76);
-                Percentage.Add(78);
-                Percentage.Add(89);
-
-                oSheet.Cells[1, 1] = "Name";
-                oSheet.Cells[1, 2] = "Percentage(%)"; // Here 1 is the rowIndex and 2 is the columnIndex.
-
-
-                //Enter the Header data in Column A
-                int i = 0;
-                for (i = 0; i < Name.Count; i++)
-                {
-                    oSheet.Cells[i + 2, 1] = Name[i];
-                }
-
-                //Enter the Percentage data in Column B
-                for (i = 0; i < Percentage.Count; i++)
-                {
-                    oSheet.Cells[i + 2, 2] = Percentage[i];
-                }
-
-                oSheet.Cells[Name.Count + 3, 1] = "AVERAGE";
-                //Obtain the Average of the Percentage Data
-                string currentFormula = "=AVERAGE(B2:" + "B" + Convert.ToString(Percentage.Count + 1) + ")";
-
-                oSheet.Cells[Percentage.Count + 3, 2].Formula = currentFormula;
-
-                //Format the Header row to make it Bold and blue
-                //oSheet.get_Range("A1", "B1").Interior.Color = Color.SkyBlue;
-                oSheet.get_Range("A1", "B1").Font.Bold = true;
-                //Set the column widthe of Column A and Column B to 20
-                oSheet.get_Range("A1", "B12").ColumnWidth = 20;
-
-                //String ReportFile = @"D:\Excel\Output.xls";
-                String ReportFile = @"Output.xlsx";
-                oWB.SaveAs(ReportFile, Microsoft.Office.Interop.Excel.XlFileFormat.xlWorkbookDefault,
-                                        Type.Missing, Type.Missing,
-                                        false,
-                                        false,
-                                        Microsoft.Office.Interop.Excel.XlSaveAsAccessMode.xlNoChange,
-                                        Type.Missing,
-                                        Type.Missing,
-                                        Type.Missing,
-                                        Type.Missing,
-                                        Type.Missing);
-
-
-                oXL.Quit();
-
-                Marshal.ReleaseComObject(oSheet);
-                Marshal.ReleaseComObject(oWB);
-                Marshal.ReleaseComObject(oXL);
-
-                oSheet = null;
-                oWB = null;
-                oXL = null;
-                GC.GetTotalMemory(false);
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-                GC.GetTotalMemory(true);
-            }
-            catch (Exception ex)
-            {
-                String errorMessage = "Error reading the Excel file : " + ex.Message;
-                //MessageBox.Show(errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
-            return true;
-        }
-        */
         #endregion
 
     }

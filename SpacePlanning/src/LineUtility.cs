@@ -10,7 +10,7 @@ using Autodesk.DesignScript.Geometry;
 
 namespace SpacePlanning
 {
-    public static class LineUtility
+    internal static class LineUtility
     {
         #region - Public Methods
         //offsets an input line by a given distance 

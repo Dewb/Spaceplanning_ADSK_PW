@@ -12,7 +12,7 @@ namespace SpacePlanning
     /// <summary>
     /// Class to compute, analyse and visualize glare in an indoor space using UGR Calculations.
     /// </summary>
-    public class GlareVisualization
+    internal class GlareVisualization
     {
         #region- Public Methods
         //builds the line3d of the furnitures

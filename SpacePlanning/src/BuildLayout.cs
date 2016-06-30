@@ -49,8 +49,8 @@ namespace SpacePlanning
         /// DeptData object, department arrangement on site
         /// </search>
         [MultiReturn(new[] { "UpdatedDeptData","LeftOverPolys", "CirculationPolys","OtherDeptMainPoly"})]
-        public static Dictionary<string, object> PlaceDepartments(List<DeptData> deptData, List<Polygon2d> buildingOutline,  double primaryDeptDepth, 
-            double acceptableWidth,double circulationFreq = 8, int iteration = 1, bool noExternalWall = false )
+        public static Dictionary<string, object> PlaceDepartments(List<DeptData> deptData, List<Polygon2d> buildingOutline,  double kpuDepth, 
+            double acceptableWidth,double circulationFreq = 8, int iteration = 50, bool noExternalWall = false, bool unlimitedKPU = true)
         {           
             Dictionary<string, object> deptArrangement = new Dictionary<string, object>();
             double count = 0,eps = 5;            
@@ -60,7 +60,7 @@ namespace SpacePlanning
             while (deptPlaced == false && count < MAXCOUNT)
             {
                 Trace.WriteLine("Lets arrange dept again : " + count);
-                deptArrangement = DeptPlacer(deptData, buildingOutline, primaryDeptDepth, acceptableWidth, circulationFreq, iteration, noExternalWall);
+                deptArrangement = DeptPlacer(deptData, buildingOutline, kpuDepth, acceptableWidth, circulationFreq, iteration, noExternalWall, unlimitedKPU);
                 if(deptArrangement != null)
                 {
                     List<DeptData> deptDataUpdated =(List<DeptData>) deptArrangement["UpdatedDeptData"];
@@ -111,7 +111,7 @@ namespace SpacePlanning
         /// <returns name="UpdatedProgramData">Updated program data object.</returns>
         /// <returns name="ProgramsAddedCount">Number of program units added.</returns>
         [MultiReturn(new[] { "UpdatedProgramData", "ProgramsAddedCount" })]
-        public static Dictionary<string, object> PlacePrimaryPrograms(List<Polygon2d> deptPoly, List<ProgramData> progData, double primaryProgramWidth, int recompute = 1, int space = 10)
+        internal static Dictionary<string, object> PlacePrimaryPrograms(List<Polygon2d> deptPoly, List<ProgramData> progData, double primaryProgramWidth, int recompute = 1, int space = 10)
         {
 
             if (!ValidateObject.CheckPolyList(deptPoly)) return null;
@@ -205,15 +205,7 @@ namespace SpacePlanning
         }
 
 
-
-
-
-
-
-
-
-
-
+        
 
 
 
@@ -226,7 +218,7 @@ namespace SpacePlanning
         /// <param name="recompute">Regardless of the recompute value, it is used to restart computing the node every time its value is changed.</param>
         /// <returns></returns>
         [MultiReturn(new[] { "PolyAfterSplit", "UpdatedProgramData" })]
-        public static Dictionary<string, object> PlaceSecondaryPrograms(List<Polygon2d> deptPoly, List<ProgramData> progData, int recompute = 0)
+        internal static Dictionary<string, object> PlaceSecondaryPrograms(List<Polygon2d> deptPoly, List<ProgramData> progData, int recompute = 0)
         {
             if (!ValidateObject.CheckPolyList(deptPoly)) return null;
             if (progData == null || progData.Count == 0) return null;
@@ -521,19 +513,19 @@ namespace SpacePlanning
 
         //dept assignment new way
         [MultiReturn(new[] { "UpdatedDeptData", "LeftOverPolys", "CirculationPolys", "OtherDeptMainPoly" })]
-        internal static Dictionary<string, object> DeptPlacer(List<DeptData> deptData, List<Polygon2d> polyList, double offset,
-            double acceptableWidth = 20, double circulationFreq = 10, int iteration = 5, bool noExternalWall = false)
+        internal static Dictionary<string, object> DeptPlacer(List<DeptData> deptData, List<Polygon2d> polyList, double kpuDepth,
+            double acceptableWidth = 20, double circulationFreq = 10, int iteration = 5, bool noExternalWall = false, bool unlimitedKPU= true)
         {
             bool keyPlanUnit = true;
             if (deptData == null) { Trace.WriteLine("Null found poly or deptdata"); return null; }                        
-            return DeptPlacerKPUTest(deptData, polyList, offset, acceptableWidth, circulationFreq, iteration, noExternalWall, true);           
+            return DeptPlacerKPUTest(deptData, polyList, kpuDepth, acceptableWidth, circulationFreq, iteration, noExternalWall, unlimitedKPU);           
         }
 
 
 
         //dept assignment new way
         [MultiReturn(new[] { "UpdatedDeptData", "LeftOverPolys", "CirculationPolys", "OtherDeptMainPoly" })]
-        public static Dictionary<string, object> DeptPlacerKPUTest(List<DeptData> deptData, List<Polygon2d> polyList, double offset,
+        public static Dictionary<string, object> DeptPlacerKPUTest(List<DeptData> deptData, List<Polygon2d> polyList, double kpuDepth,
             double acceptableWidth = 20, double circulationFreq = 10, int iteration = 5, bool noExternalWall = false, bool unlimitedKPU = true)
         {
             if (!ValidateObject.CheckPolyList(polyList)) return null;
@@ -549,19 +541,11 @@ namespace SpacePlanning
             List<Polygon2d> otherDeptPoly = new List<Polygon2d>();
             List<Polygon2d> subDividedPoly = new List<Polygon2d>();
             int count = 0, maxTry = 20;
-            bool prepareReg = false, kpuPlaced = false, noKpuMode = false; // to disable multiple KPU
-            double totalDeptProp = 0, areaAvailable = 0, ratio = 0.6, eps = 2;
-            for (int i = 0; i < deptData.Count; i++) if (i > 0) totalDeptProp += deptData[i].DeptAreaProportionNeeded;
+            bool prepareReg = false, kpuPlaced = false;// to disable multiple KPU
+            double  areaAvailable = 0, ratio = 0.6;
 
-            List<double> areaPolyKeys = new List<double>();
             double totalAreaInPoly = 0;
-            for (int i = 0; i < polyList.Count; i++)
-            {
-                double areaPoly = PolygonUtility.AreaPolygon(polyList[i]); // negated to make sorted dictionary store in negative
-                areaPolyKeys.Add(areaPoly);
-                totalAreaInPoly += Math.Abs(areaPoly);
-      
-            }
+            for (int i = 0; i < polyList.Count; i++) totalAreaInPoly += Math.Abs(PolygonUtility.AreaPolygon(polyList[i]));
 
             // build the areaneeded for each department based on polys we have and based on
             // original dept area needed
@@ -577,11 +561,8 @@ namespace SpacePlanning
                 if ((deptItem.DepartmentType.IndexOf(KPU.ToLower()) != -1 ||
                     deptItem.DepartmentType.IndexOf(KPU.ToUpper()) != -1) && !kpuPlaced)// key planning unit - disabled multiple kpu same lvl
                 {
-                    //double areaNeeded = deptItem.DeptAreaNeeded;
                     double areaAvailablePoly = 0;
-                    for (int j = 0; j < polyList.Count; j++) areaAvailablePoly += PolygonUtility.AreaPolygon(polyList[j]);
-                    //double areaNeeded = deptItem.DeptAreaProportionNeeded * PolygonUtility.AreaPolygon(currentPoly);
-                    //double areaNeeded = deptItem.DeptAreaProportionNeeded * totalAreaInPoly;
+                    for (int j = 0; j < polyList.Count; j++) areaAvailablePoly += PolygonUtility.AreaPolygon(polyList[j]);              
                     double areaNeeded = areaNeededDept[i];
                     double areaLeftOverBlocks = 0;
                     for (int k = 0; k < leftOverBlocks.Count; k++) areaLeftOverBlocks += PolygonUtility.AreaPolygon(leftOverBlocks[k]);
@@ -589,7 +570,7 @@ namespace SpacePlanning
                     //else areaNeeded = 6000;
                     if(areaNeeded> 0.75 * areaLeftOverBlocks) areaNeeded = 0.75 * areaLeftOverBlocks;
                     Trace.WriteLine("placing inpatients");
-                    Dictionary<string, object> inpatientObject = AssignBlocksBasedOnDistance(leftOverBlocks, offset, areaNeeded, 20, iteration, noExternalWall);
+                    Dictionary<string, object> inpatientObject = AssignBlocksBasedOnDistance(leftOverBlocks, kpuDepth, areaNeeded, 20, iteration, noExternalWall);
                     if (inpatientObject == null) return null;
                     List<Polygon2d> inpatienBlocks = (List<Polygon2d>)inpatientObject["PolyAfterSplit"];
                     leftOverBlocks = (List<Polygon2d>)inpatientObject["LeftOverPoly"];
@@ -605,7 +586,8 @@ namespace SpacePlanning
                     kpuPlaced = true;
                 }else // regular depts
                 {
-                    if (!kpuPlaced) { leftOverPoly = leftOverBlocks; kpuPlaced = true; noKpuMode = true; }
+                    //when there is no kpu in the requirement
+                    if (!kpuPlaced) { leftOverPoly = leftOverBlocks; kpuPlaced = true; }
                     if (!prepareReg) // only need to do once, places a grid of rectangles before other depts get alloted
                     {
                         List<List<Polygon2d>> polySubDivs = new List<List<Polygon2d>>();
@@ -627,13 +609,7 @@ namespace SpacePlanning
                         prepareReg = true;
                     }
                     double areaNeeded = areaNeededDept[i];
-                    double areaFactor = deptItem.DeptAreaProportionNeeded / totalDeptProp;
-                    if (noKpuMode)
-                    {
-                        double fac = BasicUtility.RandomBetweenNumbers(new Random(iteration), 0.60, 0.25);
-                        if (areaFactor > fac) areaFactor = fac;
-                    }
-                    //Dictionary<string, object> assignedByRatioObj = AssignBlocksBasedOnRatio(areaNeededDept[i], leftOverPoly, acceptableWidth, 0.5);
+                    double areaFactor = deptItem.DeptAreaProportionNeeded;
                     Dictionary<string, object> assignedByRatioObj = AssignBlocksBasedOnRatio(areaFactor, areaAvailable, leftOverPoly, acceptableWidth, 0.5);
                     List<Polygon2d> everyDeptPoly = (List<Polygon2d>)assignedByRatioObj["DeptPoly"];
                     leftOverPoly = (List<Polygon2d>)assignedByRatioObj["LeftOverPoly"];
@@ -658,7 +634,7 @@ namespace SpacePlanning
 
             //added to compute area percentage for each dept
             double totalDeptArea = 0;
-            for (int i = 0; i < UpdatedDeptData.Count; i++) totalDeptArea += UpdatedDeptData[i].DeptAreaNeeded;
+            for (int i = 0; i < UpdatedDeptData.Count; i++) totalDeptArea += UpdatedDeptData[i].AreaProvided;
             for (int i = 0; i < UpdatedDeptData.Count; i++) UpdatedDeptData[i].DeptAreaProportionAchieved = Math.Round((UpdatedDeptData[i].AreaProvided / totalDeptArea), 3);
 
             if (leftOverPoly.Count == 0) leftOverPoly = null;

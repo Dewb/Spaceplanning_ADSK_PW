@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace SpacePlanning
 {
-    public static class SplitObject
+    internal static class SplitObject
     {
 
         #region - Public Methods

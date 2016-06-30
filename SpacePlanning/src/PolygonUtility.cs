@@ -7,9 +7,8 @@ using System.Diagnostics;
 
 namespace SpacePlanning
 {
-    public static class PolygonUtility
-    {
-
+    internal static class PolygonUtility
+     {
         //checks a polygonlist for non orthogonal polys and removes them if any
         public static List<Polygon2d> GetOrthoPolys(List<Polygon2d> nonOrthoPolyList, double eps = 0)
         {
