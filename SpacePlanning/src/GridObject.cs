@@ -572,7 +572,7 @@ namespace SpacePlanning
             dir = 0;
             double dist = Math.Sqrt(areaBuilding / dummy);
             //center = PolygonUtility.FindPointOnPolySide(currentPoly, dir, dist / 2);
-            Trace.WriteLine("++++++++++++++++++++++++++");
+            //Trace.WriteLine("++++++++++++++++++++++++++");
             while (areaLeft > areaBuilding/20 && countInner < 10 && countExtremeMode < 10) 
             {               
                 prevDir = dir;
@@ -600,7 +600,7 @@ namespace SpacePlanning
                     if (countCircleMode > 4) { circleMode = false; countCircleMode = 0; }
                     center = PolygonUtility.FindPointOnPolySide(currentPoly, dir, dist / 2);
                     currentPoly = PolygonUtility.SquareByCenter(center, dist);
-                    Trace.WriteLine("After popped , Direction set is now :  " + dir);
+                    //Trace.WriteLine("After popped , Direction set is now :  " + dir);
                     polySqrStack.Enqueue(currentPoly);
                     polySqrStackCopy.Enqueue(currentPoly);
                     //popped = false;
@@ -624,7 +624,7 @@ namespace SpacePlanning
                     }                    
 
                 }// end of for loop
-                if (!found) { Trace.WriteLine("No Cell Found, Area Still left = " + areaLeft); deQueueMode = true; }
+                if (!found) { deQueueMode = true; }
                 else Trace.WriteLine("Cell Found, count = " + count + "!! Area left: " + areaLeft);
                 if (deQueueMode && !circleMode)
                 {
@@ -639,7 +639,7 @@ namespace SpacePlanning
                 {
                     if (polySqrStack.Count > 0)
                     {
-                        Trace.WriteLine("No change in area@@@@@@@@@@@@@@@@@@@@@@@@  " + countInner);
+                        //Trace.WriteLine("No change in area@@@@@@@@@@@@@@@@@@@@@@@@  " + countInner);
                         countInner += 1;
                         currentPoly = polySqrStack.Dequeue();
                         polySquares.Add(currentPoly);
@@ -647,7 +647,7 @@ namespace SpacePlanning
                     else
                     {
                         
-                        Trace.WriteLine("Poly Count in Queue@@@@@@@@@@@@@@@@@@@@@@@@  " + polySqrStack.Count);
+                        //Trace.WriteLine("Poly Count in Queue@@@@@@@@@@@@@@@@@@@@@@@@  " + polySqrStack.Count);
                         // do this when all modes tried
                         //sqrFinishedModed = true;
                         dist = Math.Sqrt(areaLeft);

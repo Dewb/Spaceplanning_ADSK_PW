@@ -99,7 +99,7 @@ namespace SpacePlanning
         /// </summary>
         public double AreaPercentageAchieved
         {
-            get { return Math.Round(AreaProvided / DeptAreaNeeded, 3); }
+            get { return Math.Round(DeptAreaProvided / DeptAreaNeeded, 3); }
         }
 
         /// <summary>
@@ -131,7 +131,7 @@ namespace SpacePlanning
         /// <summary>
         /// Area provided to each department.
         /// </summary>
-        public double AreaProvided
+        public double DeptAreaProvided
         {
             get { return _areaGivenDept; }
             set
@@ -224,6 +224,7 @@ namespace SpacePlanning
         //computes total area of each dept
         internal double AreaEachDept()
         {
+            if (_progDataList == null) return 0;
             double area = 0;
             for (int i = 0; i < _progDataList.Count; i++) area += _progDataList[i].UnitArea;
             return area * _cirFactor;

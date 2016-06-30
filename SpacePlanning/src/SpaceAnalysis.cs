@@ -46,7 +46,7 @@ namespace SpacePlanning
                 areaSatisfiedList.Add(deptData[i].IsAreaSatisfied);
                 progLists.Add(deptData[i].ProgramsInDept);
                 areaNeededList.Add(deptData[i].DeptAreaNeeded);
-                areaProvidedList.Add(deptData[i].AreaProvided);
+                areaProvidedList.Add(deptData[i].DeptAreaProvided);
                 polyAssignedList.Add(deptData[i].PolyAssignedToDept);
             }
             return new Dictionary<string, object>
@@ -89,7 +89,7 @@ namespace SpacePlanning
                 progNameList.Add(progData[i].ProgramName);
                 numCellsList.Add(progData[i].NumberofCellsAdded);
                 areaSatisfiedList.Add(progData[i].IsAreaSatisfied);
-                areaNeededList.Add(progData[i].AreaNeeded);
+                areaNeededList.Add(progData[i].ProgAreaNeeded);
                 areaProvidedList.Add(progData[i].AreaProvided);
                 quantList.Add(progData[i].Quantity);
                 polyProgList.Add(progData[i].PolyAssignedToProg);
@@ -218,7 +218,7 @@ namespace SpacePlanning
             testData.Add(percInpatientFromSite);
             inPatientData.Add(inPatientDeptData.AreaPercentageAchieved);
             inPatientData.Add(inPatientDeptData.DeptAreaNeeded);
-            inPatientData.Add(inPatientDeptData.AreaProvided);          
+            inPatientData.Add(inPatientDeptData.DeptAreaProvided);          
 
 
             Dictionary<string,object> cellNeighborObj = GridObject.BuildCellNeighborMatrix(cellList);
@@ -398,7 +398,7 @@ namespace SpacePlanning
                 progStrings = new List<string>();
                 progStrings.Add(progDataList[i].DeptName.ToString());
                 progStrings.Add(progDataList[i].ProgramName.ToString());
-                progStrings.Add(progDataList[i].AreaNeeded.ToString());
+                progStrings.Add(progDataList[i].ProgAreaNeeded.ToString());
                 progStrings.Add(progDataList[i].AreaProvided.ToString());
                 if(progDataList[i].PolyAssignedToProg == null || progDataList[i].PolyAssignedToProg.Count == 0)
                 {

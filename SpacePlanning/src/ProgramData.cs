@@ -167,7 +167,7 @@ namespace SpacePlanning
         /// <summary>
         /// Area of one unit of the program.
         /// </summary>
-        public double AreaNeeded
+        public double ProgAreaNeeded
         {
             get { return _progUnitArea; }            
         }
