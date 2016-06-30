@@ -61,6 +61,7 @@ namespace SpacePlanning
                 else if (caseStudy == 2) res = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.OtherProgram.csv");
                 else if (caseStudy == 3) res = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.ProgramDocument_Reg.csv");
                 else if (caseStudy == 4) res = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.OtherProgram.csv");
+                else if (caseStudy == 5) res = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.MULTIDEPT.csv");
                 else res = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.ProgramDocument.csv");
 
                 reader = new StreamReader(res);
@@ -356,10 +357,11 @@ namespace SpacePlanning
             for (int i = 0; i < deptData.Count; i++)
             {               
                 double surpluss = 0;
-                if(deptType)
+                double eps = i * 10;
+                if (deptType)
                     if (deptData[i].DepartmentType.IndexOf(BuildLayout.KPU.ToLower()) != -1 || deptData[i].DepartmentType.IndexOf(BuildLayout.KPU.ToUpper()) != -1)
-                        surpluss = 100000;
-                double area = deptData[i].DeptAreaNeeded + surpluss;
+                        surpluss = 100000 + eps;
+                double area = deptData[i].DeptAreaNeeded + surpluss + eps;
                 sortedD.Add(area, deptData[i]);
             }
 
