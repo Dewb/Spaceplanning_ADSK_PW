@@ -200,7 +200,10 @@ namespace SpacePlanning
 
             for(int i = 0; i < deptData.Count; i++)
             {
-                if (i == 0) continue;
+
+                if ((deptData[i].DepartmentType.IndexOf(BuildLayout.KPU.ToLower()) != -1 ||
+                   deptData[i].DepartmentType.IndexOf(BuildLayout.KPU.ToUpper()) != -1)) continue; // dont add for KPU
+                if (deptData[i].PolyAssignedToDept == null) continue;
                 polygonsAllProgList.AddRange(deptData[i].PolyAssignedToDept);
             }
             if (leftOverPoly != null) polygonsAllProgList.AddRange(leftOverPoly);

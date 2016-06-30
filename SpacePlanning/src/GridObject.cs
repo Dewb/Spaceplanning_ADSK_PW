@@ -467,6 +467,7 @@ namespace SpacePlanning
         public static Dictionary<string, object> FormBuildingOutline(Polygon2d orthoSiteOutline, List<Cell> cellList, List<Point2d> attractorPoints = default(List<Point2d>), List<double> weightList = default(List<double>),
      double siteCoverage = 0.5, int iteration = 100, bool removeNotch = false, double minNotchDistance = 10, bool cellRefine = false, int scanResolution = 0)
         {
+            Trace.WriteLine("FORM BUILD OUTLINE STARTS+++++++++++++++++++++++++");
             if (iteration < 1) iteration = 1;
             int count = 0, maxTry = 10;
             bool worked = false;
@@ -505,6 +506,7 @@ namespace SpacePlanning
                 Trace.WriteLine("+++++++++++++++Difference in GC is : " + Math.Abs(siteCoverAchieved - siteCoverage));
             }// end of while loop
             //formBuildingOutlineObjBest["BuildingOutlineArea"] = count;
+            Trace.WriteLine("FORM BUILD OUTLINE ENDS+++++++++++++++++++++++++");
             return formBuildingOutlineObjBest;
         }
 
@@ -732,7 +734,7 @@ namespace SpacePlanning
                 if (borderObject != null)
                 {
                     borderPoly = (Polygon2d)borderObject["BorderPolygon"];
-                    //if (PolygonUtility.AreaPolygon(borderPoly) < areaBuilding * 0.2) continue;
+                    if (PolygonUtility.AreaPolygon(borderPoly) < areaBuilding * 0.2) continue;
                     offsetBorder = PolygonUtility.OffsetPoly(borderPoly, selectedCells[0].DimX / 2);
                     if (removeNotch)
                     {

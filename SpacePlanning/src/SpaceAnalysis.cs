@@ -103,7 +103,6 @@ namespace SpacePlanning
                 { "AreaProvided", (areaProvidedList) },
                 { "Quantity", (quantList) },
                 { "PolyAssignedProgs", (polyProgList) }
-
             };
         }
         

@@ -19,7 +19,7 @@ namespace SpacePlanning
         internal static Random RANGENERATE = new Random();
         internal static double RECURSE = 0;
         internal static Point2d REFERENCEPOINT = new Point2d(0,0);
-        internal static int MAXCOUNT = 10;
+        internal static int MAXCOUNT = 3;
 
         internal const string KPU = "kpu";
         internal const string REG = "regular";
@@ -59,7 +59,7 @@ namespace SpacePlanning
             bool keyPlanUnit = true;
             while (deptPlaced == false && count < MAXCOUNT)
             {
-                Trace.WriteLine("Lets arrange dept again : " + count);
+                Trace.WriteLine("PLACE DEPT STARTS , Lets arrange dept again ++++++++++++++++ : " + count);
                 deptArrangement = DeptPlacer(deptData, buildingOutline, kpuDepth, acceptableWidth, circulationFreq, iteration, noExternalWall, unlimitedKPU);
                 if(deptArrangement != null)
                 {
@@ -91,7 +91,7 @@ namespace SpacePlanning
                     Trace.WriteLine("DeptPlacer returned null, rejected for: " + count);
                 }
                 count += 1;
-                Trace.WriteLine("+++++++++++++++++++++++++++++++++");
+                Trace.WriteLine(" EXIT PLACE DEPARTMENTS +++++++++++++++++++++++++++++++++");
             }// end of while loop
             return deptArrangement;
         }
@@ -146,7 +146,7 @@ namespace SpacePlanning
                 while (setSpan > primaryProgramWidth && count < 2000)
                 {
                     if (programDataRetrieved.Count == 0) programDataRetrieved.Enqueue(copyProgData);
-                    Trace.WriteLine("Keep going : " + count);
+                    //Trace.WriteLine("Keep going : " + count);
                     double dist = 0;
                     if (setSpan < fac * primaryProgramWidth)
                     {
@@ -501,14 +501,14 @@ namespace SpacePlanning
                 //Trace.WriteLine("Null found poly or deptdata");
                 return null;
             }
-            Trace.WriteLine("Dept placer is good to go");
+            Trace.WriteLine("DEPT PLACE KPU STARTS +++++++++++++++++++++++++++++");
             List<double> AllDeptAreaAdded = new List<double>();
             List<List<Polygon2d>> AllDeptPolys = new List<List<Polygon2d>>();
             List<Polygon2d> leftOverPoly = new List<Polygon2d>(), polyCirculation = new List<Polygon2d>();//changed from stack
             List<Polygon2d> otherDeptPoly = new List<Polygon2d>();
             List<Polygon2d> subDividedPoly = new List<Polygon2d>();
             int count = 0, maxTry = 20;
-            bool prepareReg = false, kpuPlaced = false;// to disable multiple KPU
+            bool prepareReg = false, kpuPlaced = false, noKpuMode = false;// to disable multiple KPU
             double  areaAvailable = 0, ratio = 0.6;
 
             double totalAreaInPoly = 0;
@@ -553,7 +553,7 @@ namespace SpacePlanning
                 }else // regular depts
                 {
                     //when there is no kpu in the requirement
-                    if (!kpuPlaced) { leftOverPoly = leftOverBlocks; kpuPlaced = true; }
+                    if (!kpuPlaced) { leftOverPoly = leftOverBlocks; kpuPlaced = true; noKpuMode = true; }
                     if (!prepareReg) // only need to do once, places a grid of rectangles before other depts get alloted
                     {
                         List<List<Polygon2d>> polySubDivs = new List<List<Polygon2d>>();
@@ -575,8 +575,9 @@ namespace SpacePlanning
                         prepareReg = true;
                     }
                     double areaNeeded = areaNeededDept[i];
-                    double areaFactor = deptItem.DeptAreaProportionNeeded*2;
-                    areaFactor = 2;
+                    double areaFactor = deptItem.DeptAreaProportionNeeded;
+                    areaFactor = BasicUtility.RandomBetweenNumbers(new Random(iteration), 0.8, 0.5); // adding random area factor, need fix later
+                    if(noKpuMode) areaFactor = BasicUtility.RandomBetweenNumbers(new Random(iteration), 0.6, 0.3); // when there is no kpu at all
                     Dictionary<string, object> assignedByRatioObj = AssignBlocksBasedOnRatio(areaFactor, areaAvailable, leftOverPoly, acceptableWidth, 0.5);
                     List<Polygon2d> everyDeptPoly = (List<Polygon2d>)assignedByRatioObj["DeptPoly"];
                     leftOverPoly = (List<Polygon2d>)assignedByRatioObj["LeftOverPoly"];
@@ -605,7 +606,7 @@ namespace SpacePlanning
             for (int i = 0; i < UpdatedDeptData.Count; i++) UpdatedDeptData[i].DeptAreaProportionAchieved = Math.Round((UpdatedDeptData[i].DeptAreaProvided / totalDeptArea), 3);
 
             if (leftOverPoly.Count == 0) leftOverPoly = null;
-
+            Trace.WriteLine("DEPT PLACE KPU ENDS +++++++++++++++++++++++++++++++");
             return new Dictionary<string, object>
             {
                 { "UpdatedDeptData", (UpdatedDeptData) },
