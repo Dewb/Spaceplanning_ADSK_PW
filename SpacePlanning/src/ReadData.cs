@@ -177,7 +177,7 @@ namespace SpacePlanning
         /// Returns ordered point2d list geometry.
         /// </summary>
         /// <param name="geomList">List of nurbs geometry</param>
-        /// <returns name="pointList">List of point2d representing site outline</returns>
+        /// <returns name="SiteOutlinePolygon2d">List of point2d representing site outline</returns>
         /// <search>
         /// get points of site outline
         /// </search>

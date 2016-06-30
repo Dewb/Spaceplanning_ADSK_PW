@@ -24,7 +24,7 @@ namespace SpacePlanning
         private double _dimX;
         private double _dimY;
 
-        private static int MINCELL = 400, MAXCELL = 800;
+        private static int MINCELL = 300, MAXCELL = 600;
 
         //constructor
         internal GridObject(List<Point2d> siteOutline, List<Point2d> siteBoundingBox, double dimensionX, double dimensionY)
@@ -310,6 +310,7 @@ namespace SpacePlanning
             };
         }
 
+     
         //finds the border cells and builds the cell neighbor matrix
         /// <summary>
         /// Finds the border cells for the input polyoutline
@@ -319,26 +320,26 @@ namespace SpacePlanning
         /// <param name="cellDim">Dimension of the cell object in X and Y direction.</param>
         /// <param name="iteration">Boolean item to activate two separate modes of calculation.</param>
         /// <returns name="OrthoSiteOutline">Polygon2d representing orthogonal poly outline.</returns>
-        /// <returns name="BorderCellsFound">Cell objects at the border of the outline.</returns>  
+        /// <returns name="BorderCells">Cell objects at the border of the outline.</returns>  
         /// <returns name="CellNeighborMatrix">Cell NeighborMatrix object.</returns> 
         /// <returns name="SortedCells">Sorted cell objects.</returns> 
         /// <search>
-        /// bordercells, cellneighbormatrix
+        /// bordercells, cellneighbormatrix, 
         /// </search>
-        [MultiReturn(new[] { "OrthoSiteOutline", "BorderCellsFound","CellNeighborMatrix", "SortedCells"})]
-        public static Dictionary<string, object> BorderAndCellNeighborMatrix(Polygon2d polyOutline, double cellDim, int iteration = 100 )
+        [MultiReturn(new[] { "OrthoSiteOutline", "BorderCells", "CellNeighborMatrix", "SortedCells" })]
+        public static Dictionary<string, object> FindOrthoSiteOutline(Polygon2d polyOutline, double cellDim, int iteration = 100)
         {
             double proportion = 0.75;
             if (!ValidateObject.CheckPoly(polyOutline)) return null;
             Dictionary<string, object> borderObject = new Dictionary<string, object>();
             Polygon2d borderPoly = new Polygon2d(null);
             List<Cell> sortedCells = new List<Cell>();
-            List<List<int>> cellNeighborMatrix = new List<List<int>>(); 
+            List<List<int>> cellNeighborMatrix = new List<List<int>>();
             List<Polygon2d> cellsFound = new List<Polygon2d>();
             int minCells = MINCELL, maxCells = MAXCELL;
             double dimAdjusted = cellDim;
             double areaPoly = PolygonUtility.AreaPolygon(polyOutline), eps = 0.01;
-            int numCells = (int)(areaPoly/(dimAdjusted*dimAdjusted));
+            int numCells = (int)(areaPoly / (dimAdjusted * dimAdjusted));
             if (numCells < minCells) dimAdjusted = Math.Sqrt(areaPoly / minCells);
             if (numCells > maxCells) dimAdjusted = Math.Sqrt(areaPoly / maxCells);
             bool checkOut = false;
@@ -349,25 +350,25 @@ namespace SpacePlanning
                 List<Cell> cellsInside = CellsInsidePoly(polyOutline.Points, dimAdjusted);
                 Dictionary<string, object> neighborObject = BuildCellNeighborMatrix(cellsInside);
                 cellNeighborMatrix = (List<List<int>>)neighborObject["CellNeighborMatrix"];
-                sortedCells = (List<Cell>)neighborObject["SortedCells"];               
+                sortedCells = (List<Cell>)neighborObject["SortedCells"];
 
                 borderObject = CreateBorder(cellNeighborMatrix, cellsInside, true, true);
-                borderPoly = (Polygon2d)borderObject["BorderPolyLine"];
+                borderPoly = (Polygon2d)borderObject["BorderPolygon"];
                 if (!ValidateObject.CheckPoly(borderPoly)) { dimAdjusted -= eps; continue; }
                 borderPoly = new Polygon2d(borderPoly.Points);
-                cellsFound = (List<Polygon2d>)borderObject["BorderCellsFound"];
+                cellsFound = (List<Polygon2d>)borderObject["BorderCells"];
                 double areaBorder = PolygonUtility.AreaPolygon(borderPoly);
-                if (!ValidateObject.CheckPolygonSelfIntersection(borderPoly) && areaBorder/ areaPoly > proportion) checkOut = true;
+                if (!ValidateObject.CheckPolygonSelfIntersection(borderPoly) && areaBorder / areaPoly > proportion) checkOut = true;
                 else dimAdjusted -= eps;
                 //Trace.WriteLine("Trying Border Poly again for : " + count);
                 //Trace.WriteLine("Dimension Cell used is " + dimAdjusted);
             }// end of while  
 
-           
+
             return new Dictionary<string, object>
             {
                 { "OrthoSiteOutline", (borderPoly) },
-                { "BorderCellsFound", (cellsFound) },
+                { "BorderCells", (cellsFound) },
                 { "CellNeighborMatrix", (cellNeighborMatrix) },
                 { "SortedCells", (sortedCells) }
             };
@@ -449,7 +450,7 @@ namespace SpacePlanning
         /// Iteratively builds the building outline as per the input site coverage.
         /// </summary>
         /// <param name="orthoSiteOutline">Orthogonal site outline Polygon2d.</param>
-        /// <param name="cellListInp">List of cell objects on the site outline.</param>
+        /// <param name="cellList">List of cell objects on the site outline.</param>
         /// <param name="attractorPoints">List of Point2d representing points where building outline should not be placed.</param>
         /// <param name="weightList">List of double's representing weights of the attractor points.</param>
         /// <param name="siteCoverage">Expected site coverage.</param>
@@ -463,11 +464,11 @@ namespace SpacePlanning
         /// form maker, buildingoutline, orthogonal forms
         /// </search>
         [MultiReturn(new[] { "BuildingOutline", "ExtraPoly", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells", "CellNeighborMatrix" })]
-        public static Dictionary<string, object> FormBuildingIterator(Polygon2d orthoSiteOutline, List<Cell> cellListInp, List<Point2d> attractorPoints = default(List<Point2d>), List<double> weightList = default(List<double>),
+        public static Dictionary<string, object> FormBuildingOutline(Polygon2d orthoSiteOutline, List<Cell> cellList, List<Point2d> attractorPoints = default(List<Point2d>), List<double> weightList = default(List<double>),
      double siteCoverage = 0.5, int iteration = 100, bool removeNotch = false, double minNotchDistance = 10, bool cellRefine = false, int scanResolution = 0)
         {
             if (iteration < 1) iteration = 1;
-            int count = 0, maxTry = 40;
+            int count = 0, maxTry = 10;
             bool worked = false;
             double siteCoverAchieved = 0, scDifference = 0, scDifferenceBest = 10000;
             Dictionary<string, object> formBuildingOutlineObj = new Dictionary<string, object>();
@@ -480,7 +481,7 @@ namespace SpacePlanning
             {
                 count += 1;
                 Trace.WriteLine("||||||||||||||||||||||||||||||trying to get the form we want : " + count);
-                formBuildingOutlineObj = FormBuildingOutlineTest(orthoSiteOutline, cellListInp, attractorPoints, weightList, siteCoverage, iteration, removeNotch, minNotchDistance, dummy, cellRefine);
+                formBuildingOutlineObj = BuildOutline(orthoSiteOutline, cellList, attractorPoints, weightList, siteCoverage, iteration, removeNotch, minNotchDistance, dummy, cellRefine);
 
                 if (formBuildingOutlineObj == null)
                 {
@@ -511,7 +512,7 @@ namespace SpacePlanning
 
 
         [MultiReturn(new[] { "BuildingOutline", "ExtraPoly", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "GroundCoverAchieved", "SortedCells", "CellNeighborMatrix" })]
-        public static Dictionary<string, object> FormBuildingOutlineTest(Polygon2d orthoSiteOutline, List<Cell> cellListInp, List<Point2d> attractorPoints = default(List<Point2d>), 
+        internal static Dictionary<string, object> BuildOutline(Polygon2d orthoSiteOutline, List<Cell> cellListInp, List<Point2d> attractorPoints = default(List<Point2d>), 
             List<double>weightList = default(List<double>), double groundCoverage = 0.5, int iteration = 100, 
             bool removeNotch = false, double minNotchDistance  = 10,int dummy=100, bool cellRefine = false)
         {
@@ -699,7 +700,7 @@ namespace SpacePlanning
             Dictionary<string, object> borderObject = CreateBorder(cellNeighborMatrix, selectedCellsCopy, true, true);
             if (borderObject != null)
             {
-                borderPoly = (Polygon2d)borderObject["BorderPolyLine"];
+                borderPoly = (Polygon2d)borderObject["BorderPolygon"];
                 offsetBorder = PolygonUtility.OffsetPoly(borderPoly, selectedCells[0].DimX / 2);
                 if (removeNotch)
                 {
@@ -730,7 +731,7 @@ namespace SpacePlanning
                 borderObject = CreateBorder(cellNeighborMatrix, selectedCellsCopy, true, true);
                 if (borderObject != null)
                 {
-                    borderPoly = (Polygon2d)borderObject["BorderPolyLine"];
+                    borderPoly = (Polygon2d)borderObject["BorderPolygon"];
                     //if (PolygonUtility.AreaPolygon(borderPoly) < areaBuilding * 0.2) continue;
                     offsetBorder = PolygonUtility.OffsetPoly(borderPoly, selectedCells[0].DimX / 2);
                     if (removeNotch)
