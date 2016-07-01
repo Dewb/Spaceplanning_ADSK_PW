@@ -293,15 +293,16 @@ namespace SpacePlanning
         //Make circulation Polygons2d's between programs
         /// <summary>
         /// Builds circulation polygon2d's between programs.
-        /// </summary>
-        /// <param name="polyProgList">Polygon2d's of all programs in every department and of any left over space.</param>
+        /// </summary>        /// 
         /// <param name="circulationNetwork">List of line2d's representing circulation network between programs.</param>
+        /// <param name="polyProgList">Polygon2d's of all programs in every department and of any left over space.</param>
         /// <param name="circulationWidth">Width in metres for circulation corridors between programs.</param>
-        /// <param name="allowedCircRatio">Allowed aspect ratio of generated circulation polygon2d's.</param>
         /// <param name="frequencyCorridor">Allowed frequncy of circulation spaces. Higher value allows more spaces for circulation network.</param>
-        /// <returns></returns>
+        /// <param name="iteration">Design seed value as an integer.</param>
+        /// <returns name = "CirculationPolygons">Circulation Polygon2d's between programs.</returns>
+        /// <returns name = "UpdatedProgPolygons">Updated Program Polygon2d's after removing circulation space.</returns>
         [MultiReturn(new[] { "CirculationPolygons", "UpdatedProgPolygons" })]
-        public static Dictionary<string, object> MakeProgCirculationPolys(List<Line2d> circulationNetwork, List<Polygon2d> polyProgList, double circulationWidth = 8, double allowedCircRatio = 3, double frequencyCorridor = 0.5)
+        public static Dictionary<string, object> MakeProgCirculationPolys(List<Line2d> circulationNetwork, List<Polygon2d> polyProgList, double circulationWidth = 8,  double frequencyCorridor = 0.5, int iteration = 10)
         {
             if (!ValidateObject.CheckPolyList(polyProgList)) return null;
             if (circulationNetwork == null || circulationNetwork.Count == 0) return null;
@@ -314,7 +315,7 @@ namespace SpacePlanning
             List<Polygon2d> circulationPolyList = new List<Polygon2d>();
             List<Polygon2d> updatedProgPolyList = new List<Polygon2d>();
             List<int> deptIdList = new List<int>();
-            double num = allowedCircRatio;
+            double allowedCircRatio = 4;
             List<double> areaProgPolyList = new List<double>();
             for (int i = 0; i < polyProgList.Count; i++) areaProgPolyList.Add(PolygonUtility.AreaPolygon(polyProgList[i]));
 
@@ -322,12 +323,12 @@ namespace SpacePlanning
             areaProgPolyList.Sort();
             int value = (int)(areaProgPolyList.Count / 3);
             double areaThresh = areaProgPolyList[value];
-            Random ran = new Random();
+            Random ran = new Random(iteration);
 
             for (int i = 0; i < circulationNetwork.Count; i++)
             {
                 Line2d splitter = circulationNetwork[i];
-                double someNumber = ran.NextDouble();
+                double someNumber = BasicUtility.RandomBetweenNumbers(ran, 1, 0);
                 if (someNumber > frequencyCorridor) continue;
                 for (int j = 0; j < polyProgList.Count; j++)
                 {
@@ -344,24 +345,17 @@ namespace SpacePlanning
                         List<Polygon2d> polyAfterSplit = (List<Polygon2d>)(splitResult["PolyAfterSplit"]);
                         if (ValidateObject.CheckPolyList(polyAfterSplit))
                         {
-                            double areaA = PolygonUtility.AreaPolygon(polyAfterSplit[0]);
-                            double areaB = PolygonUtility.AreaPolygon(polyAfterSplit[1]);
+                            double areaA = PolygonUtility.AreaPolygon(polyAfterSplit[0]), areaB = PolygonUtility.AreaPolygon(polyAfterSplit[1]);                             
                             if (areaA < areaB)
                             {
                                 if (polyAfterSplit[0].Points != null)
-                                {
-                                    bool check = ValidateObject.CheckPolyBBox(polyAfterSplit[0], num);
-                                    if (check) circulationPolyList.Add(polyAfterSplit[0]);
-                                }
+                                    if (ValidateObject.CheckPolyBBox(polyAfterSplit[0], allowedCircRatio)) circulationPolyList.Add(polyAfterSplit[0]);
                                 updatedProgPolyList.Add(polyAfterSplit[1]);
                             }
                             else
                             {
                                 if (polyAfterSplit[1].Points != null)
-                                {
-                                    bool check = ValidateObject.CheckPolyBBox(polyAfterSplit[1], num);
-                                    if (check) circulationPolyList.Add(polyAfterSplit[1]);
-                                }
+                                    if (ValidateObject.CheckPolyBBox(polyAfterSplit[1], allowedCircRatio)) circulationPolyList.Add(polyAfterSplit[1]);      
                                 updatedProgPolyList.Add(polyAfterSplit[0]);
                             }
                         }// end of if loop checking polylist
