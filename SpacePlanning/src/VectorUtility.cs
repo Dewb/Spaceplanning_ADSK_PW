@@ -40,7 +40,7 @@ namespace SpacePlanning
 
         //returns angle between two vectors
         //for 'returndegrees' enter true for an answer in degrees, false for radians
-        internal static double AngleBetweenVec2d(Vector2d u, Vector2d v, bool returndegrees)
+        internal static double AngleBetweenVec2d(Vector2d u, Vector2d v, bool returndegrees == true)
         {
             double numerator = u.X * v.X + u.Y * v.Y;
             double u2 = u.X * u.X + u.Y * u.Y;

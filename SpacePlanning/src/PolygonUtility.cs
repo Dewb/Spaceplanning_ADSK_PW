@@ -558,6 +558,57 @@ namespace SpacePlanning
             return orthoPoly;
         }
 
+
+        //checks all lines of a polyline, if orthogonal or not, if not makes the polyline orthogonal
+        public static Polygon2d CreateOrthoPolyTest(Polygon2d nonOrthoPoly)
+        {
+            if (!ValidateObject.CheckPoly(nonOrthoPoly)) return null;
+            List<Point2d> pointFoundList = new List<Point2d>(), copyPointList = new List<Point2d>();
+            for (int i = 0; i < nonOrthoPoly.Points.Count; i++) copyPointList.Add(new Point2d(nonOrthoPoly.Points[i]));
+            
+            for (int i = 0; i < nonOrthoPoly.Points.Count; i++)
+            {
+                int a = i, b = i + 1;
+                int c = i - 1;
+                if (i == 0) c = nonOrthoPoly.Points.Count - 1;
+                if (i == nonOrthoPoly.Points.Count - 1) b = 0;
+                Line2d lineA = nonOrthoPoly.Lines[a], lineB = nonOrthoPoly.Lines[b], lineC = nonOrthoPoly.Lines[c];
+                
+                if (ValidateObject.CheckLineOrient(lineA) == -1) // found non ortho
+                {
+                    Vector2d vecA = new Vector2d(lineA.StartPoint, lineB.EndPoint);
+                    Vector2d vecB = new Vector2d(lineB.StartPoint, lineB.EndPoint);
+                    double angle = VectorUtility.AngleBetweenVec2d(vecA, vecB, true);
+                    Trace.WriteLine("Angle Found is : " + angle);
+                    if(angle > 90) // obtuse
+                    {
+                        if(ValidateObject.CheckLineOrient(lineC) == 1)// vertical
+                        {
+                            copyPointList[a] = new Point2d(nonOrthoPoly.Points[a].X, nonOrthoPoly.Points[b].Y);
+                        }
+                        else
+                        {
+                            copyPointList[a] = new Point2d(nonOrthoPoly.Points[a].X, nonOrthoPoly.Points[b].Y);
+                        }
+                    }
+                    else // acute
+                    {
+
+                    }
+                    nonOrthoPoly.Points[b] = new Point2d(nonOrthoPoly.Points[a].X, nonOrthoPoly.Points[b].Y);
+                    pointFoundList.Add(nonOrthoPoly.Points[b]);
+                }
+                else
+                {
+                    pointFoundList.Add(nonOrthoPoly.Points[a]);
+                }
+                
+            }
+
+            Polygon2d orthoPoly = new Polygon2d(pointFoundList, 0);
+            return orthoPoly;
+        }
+
         // reduces points in polygon2d list
         internal static List<Polygon2d> PolyReducePoints(List<Polygon2d> polyList)
         {
