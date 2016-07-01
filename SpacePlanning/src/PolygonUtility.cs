@@ -429,7 +429,7 @@ namespace SpacePlanning
         public static Dictionary<string, object> RemoveAnyNotchesTest(Polygon2d polyInp, Polygon2d siteOutline, double notchDistance = 10, bool refine=true)
         {
             if (!ValidateObject.CheckPoly(polyInp) || !ValidateObject.CheckPoly(siteOutline)) return null;
-            double precision = 2;
+            double precision = 5;
             List<Point2d> sitePts = SmoothPolygon(siteOutline.Points, precision);
             bool found = false;
             Polygon2d poly = new Polygon2d(polyInp.Points);
@@ -461,22 +461,24 @@ namespace SpacePlanning
             {
                 if (!GraphicsUtility.PointInsidePolygonTest(siteOutline, poly.Points[i])) poly.Points[i] = sitePts[FindClosestPointIndex(sitePts, poly.Points[i])];            
             }
-            Polygon2d cleanPoly = CreateOrthoPolyTest2(new Polygon2d(poly.Points, 0));
-            if (refine) cleanPoly = CreateOrthoPoly(new Polygon2d(poly.Points, 0));
-            if (false)
-            {
-                int count = 0, maxTry = 5;
-                while(count < maxTry)
-                {
-                    count += 1;
-                    cleanPoly = CreateOrthoPolyTest2(cleanPoly);
-                    cleanPoly = PolyExtraEdgeRemove(new Polygon2d(poly.Points, 0));
-                    cleanPoly = CreateOrthoPolyTest2(cleanPoly);
-                }   
-            }
 
+          
+            Polygon2d cleanPoly = new Polygon2d(poly.Points, 0);
+           
+          if (refine)
+          {
+              int count = 0, maxTry = 5;
+              while(count < maxTry)
+              {
+                  count += 1;
+                  cleanPoly = CreateOrthoPoly(cleanPoly);
+                  cleanPoly = PolyExtraEdgeRemove(new Polygon2d(poly.Points, 0));
+                  cleanPoly = CreateOrthoPoly(cleanPoly);
+              }
             if (!ValidateObject.CheckPoly(cleanPoly)) cleanPoly = new Polygon2d(polyInp.Points);
             if ( ValidateObject.CheckPolygonSelfIntersection(cleanPoly)) cleanPoly = new Polygon2d(polyInp.Points);
+         }
+
 
             return new Dictionary<string, object>
             {
@@ -599,8 +601,8 @@ namespace SpacePlanning
             return ran2D;
         }        
 
-        //checks all lines of a polyline, if orthogonal or not, if not makes the polyline orthogonal
-        public static Polygon2d CreateOrthoPoly(Polygon2d nonOrthoPoly)
+        //checks all lines of a polyline, if orthogonal or not, if not makes the polyline orthogonal -  OLD ONE
+        public static Polygon2d CreateOrthoPolyTest2(Polygon2d nonOrthoPoly)
         {
             if (!ValidateObject.CheckPoly(nonOrthoPoly)) return null;
             List<Point2d> pointFoundList = new List<Point2d>();
@@ -639,59 +641,10 @@ namespace SpacePlanning
             return index;
         }
 
-        //checks all lines of a polyline, if orthogonal or not, if not makes the polyline orthogonal
-        internal static Polygon2d CreateOrthoPolyTest(Polygon2d nonOrthoPoly)
-        {
-            if (!ValidateObject.CheckPoly(nonOrthoPoly)) return null;
-            List<Point2d> pointFoundList = new List<Point2d>(), copyPointList = new List<Point2d>();
-            for (int i = 0; i < nonOrthoPoly.Points.Count; i++) copyPointList.Add(new Point2d(nonOrthoPoly.Points[i]));
-            
-            for (int i = 0; i < nonOrthoPoly.Points.Count; i++)
-            {
-                int a = i, b = i + 1;
-                int c = i - 1;
-                if (i == 0) c = nonOrthoPoly.Points.Count - 1;
-                if (i == nonOrthoPoly.Points.Count - 1) b = 0;
-                Line2d lineA = nonOrthoPoly.Lines[a], lineB = nonOrthoPoly.Lines[b], lineC = nonOrthoPoly.Lines[c];
-                
-                if (ValidateObject.CheckLineOrient(lineA) == -1) // found non ortho
-                {
-                    Vector2d vecA = new Vector2d(lineA.StartPoint, lineB.EndPoint);
-                    Vector2d vecB = new Vector2d(lineB.StartPoint, lineB.EndPoint);
-                    double angle = VectorUtility.AngleBetweenVec2d(vecA, vecB, true);
-                    Trace.WriteLine("Angle Found is : " + angle);
-                    if(angle > 90) // obtuse
-                    {
-                        if(ValidateObject.CheckLineOrient(lineC) == 1)// vertical
-                        {
-                            copyPointList[a] = new Point2d(nonOrthoPoly.Points[a].X, nonOrthoPoly.Points[b].Y);
-                        }
-                        else
-                        {
-                            copyPointList[a] = new Point2d(nonOrthoPoly.Points[a].X, nonOrthoPoly.Points[b].Y);
-                        }
-                    }
-                    else // acute
-                    {
-
-                    }
-                    nonOrthoPoly.Points[b] = new Point2d(nonOrthoPoly.Points[a].X, nonOrthoPoly.Points[b].Y);
-                    pointFoundList.Add(nonOrthoPoly.Points[b]);
-                }
-                else
-                {
-                    pointFoundList.Add(nonOrthoPoly.Points[a]);
-                }
-                
-            }
-
-            Polygon2d orthoPoly = new Polygon2d(pointFoundList, 0);
-            return orthoPoly;
-        }
 
 
-        //checks all lines of a polyline, if orthogonal or not, if not makes the polyline orthogonal
-        public static Polygon2d CreateOrthoPolyTest2(Polygon2d nonOrthoPoly)
+        //checks all lines of a polyline, if orthogonal or not, if not makes the polyline orthogonal - NEW IMPLEMENTED
+        public static Polygon2d CreateOrthoPoly(Polygon2d nonOrthoPoly)
         {
             if (!ValidateObject.CheckPoly(nonOrthoPoly)) return null;
             List<Point2d> pointFoundList = new List<Point2d>(), copyPointList = new List<Point2d>();
@@ -750,8 +703,8 @@ namespace SpacePlanning
                     }
                 }// end of non ortho if loop 
             }
-            return new Polygon2d(pointFoundList,0);
-            
+            //return new Polygon2d(pointFoundList,0);
+            return PolyExtraEdgeRemove(new Polygon2d(pointFoundList, 0));
         }
 
         // reduces points in polygon2d list

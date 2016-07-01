@@ -742,7 +742,7 @@ namespace SpacePlanning
                     offsetBorder = PolygonUtility.OffsetPoly(borderPoly, selectedCells[0].DimX / 2);
                     if (removeNotch)
                     {
-                        Dictionary<string, object> notchObj = PolygonUtility.RemoveAllNotches(borderPoly, minNotchDistance);
+                        Dictionary<string, object> notchObj = PolygonUtility.RemoveAnyNotchesTest(borderPoly, orthoSiteOutline, minNotchDistance, true);
                         if (notchObj != null) borderPoly = (Polygon2d)notchObj["PolyNotchRemoved"];
 
                     }
