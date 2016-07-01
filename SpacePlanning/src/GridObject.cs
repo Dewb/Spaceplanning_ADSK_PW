@@ -680,6 +680,7 @@ namespace SpacePlanning
 
             List<Cell> preSelectedCellsCopy = selectedCells.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY,x.CellID)).ToList(); // example of deep copy
             Dictionary<string, object> cellNeighborMatrixObjectPre = BuildCellNeighborMatrix(preSelectedCellsCopy);
+            if (cellNeighborMatrixObjectPre == null) return null;
             List<List<int>> cellNeighborMatrixPre = (List<List<int>>)cellNeighborMatrixObjectPre["CellNeighborMatrix"];
 
             if (cellRefine)
@@ -881,6 +882,7 @@ namespace SpacePlanning
         [MultiReturn(new[] { "CellNeighborMatrix", "XYEqualtionList", "SortedCells" })]
         internal static Dictionary<string, object> BuildCellNeighborMatrix(List<Cell> cellLists)
         {
+            if (cellLists == null || cellLists.Count < 2) return null;
             double dimX = cellLists[0].DimX, dimY = cellLists[0].DimY;
             List<List<int>> cellNeighborMatrix = new List<List<int>>();
             List<Cell> cellListCopy = cellLists.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY,x.CellID)).ToList(); // example of deep copy

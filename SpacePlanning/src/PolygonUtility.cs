@@ -385,7 +385,7 @@ namespace SpacePlanning
         
         //gets a poly and removes small notches based on agiven min distance
         [MultiReturn(new[] { "PolyNotchRemoved", "NotchFound"})]
-        internal static Dictionary<string, object> RemoveAnyNotches(Polygon2d polyInp, double distance = 10)
+        public static Dictionary<string, object> RemoveAnyNotches(Polygon2d polyInp, double distance = 10)
         {
             if (!ValidateObject.CheckPoly(polyInp)) return null;
 
@@ -441,7 +441,7 @@ namespace SpacePlanning
                     currentPoly = (Polygon2d)notchObj["PolyNotchRemoved"];
                     found = (bool)notchObj["NotchFound"];
                 }             
-                Trace.WriteLine("still notches : " + count);
+                //Trace.WriteLine("still notches : " + count);
             }
             Polygon2d polyNew = CreateOrthoPoly(currentPoly);
             if (!ValidateObject.CheckPoly(polyNew)) { polyNew = polyInp; found = false; }
@@ -453,6 +453,22 @@ namespace SpacePlanning
 
         }
 
+        // removes extra edges sticking out of a P:olygon2d
+        public static Polygon2d PolyExtraEdgeRemove(Polygon2d polyInp)
+        {
+            if (!ValidateObject.CheckPoly(polyInp)) return null;
+            Polygon2d poly = new Polygon2d(polyInp.Points);
+            List<Point2d> ptList = new List<Point2d>();
+            for(int i = 0; i < poly.Points.Count; i++)
+            {
+                int a = i, b = i + 1;
+                if (i == poly.Points.Count - 1) b = 0;
+                int aOrient = ValidateObject.CheckLineOrient(poly.Lines[a]);
+                int bOrient = ValidateObject.CheckLineOrient(poly.Lines[b]);
+                if(aOrient != bOrient) ptList.Add(poly.Points[a]);    
+            }
+            return new Polygon2d(ptList);
+        }
       
         //calc centroid of a closed polygon2d
         public static Point2d CentroidOfPoly(Polygon2d poly)
