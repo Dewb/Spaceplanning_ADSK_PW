@@ -301,6 +301,14 @@ namespace SpacePlanning
             pointCoordList.Add(Point2d.ByCoordinates(xMax, yMin));
             return pointCoordList;
         }
+
+        internal static Polygon2d GetBoundingBoxfromLines(List<Line2d> lineList)
+        {
+            if (lineList == null) return null;
+            List<Point2d> ptList = new List<Point2d>();
+            for (int i = 0; i < lineList.Count; i++) ptList.Add(LineUtility.LineMidPoint(lineList[i]));
+            return new Polygon2d(FromPointsGetBoundingPoly(ptList));
+        }
         #endregion
 
         #region-Private Methods

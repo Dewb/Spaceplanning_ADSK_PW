@@ -20,17 +20,19 @@ namespace SpacePlanning
         /// <summary>
         /// Builds the department topology matrix internally and finds circulation network lines between department polygon2d's. 
         /// </summary>
-        /// <param name="deptData">DeptData Object</param>
+        /// <param name="deptData">List of DeptData Object</param>
         /// <param name="leftOverPoly">Polygon2d not assigned to any department.</param>
-        /// <param name="limit">Maximum distance allowed to be considered as a neighbor of a department.</param>
+        /// <param name="noExternalWall">Bool parameter to check if external wall is a priority or not.</param>
+        /// <param name="circulationFrequency">Double value between 0 to 1, controlling circulation network frequency. Higher value makes higher circulation frequency.</param>
         /// <returns name="CirculationNetwork">List of line2d geometry representing circulation network between department polygon2d's.</returns>
         /// <search>
         /// Department Circulation Network, Shared Edges between departments
         /// </search>
         [MultiReturn(new[] { "CirculationNetworkLines", "ExtraNetworkLines", "PolyKPU" })]
-        public static Dictionary<string,object> FindDeptCirculationNetwork(List<DeptData> deptData, Polygon2d leftOverPoly = null, double limit = 0, bool noExternalWall = false)
+        public static Dictionary<string,object> FindDeptCirculationNetwork(List<DeptData> deptData, Polygon2d leftOverPoly = null, bool noExternalWall = false, double circulationFrequency = 0.75)
         {
             if (deptData == null || deptData.Count == 0) return null;
+            double limit = 0;
             List<Polygon2d> polygonsAllDeptList = new List<Polygon2d>();
             List<DeptData> deptDataAllDeptList = new List<DeptData>();
             List<List<string>> deptNamesNeighbors = new List<List<string>>();
@@ -85,6 +87,8 @@ namespace SpacePlanning
             // extend the lines found
             for(int i = 0; i < cleanNetworkLines.Count; i++) cleanNetworkLines[i] = LineUtility.ExtendLine(cleanNetworkLines[i], 2000);
 
+            cleanNetworkLines = RemoveNetworkRedundancy(cleanNetworkLines, circulationFrequency);
+
             //return cleanNetworkLines;
             return new Dictionary<string, object>
             {
@@ -108,10 +112,13 @@ namespace SpacePlanning
         /// <search>
         /// Department Circulation Network, Shared Edges between departments
         /// </search>
-        [MultiReturn(new[] { "NonRedundantNetwork"})]
-        public static Dictionary<string, object> RemoveNetworkRedundancy(List<Line2d> networkLines, double thresDistance = 10)
+       
+        internal static List<Line2d> RemoveNetworkRedundancy(List<Line2d> networkLines, double circulationFrequency = 10)
         {
             if (networkLines == null) return null;
+            circulationFrequency = 1 - circulationFrequency;
+            Polygon2d bBox = ReadData.GetBoundingBoxfromLines(networkLines);
+            List<double> spans = PolygonUtility.GetSpansXYFromPolygon2d(bBox.Points);// horizontal span 1st, then vertical span
             List<Line2d> horizLines = new List<Line2d>(), vertLines = new List<Line2d>();
             for(int i = 0; i < networkLines.Count; i++)
             {
@@ -121,6 +128,7 @@ namespace SpacePlanning
             List<Line2d> selectedHorizLines = new List<Line2d>(), selectedVertLines = new List<Line2d>();
             for(int i = 0; i < horizLines.Count; i++)
             {
+                double thresDistance = circulationFrequency * spans[0];
                 int a = i, b = i + 1;
                 if (i == horizLines.Count - 1) b = 0;
                 Point2d midA = LineUtility.LineMidPoint(horizLines[a]), midB = LineUtility.LineMidPoint(horizLines[b]);
@@ -130,6 +138,7 @@ namespace SpacePlanning
 
             for (int i = 0; i < vertLines.Count; i++)
             {
+                double thresDistance = circulationFrequency * spans[1];
                 int a = i, b = i + 1;
                 if (i == vertLines.Count - 1) b = 0;
                 Point2d midA = LineUtility.LineMidPoint(vertLines[a]), midB = LineUtility.LineMidPoint(vertLines[b]);
@@ -140,12 +149,11 @@ namespace SpacePlanning
             reducedLines.AddRange(selectedHorizLines);
             reducedLines.AddRange(selectedVertLines);
 
-            //return cleanNetworkLines;
-            return new Dictionary<string, object>
-            {
-                { "NonRedundantNetwork", (reducedLines) }   
-            };
+            return reducedLines;
+          
         }
+
+       
 
         //Make circulation Polygons2d's between departments
         /// <summary>
@@ -297,12 +305,12 @@ namespace SpacePlanning
         /// <param name="circulationNetwork">List of line2d's representing circulation network between programs.</param>
         /// <param name="polyProgList">Polygon2d's of all programs in every department and of any left over space.</param>
         /// <param name="circulationWidth">Width in metres for circulation corridors between programs.</param>
-        /// <param name="frequencyCorridor">Allowed frequncy of circulation spaces. Higher value allows more spaces for circulation network.</param>
+        /// <param name="circulationFrequency">Allowed frequncy of circulation spaces. Higher value allows more spaces for circulation network.</param>
         /// <param name="iteration">Design seed value as an integer.</param>
         /// <returns name = "CirculationPolygons">Circulation Polygon2d's between programs.</returns>
         /// <returns name = "UpdatedProgPolygons">Updated Program Polygon2d's after removing circulation space.</returns>
         [MultiReturn(new[] { "CirculationPolygons", "UpdatedProgPolygons" })]
-        public static Dictionary<string, object> MakeProgCirculationPolys(List<Line2d> circulationNetwork, List<Polygon2d> polyProgList, double circulationWidth = 8,  double frequencyCorridor = 0.5, int iteration = 10)
+        public static Dictionary<string, object> MakeProgCirculationPolys(List<Line2d> circulationNetwork, List<Polygon2d> polyProgList, double circulationWidth = 8,  double circulationFrequency = 0.5, int iteration = 10)
         {
             if (!ValidateObject.CheckPolyList(polyProgList)) return null;
             if (circulationNetwork == null || circulationNetwork.Count == 0) return null;
@@ -329,7 +337,7 @@ namespace SpacePlanning
             {
                 Line2d splitter = circulationNetwork[i];
                 double someNumber = BasicUtility.RandomBetweenNumbers(ran, 1, 0);
-                if (someNumber > frequencyCorridor) continue;
+                if (someNumber > circulationFrequency) continue;
                 for (int j = 0; j < polyProgList.Count; j++)
                 {
                     Polygon2d progPoly = polyProgList[j];
