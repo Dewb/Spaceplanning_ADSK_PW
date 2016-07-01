@@ -609,6 +609,68 @@ namespace SpacePlanning
             return orthoPoly;
         }
 
+
+        //checks all lines of a polyline, if orthogonal or not, if not makes the polyline orthogonal
+        public static Polygon2d CreateOrthoPolyTest2(Polygon2d nonOrthoPoly)
+        {
+            if (!ValidateObject.CheckPoly(nonOrthoPoly)) return null;
+            List<Point2d> pointFoundList = new List<Point2d>(), copyPointList = new List<Point2d>();
+            for (int i = 0; i < nonOrthoPoly.Points.Count; i++) copyPointList.Add(new Point2d(nonOrthoPoly.Points[i]));
+
+            for (int i = 0; i < nonOrthoPoly.Points.Count; i++)
+            {
+                int a = i, b = i + 1;
+                int c = i - 1, d = i + 2;
+                if (i == 0) c = nonOrthoPoly.Points.Count - 1;
+                if (i == nonOrthoPoly.Points.Count - 1) { b = 0; d = b + 1; }
+                if (i == nonOrthoPoly.Points.Count - 2) d = 0;
+                Line2d lineA = nonOrthoPoly.Lines[a], lineB = nonOrthoPoly.Lines[b], lineC = nonOrthoPoly.Lines[c], lineD = nonOrthoPoly.Lines[d];
+                pointFoundList.Add(nonOrthoPoly.Points[a]);
+                if (ValidateObject.CheckLineOrient(lineA) == -1) // found non ortho
+                {
+                    Trace.WriteLine("Line C Orientation = " + ValidateObject.CheckLineOrient(lineC));
+                    Trace.WriteLine("Line D Orientation = " + ValidateObject.CheckLineOrient(lineD));
+                    if (ValidateObject.CheckLineOrient(lineC) == ValidateObject.CheckLineOrient(lineD)) // prev and post lines have same orientation
+                    {
+                        if(ValidateObject.CheckLineOrient(lineC) == 1)//vertical
+                        {
+                            Trace.WriteLine("Vertical found");
+                            Point2d midPt = LineUtility.LineMidPoint(lineA);
+                            Point2d A1 = new Point2d(midPt.X, nonOrthoPoly.Points[a].Y);
+                            Point2d A2 = new Point2d(midPt.X, nonOrthoPoly.Points[b].Y);
+                            pointFoundList.Add(A1);
+                            pointFoundList.Add(A2);
+                        }
+                        else // treat as horizontal
+                        {
+                            Trace.WriteLine("Horizontal found");
+                            Point2d midPt = LineUtility.LineMidPoint(lineA);
+                            Point2d A1 = new Point2d(nonOrthoPoly.Points[a].X,midPt.Y);
+                            Point2d A2 = new Point2d(nonOrthoPoly.Points[b].X, midPt.Y);
+                            pointFoundList.Add(A1);
+                            pointFoundList.Add(A2);
+
+                        }
+                    }
+                    else// prev and post lines have different orientation
+                    {
+                        Trace.WriteLine("Different orientation found");
+                        //can do any of the above two methods
+                        Point2d midPt = LineUtility.LineMidPoint(lineA);
+                        //Point2d A1 = new Point2d(nonOrthoPoly.Points[a].X, midPt.Y);
+                        //Point2d A2 = new Point2d(nonOrthoPoly.Points[b].X, midPt.Y);
+
+                        Point2d A1 = new Point2d(midPt.X, nonOrthoPoly.Points[a].Y);
+                        Point2d A2 = new Point2d(midPt.X, nonOrthoPoly.Points[b].Y);
+                        pointFoundList.Add(A1);
+                        pointFoundList.Add(A2);
+                    }
+                }// end of non ortho if loop 
+            }
+            return new Polygon2d(pointFoundList,0);
+            
+        }
+
         // reduces points in polygon2d list
         internal static List<Polygon2d> PolyReducePoints(List<Polygon2d> polyList)
         {
