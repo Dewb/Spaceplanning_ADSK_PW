@@ -423,6 +423,69 @@ namespace SpacePlanning
 
         }
 
+
+        //gets a poly and removes small notches based on agiven min distance
+        [MultiReturn(new[] { "PolyNotchRemoved", "NotchFound" })]
+        public static Dictionary<string, object> RemoveAnyNotchesTest(Polygon2d polyInp, Polygon2d siteOutline, double notchDistance = 10, bool refine=true)
+        {
+            if (!ValidateObject.CheckPoly(polyInp) || !ValidateObject.CheckPoly(siteOutline)) return null;
+            double precision = 2;
+            List<Point2d> sitePts = SmoothPolygon(siteOutline.Points, precision);
+            bool found = false;
+            Polygon2d poly = new Polygon2d(polyInp.Points);
+            for (int i = 0; i < poly.Points.Count; i++)
+            {
+                int a = i, b = i + 1, c = i - 1, d = i + 2;
+                if (i == 0) c = poly.Points.Count - 1;
+                if (i == poly.Points.Count - 1) { b = 0; d = 1; }
+                if (i == poly.Points.Count - 2) { d = 0; }
+                if (poly.Lines[a].Length < notchDistance)
+                {
+                    int orient = ValidateObject.CheckLineOrient(poly.Lines[a]);
+                    if (orient == 0)// horizontal line
+                    {
+                        poly.Points[b] = poly.Points[a];
+                        poly.Points[d] = new Point2d(poly.Points[a].X, poly.Points[d].Y);
+                    }
+                    else // vertical line
+                    {
+                        poly.Points[b] = poly.Points[a];
+                        poly.Points[d] = new Point2d(poly.Points[d].X, poly.Points[a].Y);
+                    }
+                    found = true;
+                }
+
+            }
+
+            for (int i = 0; i < poly.Points.Count; i++)
+            {
+                if (!GraphicsUtility.PointInsidePolygonTest(siteOutline, poly.Points[i])) poly.Points[i] = sitePts[FindClosestPointIndex(sitePts, poly.Points[i])];            
+            }
+            Polygon2d cleanPoly = CreateOrthoPolyTest2(new Polygon2d(poly.Points, 0));
+            if (refine) cleanPoly = CreateOrthoPoly(new Polygon2d(poly.Points, 0));
+            if (false)
+            {
+                int count = 0, maxTry = 5;
+                while(count < maxTry)
+                {
+                    count += 1;
+                    cleanPoly = CreateOrthoPolyTest2(cleanPoly);
+                    cleanPoly = PolyExtraEdgeRemove(new Polygon2d(poly.Points, 0));
+                    cleanPoly = CreateOrthoPolyTest2(cleanPoly);
+                }   
+            }
+
+            if (!ValidateObject.CheckPoly(cleanPoly)) cleanPoly = new Polygon2d(polyInp.Points);
+            if ( ValidateObject.CheckPolygonSelfIntersection(cleanPoly)) cleanPoly = new Polygon2d(polyInp.Points);
+
+            return new Dictionary<string, object>
+            {
+                { "PolyNotchRemoved" , (cleanPoly) },
+                { "NotchFound" , (sitePts) }
+            };
+
+        }
+
         //gets a poly and removes small notches based on agiven min distance
         [MultiReturn(new[] { "PolyNotchRemoved", "NotchFound" })]
         public static Dictionary<string, object> RemoveAllNotches(Polygon2d polyInp, double distance = 10)
@@ -558,9 +621,26 @@ namespace SpacePlanning
             return orthoPoly;
         }
 
+        // find the closest point to a point from a point list
+        public static int FindClosestPointIndex(List<Point2d> ptList, Point2d pt)
+        {
+            int index = 0;
+            double minDist = 100000000;
+            for (int i = 0; i < ptList.Count; i++)
+            {
+                Point2d centerPt = ptList[i];
+                double calcDist = PointUtility.DistanceBetweenPoints(centerPt, pt);
+                if (calcDist < minDist)
+                {
+                    minDist = calcDist;
+                    index = i;
+                }
+            }
+            return index;
+        }
 
         //checks all lines of a polyline, if orthogonal or not, if not makes the polyline orthogonal
-        public static Polygon2d CreateOrthoPolyTest(Polygon2d nonOrthoPoly)
+        internal static Polygon2d CreateOrthoPolyTest(Polygon2d nonOrthoPoly)
         {
             if (!ValidateObject.CheckPoly(nonOrthoPoly)) return null;
             List<Point2d> pointFoundList = new List<Point2d>(), copyPointList = new List<Point2d>();
@@ -624,20 +704,23 @@ namespace SpacePlanning
                 if (i == 0) c = nonOrthoPoly.Points.Count - 1;
                 if (i == nonOrthoPoly.Points.Count - 1) { b = 0; d = b + 1; }
                 if (i == nonOrthoPoly.Points.Count - 2) d = 0;
-                Line2d lineA = nonOrthoPoly.Lines[a], lineB = nonOrthoPoly.Lines[b], lineC = nonOrthoPoly.Lines[c], lineD = nonOrthoPoly.Lines[d];
+
+                Point2d ptA = nonOrthoPoly.Points[a], ptB = nonOrthoPoly.Points[b], ptC = nonOrthoPoly.Points[c], ptD = nonOrthoPoly.Points[d];
+                Line2d lineA = new Line2d(ptA, ptB), lineB = new Line2d(ptB, ptD), lineC = new Line2d(ptC, ptA);
+
                 pointFoundList.Add(nonOrthoPoly.Points[a]);
                 if (ValidateObject.CheckLineOrient(lineA) == -1) // found non ortho
                 {
                     Trace.WriteLine("Line C Orientation = " + ValidateObject.CheckLineOrient(lineC));
-                    Trace.WriteLine("Line D Orientation = " + ValidateObject.CheckLineOrient(lineD));
-                    if (ValidateObject.CheckLineOrient(lineC) == ValidateObject.CheckLineOrient(lineD)) // prev and post lines have same orientation
+                    Trace.WriteLine("Line D Orientation = " + ValidateObject.CheckLineOrient(lineB));
+                    if (ValidateObject.CheckLineOrient(lineC) == ValidateObject.CheckLineOrient(lineB)) // prev and post lines have same orientation
                     {
                         if(ValidateObject.CheckLineOrient(lineC) == 1)//vertical
                         {
                             Trace.WriteLine("Vertical found");
                             Point2d midPt = LineUtility.LineMidPoint(lineA);
-                            Point2d A1 = new Point2d(midPt.X, nonOrthoPoly.Points[a].Y);
-                            Point2d A2 = new Point2d(midPt.X, nonOrthoPoly.Points[b].Y);
+                            Point2d A1 = new Point2d(midPt.X, ptA.Y);
+                            Point2d A2 = new Point2d(midPt.X, ptB.Y);
                             pointFoundList.Add(A1);
                             pointFoundList.Add(A2);
                         }
@@ -645,8 +728,8 @@ namespace SpacePlanning
                         {
                             Trace.WriteLine("Horizontal found");
                             Point2d midPt = LineUtility.LineMidPoint(lineA);
-                            Point2d A1 = new Point2d(nonOrthoPoly.Points[a].X,midPt.Y);
-                            Point2d A2 = new Point2d(nonOrthoPoly.Points[b].X, midPt.Y);
+                            Point2d A1 = new Point2d(ptA.X,midPt.Y);
+                            Point2d A2 = new Point2d(ptB.X, midPt.Y);
                             pointFoundList.Add(A1);
                             pointFoundList.Add(A2);
 
@@ -660,8 +743,8 @@ namespace SpacePlanning
                         //Point2d A1 = new Point2d(nonOrthoPoly.Points[a].X, midPt.Y);
                         //Point2d A2 = new Point2d(nonOrthoPoly.Points[b].X, midPt.Y);
 
-                        Point2d A1 = new Point2d(midPt.X, nonOrthoPoly.Points[a].Y);
-                        Point2d A2 = new Point2d(midPt.X, nonOrthoPoly.Points[b].Y);
+                        Point2d A1 = new Point2d(midPt.X, ptA.Y);
+                        Point2d A2 = new Point2d(midPt.X, ptB.Y);
                         pointFoundList.Add(A1);
                         pointFoundList.Add(A2);
                     }

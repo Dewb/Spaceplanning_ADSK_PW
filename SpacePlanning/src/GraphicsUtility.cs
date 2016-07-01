@@ -199,26 +199,9 @@ namespace SpacePlanning
             {
                 if (cellList[i].CellAvailable) ptList.Add(cellList[i].CenterPoint);
             }
-            return FindClosestPointIndex(ptList, pt);
+            return PolygonUtility.FindClosestPointIndex(ptList, pt);
         }
 
-        // find the closest point to a point from a point list
-        internal static int FindClosestPointIndex(List<Point2d> ptList, Point2d pt)
-        {
-            int index = 0;
-            double minDist = 100000000;
-            for (int i = 0; i < ptList.Count; i++)
-            {
-                Point2d centerPt = ptList[i];
-                double calcDist = PointUtility.DistanceBetweenPoints(centerPt, pt);
-                if (calcDist < minDist)
-                {
-                    minDist = calcDist;
-                    index = i;
-                }
-            }
-            return index;
-        }
 
         // find the centroid of a group of  cells
         internal static Point2d CentroidInCells(List<Cell> cellList)
