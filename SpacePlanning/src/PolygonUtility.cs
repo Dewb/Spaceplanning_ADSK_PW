@@ -424,9 +424,9 @@ namespace SpacePlanning
         }
 
 
-        //gets a poly and removes small notches based on agiven min distance
+        //gets a poly and removes small notches based on agiven min distance and an outer poly to make sure it is contained within
         [MultiReturn(new[] { "PolyNotchRemoved", "NotchFound" })]
-        public static Dictionary<string, object> RemoveAnyNotchesTest(Polygon2d polyInp, Polygon2d siteOutline, double notchDistance = 10, bool refine=true)
+        public static Dictionary<string, object> RemoveAnyNotchesWithPoly(Polygon2d polyInp, Polygon2d siteOutline, double notchDistance = 10, bool refine=true)
         {
             if (!ValidateObject.CheckPoly(polyInp) || !ValidateObject.CheckPoly(siteOutline)) return null;
             double precision = 5;
@@ -454,7 +454,6 @@ namespace SpacePlanning
                     }
                     found = true;
                 }
-
             }
 
             for (int i = 0; i < poly.Points.Count; i++)
@@ -463,7 +462,7 @@ namespace SpacePlanning
             }
 
           
-            Polygon2d cleanPoly = new Polygon2d(poly.Points, 0);
+          Polygon2d cleanPoly = new Polygon2d(poly.Points, 0);
            
           if (refine)
           {
@@ -477,47 +476,17 @@ namespace SpacePlanning
               }
             if (!ValidateObject.CheckPoly(cleanPoly)) cleanPoly = new Polygon2d(polyInp.Points);
             if ( ValidateObject.CheckPolygonSelfIntersection(cleanPoly)) cleanPoly = new Polygon2d(polyInp.Points);
-         }
-
-
+         cleanPoly = CreateOrthoPoly(cleanPoly);
+         }           
             return new Dictionary<string, object>
             {
                 { "PolyNotchRemoved" , (cleanPoly) },
-                { "NotchFound" , (sitePts) }
-            };
-
-        }
-
-        //gets a poly and removes small notches based on agiven min distance
-        [MultiReturn(new[] { "PolyNotchRemoved", "NotchFound" })]
-        public static Dictionary<string, object> RemoveAllNotches(Polygon2d polyInp, double distance = 10)
-        {
-            if (!ValidateObject.CheckPoly(polyInp)) return null;
-            bool found = true;
-            int count = 0, maxTry = polyInp.Lines.Count;
-            
-            Polygon2d currentPoly = new Polygon2d(polyInp.Points);
-            while (found && count <maxTry)
-            {
-                count += 1;
-                Dictionary<string, object> notchObj = RemoveAnyNotches(currentPoly, distance);
-                if(notchObj != null)
-                {
-                    currentPoly = (Polygon2d)notchObj["PolyNotchRemoved"];
-                    found = (bool)notchObj["NotchFound"];
-                }             
-                //Trace.WriteLine("still notches : " + count);
-            }
-            Polygon2d polyNew = CreateOrthoPoly(currentPoly);
-            if (!ValidateObject.CheckPoly(polyNew)) { polyNew = polyInp; found = false; }
-            return new Dictionary<string, object>
-            {
-                { "PolyNotchRemoved" , (polyNew) },
                 { "NotchFound" , (found) }
             };
 
         }
 
+     
         // removes extra edges sticking out of a P:olygon2d
         public static Polygon2d PolyExtraEdgeRemove(Polygon2d polyInp)
         {
@@ -601,27 +570,6 @@ namespace SpacePlanning
             return ran2D;
         }        
 
-        //checks all lines of a polyline, if orthogonal or not, if not makes the polyline orthogonal -  OLD ONE
-        public static Polygon2d CreateOrthoPolyTest2(Polygon2d nonOrthoPoly)
-        {
-            if (!ValidateObject.CheckPoly(nonOrthoPoly)) return null;
-            List<Point2d> pointFoundList = new List<Point2d>();
-            for(int i = 0; i < nonOrthoPoly.Points.Count; i++)
-            {
-                int a = i, b = i + 1;
-                if (i == nonOrthoPoly.Points.Count - 1) b = 0;
-                Line2d line = new Line2d(nonOrthoPoly.Points[a], nonOrthoPoly.Points[b]);
-                if (ValidateObject.CheckLineOrient(line)  == -1) // found non ortho
-                {
-                    nonOrthoPoly.Points[b] = new Point2d(nonOrthoPoly.Points[a].X, nonOrthoPoly.Points[b].Y);
-                    pointFoundList.Add(nonOrthoPoly.Points[b]);
-                }
-                pointFoundList.Add(nonOrthoPoly.Points[b]);
-            }
-
-            Polygon2d orthoPoly = new Polygon2d(pointFoundList,0);
-            return orthoPoly;
-        }
 
         // find the closest point to a point from a point list
         public static int FindClosestPointIndex(List<Point2d> ptList, Point2d pt)
@@ -640,8 +588,7 @@ namespace SpacePlanning
             }
             return index;
         }
-
-
+        
 
         //checks all lines of a polyline, if orthogonal or not, if not makes the polyline orthogonal - NEW IMPLEMENTED
         public static Polygon2d CreateOrthoPoly(Polygon2d nonOrthoPoly)

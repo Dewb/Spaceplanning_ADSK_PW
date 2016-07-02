@@ -155,7 +155,7 @@ namespace SpacePlanning
             Polygon2d currentPoly = new Polygon2d(poly.Points);
             while (hasNotches && count < maxTry)
             {
-                Dictionary<string, object> notchObject = PolygonUtility.RemoveAllNotches(currentPoly, distance);
+                Dictionary<string, object> notchObject = PolygonUtility.RemoveAnyNotches(currentPoly, distance);
                 if (notchObject == null) continue;
                 currentPoly = (Polygon2d)notchObject["PolyNotchRemoved"];
                 for (int i = 0; i < poly.Lines.Count; i++)

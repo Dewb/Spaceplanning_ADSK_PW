@@ -402,7 +402,7 @@ namespace SpacePlanning
             Polygon2d borderPoly = new Polygon2d(null);
             if(notchToggle)
             {
-                Dictionary<string, object> notchObj = PolygonUtility.RemoveAllNotches(borderPolyInp, notchDist);
+                Dictionary<string, object> notchObj = PolygonUtility.RemoveAnyNotchesWithPoly(borderPolyInp, origSitePoly, notchDist);
                 borderPoly = (Polygon2d)notchObj["PolyNotchRemoved"];
             }
             bool blockPlaced = false;
@@ -710,7 +710,7 @@ namespace SpacePlanning
                 offsetBorder = PolygonUtility.OffsetPoly(borderPoly, selectedCells[0].DimX / 2);
                 if (removeNotch)
                 {
-                    Dictionary<string, object> notchObj = PolygonUtility.RemoveAllNotches(borderPoly, minNotchDistance);
+                    Dictionary<string, object> notchObj = PolygonUtility.RemoveAnyNotchesWithPoly(borderPoly, orthoSiteOutline, minNotchDistance);
                     if (notchObj != null) borderPoly = (Polygon2d)notchObj["PolyNotchRemoved"];
                 }
                 borders.Add(borderPoly);
@@ -742,7 +742,7 @@ namespace SpacePlanning
                     offsetBorder = PolygonUtility.OffsetPoly(borderPoly, selectedCells[0].DimX / 2);
                     if (removeNotch)
                     {
-                        Dictionary<string, object> notchObj = PolygonUtility.RemoveAnyNotchesTest(borderPoly, orthoSiteOutline, minNotchDistance, true);
+                        Dictionary<string, object> notchObj = PolygonUtility.RemoveAnyNotchesWithPoly(borderPoly, orthoSiteOutline, minNotchDistance, true);
                         if (notchObj != null) borderPoly = (Polygon2d)notchObj["PolyNotchRemoved"];
 
                     }
