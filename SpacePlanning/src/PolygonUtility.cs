@@ -457,13 +457,12 @@ namespace SpacePlanning
             }
 
             for (int i = 0; i < poly.Points.Count; i++)
-            {
-                if (!GraphicsUtility.PointInsidePolygonTest(siteOutline, poly.Points[i])) poly.Points[i] = sitePts[FindClosestPointIndex(sitePts, poly.Points[i])];            
-            }
-
+                if (!GraphicsUtility.PointInsidePolygonTest(siteOutline, poly.Points[i])) poly.Points[i] = sitePts[FindClosestPointIndex(sitePts, poly.Points[i])];
+  
           
           Polygon2d cleanPoly = new Polygon2d(poly.Points, 0);
-           
+          cleanPoly = PolyExtraEdgeRemove(cleanPoly);
+
           if (refine)
           {
               int count = 0, maxTry = 5;

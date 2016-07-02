@@ -519,7 +519,7 @@ namespace SpacePlanning
             bool removeNotch = false, double minNotchDistance  = 10,int dummy=100, bool cellRefine = false)
         {
             if (iteration < 1) iteration = 0;
-            bool randomAllow = true, tag = true;
+            bool randomAllow = true, notchRefine = true; 
             if (cellListInp == null) return null;
             if (!ValidateObject.CheckPoly(orthoSiteOutline)) return null;
             List<Cell> cellList = cellListInp.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY,x.CellID)).ToList(); // example of deep copy 
@@ -677,7 +677,6 @@ namespace SpacePlanning
                 if(cellsFoundThisRound.Count>0) cellsGrouped.Add(cellsFoundThisRound);
             }// end of while loop
 
-
             List<Cell> preSelectedCellsCopy = selectedCells.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY,x.CellID)).ToList(); // example of deep copy
             Dictionary<string, object> cellNeighborMatrixObjectPre = BuildCellNeighborMatrix(preSelectedCellsCopy);
             if (cellNeighborMatrixObjectPre == null) return null;
@@ -710,7 +709,8 @@ namespace SpacePlanning
                 offsetBorder = PolygonUtility.OffsetPoly(borderPoly, selectedCells[0].DimX / 2);
                 if (removeNotch)
                 {
-                    Dictionary<string, object> notchObj = PolygonUtility.RemoveAnyNotchesWithPoly(borderPoly, orthoSiteOutline, minNotchDistance);
+                    //if (iteration > 50) notchRefine = false;
+                    Dictionary<string, object> notchObj = PolygonUtility.RemoveAnyNotchesWithPoly(borderPoly, orthoSiteOutline, minNotchDistance,notchRefine);
                     if (notchObj != null) borderPoly = (Polygon2d)notchObj["PolyNotchRemoved"];
                 }
                 borders.Add(borderPoly);
@@ -742,7 +742,8 @@ namespace SpacePlanning
                     offsetBorder = PolygonUtility.OffsetPoly(borderPoly, selectedCells[0].DimX / 2);
                     if (removeNotch)
                     {
-                        Dictionary<string, object> notchObj = PolygonUtility.RemoveAnyNotchesWithPoly(borderPoly, orthoSiteOutline, minNotchDistance, true);
+                        //if (iteration > 50) notchRefine = false;
+                        Dictionary<string, object> notchObj = PolygonUtility.RemoveAnyNotchesWithPoly(borderPoly, orthoSiteOutline, minNotchDistance, notchRefine);
                         if (notchObj != null) borderPoly = (Polygon2d)notchObj["PolyNotchRemoved"];
 
                     }
