@@ -225,16 +225,20 @@ namespace SpacePlanning
         /// Returns ordered point2d list geometry.
         /// </summary>
         /// <param name="geomList">List of nurbs geometry</param>
-        /// <returns name="SiteOutlinePolygon2d">List of point2d representing site outline</returns>
+        /// <param name="inset">Integer to inset the given site outline.</param>
+        /// <returns name="OrigSiteOutline">Site outline polygon2d as obtained from import.</returns>
+        /// <returns name="InsetSiteOutlineForForm">Site outline inset for form building computation.</returns>
         /// <search>
         /// get points of site outline
         /// </search>
-        public static Polygon2d ConvertSiteOutlineToPolygon2d(List<Geometry> geomList)
+        [MultiReturn(new[] { "OrigSiteOutline", "InsetSiteOutlineForForm" })]
+        public static Dictionary<string,object> ConvertSiteOutlineToPolygon2d(List<Geometry> geomList, double inset = 5)// Geometry
         {
             string type = geomList[0].GetType().ToString();
             List<Point2d> pointList = new List<Point2d>();
-            Trace.WriteLine("list found is + " + type);
-            if(type.IndexOf("Line") != -1)
+            //Trace.WriteLine("list found is + " + type);
+            List<NurbsCurve> nurbList = new List<NurbsCurve>();
+            if (type.IndexOf("Line") != -1)
             {
                 List<Line> lineList = new List<Line>();
                 for (int i = 0; i < geomList.Count; i++) lineList.Add((Line)geomList[i]);
@@ -247,8 +251,8 @@ namespace SpacePlanning
             }
             else if(type.IndexOf("NurbsCurve") != -1)
             {
-                List<NurbsCurve> nurbList = new List<NurbsCurve>();
-                for (int i = 0; i < geomList.Count; i++) nurbList.Add((NurbsCurve)geomList[i]);
+                nurbList = new List<NurbsCurve>();
+                for (int i = 0; i < geomList.Count; i++) { nurbList.Add((NurbsCurve)geomList[i]); }
                 for (int i = 0; i < nurbList.Count; i++)
                 {
                     Point2d pointPerCurve = Point2d.ByCoordinates(nurbList[i].StartPoint.X, nurbList[i].StartPoint.Y);
@@ -257,8 +261,15 @@ namespace SpacePlanning
                 }
             }
             else return null;
+
+            PolyCurve pCrv = PolyCurve.ByJoinedCurves(nurbList.ToArray());
+            Curve cInset = pCrv.Offset(inset*-1);
        
-            return new Polygon2d(pointList);
+            //return new Polygon2d(pointList);
+            return new Dictionary<string, object>
+            {
+                { "OrigSiteOutline", (new Polygon2d(pointList)) },
+                { "InsetSiteOutlineForForm", (cInset) }            };
         }
 
 
