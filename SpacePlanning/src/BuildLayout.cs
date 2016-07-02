@@ -218,7 +218,7 @@ namespace SpacePlanning
         /// <param name="recompute">Regardless of the recompute value, it is used to restart computing the node every time its value is changed.</param>
         /// <returns></returns>
         [MultiReturn(new[] { "PolyAfterSplit", "UpdatedProgramData" })]
-        internal static Dictionary<string, object> PlaceSecondaryPrograms(List<Polygon2d> deptPoly, List<ProgramData> progData, int recompute = 0)
+        public static Dictionary<string, object> PlaceSecondaryPrograms(List<Polygon2d> deptPoly, List<ProgramData> progData, int recompute = 0)
         {
             if (!ValidateObject.CheckPolyList(deptPoly)) return null;
             if (progData == null || progData.Count == 0) return null;
@@ -236,7 +236,7 @@ namespace SpacePlanning
                 ProgramData progItem = progData[i];
                 progItem.PolyAssignedToProg = new List<Polygon2d>();
                 double areaNeeded = progItem.ProgAreaNeeded;
-                while (areaAssigned < areaNeeded && polygonAvailable.Count > 0 && count < maxTry)
+                while (areaAssigned < areaNeeded && polygonAvailable.Count > 0)// && count < maxTry
                 {
                     Polygon2d currentPoly = polygonAvailable.Pop();
                     double areaPoly = PolygonUtility.AreaPolygon(currentPoly);
@@ -244,10 +244,14 @@ namespace SpacePlanning
                     if (compareArea == 1) // current poly area is more
                     {
                         Dictionary<string,object> splitObj = SplitObject.SplitByRatio(currentPoly, 0.5);
-                        List<Polygon2d> polyAfterSplit = (List<Polygon2d>)splitObj["PolyAfterSplit"];
-                        for (int j = 0; j < polyAfterSplit.Count; j++) polygonAvailable.Push(polyAfterSplit[j]);
-                        count += 1;
-                        continue;
+                        if (splitObj != null)
+                        {
+                            List<Polygon2d> polyAfterSplit = (List<Polygon2d>)splitObj["PolyAfterSplit"];
+                            for (int j = 0; j < polyAfterSplit.Count; j++) polygonAvailable.Push(polyAfterSplit[j]);
+                            count += 1;
+                            continue;
+                        }
+                        
                     }
                     progItem.PolyAssignedToProg.Add(currentPoly);
                     areaAssigned += areaPoly;                
