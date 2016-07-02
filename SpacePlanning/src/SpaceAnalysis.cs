@@ -90,7 +90,7 @@ namespace SpacePlanning
                 numCellsList.Add(progData[i].NumberofCellsAdded);
                 areaSatisfiedList.Add(progData[i].IsAreaSatisfied);
                 areaNeededList.Add(progData[i].ProgAreaNeeded);
-                areaProvidedList.Add(progData[i].AreaProvided);
+                areaProvidedList.Add(progData[i].ProgAreaProvided);
                 quantList.Add(progData[i].Quantity);
                 polyProgList.Add(progData[i].PolyAssignedToProg);
             }
@@ -404,7 +404,7 @@ namespace SpacePlanning
                 progStrings.Add(progDataList[i].DeptName.ToString());
                 progStrings.Add(progDataList[i].ProgramName.ToString());
                 progStrings.Add(progDataList[i].ProgAreaNeeded.ToString());
-                progStrings.Add(progDataList[i].AreaProvided.ToString());
+                progStrings.Add(progDataList[i].ProgAreaProvided.ToString());
                 if(progDataList[i].PolyAssignedToProg == null || progDataList[i].PolyAssignedToProg.Count == 0)
                 {
                     progStrings.Add(0.ToString());

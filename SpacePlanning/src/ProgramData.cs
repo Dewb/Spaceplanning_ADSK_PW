@@ -1,6 +1,7 @@
 ﻿
 using stuffer;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace SpacePlanning
 {
@@ -72,7 +73,7 @@ namespace SpacePlanning
             _progType = other.ProgramType;
 
             _numCellAdded = other.NumberofCellsAdded;
-            _areaGiven = other.AreaProvided;
+            _areaGiven = other.ProgAreaProvided;
             _IsAreaSatsifed = other.IsAreaSatisfied;
             _CellsAssigned = new List<Cell>();
 
@@ -179,7 +180,7 @@ namespace SpacePlanning
         {
             get
             {
-                double areaNeeded = _progQuanity * _progUnitArea;
+                //double areaNeeded = _progQuanity * _progUnitArea;
                 if (CurrentAreaNeeds <= 0) return true;
                 else return false;
             }
@@ -193,15 +194,20 @@ namespace SpacePlanning
         /// <summary>
         /// Area assigned to the program.
         /// </summary>
-        public double AreaProvided
+        public double ProgAreaProvided
         {
-            get { return _gridX*_gridY*_numCellAdded; }
+            //get { return _gridX*_gridY*_numCellAdded; }
+            get {
+                //Trace.WriteLine("ProgAreaProvided = " + _areaGiven);
+                //Trace.WriteLine("GridX = " + _gridX);
+                //Trace.WriteLine("GridY = " + _gridY);
+                return _areaGiven; }
             set {
                 _areaGiven = value;
                 _numCellAdded = (int)(value / (_gridX * _gridY));
-            }
-            
+            }            
         }
+
         #endregion
 
 
@@ -213,9 +219,9 @@ namespace SpacePlanning
             set { _numCellAdded = value; }
         }
 
-        internal double CurrentAreaNeeds
+        public double CurrentAreaNeeds
         {
-            get { return _progUnitArea - _areaGiven; }
+            get { return ProgAreaNeeded - ProgAreaProvided; }
 
         }
 

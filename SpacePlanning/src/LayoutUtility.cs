@@ -418,7 +418,7 @@ namespace SpacePlanning
             //reset the area provided to the input progdata
             for (int i = 0; i < newProgDataList.Count; i++)
             {
-                newProgDataList[i].AreaProvided = 0;
+                newProgDataList[i].ProgAreaProvided = 0;
             }
             List<List<Polygon2d>> polyEachProgramList = new List<List<Polygon2d>>();
             Stack<Polygon2d> polyStack = new Stack<Polygon2d>();
