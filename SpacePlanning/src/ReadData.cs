@@ -226,12 +226,11 @@ namespace SpacePlanning
         /// </summary>
         /// <param name="geomList">List of nurbs geometry</param>
         /// <param name="inset">Integer to inset the given site outline.</param>
-        /// <returns name="OrigSiteOutline">Site outline polygon2d as obtained from import.</returns>
         /// <returns name="InsetSiteOutlineForForm">Site outline inset for form building computation.</returns>
         /// <search>
         /// get points of site outline
         /// </search>
-        [MultiReturn(new[] { "OrigSiteOutline", "InsetSiteOutlineForForm" })]
+        [MultiReturn(new[] { "InsetSiteOutlineForForm" })]
         public static Dictionary<string,object> ConvertSiteOutlineToPolygon2d(List<Geometry> geomList, double inset = 5)// Geometry
         {
             string type = geomList[0].GetType().ToString();
@@ -251,25 +250,36 @@ namespace SpacePlanning
             }
             else if(type.IndexOf("NurbsCurve") != -1)
             {
+                
                 nurbList = new List<NurbsCurve>();
                 for (int i = 0; i < geomList.Count; i++) { nurbList.Add((NurbsCurve)geomList[i]); }
+                /*
                 for (int i = 0; i < nurbList.Count; i++)
                 {
                     Point2d pointPerCurve = Point2d.ByCoordinates(nurbList[i].StartPoint.X, nurbList[i].StartPoint.Y);
                     pointList.Add(pointPerCurve);
                     if (i == nurbList.Count) pointList.Add(Point2d.ByCoordinates(nurbList[i].EndPoint.X, nurbList[i].EndPoint.Y));
                 }
+                */
             }
             else return null;
 
-            PolyCurve pCrv = PolyCurve.ByJoinedCurves(nurbList.ToArray());
+            PolyCurve pCrv = PolyCurve.ByJoinedCurves((Curve[])nurbList.ToArray());
             Curve cInset = pCrv.Offset(inset*-1);
-       
+            List<Curve> curvList = new List<Curve>();
+            geomList = cInset.Explode().ToList();
+            for (int i = 0; i < geomList.Count; i++) { curvList.Add((Curve)geomList[i]); }
+            for (int i = 0; i < curvList.Count; i++)
+            {
+                Point2d pointPerCurve = Point2d.ByCoordinates(curvList[i].StartPoint.X, curvList[i].StartPoint.Y);
+                pointList.Add(pointPerCurve);
+                if (i == curvList.Count) pointList.Add(Point2d.ByCoordinates(curvList[i].EndPoint.X, curvList[i].EndPoint.Y));
+            }
             //return new Polygon2d(pointList);
             return new Dictionary<string, object>
             {
-                { "OrigSiteOutline", (new Polygon2d(pointList)) },
-                { "InsetSiteOutlineForForm", (cInset) }            };
+                { "InsetSiteOutlineForForm", (new Polygon2d(pointList)) }
+            };
         }
 
 
