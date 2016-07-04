@@ -89,6 +89,7 @@ namespace SpacePlanning
         public string ProgramName
         {
             get { return _progName; }
+            set { _progName = value; }
         }
 
         /// <summary>

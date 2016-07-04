@@ -205,7 +205,7 @@ namespace SpacePlanning
         }
 
 
-        
+
 
 
 
@@ -213,9 +213,8 @@ namespace SpacePlanning
         /// <summary>
         /// Assigns program elements inside the secondary department polygon2d.
         /// </summary>
-        /// <param name="deptPoly">Polygon2d's of secondary department which needs program arrangement inside.</param>
-        /// <param name="progData">Program Data object.</param>
-        /// <param name="recompute">Regardless of the recompute value, it is used to restart computing the node every time its value is changed.</param>
+        /// <param name="deptData">Dept Data object.</param>
+        /// <param name="recompute">This value is used to restart computing the node every time its value is changed.</param>
         /// <returns></returns>
         [MultiReturn(new[] { "PolyAfterSplit", "UpdatedProgramData" })]
         public static Dictionary<string, object> PlaceREGPrograms(DeptData deptData,int recompute = 0)
@@ -253,18 +252,62 @@ namespace SpacePlanning
                             for (int j = 0; j < polyAfterSplit.Count; j++) polygonAvailable.Push(polyAfterSplit[j]);
                             count += 1;
                             continue;
-                        }
-                        
+                        }                        
                     }
                     progItem.PolyAssignedToProg.Add(currentPoly);
                     areaAssigned += areaPoly;                
                     count += 1;
                 }// end of while
+
+              
                 polyList.Add(progItem.PolyAssignedToProg);
                 progItem.ProgAreaProvided = areaAssigned;
                 count = 0;
                 areaAssigned = 0;
-            }
+            }// end of for loop
+
+
+
+            // do the following if there is still vacant space left in the deptdata
+            List<ProgramData> fakeProgList = new List<ProgramData>();
+            while (polygonAvailable.Count > 0 && recompute < 10)
+            {
+                Trace.WriteLine("Filling fake program in , empty poly left =  " + polygonAvailable.Count);
+                ProgramData dummyProg = new ProgramData(progData[0]);
+                dummyProg.PolyAssignedToProg = new List<Polygon2d>();
+                double areaNeeded = progData[0].ProgAreaNeeded;
+                areaAssigned = 0;
+                while (areaAssigned < areaNeeded && polygonAvailable.Count > 0)// && count < maxTry
+                {
+                    Polygon2d currentPoly = polygonAvailable.Pop();
+                    double areaPoly = PolygonUtility.AreaPolygon(currentPoly);
+                    int compareArea = BasicUtility.CheckWithinRange(areaNeeded, areaPoly, eps);
+                    if (compareArea == 1) // current poly area is more
+                    {
+                        Dictionary<string, object> splitObj = SplitObject.SplitByRatio(currentPoly, 0.5);
+                        if (splitObj != null)
+                        {
+                            List<Polygon2d> polyAfterSplit = (List<Polygon2d>)splitObj["PolyAfterSplit"];
+                            for (int j = 0; j < polyAfterSplit.Count; j++) polygonAvailable.Push(polyAfterSplit[j]);
+                            count += 1;
+                            continue;
+                        }
+
+                    }// end of if loop
+                    dummyProg.PolyAssignedToProg.Add(currentPoly);
+                    dummyProg.ProgramName = "Dummy Fake Program";
+                    areaAssigned += areaPoly;
+                    count += 1;
+                }// end of while
+                fakeProgList.Add(dummyProg);
+                polyList.Add(dummyProg.PolyAssignedToProg);
+                dummyProg.ProgAreaProvided = areaAssigned;
+                
+            } // end of while
+
+
+
+            progData.AddRange(fakeProgList);
             List<ProgramData> newProgDataList = new List<ProgramData>();
             for (int i = 0; i < progData.Count; i++) newProgDataList.Add(new ProgramData(progData[i]));
             return new Dictionary<string, object>
