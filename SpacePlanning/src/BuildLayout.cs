@@ -244,7 +244,7 @@ namespace SpacePlanning
                     Polygon2d currentPoly = polygonAvailable.Pop();
                     double areaPoly = PolygonUtility.AreaPolygon(currentPoly);
                     int compareArea = BasicUtility.CheckWithinRange(areaNeeded, areaPoly, eps);
-                    if (compareArea == 1) // current poly area is more =  compareArea == 1
+                    if (extra && compareArea == 1) // current poly area is more =  compareArea == 1
                     {
                         Dictionary<string,object> splitObj = SplitObject.SplitByRatio(currentPoly, 0.5);
                         if (splitObj != null)
@@ -253,12 +253,29 @@ namespace SpacePlanning
                             for (int j = 0; j < polyAfterSplit.Count; j++) polygonAvailable.Push(polyAfterSplit[j]);
                             count += 1;
                             continue;
-                        }                        
+                        }
+                        else
+                        {
+                            //area within range
+                            if (ValidateObject.CheckPoly(currentPoly))
+                            {
+                                progItem.PolyAssignedToProg.Add(currentPoly);
+                                areaAssigned += areaPoly;
+                            }
+                            
+                            count += 1;
+                        }
+                    }else
+                    {
+                        //area within range
+                        if (ValidateObject.CheckPoly(currentPoly))
+                        {
+                            progItem.PolyAssignedToProg.Add(currentPoly);
+                            areaAssigned += areaPoly;
+                        }
+                        count += 1;
                     }
-                    //area within range
-                    progItem.PolyAssignedToProg.Add(currentPoly);
-                    areaAssigned += areaPoly;                
-                    count += 1;
+                 
                 }// end of while
 
               
@@ -311,31 +328,16 @@ namespace SpacePlanning
 
 
             if(extra) progData.AddRange(fakeProgList);
-            List<ProgramData> newProgDataList = new List<ProgramData>();
-            // int programID,string programName,string programDept,
-            //int programQuant,double programUnitArea, int programPrefValue, List< string > programAdjList,List<Cell> programCell, double dimX, double dimY, string progType
-            for (int i = 0; i < progData.Count; i++)
-            {
-                ProgramData progNew = new ProgramData(progData[i].ProgID, progData[i].ProgramName, progData[i].DeptName, progData[i].Quantity, progData[i].UnitArea,
-                progData[i].ProgPreferenceVal, progData[i].ProgAdjList, progData[i].ProgCell, progData[i].DimX, progData[i].DimY, progData[i].ProgramType);
-
-                progNew.NumberofCellsAdded = progData[i].NumberofCellsAdded;
-                progNew.ProgAreaProvided = progData[i].ProgAreaProvided;
-                progNew.IsAreaSatisfied = progData[i].IsAreaSatisfied;
-                progNew.PolyAssignedToProg = progData[i].PolyAssignedToProg;
-                newProgDataList.Add(progNew);
-            }
-
             */
-
-
             //for(int i = 0; i < progData.Count; i++) progData[i].PolyAssignedToProg = polyList[i];
 
-            List<ProgramData> newProgDataList = new List<ProgramData>();
-            for (int i = 0; i < progData.Count; i++)
-            {
-                newProgDataList.Add(new ProgramData(progData[i]));
-            }
+            List<ProgramData> newProgDataList = progData.Select(x => new ProgramData(x)).ToList(); // example of deep copy
+        
+            
+
+
+
+           
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (polyList) },
