@@ -51,10 +51,6 @@ namespace SpacePlanning
             _IsAreaSatsifed = false;
             _CellsAssigned = new List<Cell>();
             _polyProgs = null;
-
-
-
-
         }
         
         internal ProgramData(ProgramData other)
@@ -157,6 +153,24 @@ namespace SpacePlanning
         {
             get { return _progUnitArea; }
         }
+
+        /// <summary>
+        /// X axis dimension of the cell.
+        /// </summary>
+        public double DimX
+        {
+            get { return _gridX; }
+        }
+
+
+        /// <summary>
+        /// Y axis dimension of the cell.
+        /// </summary>
+        public double DimY
+        {
+            get { return _gridY; }
+        }
+
 
         /// <summary>
         /// Quantity of each program.
