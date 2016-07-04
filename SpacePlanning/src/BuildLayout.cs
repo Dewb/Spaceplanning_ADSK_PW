@@ -49,15 +49,16 @@ namespace SpacePlanning
         /// DeptData object, department arrangement on site
         /// </search>
         [MultiReturn(new[] { "UpdatedDeptData","LeftOverPolys", "CirculationPolys","OtherDeptMainPoly"})]
-        public static Dictionary<string, object> PlaceDepartments(List<DeptData> deptData, List<Polygon2d> buildingOutline,  double kpuDepth, 
+        public static Dictionary<string, object> PlaceDepartments(List<DeptData> deptDataInp, List<Polygon2d> buildingOutline,  double kpuDepth, 
             double acceptableWidth,double circulationFreq = 8, int iteration = 50, bool noExternalWall = false, bool unlimitedKPU = true)
-        {           
+        {
+            List<DeptData> deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy
+
             Dictionary<string, object> deptArrangement = new Dictionary<string, object>();
             double count = 0,eps = 5;            
             Random rand = new Random();
             bool deptPlaced = false;
-            bool keyPlanUnit = true;
-            while (deptPlaced == false && count < 1)//MAXCOUNT
+            while (deptPlaced == false && count < MAXCOUNT)//MAXCOUNT
             {
                 Trace.WriteLine("PLACE DEPT STARTS , Lets arrange dept again ++++++++++++++++ : " + count);
                 deptArrangement = DeptPlacer(deptData, buildingOutline, kpuDepth, acceptableWidth, circulationFreq, iteration, noExternalWall, unlimitedKPU);
@@ -220,17 +221,16 @@ namespace SpacePlanning
         public static Dictionary<string, object> PlaceREGPrograms(DeptData deptDataInp,int recompute = 0,bool extra = true)
         {
             if (deptDataInp == null) return null;
+
             DeptData deptData = new DeptData(deptDataInp);
             List<Polygon2d> deptPoly = deptData.PolyAssignedToDept;
             List<ProgramData> progData = deptData.ProgramsInDept;
             if (!ValidateObject.CheckPolyList(deptPoly)) return null;
             if (progData == null || progData.Count == 0) return null;
-            Random ran = new Random();
             List<List<Polygon2d>> polyList = new List<List<Polygon2d>>();
             List<Polygon2d> polyCoverList = new List<Polygon2d>();
-            Stack<ProgramData> programDataRetrieved = new Stack<ProgramData>();
-            Stack<Polygon2d> polygonAvailable = new Stack<Polygon2d>();
-            
+            //Stack<ProgramData> programDataRetrieved = new Stack<ProgramData>();
+            Stack<Polygon2d> polygonAvailable = new Stack<Polygon2d>();            
             for (int j = 0; j < deptPoly.Count; j++) { polygonAvailable.Push(deptPoly[j]); }
             double areaAssigned = 0, eps = 50;
             int count = 0, maxTry = 100;
@@ -244,7 +244,7 @@ namespace SpacePlanning
                     Polygon2d currentPoly = polygonAvailable.Pop();
                     double areaPoly = PolygonUtility.AreaPolygon(currentPoly);
                     int compareArea = BasicUtility.CheckWithinRange(areaNeeded, areaPoly, eps);
-                    if (compareArea == 1) // current poly area is more
+                    if (compareArea == 1) // current poly area is more =  compareArea == 1
                     {
                         Dictionary<string,object> splitObj = SplitObject.SplitByRatio(currentPoly, 0.5);
                         if (splitObj != null)
@@ -255,6 +255,7 @@ namespace SpacePlanning
                             continue;
                         }                        
                     }
+                    //area within range
                     progItem.PolyAssignedToProg.Add(currentPoly);
                     areaAssigned += areaPoly;                
                     count += 1;
@@ -327,6 +328,9 @@ namespace SpacePlanning
 
             */
 
+
+            //for(int i = 0; i < progData.Count; i++) progData[i].PolyAssignedToProg = polyList[i];
+
             List<ProgramData> newProgDataList = new List<ProgramData>();
             for (int i = 0; i < progData.Count; i++)
             {
@@ -372,9 +376,10 @@ namespace SpacePlanning
         /// <param name="recompute">Regardless of the recompute value, it is used to restart computing the node every time its value is changed.</param>
         /// <returns></returns>
         [MultiReturn(new[] { "UpdatedDeptData" })]
-        public static Dictionary<string, object> PlacePrograms(List<DeptData> deptData, double primaryProgramWidth = 30, int recompute = 0)
+        public static Dictionary<string, object> PlacePrograms(List<DeptData> deptDataInp, double primaryProgramWidth = 30, int recompute = 0)
         {
-            if (deptData == null) return null;
+            if (deptDataInp == null) return null;
+            List<DeptData> deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy
             List<List<Polygon2d>> polyPorgsAdded = new List<List<Polygon2d>>();
             List<ProgramData> progDataNew = new List<ProgramData>();
             for(int i = 0; i < deptData.Count; i++)

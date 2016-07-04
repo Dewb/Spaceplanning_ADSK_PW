@@ -336,10 +336,13 @@ namespace SpacePlanning
         //get program list quantity and make new list based on it
         internal static List<ProgramData> MakeProgramListBasedOnQuantity(List<ProgramData> progData)
         {
-            List<ProgramData> progQuantityBasedList = new List<ProgramData>();
+            //List<ProgramData> progQuantityBasedList = new List<ProgramData>();
+            List<ProgramData> progQuantityBasedList = progData.Select(x => new ProgramData(x)).ToList(); // example of deep copy
+
             for (int i = 0; i < progData.Count; i++)
                 for (int j = 0; j < progData[i].Quantity; j++) progQuantityBasedList.Add(progData[i]);
-            return progQuantityBasedList;
+            List<ProgramData> progReturn = progQuantityBasedList.Select(x => new ProgramData(x)).ToList();
+            return progReturn;
         }
         
         //returns the dept names
@@ -353,8 +356,10 @@ namespace SpacePlanning
         internal static List<DeptData> SortProgramsByPrefInDept(List<DeptData> deptDataInp)
         {
             if (deptDataInp == null) return null;
-            List<DeptData> deptData = new List<DeptData>();
-            for (int i = 0; i < deptDataInp.Count; i++) deptData.Add(new DeptData(deptDataInp[i]));
+           // List<DeptData> deptData = new List<DeptData>();
+            List<DeptData> deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy
+
+            //for (int i = 0; i < deptDataInp.Count; i++) deptData.Add(new DeptData(deptDataInp[i]));
             double eps = 01, inc = 0.01;
             for (int i = 0; i < deptData.Count; i++)
             {
@@ -374,8 +379,8 @@ namespace SpacePlanning
                 sortedProgramData.Reverse();
                 deptItem.ProgramsInDept = sortedProgramData;
             }
-            List<DeptData> newDept = new List<DeptData>();
-            for (int i = 0; i < deptData.Count; i++) newDept.Add(new DeptData(deptData[i]));
+            List<DeptData> newDept = deptData.Select(x => new DeptData(x)).ToList(); // example of deep copy
+            //for (int i = 0; i < deptData.Count; i++) newDept.Add(new DeptData(deptData[i]));
             return newDept;
         }
 
