@@ -84,12 +84,12 @@ namespace SpacePlanning
                 deptNameList.Add(values[2]);
                 progQuantList.Add(values[3]);
                 prefValProgList.Add(values[5]);
-                progAdjList.Add(values[6]);
+                progAdjList.Add(values[8]);
                 List<Cell> dummyCell = new List<Cell> { new Cell(Point2d.ByCoordinates(0, 0), 0, 0,0, true) };
-                List<string> adjList = new List<string>();
-                adjList.Add(values[6]);
+                //List<string> adjList = new List<string>();
+                //adjList.Add(values[8]);
                 ProgramData progData = new ProgramData(Convert.ToInt16(values[0]), values[1], values[2], Convert.ToInt16(values[3]),
-                    Convert.ToDouble(values[4]), Convert.ToInt16(values[6]), adjList, dummyCell, dim, dim, values[7]); // prev multipled circulationfactor with unit area of prog
+                    Convert.ToDouble(values[4]), Convert.ToInt16(values[6]), progAdjList, dummyCell, dim, dim, values[7]); // prev multipled circulationfactor with unit area of prog
                 programDataStack.Add(progData);
             }// end of for each statement
 
@@ -116,6 +116,33 @@ namespace SpacePlanning
 
             return SortProgramsByPrefInDept(deptDataStack);    
 
+        }
+
+        public static List<List<string>> MakeDeptTopology(List<string> adjList)
+        {
+            List<List<string>> stringNumber = new List<List<string>>();
+            foreach (string s in adjList)
+            {
+                s.Split('/');
+
+
+                string removeString = "..";
+                string cleanS = s;
+                List<string> strList = new List<string>();
+                while(cleanS.Length > removeString.Length)
+                {
+                  
+                    int index = s.IndexOf(removeString);
+                    cleanS = (index < 0)
+                        ? cleanS
+                        : cleanS.Remove(index, removeString.Length);
+
+                    strList.Add(cleanS);
+                }
+                stringNumber.Add(strList);
+           
+            }// end of for each statement
+            return stringNumber;
         }
 
 

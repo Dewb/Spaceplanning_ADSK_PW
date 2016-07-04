@@ -188,6 +188,8 @@ namespace SpacePlanning
             get { return _progUnitArea; }            
         }
 
+
+       
         /// <summary>
         /// Does the area assigned to the program satisfy the area requirements.
         /// </summary>
