@@ -135,7 +135,8 @@ namespace SpacePlanning
         /// make data stack, dept data object, program data object
         /// </search>
         [MultiReturn(new[] { "ProgIdList", "ProgramList","DeptNameList", "ProgQuantList","AreaEachProgList",
-            "ProgPrefValList","ProgAdjList", "DeptTopoList", "DeptTopoAdjacency" , "EachDeptAdjDeptList", "DeptTopListTotal", "DeptNamesUnique"})]
+            "ProgPrefValList","ProgAdjList", "DeptTopoList", "DeptTopoAdjacency" , "EachDeptAdjDeptList",
+            "DeptTopListTotal", "DeptNamesUnique", "MostFrequentDept", "MostFrequentDeptSorted"})]
         public static Dictionary<string,object> ReadProgramDoc(double circulationFactor = 1, int caseStudy = 0, string programDocumentPath = "")
         {
             double dim = 5;
@@ -237,9 +238,35 @@ namespace SpacePlanning
                 if (i == kpuIndex) NumberOfDeptNames[i].Clear();
             }
 
+            List<string> mostFreq = new List<string>();
+            for (int i = 0; i < NumberOfDeptNames.Count; i++)
+            {
+                var most = "";
+                //var most = NumberOfDeptNames[i].GroupBy(x => x).OrderByDescending(grp => grp.Count()).Select(grp => grp.Key).First();
+                //var grouped = NumberOfDeptNames[i].GroupBy(g => g).OrderByDescending(x => x.Count()).Select(g => g);
+                //var grouped = NumberOfDeptNames[i].GroupBy(g => g).Select(g => g).OrderByDescending(x => x.Count());
+                if(NumberOfDeptNames[i].Count == 0)
+                {
+                    most = "";
+                }
+                else
+                {
+                    most = (from item in NumberOfDeptNames[i]
+                            group item by item into g
+                            orderby g.Count() descending
+                            select g.Key).First();
+                }               
+                mostFreq.Add(most);               
+            }
 
-                //return new Polygon2d(pointList);
-                return new Dictionary<string, object>
+            var frequency = mostFreq.GroupBy(x => x).OrderByDescending(x => x.Count()).ToList();
+            List<string> depImpList = new List<string>();
+            for(int i = 0; i < frequency.Count(); i++) depImpList.AddRange(frequency[i]);
+
+            depImpList = depImpList.Distinct().ToList();
+            for (int i = 0; i < depImpList.Count(); i++) depImpList.Remove("");
+            //return new Polygon2d(pointList);
+            return new Dictionary<string, object>
             {
                  { "ProgIdList", (progIdList) },
                  { "ProgramList", (programList) },
@@ -253,7 +280,9 @@ namespace SpacePlanning
                  { "EachDeptAdjDeptList", (NumberOfDeptNames) },
                  { "DeptTopListTotal", (NumberOfDeptTop) },
                  { "DeptNamesUnique", (deptNames) },
-                 
+                 { "MostFrequentDept", (mostFreq) },
+                 { "MostFrequentDeptSorted", (depImpList) }
+
             };
         }
 
