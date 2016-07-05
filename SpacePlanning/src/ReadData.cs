@@ -192,19 +192,28 @@ namespace SpacePlanning
             }// end of for each statement
             List<List<string>> deptTopList = MakeDeptTopology(progAdjList);
             List<List<string>> deptNameAdjacencyList = new List<List<string>>();
+            string kpuDeptName = "";
             for (int i = 0; i < deptTopList.Count; i++)
             {
-                bool kpuFound = false;
-                string kpuDeptName = "";
-                List<string> deptNameAdjacency = new List<string>();
                 if (progTypeList[i].IndexOf(BuildLayout.KPU.ToLower()) != -1 ||
+                   progTypeList[i].IndexOf(BuildLayout.KPU.ToUpper()) != -1) { kpuDeptName = deptNameList[i]; break; }
+            }
+
+                for (int i = 0; i < deptTopList.Count; i++)
+            {
+                bool kpuFound = false;
+                //string kpuDeptNam1e = "";
+                List<string> deptNameAdjacency = new List<string>();
+               /* if (progTypeList[i].IndexOf(BuildLayout.KPU.ToLower()) != -1 ||
                     progTypeList[i].IndexOf(BuildLayout.KPU.ToUpper()) != -1) { Trace.WriteLine("KPU name is : " + progTypeList[i]); kpuFound = true; kpuDeptName = deptNameList[i]; }
+                   
                 else Trace.WriteLine("No Found ! KPU name is : " + progTypeList[i]);
+                */
                 for (int j = 0; j < deptTopList[i].Count; j++)
                 {
                     string depName = deptNameList[Convert.ToInt16(deptTopList[i][j])];
-                    if (kpuFound) depName = "";
-                    if (depName.IndexOf(kpuDeptName) != -1) depName = "NO";
+                    //if (kpuFound) depName = "";
+                    //if (depName.IndexOf(kpuDeptName) != -1) depName = "";
                     deptNameAdjacency.Add(depName);
                 }
                 deptNameAdjacencyList.Add(deptNameAdjacency);
@@ -226,8 +235,17 @@ namespace SpacePlanning
                 NumberOfDeptTop.Add(numDeptTop);
             }// end of for loop statement
 
-            //return new Polygon2d(pointList);
-            return new Dictionary<string, object>
+
+            for (int i = 0; i < NumberOfDeptNames.Count; i++)
+            {
+                //NumberOfDeptNames[i].RemoveAll(x => x == "");
+                NumberOfDeptNames[i].RemoveAll(x => x == deptNames[i]);
+                NumberOfDeptNames[i].RemoveAll(x => x == kpuDeptName);
+            }
+
+
+                //return new Polygon2d(pointList);
+                return new Dictionary<string, object>
             {
                  { "ProgIdList", (progIdList) },
                  { "ProgramList", (programList) },
