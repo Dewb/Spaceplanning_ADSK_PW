@@ -105,9 +105,10 @@ namespace SpacePlanning
                 DeptData dept = new DeptData(deptNames[i], programBasedOnQuanity, circulationFactor, dim, dim);
                 deptDataStack.Add(dept);
             }// end of for loop statement
-
+            Dictionary<string, object> programDocObj = ReadProgramDoc(circulationFactor, caseStudy, programDocumentPath);
+            List<string> preferredDept = (List<string>)programDocObj["MostFrequentDeptSorted"];
             //sort the depts by high area
-            deptDataStack = SortDeptData(deptDataStack);
+            deptDataStack = SortDeptData(deptDataStack, preferredDept);
 
             //added to compute area percentage for each dept
             double totalDeptArea = 0;
@@ -568,11 +569,60 @@ namespace SpacePlanning
         }
 
          //sorts a deptdata based on area 
-        internal static List<DeptData> SortDeptData(List<DeptData> deptData, bool deptType = true)
+        internal static List<DeptData> SortDeptData(List<DeptData> deptData, List<string> preferredDept)
         {
             SortedDictionary<double, DeptData> sortedD = new SortedDictionary<double, DeptData>();
+            List<double> areaList = new List<double>(), weightList = new List<double>();
+            List<string> deptFound = new List<string>();
+            //Queue<string> preferredDeptQueue = new Queue<string>();
+            for (int i = 0; i < preferredDept.Count; i++) weightList.Add(1000000 - (i + 1) * 1000);
+           
+           
+            
+           
+                
             for (int i = 0; i < deptData.Count; i++)
-            {               
+            {
+                bool match = false;
+                for (int j = 0; j < preferredDept.Count; j++)
+                {
+                    if (preferredDept[j] == deptData[i].DepartmentName) { areaList.Add(weightList[j]); match = true; deptFound.Add(preferredDept[j]); break; }
+                }
+                if (!match) { areaList.Add(0); deptFound.Add(""); }
+            }// end of forloop
+               
+
+            for (int i = 0; i < deptData.Count; i++)
+            {   
+                double surpluss = 0;
+                double eps = i * BasicUtility.RandomBetweenNumbers(new Random(i),50,10);
+               
+                    if (deptData[i].DepartmentType.IndexOf(BuildLayout.KPU.ToLower()) != -1 || deptData[i].DepartmentType.IndexOf(BuildLayout.KPU.ToUpper()) != -1)
+                        surpluss = 100000000 + eps + areaList[i];
+                    else
+                        surpluss = areaList[i];
+               
+
+                double area = 0.25 * deptData[i].DeptAreaNeeded + surpluss;
+                sortedD.Add(area, deptData[i]);
+            }
+
+            List<DeptData> sortedDepartmentData = new List<DeptData>();
+            foreach (KeyValuePair<double, DeptData> p in sortedD) sortedDepartmentData.Add(p.Value);
+            sortedDepartmentData.Reverse();
+            return sortedDepartmentData;
+        }
+
+
+        //sorts a deptdata based on area 
+        internal static List<DeptData> ASortDeptData(List<DeptData> deptData, List<string> preferredDept, bool deptType = true)
+        {
+            SortedDictionary<double, DeptData> sortedD = new SortedDictionary<double, DeptData>();
+            Queue<string> preferredDeptQueue = new Queue<string>();
+            for (int i = 0; i < preferredDept.Count; i++) preferredDeptQueue.Enqueue(preferredDept[i]);
+
+            for (int i = 0; i < deptData.Count; i++)
+            {
                 double surpluss = 0;
                 double eps = i * 10;
                 if (deptType)
