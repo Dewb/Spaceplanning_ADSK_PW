@@ -147,7 +147,7 @@ namespace SpacePlanning
             List<string> areaEachProgList = new List<string>();
             List<string> prefValProgList = new List<string>();
             List<string> progAdjList = new List<string>();
-
+            List<string> progTypeList = new List<string>();
             List<List<string>> dataStack = new List<List<string>>();
             List<ProgramData> programDataStack = new List<ProgramData>();
             Stream res;
@@ -181,6 +181,7 @@ namespace SpacePlanning
                 deptNameList.Add(values[2]);
                 progQuantList.Add(values[3]);
                 prefValProgList.Add(values[5]);
+                progTypeList.Add(values[7]);
                 progAdjList.Add(values[8]);
                 List<Cell> dummyCell = new List<Cell> { new Cell(Point2d.ByCoordinates(0, 0), 0, 0, 0, true) };
                 //List<string> adjList = new List<string>();
@@ -193,10 +194,17 @@ namespace SpacePlanning
             List<List<string>> deptNameAdjacencyList = new List<List<string>>();
             for (int i = 0; i < deptTopList.Count; i++)
             {
-              List<string> deptNameAdjacency = new List<string>();
-              for(int j = 0; j < deptTopList[i].Count; j++)
+                bool kpuFound = false;
+                string kpuDeptName = "";
+                List<string> deptNameAdjacency = new List<string>();
+                if (progTypeList[i].IndexOf(BuildLayout.KPU.ToLower()) != -1 ||
+                    progTypeList[i].IndexOf(BuildLayout.KPU.ToUpper()) != -1) { Trace.WriteLine("KPU name is : " + progTypeList[i]); kpuFound = true; kpuDeptName = deptNameList[i]; }
+                else Trace.WriteLine("No Found ! KPU name is : " + progTypeList[i]);
+                for (int j = 0; j < deptTopList[i].Count; j++)
                 {
                     string depName = deptNameList[Convert.ToInt16(deptTopList[i][j])];
+                    if (kpuFound) depName = "";
+                    if (depName.IndexOf(kpuDeptName) != -1) depName = "NO";
                     deptNameAdjacency.Add(depName);
                 }
                 deptNameAdjacencyList.Add(deptNameAdjacency);
