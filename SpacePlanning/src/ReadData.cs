@@ -118,28 +118,143 @@ namespace SpacePlanning
 
         }
 
+
+
+
+
+        //read embedded .csv file and make data stack
+        /// <summary>
+        /// Builds the data stack from the embedded program document.
+        /// Returns the Dept Data object
+        /// </summary>
+        /// <param name="dimX">x axis dimension of the grid.</param>
+        /// <param name="dimY">y axis dimension of the grid.</param>
+        /// <param name="circulationFactor">Multiplier to account for add on circulation area.</param>
+        /// <returns name="DeptData">List of department data object from the provided program document.</returns>
+        /// <search>
+        /// make data stack, dept data object, program data object
+        /// </search>
+        [MultiReturn(new[] { "ProgIdList", "ProgramList","DeptNameList", "ProgQuantList","AreaEachProgList",
+            "ProgPrefValList","ProgAdjList", "DeptTopoList", "DeptTopoAdjacency" , "EachDeptAdjDeptList", "DeptTopListTotal", "DeptNamesUnique"})]
+        public static Dictionary<string,object> ReadProgramDoc(double circulationFactor = 1, int caseStudy = 0, string programDocumentPath = "")
+        {
+            double dim = 5;
+            StreamReader reader;
+            List<string> progIdList = new List<string>();
+            List<string> programList = new List<string>();
+            List<string> deptNameList = new List<string>();
+            List<string> progQuantList = new List<string>();
+            List<string> areaEachProgList = new List<string>();
+            List<string> prefValProgList = new List<string>();
+            List<string> progAdjList = new List<string>();
+
+            List<List<string>> dataStack = new List<List<string>>();
+            List<ProgramData> programDataStack = new List<ProgramData>();
+            Stream res;
+            if (programDocumentPath == "")
+            {
+                //string[] csvText = Properties.Resources.PROGRAMCSV.Split('\n'); 
+                if (caseStudy == 1) res = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.MayoProgram_1.csv");
+                else if (caseStudy == 2) res = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.OtherProgram.csv");
+                else if (caseStudy == 3) res = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.ProgramDocument_Reg.csv");
+                else if (caseStudy == 4) res = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.OtherProgram.csv");
+                else if (caseStudy == 5) res = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.MULTIDEPT.csv");
+                else res = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("SpacePlanning.src.Asset.ProgramDocument.csv");
+
+                reader = new StreamReader(res);
+            }
+            else reader = new StreamReader(File.OpenRead(@programDocumentPath));
+            int readCount = 0;
+
+
+            //StreamReader reader = new StreamReader(res);
+            string docInfo = reader.ReadToEnd();
+            string[] csvText = docInfo.Split('\n');
+            //Trace.WriteLine(csvText);
+            foreach (string s in csvText)
+            {
+                if (s.Length == 0) continue;
+                var values = s.Split(',');
+                if (readCount == 0) { readCount += 1; continue; }
+                progIdList.Add(values[0]);
+                programList.Add(values[1]);
+                deptNameList.Add(values[2]);
+                progQuantList.Add(values[3]);
+                prefValProgList.Add(values[5]);
+                progAdjList.Add(values[8]);
+                List<Cell> dummyCell = new List<Cell> { new Cell(Point2d.ByCoordinates(0, 0), 0, 0, 0, true) };
+                //List<string> adjList = new List<string>();
+                //adjList.Add(values[8]);
+                ProgramData progData = new ProgramData(Convert.ToInt16(values[0]), values[1], values[2], Convert.ToInt16(values[3]),
+                    Convert.ToDouble(values[4]), Convert.ToInt16(values[6]), progAdjList, dummyCell, dim, dim, values[7]); // prev multipled circulationfactor with unit area of prog
+                programDataStack.Add(progData);
+            }// end of for each statement
+            List<List<string>> deptTopList = MakeDeptTopology(progAdjList);
+            List<List<string>> deptNameAdjacencyList = new List<List<string>>();
+            for (int i = 0; i < deptTopList.Count; i++)
+            {
+              List<string> deptNameAdjacency = new List<string>();
+              for(int j = 0; j < deptTopList[i].Count; j++)
+                {
+                    string depName = deptNameList[Convert.ToInt16(deptTopList[i][j])];
+                    deptNameAdjacency.Add(depName);
+                }
+                deptNameAdjacencyList.Add(deptNameAdjacency);
+            }// end of for loop
+
+
+            List<string> deptNames = GetDeptNames(deptNameList);
+            List<DeptData> deptDataStack = new List<DeptData>();
+
+            List<List<string>> NumberOfDeptNames = new List<List<string>>();
+            List<List<string>> NumberOfDeptTop = new List<List<string>>();
+            for (int i = 0; i < deptNames.Count; i++)
+            {
+                List<string> numDeptnames = new List<string>();
+                List<string> numDeptTop = new List<string>();
+                for (int j = 0; j < deptNameList.Count; j++)
+                    if (deptNames[i] == deptNameList[j]) { numDeptnames.AddRange(deptNameAdjacencyList[j]); numDeptTop.AddRange(deptTopList[j]); }
+                NumberOfDeptNames.Add(numDeptnames);
+                NumberOfDeptTop.Add(numDeptTop);
+            }// end of for loop statement
+
+            //return new Polygon2d(pointList);
+            return new Dictionary<string, object>
+            {
+                 { "ProgIdList", (progIdList) },
+                 { "ProgramList", (programList) },
+                 { "DeptNameList", (deptNameList) },
+                 { "ProgQuantList", (progQuantList) },
+                 { "AreaEachProgList", (areaEachProgList) },
+                 { "ProgPrefValList", (prefValProgList) },
+                 { "ProgAdjList", (progAdjList) },
+                 { "DeptTopoList", (deptTopList) },
+                 { "DeptTopoAdjacency", (deptNameAdjacencyList) },
+                 { "EachDeptAdjDeptList", (NumberOfDeptNames) },
+                 { "DeptTopListTotal", (NumberOfDeptTop) },
+                 { "DeptNamesUnique", (deptNames) },
+                 
+            };
+        }
+
+
+
+
+
+
+
+        public static string FindDeptForProgId(List<string> deptName, int id = 5)
+        {
+            return deptName[id];
+        }
+
+
         public static List<List<string>> MakeDeptTopology(List<string> adjList)
         {
             List<List<string>> stringNumber = new List<List<string>>();
             foreach (string s in adjList)
-            {
-                s.Split('/');
-
-
-                string removeString = "..";
-                string cleanS = s;
-                List<string> strList = new List<string>();
-                while(cleanS.Length > removeString.Length)
-                {
-                  
-                    int index = s.IndexOf(removeString);
-                    cleanS = (index < 0)
-                        ? cleanS
-                        : cleanS.Remove(index, removeString.Length);
-
-                    strList.Add(cleanS);
-                }
-                stringNumber.Add(strList);
+            {              
+                stringNumber.Add(s.Split('.').ToList());             
            
             }// end of for each statement
             return stringNumber;
