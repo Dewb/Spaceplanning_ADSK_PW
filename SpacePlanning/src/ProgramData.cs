@@ -29,6 +29,7 @@ namespace SpacePlanning
         private double _areaGiven;
         private bool _IsAreaSatsifed;
         private List<Polygon2d> _polyProgs;
+        private int _adjacencyWeight;
 
 
         internal ProgramData(int programID,string programName,string programDept,
@@ -48,6 +49,7 @@ namespace SpacePlanning
             _gridY = dimY;
             _progType = progType;
 
+            _adjacencyWeight = 0;
             _numCellAdded = 0;
             _areaGiven = 0;
             _IsAreaSatsifed = false;
@@ -74,6 +76,7 @@ namespace SpacePlanning
             _areaGiven = other.ProgAreaProvided;
             _IsAreaSatsifed = other.IsAreaSatisfied;
             _CellsAssigned = new List<Cell>();
+            _adjacencyWeight = other.AdjacencyWeight;
 
             if (other.PolyAssignedToProg != null) _polyProgs = other.PolyAssignedToProg;
             else _polyProgs = null;            
@@ -114,6 +117,15 @@ namespace SpacePlanning
         public int NumCellsInProg
         {
             get { return _numCells; }
+        }
+
+        /// <summary>
+        /// Computed Adjacency weight value of the program.
+        /// </summary>
+        public int AdjacencyWeight
+        {
+            get { return _adjacencyWeight; }
+            set { _adjacencyWeight = value; }
         }
 
         /// <summary>
