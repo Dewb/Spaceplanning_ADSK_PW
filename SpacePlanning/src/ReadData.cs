@@ -184,8 +184,7 @@ namespace SpacePlanning
                 progTypeList.Add(values[7]);
                 progAdjList.Add(values[8]);
                 List<Cell> dummyCell = new List<Cell> { new Cell(Point2d.ByCoordinates(0, 0), 0, 0, 0, true) };
-                //List<string> adjList = new List<string>();
-                //adjList.Add(values[8]);
+              
                 ProgramData progData = new ProgramData(Convert.ToInt16(values[0]), values[1], values[2], Convert.ToInt16(values[3]),
                     Convert.ToDouble(values[4]), Convert.ToInt16(values[6]), progAdjList, dummyCell, dim, dim, values[7]); // prev multipled circulationfactor with unit area of prog
                 programDataStack.Add(progData);
@@ -193,27 +192,20 @@ namespace SpacePlanning
             List<List<string>> deptTopList = MakeDeptTopology(progAdjList);
             List<List<string>> deptNameAdjacencyList = new List<List<string>>();
             string kpuDeptName = "";
+            int kpuIndex = 0;
             for (int i = 0; i < deptTopList.Count; i++)
             {
                 if (progTypeList[i].IndexOf(BuildLayout.KPU.ToLower()) != -1 ||
-                   progTypeList[i].IndexOf(BuildLayout.KPU.ToUpper()) != -1) { kpuDeptName = deptNameList[i]; break; }
+                   progTypeList[i].IndexOf(BuildLayout.KPU.ToUpper()) != -1) { kpuDeptName = deptNameList[i];  break; }
             }
 
                 for (int i = 0; i < deptTopList.Count; i++)
             {
                 bool kpuFound = false;
-                //string kpuDeptNam1e = "";
-                List<string> deptNameAdjacency = new List<string>();
-               /* if (progTypeList[i].IndexOf(BuildLayout.KPU.ToLower()) != -1 ||
-                    progTypeList[i].IndexOf(BuildLayout.KPU.ToUpper()) != -1) { Trace.WriteLine("KPU name is : " + progTypeList[i]); kpuFound = true; kpuDeptName = deptNameList[i]; }
-                   
-                else Trace.WriteLine("No Found ! KPU name is : " + progTypeList[i]);
-                */
+                List<string> deptNameAdjacency = new List<string>();             
                 for (int j = 0; j < deptTopList[i].Count; j++)
                 {
                     string depName = deptNameList[Convert.ToInt16(deptTopList[i][j])];
-                    //if (kpuFound) depName = "";
-                    //if (depName.IndexOf(kpuDeptName) != -1) depName = "";
                     deptNameAdjacency.Add(depName);
                 }
                 deptNameAdjacencyList.Add(deptNameAdjacency);
@@ -221,7 +213,8 @@ namespace SpacePlanning
 
 
             List<string> deptNames = GetDeptNames(deptNameList);
-            List<DeptData> deptDataStack = new List<DeptData>();
+            for (int i = 0; i < deptNames.Count; i++) if (deptNames[i] == kpuDeptName) { kpuIndex = i; break; }
+  
 
             List<List<string>> NumberOfDeptNames = new List<List<string>>();
             List<List<string>> NumberOfDeptTop = new List<List<string>>();
@@ -241,6 +234,7 @@ namespace SpacePlanning
                 //NumberOfDeptNames[i].RemoveAll(x => x == "");
                 NumberOfDeptNames[i].RemoveAll(x => x == deptNames[i]);
                 NumberOfDeptNames[i].RemoveAll(x => x == kpuDeptName);
+                if (i == kpuIndex) NumberOfDeptNames[i].Clear();
             }
 
 
