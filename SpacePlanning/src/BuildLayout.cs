@@ -465,10 +465,18 @@ namespace SpacePlanning
                 areaAssigned += PolygonUtility.AreaPolygon(currentPoly);
                 polysToDept.Add(currentPoly);
             }
+
+
+            List<Polygon2d> leftOverList = polyAvailable.ToList();
+            Point2d center = PolygonUtility.CentroidOfPolyList(leftOverList);
+            List<int> sortedPolyIndices = PolygonUtility.SortPolygonsFromAPoint(leftOverList, center);
+            List<Polygon2d> sortedPolySubDivs = new List<Polygon2d>();
+            for (int k = 0; k < sortedPolyIndices.Count; k++) { sortedPolySubDivs.Add(leftOverList[sortedPolyIndices[k]]); }
+            leftOverList = sortedPolySubDivs; 
             return new Dictionary<string, object>
             {
                 { "DeptPoly", (polysToDept) },
-                { "LeftOverPoly", (polyAvailable.ToList()) },
+                { "LeftOverPoly", (leftOverList) },
                 { "AllPolys", (polyList)},
                 { "AreaAdded", (areaAssigned) },
                 { "AllNodes", (null)}
@@ -704,6 +712,7 @@ namespace SpacePlanning
                     if (!prepareReg) // only need to do once, places a grid of rectangles before other depts get alloted
                     {
                         List<List<Polygon2d>> polySubDivs = new List<List<Polygon2d>>();
+                        Point2d center = PolygonUtility.CentroidOfPolyList(leftOverPoly);
                         polySubDivs = SplitObject.SplitRecursivelyToSubdividePoly(leftOverPoly, acceptableWidth, circulationFreq, ratio);
                         bool checkPoly1 = ValidateObject.CheckPolygon2dListOrtho(polySubDivs[0], 0.5);
                         bool checkPoly2 = ValidateObject.CheckPolygon2dListOrtho(polySubDivs[1], 0.5);
@@ -715,7 +724,12 @@ namespace SpacePlanning
                             polySubDivs = SplitObject.SplitRecursivelyToSubdividePoly(leftOverPoly, acceptableWidth, circulationFreq, ratio);
                             count += 1;
                         }
-                        leftOverPoly = polySubDivs[0];
+                        //SORT THE POLYSUBDIVS
+                        List<int> sortedPolyIndices = PolygonUtility.SortPolygonsFromAPoint(polySubDivs[0], center);
+                        List<Polygon2d> sortedPolySubDivs = new List<Polygon2d>();
+                        for(int k = 0; k < sortedPolyIndices.Count; k++) { sortedPolySubDivs.Add(polySubDivs[0][sortedPolyIndices[k]]); }
+                        leftOverPoly = sortedPolySubDivs; // polySubDivs[0]
+                        //leftOverPoly = polySubDivs[0];
                         polyCirculation = polySubDivs[1];
                         for (int j = 0; j < leftOverPoly.Count; j++) areaAvailable += PolygonUtility.AreaPolygon(leftOverPoly[j]);
                         if (leftOverPoly == null) break;

@@ -73,7 +73,7 @@ namespace SpacePlanning
         }
         
         // sorts a list of polygons from a point and returns the indices 
-        internal static List<int> SortPolygonsFromAPoint(List<Polygon2d> polygonsList, Point2d centerPt)
+        public static List<int> SortPolygonsFromAPoint(List<Polygon2d> polygonsList, Point2d centerPt)
         {
             List<double> distanceList = new List<double>();
             for (int i = 0; i < polygonsList.Count; i++)
@@ -502,7 +502,18 @@ namespace SpacePlanning
             }
             return new Polygon2d(ptList);
         }
-      
+
+        //calc centroid of a closed polygon2d
+        public static Point2d CentroidOfPolyList(List<Polygon2d> polyList)
+        {
+            if (!ValidateObject.CheckPolyList(polyList)) return null;
+            List<Point2d> ptList = new List<Point2d>();
+            for (int i = 0; i < polyList.Count(); i++) ptList.AddRange(polyList[i].Points);
+            Polygon2d bPoly = new Polygon2d(ReadData.FromPointsGetBoundingPoly(ptList));
+            return CentroidOfPoly(bPoly);
+        }
+
+
         //calc centroid of a closed polygon2d
         public static Point2d CentroidOfPoly(Polygon2d poly)
         {

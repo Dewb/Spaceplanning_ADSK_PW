@@ -232,7 +232,6 @@ namespace SpacePlanning
 
             for (int i = 0; i < NumberOfDeptNames.Count; i++)
             {
-                //NumberOfDeptNames[i].RemoveAll(x => x == "");
                 NumberOfDeptNames[i].RemoveAll(x => x == deptNames[i]);
                 NumberOfDeptNames[i].RemoveAll(x => x == kpuDeptName);
                 if (i == kpuIndex) NumberOfDeptNames[i].Clear();
@@ -242,13 +241,7 @@ namespace SpacePlanning
             for (int i = 0; i < NumberOfDeptNames.Count; i++)
             {
                 var most = "";
-                //var most = NumberOfDeptNames[i].GroupBy(x => x).OrderByDescending(grp => grp.Count()).Select(grp => grp.Key).First();
-                //var grouped = NumberOfDeptNames[i].GroupBy(g => g).OrderByDescending(x => x.Count()).Select(g => g);
-                //var grouped = NumberOfDeptNames[i].GroupBy(g => g).Select(g => g).OrderByDescending(x => x.Count());
-                if(NumberOfDeptNames[i].Count == 0)
-                {
-                    most = "";
-                }
+                if(NumberOfDeptNames[i].Count == 0) most = "";
                 else
                 {
                     most = (from item in NumberOfDeptNames[i]
@@ -265,7 +258,6 @@ namespace SpacePlanning
 
             depImpList = depImpList.Distinct().ToList();
             for (int i = 0; i < depImpList.Count(); i++) depImpList.Remove("");
-            //return new Polygon2d(pointList);
             return new Dictionary<string, object>
             {
                  { "ProgIdList", (progIdList) },

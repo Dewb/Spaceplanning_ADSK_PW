@@ -2,6 +2,7 @@
 using stuffer;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace SpacePlanning
 {
@@ -34,8 +35,9 @@ namespace SpacePlanning
             int programQuant,double programUnitArea, int programPrefValue, List<string> programAdjList,List<Cell> programCell, double dimX, double dimY, string progType)
         {
             _progrID = programID;
-            _progName = programName;
+            
             _progDept = programDept;
+            _progName = programName + " || " + programDept.Substring(0, 2);//
             _progQuanity = programQuant;
             _progUnitArea = programUnitArea;
             _progPrefValue = programPrefValue;

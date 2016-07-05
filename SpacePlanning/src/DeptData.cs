@@ -2,7 +2,7 @@
 using stuffer;
 using System;
 using System.Collections.Generic;
-
+using System.Linq;
 
 namespace SpacePlanning
 {
@@ -28,6 +28,7 @@ namespace SpacePlanning
         private double _deptAreaProportion;
         private double _deptAreaProportionAchieved;
         private double _cirFactor;
+        private string _deptAbrv;
 
 
         #region - internal constructor
@@ -48,6 +49,7 @@ namespace SpacePlanning
             _polyDepts = null;
             _deptAreaProportion = 0;
             _deptAreaProportionAchieved = 0;
+            _deptAbrv = _deptName.Substring(0, 2).ToUpper() + " || " + _deptType;//_deptName.Split(' ').Select(s => s[0]).ToString();
 
         }
 
@@ -69,6 +71,7 @@ namespace SpacePlanning
             _deptAreaProportionAchieved = other.DeptAreaProportionAchieved;
 
             _areaGivenDept = other.DeptAreaProvided;
+            _deptAbrv = other.DepartmentAbbrev;
 
             if (other.PolyAssignedToDept != null && other.PolyAssignedToDept.Count > 0) _polyDepts = other.PolyAssignedToDept;
             else _polyDepts = null;
@@ -112,6 +115,13 @@ namespace SpacePlanning
             get { return _deptType; }
         }
 
+        /// <summary>
+        /// Type of Department (either KPU or Regular ).
+        /// </summary>
+        public string DepartmentAbbrev
+        {
+            get { return _deptAbrv; }
+        }
         /// <summary>
         /// Polygon2d assigned to each department.
         /// </summary>     
