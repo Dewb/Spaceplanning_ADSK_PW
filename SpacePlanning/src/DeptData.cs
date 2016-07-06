@@ -29,6 +29,7 @@ namespace SpacePlanning
         private double _deptAreaProportionAchieved;
         private double _cirFactor;
         private string _deptAbrv;
+        private double _deptAdjacencyWeight;
 
 
         #region - internal constructor
@@ -50,6 +51,7 @@ namespace SpacePlanning
             _deptAreaProportion = 0;
             _deptAreaProportionAchieved = 0;
             _deptAbrv = _deptName.Substring(0, 2).ToUpper() + " || " + _deptType;//_deptName.Split(' ').Select(s => s[0]).ToString();
+            _deptAdjacencyWeight = 0;
 
         }
 
@@ -72,6 +74,7 @@ namespace SpacePlanning
 
             _areaGivenDept = other.DeptAreaProvided;
             _deptAbrv = other.DepartmentAbbrev;
+            _deptAdjacencyWeight = other.DeptAdjacencyWeight;
 
             if (other.PolyAssignedToDept != null && other.PolyAssignedToDept.Count > 0) _polyDepts = other.PolyAssignedToDept;
             else _polyDepts = null;
@@ -88,6 +91,15 @@ namespace SpacePlanning
         {
             get { return _deptAreaProportion; }
             set { _deptAreaProportion = value; }
+        }
+
+        /// <summary>
+        /// Department Adjacency Weight.
+        /// </summary>
+        public double DeptAdjacencyWeight
+        {
+            get { return _deptAdjacencyWeight; }
+            set { _deptAdjacencyWeight = value; }
         }
 
         /// <summary>

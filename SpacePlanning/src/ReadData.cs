@@ -655,7 +655,7 @@ namespace SpacePlanning
                 {
                     double key = progItems[j].ProgPreferenceVal + eps + weight * progItems[j].AdjacencyWeight;
                     //double key = progItems[j].ProgPreferenceVal + eps;
-                    progItems[j].CombinedProgramWeight = key;
+                    progItems[j].ProgramCombinedAdjWeight = key;
                     sortedPrograms.Add(key, progItems[j]);
                     eps += inc;
                 }
@@ -669,8 +669,10 @@ namespace SpacePlanning
         }
 
          //sorts a deptdata based on area 
-        internal static List<DeptData> SortDeptData(List<DeptData> deptData, List<string> preferredDept)
+        internal static List<DeptData> SortDeptData(List<DeptData> deptDataInp, List<string> preferredDept)
         {
+
+            List<DeptData> deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy
             SortedDictionary<double, DeptData> sortedD = new SortedDictionary<double, DeptData>();
             List<double> areaList = new List<double>(), weightList = new List<double>();
             List<string> deptFound = new List<string>();
@@ -684,9 +686,16 @@ namespace SpacePlanning
                 bool match = false;
                 for (int j = 0; j < preferredDept.Count; j++)
                 {
-                    if (preferredDept[j] == deptData[i].DepartmentName) { areaList.Add(weightList[j]); match = true; deptFound.Add(preferredDept[j]); break; }
+                    if (preferredDept[j] == deptData[i].DepartmentName)
+                    {
+                        areaList.Add(weightList[j]);
+                        match = true;
+                        deptFound.Add(preferredDept[j]);
+                        deptData[i].DeptAdjacencyWeight = weightList[j];
+                        break;
+                    }
                 }
-                if (!match) { areaList.Add(0); deptFound.Add(""); }
+                if (!match) { areaList.Add(0); deptFound.Add(""); deptData[i].DeptAdjacencyWeight = areaList[i]; }
             }// end of forloop
                
             for (int i = 0; i < deptData.Count; i++)
@@ -701,6 +710,7 @@ namespace SpacePlanning
                
 
                 double area = 0.25 * deptData[i].DeptAreaNeeded + surpluss;
+                deptData[i].DeptAdjacencyWeight = area;
                 sortedD.Add(area, deptData[i]);
             }
 

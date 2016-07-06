@@ -79,7 +79,7 @@ namespace SpacePlanning
             _IsAreaSatsifed = other.IsAreaSatisfied;
             _CellsAssigned = new List<Cell>();
             _adjacencyWeight = other.AdjacencyWeight;
-            _combinedProgramWeight = other.CombinedProgramWeight;
+            _combinedProgramWeight = other.ProgramCombinedAdjWeight;
 
             if (other.PolyAssignedToProg != null) _polyProgs = other.PolyAssignedToProg;
             else _polyProgs = null;            
@@ -124,7 +124,7 @@ namespace SpacePlanning
         /// <summary>
         /// Computed combined program weight.
         /// </summary>
-        public double CombinedProgramWeight
+        public double ProgramCombinedAdjWeight
         {
             get { return _combinedProgramWeight; }
             set { _combinedProgramWeight = value; }
