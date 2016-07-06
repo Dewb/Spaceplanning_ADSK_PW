@@ -229,9 +229,20 @@ namespace SpacePlanning
             if (progData == null || progData.Count == 0) return null;
             List<List<Polygon2d>> polyList = new List<List<Polygon2d>>();
             List<Polygon2d> polyCoverList = new List<Polygon2d>();
+
+
+            //SORT THE POLYSUBDIVS
+            Point2d center = PolygonUtility.CentroidOfPolyList(deptPoly);
+            List<int> sortedPolyIndices = PolygonUtility.SortPolygonsFromAPoint(deptPoly, center);
+            List<Polygon2d> sortedPolySubDivs = new List<Polygon2d>();
+            for (int k = 0; k < sortedPolyIndices.Count; k++) { sortedPolySubDivs.Add(deptPoly[sortedPolyIndices[k]]); }
+            deptPoly = sortedPolySubDivs; 
+
+
             //Stack<ProgramData> programDataRetrieved = new Stack<ProgramData>();
-            Stack<Polygon2d> polygonAvailable = new Stack<Polygon2d>();            
-            for (int j = 0; j < deptPoly.Count; j++) { polygonAvailable.Push(deptPoly[j]); }
+            //Stack<Polygon2d> polygonAvailable = new Stack<Polygon2d>();
+            Queue<Polygon2d> polygonAvailable = new Queue<Polygon2d>();
+            for (int j = 0; j < deptPoly.Count; j++) { polygonAvailable.Enqueue(deptPoly[j]); }
             double areaAssigned = 0, eps = 50;
             int count = 0, maxTry = 100;
             for(int i = 0; i < progData.Count; i++)
@@ -241,7 +252,7 @@ namespace SpacePlanning
                 double areaNeeded = progItem.ProgAreaNeeded;
                 while (areaAssigned < areaNeeded && polygonAvailable.Count > 0)// && count < maxTry
                 {
-                    Polygon2d currentPoly = polygonAvailable.Pop();
+                    Polygon2d currentPoly = polygonAvailable.Dequeue();
                     double areaPoly = PolygonUtility.AreaPolygon(currentPoly);
                     int compareArea = BasicUtility.CheckWithinRange(areaNeeded, areaPoly, eps);
                     if (extra && compareArea == 1) // current poly area is more =  compareArea == 1
@@ -250,7 +261,7 @@ namespace SpacePlanning
                         if (splitObj != null)
                         {
                             List<Polygon2d> polyAfterSplit = (List<Polygon2d>)splitObj["PolyAfterSplit"];
-                            for (int j = 0; j < polyAfterSplit.Count; j++) polygonAvailable.Push(polyAfterSplit[j]);
+                            for (int j = 0; j < polyAfterSplit.Count; j++) polygonAvailable.Enqueue(polyAfterSplit[j]);
                             count += 1;
                             continue;
                         }
@@ -261,8 +272,7 @@ namespace SpacePlanning
                             {
                                 progItem.PolyAssignedToProg.Add(currentPoly);
                                 areaAssigned += areaPoly;
-                            }
-                            
+                            }                            
                             count += 1;
                         }
                     }else
@@ -725,6 +735,7 @@ namespace SpacePlanning
                             count += 1;
                         }
                         //SORT THE POLYSUBDIVS
+                        //Point2d center = PolygonUtility.CentroidOfPolyList(leftOverPoly);
                         List<int> sortedPolyIndices = PolygonUtility.SortPolygonsFromAPoint(polySubDivs[0], center);
                         List<Polygon2d> sortedPolySubDivs = new List<Polygon2d>();
                         for(int k = 0; k < sortedPolyIndices.Count; k++) { sortedPolySubDivs.Add(polySubDivs[0][sortedPolyIndices[k]]); }

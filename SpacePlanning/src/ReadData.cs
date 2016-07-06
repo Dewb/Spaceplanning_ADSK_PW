@@ -623,7 +623,7 @@ namespace SpacePlanning
             List<ProgramData> progQuantityBasedList = progData.Select(x => new ProgramData(x)).ToList(); // example of deep copy
 
             for (int i = 0; i < progData.Count; i++)
-                for (int j = 0; j < progData[i].Quantity; j++) progQuantityBasedList.Add(progData[i]);
+                for (int j = 0; j < progData[i].Quantity-1; j++) progQuantityBasedList.Add(progData[i]);
             List<ProgramData> progReturn = progQuantityBasedList.Select(x => new ProgramData(x)).ToList();
             return progReturn;
         }
@@ -638,6 +638,7 @@ namespace SpacePlanning
         //sorts a program data inside dept data based on PREFERENCEPOINT 
         internal static List<DeptData> SortProgramsByPrefInDept(List<DeptData> deptDataInp)
         {
+            double weight = 100;
             if (deptDataInp == null) return null;
             List<DeptData> deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy
 
@@ -652,7 +653,9 @@ namespace SpacePlanning
                 List<double> keys = new List<double>();
                 for (int j = 0; j < progItems.Count; j++)
                 {
-                    double key = progItems[j].ProgPreferenceVal + eps;
+                    double key = progItems[j].ProgPreferenceVal + eps + weight * progItems[j].AdjacencyWeight;
+                    //double key = progItems[j].ProgPreferenceVal + eps;
+                    progItems[j].CombinedProgramWeight = key;
                     sortedPrograms.Add(key, progItems[j]);
                     eps += inc;
                 }
