@@ -157,7 +157,7 @@ namespace SpacePlanning
         /// <search>
         /// make cell polys from cell objects
         /// </search>
-        public static List<Polygon> MakeCellPolysFromCellObjects(List<Cell> cellList, List<int> indexList = null, double height  = 0)
+        public static List<Polygon> MakeCellPolysFromCellObjects(List<Cell> cellList, [DefaultArgument("{}")] List<int> indexList, double height  = 0)
         {
             if (cellList == null) return null;
             List<Polygon> cellsPolyList = new List<Polygon>();

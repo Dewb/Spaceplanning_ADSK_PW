@@ -36,6 +36,16 @@
     <RegisterForComInterop>true</RegisterForComInterop>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Display">
+      <HintPath>..\..\..\..\..\..\..\Program Files\Dynamo\Dynamo Core\1.0\Display.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DSCoreNodes">
+      <HintPath>..\..\..\..\..\..\..\Program Files\Dynamo\Dynamo Core\1.0\DSCoreNodes.dll</HintPath>
+    </Reference>
+    <Reference Include="DynamoCore">
+      <HintPath>..\..\..\..\..\..\..\Program Files\Dynamo\Dynamo Core\1.0\DynamoCore.dll</HintPath>
+    </Reference>
     <Reference Include="DynamoServices">
       <HintPath>..\..\..\..\..\..\..\Program Files\Dynamo\Dynamo Core\1.0\DynamoServices.dll</HintPath>
       <Private>False</Private>

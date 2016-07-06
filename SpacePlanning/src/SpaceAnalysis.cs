@@ -2,11 +2,12 @@
 using stuffer;
 using Autodesk.DesignScript.Runtime;
 using Autodesk.DesignScript.Geometry;
+using Autodesk.DesignScript.Interfaces;
 using System;
-//using Excel = Microsoft.Office.Interop.Excel;
-using System.Runtime.InteropServices;
-
-
+using DSCore;
+using Display;
+using System.Linq;
+using Math = System.Math;
 
 namespace SpacePlanning
 {
@@ -58,6 +59,63 @@ namespace SpacePlanning
                 { "AreaProvided", (areaProvidedList) },
                 { "ProgramsInDepts", (progLists) },
                 { "PolyAssignedDepts", (polyAssignedList) }
+            };
+        }
+
+
+        //Provides information related to program data
+        /// <summary>
+        /// Provides analytics on Program data after spaces has been assigned.
+        /// </summary>
+        /// <param name="progData">Program data object</param>
+        /// <returns name="ProgramNames">Name of the programs.</returns>
+        /// <returns name="NumCellsTaken">Number of cells assgined to each program.</returns>
+        /// <returns name="AreaSatisfied">Area of the program is satisfied or not</returns>
+        /// <search>
+        /// program analytics
+        /// </search>
+        [MultiReturn(new[] { "DisplayGeomList", "SomethingNotKnown" })]
+        public static Dictionary<string, object> VisualizeDeptPrograms(List<DeptData> deptDataInp)
+        {
+            
+            if (deptDataInp == null) return null;
+            List<DeptData> deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy
+            List<Polygon2d> polyProgs = new List<Polygon2d>();
+            List<Curve> crvProgs = new List<Curve>();
+            for (int i = 0; i < deptData.Count; i++)
+            {
+                List<ProgramData> progsInDept = deptData[i].ProgramsInDept;
+                //List<Polygon2d> polyProgs = new List<Polygon2d>();
+                for (int j = 0; j < progsInDept.Count; j++)
+                {
+                    polyProgs.AddRange(progsInDept[j].PolyAssignedToProg);
+                }                
+            }
+            //List<List<Point>> ptProgs = new List<List<Point>>();
+            List<Surface> srfList = new List<Surface>();
+            List<Display.Display> displayList = new List<Display.Display>();
+            Random redRand = new Random(10), grnRand = new Random(15), bluRand = new Random(20);
+            for (int i = 0; i < polyProgs.Count; i++)
+            {
+                List<Point2d> ptList = polyProgs[i].Points;
+                List<Point> ptNewList = new List<Point>();
+                for(int j = 0; j < ptList.Count; j++) ptNewList.Add(Point.ByCoordinates(ptList[j].X, ptList[j].Y));
+                //ptProgs.Add(ptNewList);
+                Surface srf = Surface.ByPatch(Polygon.ByPoints(ptNewList));
+                int a = 255;
+                int r = (int)BasicUtility.RandomBetweenNumbers(redRand, 255, 1);
+                int g = (int)BasicUtility.RandomBetweenNumbers(grnRand, 255, 1);
+                int b = (int)BasicUtility.RandomBetweenNumbers(bluRand, 255, 1);
+                Color col = Color.ByARGB(a, r, g, b);
+                Display.Display dis = Display.Display.ByGeometryColor(srf, col);
+                displayList.Add(dis);
+                srfList.Add(srf);
+            }
+            
+            return new Dictionary<string, object>
+            {
+                { "DisplayGeomList", (displayList) },
+                { "SomethingNotKnown", (null) }
             };
         }
 
