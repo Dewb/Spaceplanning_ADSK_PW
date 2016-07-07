@@ -465,7 +465,7 @@ namespace SpacePlanning
         /// <search>
         /// form maker, buildingoutline, orthogonal forms
         /// </search>
-        [MultiReturn(new[] { "BuildingOutline", "ExtraPoly", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "SiteCoverageAchieved", "CellList", "CellNeighborMatrix" })]
+        [MultiReturn(new[] { "BuildingOutline",  "SiteArea", "LeftOverArea", "BuildingOutlineArea", "SiteCoverageAchieved", "CellList", "CellNeighborMatrix" })]
         public static Dictionary<string, object> FormBuildingOutline(Polygon2d orthoSiteOutline, 
             List<Cell> cellList, [DefaultArgument("null")]List<Point2d> attractorPoints, [DefaultArgument("null")]List<double> weightList,
      double siteCoverage = 0.5, int designSeed = 100, bool removeNotch = false, double minNotchDistance = 10, bool cellRefine = false, int scanResolution = 0)
@@ -517,7 +517,7 @@ namespace SpacePlanning
 
 
 
-        [MultiReturn(new[] { "BuildingOutline", "ExtraPoly", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "SiteCoverageAchieved", "CellList", "CellNeighborMatrix" })]
+        [MultiReturn(new[] { "BuildingOutline", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "SiteCoverageAchieved", "CellList", "CellNeighborMatrix" })]
         internal static Dictionary<string, object> BuildOutline(Polygon2d orthoSiteOutline, List<Cell> cellListInp, [DefaultArgument("null")]List<Point2d> attractorPoints,
              [DefaultArgument("null")]List<double>weightList, double groundCoverage = 0.5, int iteration = 100, 
             bool removeNotch = false, double minNotchDistance  = 10,int dummy=100, bool cellRefine = false)
@@ -757,19 +757,18 @@ namespace SpacePlanning
                 for (int i = 0; i < selectedCells.Count; i++)
                     if (!GraphicsUtility.PointInsidePolygonTest(offsetBorder, selectedCells[i].LeftDownCorner)) cellInsideBorderPoly.Add(selectedCells[i]);
             }// end while loop
-
+             //            { "ExtraPoly", (polyExtra) },
+             //            { "SubdividedPolys", (polySquares) },
             double areaBorder = 0;
             for (int i = 0; i < borders.Count; i++) areaBorder += PolygonUtility.AreaPolygon(borders[i]);
             double groundCovAchieved = areaBorder / areaSite;
             return new Dictionary<string, object>
             {
                
-                { "BuildingOutline", (borders) },//borders
-                { "ExtraPoly", (polyExtra) },
-                { "SubdividedPolys", (polySquares) },
-                { "SiteArea", (ptSquares) },
+                { "BuildingOutline", (borders) },//borders //
+                { "SiteArea", (areaSite) },
                 { "LeftOverArea", (areaLeft) },
-                { "BuildingOutlineArea", (cellsGrouped) },
+                { "BuildingOutlineArea", (areaPlaced) },
                 { "SiteCoverageAchieved", (areaPlaced/areaSite) },//areaPlaced/areaSite
                 { "CellList", (preSelectedCellsCopy)},
                 { "CellNeighborMatrix", (cellNeighborMatrixPre) }

@@ -362,7 +362,7 @@ namespace SpacePlanning
                 { "Points", (ptList) }
             };
         }
-        
+
         //scores the space plan layout. currently there are four individual scores and total score is the summation of them.
         /// <summary>
         /// Scores the space plan layout based on four key metrics, program fitness score, external view score, travel distance score, percentage of key planning units score.
@@ -383,28 +383,27 @@ namespace SpacePlanning
         /// <returns name="InpatientDeptData">Department data of primary department.</returns>
         /// <search>
         /// space plane scoring, space plan metrics
-        /// </search>
+        /// </search>//List<List<Polygon2d>> primaryProgPoly,
         [MultiReturn(new[] { "TotalScore", "ProgramFitScore", "ExtViewKPUScore", "TravelDistanceScore", "PercentageKPUScore","InpatientDeptData"})]
-        public static Dictionary<string, object> SpacePlanFitness(List<DeptData> deptData, List<List<Polygon2d>> primaryProgPoly, 
+        public static Dictionary<string, object> SpacePlanFitness(List<DeptData> deptDataInp,  
             List<Cell> cellList, double siteArea = 0,  double programFitWeight = 0.6, double extViewWeight = 1, double traveDistWeight = 0.8,
             double percKPUWeight = 0.70)
         {
-            if (deptData == null) return null;
+            if (deptDataInp == null) return null;
             if (cellList == null) return null;
+
+            List<DeptData> deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy
             DeptData inPatientDeptData = deptData[0];
             List<double> testData = new List<double>();
             List<double> inPatientData = new List<double>();
             int totalPatientRoomCount = 0;
             double areaInpatientRooms = 0, percInpatientFromSite = 0, dim = cellList[0].DimX;
-            for(int i = 0; i < primaryProgPoly.Count; i++)
+            List<Polygon2d> primaryProgPoly = inPatientDeptData.PolyAssignedToDept;
+            for (int i = 0; i < primaryProgPoly.Count; i++)
             {
-                if (!ValidateObject.CheckPolyList(primaryProgPoly[i])) continue;
-                for(int j = 0; j < primaryProgPoly[i].Count; j++)
-                {
-                    if (!ValidateObject.CheckPoly(primaryProgPoly[i][j])) continue;
-                    totalPatientRoomCount += 1;
-                    areaInpatientRooms += PolygonUtility.AreaPolygon(primaryProgPoly[i][j]);
-                }
+                if (!ValidateObject.CheckPoly(primaryProgPoly[i])) continue;
+                totalPatientRoomCount += 1;
+                areaInpatientRooms += PolygonUtility.AreaPolygon(primaryProgPoly[i]);            
             }   
 
             percInpatientFromSite = areaInpatientRooms / (2*siteArea);
@@ -429,7 +428,7 @@ namespace SpacePlanning
 
             List<bool> getsExternalWall = new List<bool>();
             Point2d buildingCenter = PointUtility.CentroidInPointLists(borderPts);
-            List<Polygon2d> polyFlatList = PolygonUtility.FlattenPolygon2dList(primaryProgPoly);
+            List<Polygon2d> polyFlatList = primaryProgPoly; //PolygonUtility.FlattenPolygon2dList(primaryProgPoly);
             double dimPoly = 0, numTrues = 0, travelDistancePatientRms =0, arbLargeValue = 10000;
             for(int i = 0; i < polyFlatList.Count; i++)
             {
@@ -469,7 +468,8 @@ namespace SpacePlanning
                 { "ExtViewKPUScore", (extViewWeight * extViewScore) },
                 { "TravelDistanceScore", (traveDistWeight * travelDistScore) },
                 { "PercentageKPUScore", (percKPUWeight * percKPUScore) },
-                { "InpatientDeptData", (inPatientData) }
+                { "InpatientDeptData", (inPatientData) },
+                { "TotalKPURoomsAdded", (totalPatientRoomCount) }
             };
         }
 
