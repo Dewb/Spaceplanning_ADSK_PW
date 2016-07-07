@@ -588,7 +588,7 @@ namespace SpacePlanning
         /// <search>
         /// get points of site outline
         /// </search>
-        public static List<Point2d> FromPointsGetBoundingPoly(List<Point2d> pointList)
+        internal static List<Point2d> FromPointsGetBoundingPoly(List<Point2d> pointList)
         {
             if (pointList == null) return null;
             if (pointList.Count == 0) return null;
