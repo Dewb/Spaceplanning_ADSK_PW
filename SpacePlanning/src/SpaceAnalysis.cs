@@ -194,6 +194,62 @@ namespace SpacePlanning
         /// <summary>
         /// Provides analytics on Program data after spaces has been assigned.
         /// </summary>
+        /// <param name="deptData">List of Department Data Object</param>
+        /// <param name="height">Z height of the geometry returned</param>
+        /// <returns name="progPolygons">Polygons representing programs.</returns>
+        /// <returns name="progPolyOrigin">Centroid of the polygons representing programs.</returns>
+        /// <returns name="progNameAsText">Name of the programs.</returns>
+        /// <search>
+        /// visualize program polgons, program polylines
+        /// </search>
+        [MultiReturn(new[] { "progPolygons", "progPolyOrigin", "progNameAsText" })]
+        public static Dictionary<string, object> VisualizeProgramPolyLinesAndOrigin(List<DeptData> deptData, double height =0)
+        {
+            if (deptData == null) return null;
+            List<List<List<Polygon>>> polyDeptListMega = new List<List<List<Polygon>>>();
+            List<List<List<Point>>> ptDeptListMega = new List<List<List<Point>>>();
+            List<List<string>> nameDeptListMega = new List<List<string>>();
+            for (int i = 0; i < deptData.Count; i++)
+            {
+                List<ProgramData> progInDept = deptData[i].ProgramsInDept;
+                List<List<Polygon>> polyDeptList = new List<List<Polygon>>();
+                List<List<Point>> ptDeptList = new List<List<Point>>();
+                List<string> nameDeptList = new List<string>();
+                for (int j = 0; j < progInDept.Count; j++)
+                {
+                    List<Polygon2d> polyProg = progInDept[j].PolyAssignedToProg;
+                    List<Point> ptCenterList = new List<Point>();
+                    List<Polygon> polyList = new List<Polygon>();
+                   
+                    for (int k = 0; k < polyProg.Count; k++)
+                    {
+                        Point2d center2d = PolygonUtility.CentroidOfPoly(polyProg[k]);
+                        Point center = Point.ByCoordinates(center2d.X, center2d.Y);
+                        ptCenterList.Add(center);
+                        Polygon poly = DynamoGeometry.PolygonByPolygon2d(polyProg[k], height);
+                        polyList.Add(poly);
+                    }
+                    polyDeptList.Add(polyList);
+                    ptDeptList.Add(ptCenterList);
+                    nameDeptList.Add(progInDept[j].ProgramName);
+                }
+                polyDeptListMega.Add(polyDeptList);
+                ptDeptListMega.Add(ptDeptList);
+                nameDeptListMega.Add(nameDeptList);
+            }            
+            return new Dictionary<string, object>
+            {
+                { "progPolygons", (polyDeptListMega) },
+                { "progPolyOrigin", (ptDeptListMega) },
+                { "progNameAsText", (nameDeptListMega) }
+            };
+        }
+
+
+        //Provides information related to program data
+        /// <summary>
+        /// Provides analytics on Program data after spaces has been assigned.
+        /// </summary>
         /// <param name="progData">Program data object</param>
         /// <returns name="ProgramNames">Name of the programs.</returns>
         /// <returns name="NumCellsTaken">Number of cells assgined to each program.</returns>
