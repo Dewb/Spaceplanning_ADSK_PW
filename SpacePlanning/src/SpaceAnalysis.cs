@@ -317,15 +317,17 @@ namespace SpacePlanning
         /// <param name="spacingY">Spacing in the direction of Y axis.</param>
         /// <returns name="TextToWrite">String to visualize.</returns>
         /// <returns name="Points">Point at visualiation.</returns>        
-        [MultiReturn(new[] { "TextToWrite", "Points" })]
+        [MultiReturn(new[] { "TextToWrite", "Points" ,"BoundingBox"})]
         public static Dictionary<string, object> SpacePlanFitnessVisualize(double totalScore, double programFitScore,
-            double extViewScore, double travelDistScore, double percKPUScore, double x = 0, double y = 0, double spacingX = 10, double spacingY = 10 )
+            double extViewScore, double travelDistScore, double percKPUScore, double x = 0, double y = 0, double spacingX = 10, double spacingY = 10, Polygon2d insetSiteOutLine = null )
         {
             List<string> textList = new List<string>();
             List<Point> ptList = new List<Point>();
             int num = 5, extra = -10;
             double xDim = x - spacingX, yDim = y;
-
+            Polygon2d bBox = new Polygon2d(ReadData.FromPointsGetBoundingPoly(insetSiteOutLine.Points));
+            Point2d origin = PolygonUtility.GetLowestAndHighestPointFromPoly(bBox)[0]; // get lowest pt of bounding poly
+            Polygon boundingPoly = DynamoGeometry.PolygonByPolygon2d(bBox,0);
             totalScore = Math.Round(totalScore, 2);
             programFitScore = Math.Round(programFitScore, 4)*100;
             extViewScore = Math.Round(extViewScore, 4)*100;
@@ -359,7 +361,8 @@ namespace SpacePlanning
             return new Dictionary<string, object>
             {
                 { "TextToWrite", (textList) },
-                { "Points", (ptList) }
+                { "Points", (ptList) },
+                { "BoundingBox", (boundingPoly) }
             };
         }
 
@@ -384,7 +387,7 @@ namespace SpacePlanning
         /// <search>
         /// space plane scoring, space plan metrics
         /// </search>//List<List<Polygon2d>> primaryProgPoly,
-        [MultiReturn(new[] { "TotalScore", "ProgramFitScore", "ExtViewKPUScore", "TravelDistanceScore", "PercentageKPUScore","InpatientDeptData"})]
+        [MultiReturn(new[] { "TotalScore", "ProgramFitScore", "ExtViewKPUScore", "TravelDistanceScore", "PercentageKPUScore","InpatientDeptData", "TotalKPURoomsAdded" })]
         public static Dictionary<string, object> SpacePlanFitness(List<DeptData> deptDataInp,  
             List<Cell> cellList, double siteArea = 0,  double programFitWeight = 0.6, double extViewWeight = 1, double traveDistWeight = 0.8,
             double percKPUWeight = 0.70)
@@ -399,10 +402,17 @@ namespace SpacePlanning
             int totalPatientRoomCount = 0;
             double areaInpatientRooms = 0, percInpatientFromSite = 0, dim = cellList[0].DimX;
             List<Polygon2d> primaryProgPoly = inPatientDeptData.PolyAssignedToDept;
+            List<ProgramData> primaryProg = inPatientDeptData.ProgramsInDept;
             for (int i = 0; i < primaryProgPoly.Count; i++)
             {
                 if (!ValidateObject.CheckPoly(primaryProgPoly[i])) continue;
-                totalPatientRoomCount += 1;
+                List<Polygon2d> polyprog = new List<Polygon2d>();
+                for (int j = 0; j < primaryProg.Count; j++)
+                {
+                   polyprog.AddRange(primaryProg[j].PolyAssignedToProg);
+                }
+                totalPatientRoomCount = polyprog.Count;
+                //totalPatientRoomCount += 1;
                 areaInpatientRooms += PolygonUtility.AreaPolygon(primaryProgPoly[i]);            
             }   
 
