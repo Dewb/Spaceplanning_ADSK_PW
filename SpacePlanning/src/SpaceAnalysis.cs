@@ -33,7 +33,7 @@ namespace SpacePlanning
         /// department analytics
         /// </search>
         [MultiReturn(new[] { "DepartmentNames", "NumCellsTaken", "AreaSatisfied", "AreaNeeded", "AreaProvided", "ProgramsInDepts", "PolyAssignedDepts" })]
-        public static Dictionary<string, object> DeptAnalytics(List<DeptData> deptData)
+        public static Dictionary<string, object> AnalyticsDeptData(List<DeptData> deptData)
         {
 
             if (deptData == null) return null; 
@@ -119,22 +119,23 @@ namespace SpacePlanning
         //Provides information related to program data
 
         [MultiReturn(new[] { "DisplayGeomList" })]
-        public static Dictionary<string, object> VisualizeDeptPrograms(List<DeptData> deptDataInp, int height = 0)
+        public static Dictionary<string, object> VisualizeDeptPrograms(List<DeptData> deptDataInp, int height = 0, int transparency = 255)
         {
+            if (transparency < 0 || transparency > 255) transparency = 255;
             // hard coded list of colors for 20 depts
             List<Color> colorList = new List<Color>();
-            colorList.Add(Color.ByARGB(255, 119, 179, 0)); // light green
-            colorList.Add(Color.ByARGB(255, 255, 51, 204)); // bright pink
-            colorList.Add(Color.ByARGB(255, 102, 102, 255)); // violetish blue
-            colorList.Add(Color.ByARGB(255, 255, 195, 77)); // orangish yellow
-            colorList.Add(Color.ByARGB(255, 204, 153, 255)); // violet blue
-            colorList.Add(Color.ByARGB(255, 51, 51, 204)); // darker blue
-            colorList.Add(Color.ByARGB(255, 0,128,0)); // darker green
-            colorList.Add(Color.ByARGB(255, 98, 98, 98)); // grey dark
-            colorList.Add(Color.ByARGB(255, 204, 255, 102)); // light green
-            colorList.Add(Color.ByARGB(255, 255, 51, 153)); // reddish pink
-            colorList.Add(Color.ByARGB(255, 0, 102, 153)); // teal blue
-            colorList.Add(Color.ByARGB(255, 153, 0, 204)); // purple
+            colorList.Add(Color.ByARGB(transparency, 119, 179, 0)); // light green
+            colorList.Add(Color.ByARGB(transparency, 255, 51, 204)); // bright pink
+            colorList.Add(Color.ByARGB(transparency, 102, 102, 255)); // violetish blue
+            colorList.Add(Color.ByARGB(transparency, 255, 195, 77)); // orangish yellow
+            colorList.Add(Color.ByARGB(transparency, 204, 153, 255)); // violet blue
+            colorList.Add(Color.ByARGB(transparency, 51, 51, 204)); // darker blue
+            colorList.Add(Color.ByARGB(transparency, 0,128,0)); // darker green
+            colorList.Add(Color.ByARGB(transparency, 98, 98, 98)); // grey dark
+            colorList.Add(Color.ByARGB(transparency, 204, 255, 102)); // light green
+            colorList.Add(Color.ByARGB(transparency, 255, 51, 153)); // reddish pink
+            colorList.Add(Color.ByARGB(transparency, 0, 102, 153)); // teal blue
+            colorList.Add(Color.ByARGB(transparency, 153, 0, 204)); // purple
 
 
 
@@ -258,7 +259,7 @@ namespace SpacePlanning
         /// program analytics
         /// </search>
         [MultiReturn(new[] { "ProgramNames", "NumCellsTaken", "AreaSatisfied", "AreaNeeded", "AreaProvided", "Quantity", "PolyAssignedProgs" })]
-        public static Dictionary<string, object> ProgramAnalytics(List<ProgramData> progData)
+        public static Dictionary<string, object> AnalyticsProgramData(List<ProgramData> progData)
         {
             if (progData == null) return null;
 
@@ -307,7 +308,7 @@ namespace SpacePlanning
         /// <returns name="TextToWrite">String to visualize.</returns>
         /// <returns name="Points">Point at visualiation.</returns>        
         [MultiReturn(new[] { "TextToWrite", "Points" })]
-        public static Dictionary<string, object> Visualizer(double totalScore, double programFitScore,
+        public static Dictionary<string, object> SpacePlanFitnessVisualize(double totalScore, double programFitScore,
             double extViewScore, double travelDistScore, double percKPUScore, double x = 0, double y = 0, double spacingX = 10, double spacingY = 10 )
         {
             List<string> textList = new List<string>();
@@ -374,7 +375,7 @@ namespace SpacePlanning
         /// space plane scoring, space plan metrics
         /// </search>
         [MultiReturn(new[] { "TotalScore", "ProgramFitScore", "ExtViewKPUScore", "TravelDistanceScore", "PercentageKPUScore","InpatientDeptData"})]
-        public static Dictionary<string, object> SpacePlanScorer(List<DeptData> deptData, List<List<Polygon2d>> primaryProgPoly, 
+        public static Dictionary<string, object> SpacePlanFitness(List<DeptData> deptData, List<List<Polygon2d>> primaryProgPoly, 
             List<Cell> cellList, double siteArea = 0,  double programFitWeight = 0.6, double extViewWeight = 1, double traveDistWeight = 0.8,
             double percKPUWeight = 0.70)
         {
@@ -473,7 +474,7 @@ namespace SpacePlanning
         /// <search>
         /// export data, cell data
         /// </search>
-        public static List<List<string>> CellDataExport(List<DeptData> deptDataInp, List<Cell> cellList, List<List<int>> cellNeighborMatrix)
+        public static List<List<string>> ExportCellData(List<DeptData> deptDataInp, List<Cell> cellList, List<List<int>> cellNeighborMatrix)
         {
             
 
@@ -571,7 +572,7 @@ namespace SpacePlanning
         /// <search>
         /// export data, program data
         /// </search>
-        public static List<List<string>> ProgramDataExport(List<DeptData> deptDataInp)
+        public static List<List<string>> ExportDepartmentProgramData(List<DeptData> deptDataInp)
         {
             if (deptDataInp == null) return null;
             List<DeptData> deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy

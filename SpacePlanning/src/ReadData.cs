@@ -143,7 +143,7 @@ namespace SpacePlanning
         [MultiReturn(new[] { "ProgIdList", "ProgramList","DeptNameList", "ProgQuantList","AreaEachProgList",
             "ProgPrefValList","ProgAdjList", "DeptTopoList", "DeptTopoAdjacency" , "EachDeptAdjDeptList",
             "DeptTopListTotal", "DeptNamesUnique", "MostFrequentDept", "MostFrequentDeptSorted"})]
-        public static Dictionary<string,object> FindPreferredDepts(double circulationFactor = 1, int caseStudy = 0, string programDocumentPath = "")
+        internal static Dictionary<string,object> FindPreferredDepts(double circulationFactor = 1, int caseStudy = 0, string programDocumentPath = "")
         {
             double dim = 5;
             StreamReader reader;
@@ -292,7 +292,7 @@ namespace SpacePlanning
  
         [MultiReturn(new[] { "ProgIdList", "ProgramList","DeptNameList", "ProgQuantList","AreaEachProgList",
             "ProgPrefValList","ProgAdjList", "ProgAdjWeightList"})]
-        public static Dictionary<string, object> FindPreferredProgs(double circulationFactor = 1, int caseStudy = 0, string programDocumentPath = "")
+        internal static Dictionary<string, object> FindPreferredProgs(double circulationFactor = 1, int caseStudy = 0, string programDocumentPath = "")
         {
             double dim = 5;
             StreamReader reader;
@@ -388,13 +388,13 @@ namespace SpacePlanning
 
 
 
-        public static string FindDeptForProgId(List<string> deptName, int id = 5)
+        internal static string FindDeptForProgId(List<string> deptName, int id = 5)
         {
             return deptName[id];
         }
 
 
-        public static List<List<string>> MakeDeptTopology(List<string> adjList)
+        internal static List<List<string>> MakeDeptTopology(List<string> adjList)
         {
             List<List<string>> stringNumber = new List<List<string>>();
             foreach (string s in adjList) stringNumber.Add(s.Split('.').ToList());
@@ -407,7 +407,7 @@ namespace SpacePlanning
         /// Forms site outline from the embedded .sat file.
         /// Returns list of nurbs curve geometry.
         /// </summary>
-        /// <returns name="NurbsGeometry">List of nurbs curve representing the site outline</returns>
+        /// <returns name="GeomList">List of nurbs curve representing the site outline</returns>
         /// <search>
         /// make site outline, site geometry.
         /// </search>
@@ -461,7 +461,7 @@ namespace SpacePlanning
         /// Forms site outline from the embedded .sat file.
         /// Returns list of nurbs curve geometry.
         /// </summary>
-        /// <returns name="NurbsGeometry">List of nurbs curve representing the site outline</returns>
+        /// <returns name="geomLIst">List of nurbs curve representing the site outline</returns>
         /// <search>
         /// make site outline, site geometry, site.
         /// </search>
@@ -513,7 +513,7 @@ namespace SpacePlanning
         /// <search>
         /// get points of site outline
         /// </search>
-        [MultiReturn(new[] { "InsetSiteOutlineForForm" })]
+        [MultiReturn(new[] { "InsetSiteOutline" })]
         public static Dictionary<string,object> ConvertSiteOutlineToPolygon2d(List<Geometry> geomList, double inset = 5)// Geometry
         {
             string type = geomList[0].GetType().ToString();
@@ -561,7 +561,7 @@ namespace SpacePlanning
             //return new Polygon2d(pointList);
             return new Dictionary<string, object>
             {
-                { "InsetSiteOutlineForForm", (new Polygon2d(pointList)) }
+                { "InsetSiteOutline", (new Polygon2d(pointList)) }
             };
         }
 

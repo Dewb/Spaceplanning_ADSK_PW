@@ -135,7 +135,7 @@ namespace SpacePlanning
         }     
  
         //finds the outerlines of a polygon, except the extreme max and min lines in its x and y axis
-        public static List<Line2d> GetOuterLines(Polygon2d polyReg)
+        internal static List<Line2d> GetOuterLines(Polygon2d polyReg)
         {            
             List<Line2d> hLines = new List<Line2d>();
             List<Line2d> vLines = new List<Line2d>();
@@ -195,7 +195,7 @@ namespace SpacePlanning
 
         //get a poly and find rectangular polys inside. then merge them together to form a big poly 
         [MultiReturn(new[] { "WholesomePolys", "PolysAfterSplit", "AllSplitLines"})]
-        public static Dictionary<string, object> MakeWholesomeBlockInPoly(Polygon2d poly, double dim = 10,double recompute = 5)
+        internal static Dictionary<string, object> MakeWholesomeBlockInPoly(Polygon2d poly, double dim = 10,double recompute = 5)
         {
             if (poly == null || poly.Points == null || poly.Points.Count == 0) return null;
             List<Polygon2d> wholesomePolyList = new List<Polygon2d>();
@@ -278,7 +278,7 @@ namespace SpacePlanning
         }            
 
         //finds number of sides in a polygon2d
-        public static int NumberofSidesPoly(Polygon2d poly)
+        internal static int NumberofSidesPoly(Polygon2d poly)
         {
             if (poly == null || poly.Points == null || poly.Points.Count == 0) return -1;
             int sides = 0;
@@ -351,7 +351,7 @@ namespace SpacePlanning
         }
 
         //offsets a poly 
-        public static Polygon2d OffsetPoly(Polygon2d polyOutline, double distance = 0.5)
+        internal static Polygon2d OffsetPoly(Polygon2d polyOutline, double distance = 0.5)
         {
             if (!ValidateObject.CheckPoly(polyOutline)) return null;
             List<bool> offsetAble = new List<bool>();
@@ -487,7 +487,7 @@ namespace SpacePlanning
 
      
         // removes extra edges sticking out of a P:olygon2d
-        public static Polygon2d PolyExtraEdgeRemove(Polygon2d polyInp)
+        internal static Polygon2d PolyExtraEdgeRemove(Polygon2d polyInp)
         {
             if (!ValidateObject.CheckPoly(polyInp)) return null;
             Polygon2d poly = new Polygon2d(polyInp.Points);
@@ -504,7 +504,7 @@ namespace SpacePlanning
         }
 
         //calc centroid of a closed polygon2d
-        public static Point2d CentroidOfPolyList(List<Polygon2d> polyList)
+        internal static Point2d CentroidOfPolyList(List<Polygon2d> polyList)
         {
             if (!ValidateObject.CheckPolyList(polyList)) return null;
             List<Point2d> ptList = new List<Point2d>();
@@ -679,7 +679,7 @@ namespace SpacePlanning
         }
 
         //smoothens a polygon2d list by adding points in each poly
-        public static List<Polygon2d> SmoothPolygonList(List<Polygon2d> polyList, double spacingProvided = 1)
+        internal static List<Polygon2d> SmoothPolygonList(List<Polygon2d> polyList, double spacingProvided = 1)
         {
             if (!ValidateObject.CheckPolyList(polyList)) return null;
             List<Polygon2d> smoothPolyList = new List<Polygon2d>();
@@ -859,7 +859,7 @@ namespace SpacePlanning
         }
 
         //finds a center point with respect to a given poly. Directions are: 0 = right, 1 = up, 2 = left, 3 = down
-        public static Point2d FindPointOnPolySide(Polygon2d poly, int dir = 0, double dist = 10)
+        internal static Point2d FindPointOnPolySide(Polygon2d poly, int dir = 0, double dist = 10)
         {
             if (!ValidateObject.CheckPoly(poly)) return null;
             Point2d centerFound = new Point2d(0,0);
@@ -889,7 +889,7 @@ namespace SpacePlanning
         }
 
         //places a point randomly inside a poly | padding should be between 0.2 to 1.0. -1 = anywhere, 0 = towards upper right, 1 = towards lower left
-        public static Point2d PlaceRandomPointInsidePoly(Polygon2d poly, int seed = 1, int side = -1)
+        internal static Point2d PlaceRandomPointInsidePoly(Polygon2d poly, int seed = 1, int side = -1)
         {
             if (!ValidateObject.CheckPoly(poly)) return null;
             Point2d centerFound = new Point2d(0, 0), low = new Point2d(0, 0), high = new Point2d(0, 0);
@@ -928,7 +928,7 @@ namespace SpacePlanning
 
         //places a point randomly inside a poly | padding should be between 0.2 to 1.0. -1 = anywhere, 0 = towards upper right, 1 = towards lower left
         [MultiReturn(new[] { "RandomPoint", "FoundPointList", "LineSelected"})]
-        public static Dictionary<string, object> GetPointOnOneQuadrantTest(Polygon2d poly, int seed = 1, int side = -1, double scale = 0.5)
+        internal static Dictionary<string, object> GetPointOnOneQuadrantTest(Polygon2d poly, int seed = 1, int side = -1, double scale = 0.5)
         {
             if (!ValidateObject.CheckPoly(poly)) return null;
             Point2d centerFound = CentroidOfPoly(poly);
@@ -969,7 +969,7 @@ namespace SpacePlanning
 
         //gets the extreme points from cell list, top right, top left, bottom right, bottom left
         [MultiReturn(new[] { "TopRightPoint", "TopLeftPoint", "BottomRightPoint", "BottomLeftPoint" })]
-        public static Dictionary<string, object> GetExtremePointsFromCells(List<Cell> cellList)
+        internal static Dictionary<string, object> GetExtremePointsFromCells(List<Cell> cellList)
         {
             if (cellList == null) return null;
             List<Point2d> ptLists = new List<Point2d>();
@@ -980,7 +980,7 @@ namespace SpacePlanning
 
         //gets the extreme points from apoint list, top right, top left, bottom right, bottom left // needs work later
         [MultiReturn(new[] { "TopRightPoint", "TopLeftPoint", "BottomRightPoint", "BottomLeftPoint", "RightTopPoint", "LeftTopPoint", "RightBottomPoint", "LeftBottomPoint" })]
-        public static Dictionary<string, object> GetExtremePointsFromPoints(List<Point2d> ptLists)
+        internal static Dictionary<string, object> GetExtremePointsFromPoints(List<Point2d> ptLists)
         {
             if (!ValidateObject.CheckPointList(ptLists)) return null;
             Point2d center = CentroidOfPoly(new Polygon2d(ptLists, 0));

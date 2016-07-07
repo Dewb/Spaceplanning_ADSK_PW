@@ -35,12 +35,13 @@ namespace SpacePlanning
         /// </summary>
         /// <param name="deptData">List of DeptData object.</param>
         /// <param name="buildingOutline">Building outline polygon2d geometry.</param>
-        /// <param name="primaryDeptDepth">Depth in feet of the main department.</param>
+        /// <param name="kpuDepth">Depth in feet of the main department.</param>
         /// <param name="acceptableWidth">Acceptable width in meters while allocating area and polygon2d to each dept on site.</param>
         /// <param name="minNotchDistance">Minimum distance below which an edge will be considered as a removable notch.</param>
         /// <param name="circulationFreq">Value to consider while checking frequency of cirulation computation polygon2d.</param>
-        /// <param name="recompute">Regardless of the recompute value, it is used to restart computing the node every time its value is changed.</param>
-        /// <param name="randomToggle">Boolean toggle to turn on or off randomness to assign departments. Default is off.</param>
+        /// <param name="designSeed">Regardless of the recompute value, it is used to restart computing the node every time its value is changed.</param>
+        /// <param name="noExternalWall">Boolean toggle to turn on or off requirement of external wall for KPU.</param>
+        /// <param name="unlimitedKPU">Boolean toggle to turn on or off unlimied KPU placement.</param>
         /// <returns name="UpdatedDeptData">Updated Dept Data object</returns>
         /// <returns name="LeftOverPolys">Polygon2d's not assigned to any department.</returns>
         /// <returns name="CirculationPolys">Polygon2d's needed to compute circulation networks.</returns>
@@ -48,11 +49,12 @@ namespace SpacePlanning
         /// <search>
         /// DeptData object, department arrangement on site
         /// </search>
-        [MultiReturn(new[] { "UpdatedDeptData","LeftOverPolys", "CirculationPolys","OtherDeptMainPoly"})]
-        public static Dictionary<string, object> PlaceDepartments(List<DeptData> deptDataInp, List<Polygon2d> buildingOutline,  double kpuDepth, 
-            double acceptableWidth,double circulationFreq = 8, int iteration = 50, bool noExternalWall = false, bool unlimitedKPU = true)
+        [MultiReturn(new[] { "DeptData","LeftOverPolys", "CirculationPolys","OtherDeptMainPoly"})]
+        public static Dictionary<string, object> PlaceDepartments(List<DeptData> deptData, List<Polygon2d> buildingOutline,  double kpuDepth, 
+            double acceptableWidth,double circulationFreq = 8, int designSeed = 50, bool noExternalWall = false, bool unlimitedKPU = true)
         {
-            List<DeptData> deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy
+            List<DeptData> deptDataInp = deptData;
+            deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy
 
             Dictionary<string, object> deptArrangement = new Dictionary<string, object>();
             double count = 0,eps = 5;            
@@ -61,10 +63,10 @@ namespace SpacePlanning
             while (deptPlaced == false && count < MAXCOUNT)//MAXCOUNT
             {
                 Trace.WriteLine("PLACE DEPT STARTS , Lets arrange dept again ++++++++++++++++ : " + count);
-                deptArrangement = DeptPlacer(deptData, buildingOutline, kpuDepth, acceptableWidth, circulationFreq, iteration, noExternalWall, unlimitedKPU);
+                deptArrangement = DeptPlacer(deptData, buildingOutline, kpuDepth, acceptableWidth, circulationFreq, designSeed, noExternalWall, unlimitedKPU);
                 if(deptArrangement != null)
                 {
-                    List<DeptData> deptDataUpdated =(List<DeptData>) deptArrangement["UpdatedDeptData"];
+                    List<DeptData> deptDataUpdated =(List<DeptData>) deptArrangement["DeptData"];
                     List<List<Polygon2d>> deptAllPolys = new List<List<Polygon2d>>();
                     for(int i = 0; i < deptDataUpdated.Count; i++) deptAllPolys.Add(deptDataUpdated[i].PolyAssignedToDept);
                     List<Polygon2d> deptPolysTogether = new List<Polygon2d>();
@@ -88,7 +90,7 @@ namespace SpacePlanning
                 else
                 {
                     deptPlaced = false;
-                    iteration += 1;
+                    designSeed += 1;
                     Trace.WriteLine("DeptPlacer returned null, rejected for: " + count);
                 }
                 count += 1;
@@ -111,7 +113,7 @@ namespace SpacePlanning
         /// <returns name="PolyAfterSplit">Polygon2d's obtained after assigning programs inside the department.</returns>
         /// <returns name="UpdatedProgramData">Updated program data object.</returns>
         /// <returns name="ProgramsAddedCount">Number of program units added.</returns>
-        [MultiReturn(new[] { "UpdatedProgramData", "ProgramsAddedCount" })]
+        [MultiReturn(new[] { "DeptData", "ProgramsAddedCount" })]
         internal static Dictionary<string, object> PlaceKPUPrograms(List<Polygon2d> deptPoly, List<ProgramData> progData, double primaryProgramWidth, int recompute = 1, int space = 10)
         {
 
@@ -200,7 +202,7 @@ namespace SpacePlanning
             List<Polygon2d> cleanPolyList = ValidateObject.CheckAndCleanPolygon2dList(polyList);
             return new Dictionary<string, object>
             {
-                { "UpdatedProgramData",(UpdatedProgramDataList) },
+                { "DeptData",(UpdatedProgramDataList) },
                 { "ProgramsAddedCount" , (roomCount) }
             };
         }
@@ -217,8 +219,8 @@ namespace SpacePlanning
         /// <param name="deptData">Dept Data object.</param>
         /// <param name="recompute">This value is used to restart computing the node every time its value is changed.</param>
         /// <returns></returns>
-        [MultiReturn(new[] { "PolyAfterSplit", "UpdatedProgramData" })]
-        public static Dictionary<string, object> PlaceREGPrograms(DeptData deptDataInp,int recompute = 0,bool extra = true)
+        [MultiReturn(new[] { "PolyAfterSplit", "ProgramData" })]
+        internal static Dictionary<string, object> PlaceREGPrograms(DeptData deptDataInp,int recompute = 0,bool extra = true)
         {
             if (deptDataInp == null) return null;
 
@@ -351,29 +353,7 @@ namespace SpacePlanning
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (polyList) },
-                { "UpdatedProgramData",(newProgDataList) }
-            };
-        }
-
-
-        [MultiReturn(new[] { "UpdatedDeptData" })]
-        public static Dictionary<string,object> RegProgPlacerTest(List<DeptData> deptData)
-        {
-            if (deptData == null) return null;
-            List<List<Polygon2d>> polyPorgsAdded = new List<List<Polygon2d>>();
-            List<ProgramData> progDataNew = new List<ProgramData>();
-            for (int i = 0; i < deptData.Count; i++)
-            {              
-                    Dictionary<string, object> placedSecondaryProg = PlaceREGPrograms(deptData[i], i);
-                    if (placedSecondaryProg != null) deptData[i].ProgramsInDept = (List<ProgramData>)placedSecondaryProg["UpdatedProgramData"];
-                    else deptData[i].ProgramsInDept = null;            
-
-            }
-            List<DeptData> newDeptData = new List<DeptData>();
-            for (int i = 0; i < deptData.Count; i++) newDeptData.Add(new DeptData(deptData[i]));
-            return new Dictionary<string, object>
-            {
-                { "UpdatedDeptData",(newDeptData) }
+                { "ProgramData",(newProgDataList) }
             };
         }
 
@@ -387,7 +367,7 @@ namespace SpacePlanning
         /// <param name="primaryProgramWidth">Width of the program poly in the primary department</param>
         /// <param name="recompute">Regardless of the recompute value, it is used to restart computing the node every time its value is changed.</param>
         /// <returns></returns>
-        [MultiReturn(new[] { "UpdatedDeptData" })]
+        [MultiReturn(new[] { "DeptData" })]
         public static Dictionary<string, object> PlacePrograms(List<DeptData> deptDataInp, double primaryProgramWidth = 30, int recompute = 0)
         {
             if (deptDataInp == null) return null;
@@ -399,12 +379,12 @@ namespace SpacePlanning
                 if (i == 0)
                 {                    
                     Dictionary<string, object> placedPrimaryProg = PlaceKPUPrograms(deptData[i].PolyAssignedToDept, deptData[i].ProgramsInDept, primaryProgramWidth, recompute);
-                    deptData[i].ProgramsInDept = (List<ProgramData>)placedPrimaryProg["UpdatedProgramData"];
+                    deptData[i].ProgramsInDept = (List<ProgramData>)placedPrimaryProg["DeptData"];
                 }
                 else
                 {
                     Dictionary<string, object> placedSecondaryProg = PlaceREGPrograms(deptData[i], recompute);
-                    if (placedSecondaryProg != null) deptData[i].ProgramsInDept = (List<ProgramData>)placedSecondaryProg["UpdatedProgramData"];
+                    if (placedSecondaryProg != null) deptData[i].ProgramsInDept = (List<ProgramData>)placedSecondaryProg["ProgramData"];
                     else deptData[i].ProgramsInDept = null;
                 }
               
@@ -413,7 +393,7 @@ namespace SpacePlanning
             for(int i = 0; i < deptData.Count; i++) newDeptData.Add(new DeptData(deptData[i]));
             return new Dictionary<string, object>
             {
-                { "UpdatedDeptData",(newDeptData) }
+                { "DeptData",(newDeptData) }
             };
         }
 
@@ -633,7 +613,7 @@ namespace SpacePlanning
         
 
         //dept assignment new way
-        [MultiReturn(new[] { "UpdatedDeptData", "LeftOverPolys", "CirculationPolys", "OtherDeptMainPoly" })]
+        [MultiReturn(new[] { "DeptData", "LeftOverPolys", "CirculationPolys", "OtherDeptMainPoly" })]
         internal static Dictionary<string, object> DeptPlacer(List<DeptData> deptData, List<Polygon2d> polyList, double kpuDepth,
             double acceptableWidth = 20, double circulationFreq = 10, int iteration = 5, bool noExternalWall = false, bool unlimitedKPU = true)
         {
@@ -794,7 +774,7 @@ namespace SpacePlanning
             Trace.WriteLine("DEPT PLACE KPU ENDS +++++++++++++++++++++++++++++++");
             return new Dictionary<string, object>
             {
-                { "UpdatedDeptData", (UpdatedDeptData) },
+                { "DeptData", (UpdatedDeptData) },
                 { "LeftOverPolys", (leftOverPoly) },
                 { "CirculationPolys", (polyCirculation) },
                 { "OtherDeptMainPoly", (otherDeptPoly) }

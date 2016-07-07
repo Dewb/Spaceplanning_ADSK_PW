@@ -167,7 +167,7 @@ namespace SpacePlanning
         /// <search>
         /// Department Circulation Network, Shared Edges between departments
         /// </search>
-        [MultiReturn(new[] { "CirculationPolygons", "UpdatedDeptPolys" })]
+        [MultiReturn(new[] { "DeptCirculationPoly", "UpdatedDeptPolys" })]
         public static Dictionary<string, object> MakeDeptCirculationPolys(List<DeptData> deptData, List<List<Line2d>> circulationNetwork, double circulationWidth = 8)
         {
             if (deptData == null || deptData.Count == 0 || circulationNetwork == null || circulationNetwork.Count == 0) return null;
@@ -234,7 +234,7 @@ namespace SpacePlanning
             }
             return new Dictionary<string, object>
             {
-                { "CirculationPolygons", (circulationPolyList) },
+                { "DeptCirculationPoly", (circulationPolyList) },
                 { "UpdatedDeptPolys", (deptPolyBranchedInList) }
 
             };
@@ -309,7 +309,7 @@ namespace SpacePlanning
         /// <param name="iteration">Design seed value as an integer.</param>
         /// <returns name = "CirculationPolygons">Circulation Polygon2d's between programs.</returns>
         /// <returns name = "UpdatedProgPolygons">Updated Program Polygon2d's after removing circulation space.</returns>
-        [MultiReturn(new[] { "CirculationPolygons", "UpdatedProgPolygons" })]
+        [MultiReturn(new[] { "ProgCirculationPoly", "UpdatedProgPolygons" })]
         public static Dictionary<string, object> MakeProgCirculationPolys(List<Line2d> circulationNetwork, List<Polygon2d> polyProgList, double circulationWidth = 8,  double circulationFrequency = 0.5, int iteration = 10)
         {
             if (!ValidateObject.CheckPolyList(polyProgList)) return null;
@@ -373,7 +373,7 @@ namespace SpacePlanning
 
             return new Dictionary<string, object>
             {               
-                { "CirculationPolygons", (circulationPolyList) },
+                { "ProgCirculationPoly", (circulationPolyList) },
                 { "UpdatedProgPolygons", (updatedProgPolyList) }
             };
         }

@@ -316,9 +316,9 @@ namespace SpacePlanning
         /// Finds the border cells for the input polyoutline
         /// Builds the Cell NeighborMatrix
         /// </summary>
-        /// <param name="polyOutline">Polygon2d as the border outline.</param>
+        /// <param name="insetSiteOutline">Polygon2d as the border outline.</param>
         /// <param name="cellDim">Dimension of the cell object in X and Y direction.</param>
-        /// <param name="iteration">Boolean item to activate two separate modes of calculation.</param>
+        /// <param name="designSeed">Boolean item to activate two separate modes of calculation.</param>
         /// <returns name="OrthoSiteOutline">Polygon2d representing orthogonal poly outline.</returns>
         /// <returns name="BorderCells">Cell objects at the border of the outline.</returns>  
         /// <returns name="CellNeighborMatrix">Cell NeighborMatrix object.</returns> 
@@ -326,9 +326,10 @@ namespace SpacePlanning
         /// <search>
         /// bordercells, cellneighbormatrix, 
         /// </search>
-        [MultiReturn(new[] { "OrthoSiteOutline", "BorderCells", "CellNeighborMatrix", "SortedCells" })]
-        public static Dictionary<string, object> FindOrthoSiteOutline(Polygon2d polyOutline, double cellDim, int iteration = 100, bool highPrecision = false)
+        [MultiReturn(new[] { "OrthoSiteOutline", "BorderCells", "CellNeighborMatrix", "cellList" })]
+        public static Dictionary<string, object> FindOrthoSiteOutline(Polygon2d insetSiteOutline, double cellDim, int designSeed = 100, bool highPrecision = false)
         {
+            Polygon2d polyOutline = insetSiteOutline;
             double proportion = 0.75;
             if (!ValidateObject.CheckPoly(polyOutline)) return null;
             Dictionary<string, object> borderObject = new Dictionary<string, object>();
@@ -345,7 +346,7 @@ namespace SpacePlanning
             if (numCells > maxCells) dimAdjusted = Math.Sqrt(areaPoly / maxCells);
             bool checkOut = false;
             int count = 0;
-            while (!checkOut && count < iteration)
+            while (!checkOut && count < designSeed)
             {
                 count += 1;
                 List<Cell> cellsInside = CellsInsidePoly(polyOutline.Points, dimAdjusted);
@@ -371,7 +372,7 @@ namespace SpacePlanning
                 { "OrthoSiteOutline", (borderPoly) },
                 { "BorderCells", (cellsFound) },
                 { "CellNeighborMatrix", (cellNeighborMatrix) },
-                { "SortedCells", (sortedCells) }
+                { "cellList", (sortedCells) }
             };
         }
 
@@ -455,7 +456,7 @@ namespace SpacePlanning
         /// <param name="attractorPoints">List of Point2d representing points where building outline should not be placed.</param>
         /// <param name="weightList">List of double's representing weights of the attractor points.</param>
         /// <param name="siteCoverage">Expected site coverage.</param>
-        /// <param name="iteration">Seed value representing design choice.</param>
+        /// <param name="designSeed">Seed value representing design choice.</param>
         /// <param name="removeNotch">True or False toggling notch removal from the building outline.</param>
         /// <param name="minNotchDistance">Threshold distance below which , side of the building outline will be considered a notch and will be removed.</param>
         /// <param name="cellRefine">True or False toggle to allow addition of extra cell objects for precise building outline computation.</param>
@@ -467,17 +468,17 @@ namespace SpacePlanning
         [MultiReturn(new[] { "BuildingOutline", "ExtraPoly", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "SiteCoverageAchieved", "CellList", "CellNeighborMatrix" })]
         public static Dictionary<string, object> FormBuildingOutline(Polygon2d orthoSiteOutline, 
             List<Cell> cellList, [DefaultArgument("null")]List<Point2d> attractorPoints, [DefaultArgument("null")]List<double> weightList,
-     double siteCoverage = 0.5, int iteration = 100, bool removeNotch = false, double minNotchDistance = 10, bool cellRefine = false, int scanResolution = 0)
+     double siteCoverage = 0.5, int designSeed = 100, bool removeNotch = false, double minNotchDistance = 10, bool cellRefine = false, int scanResolution = 0)
         {
             Trace.WriteLine("FORM BUILD OUTLINE STARTS+++++++++++++++++++++++++");
-            if (iteration < 1) iteration = 1;
+            if (designSeed < 1) designSeed = 1;
             int count = 0, maxTry = 5;
             bool worked = false;
             double siteCoverAchieved = 0, scDifference = 0, scDifferenceBest = 10000;
             Dictionary<string, object> formBuildingOutlineObj = new Dictionary<string, object>();
             Dictionary<string, object> formBuildingOutlineObjBest = new Dictionary<string, object>();
             int dummy = 0;
-            if (scanResolution == 0) dummy = (int)BasicUtility.RandomBetweenNumbers(new Random(iteration), 40, 3);
+            if (scanResolution == 0) dummy = (int)BasicUtility.RandomBetweenNumbers(new Random(designSeed), 40, 3);
             else dummy = scanResolution;
 
             while (count < maxTry && !worked)
@@ -485,12 +486,12 @@ namespace SpacePlanning
                 //if (attractorPoints.Count == 0 || weightList.Count == 0) { attractorPoints = null; weightList = null; }
                 count += 1;
                 Trace.WriteLine("||||||||||||||||||||||||||||||trying to get the form we want : " + count);
-                formBuildingOutlineObj = BuildOutline(orthoSiteOutline, cellList, attractorPoints, weightList, siteCoverage, iteration, removeNotch, minNotchDistance, dummy, cellRefine);
+                formBuildingOutlineObj = BuildOutline(orthoSiteOutline, cellList, attractorPoints, weightList, siteCoverage, designSeed, removeNotch, minNotchDistance, dummy, cellRefine);
 
                 if (formBuildingOutlineObj == null)
                 {
-                    if (dummy < 1) dummy = (int)BasicUtility.RandomBetweenNumbers(new Random(iteration), 12, 3);
-                    iteration += 1;
+                    if (dummy < 1) dummy = (int)BasicUtility.RandomBetweenNumbers(new Random(designSeed), 12, 3);
+                    designSeed += 1;
                     dummy -= 1;
                 }
                 else
@@ -500,8 +501,8 @@ namespace SpacePlanning
                     if (scDifference < 0.05) worked = true;
                     else
                     {
-                        if (dummy < 1) dummy = (int)BasicUtility.RandomBetweenNumbers(new Random(iteration), 20, 7);
-                        iteration += 1;
+                        if (dummy < 1) dummy = (int)BasicUtility.RandomBetweenNumbers(new Random(designSeed), 20, 7);
+                        designSeed += 1;
                         dummy -= 1;
                     }
                     if (scDifference < scDifferenceBest) { formBuildingOutlineObjBest = formBuildingOutlineObj; scDifferenceBest = scDifference; }
