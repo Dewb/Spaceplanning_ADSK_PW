@@ -310,7 +310,7 @@ namespace SpacePlanning
             };
         }
 
-     
+
         //finds the border cells and builds the cell neighbor matrix
         /// <summary>
         /// Finds the border cells for the input polyoutline
@@ -322,11 +322,11 @@ namespace SpacePlanning
         /// <returns name="OrthoSiteOutline">Polygon2d representing orthogonal poly outline.</returns>
         /// <returns name="BorderCells">Cell objects at the border of the outline.</returns>  
         /// <returns name="CellNeighborMatrix">Cell NeighborMatrix object.</returns> 
-        /// <returns name="SortedCells">Sorted cell objects.</returns> 
+        /// <returns name="CellList">Sorted cell objects.</returns> 
         /// <search>
         /// bordercells, cellneighbormatrix, 
         /// </search>
-        [MultiReturn(new[] { "OrthoSiteOutline", "BorderCells", "CellNeighborMatrix", "cellList" })]
+        [MultiReturn(new[] { "OrthoSiteOutline", "BorderCells", "CellNeighborMatrix", "CellList" })]
         public static Dictionary<string, object> FindOrthoSiteOutline(Polygon2d insetSiteOutline, double cellDim, int designSeed = 100, bool highPrecision = false)
         {
             Polygon2d polyOutline = insetSiteOutline;
@@ -373,7 +373,7 @@ namespace SpacePlanning
                 { "OrthoSiteOutline", (borderPoly) },
                 { "BorderCells", (cellsFound) },
                 { "CellNeighborMatrix", (cellNeighborMatrix) },
-                { "cellList", (sortedCells) }
+                { "CellList", (sortedCells) }
             };
         }
 

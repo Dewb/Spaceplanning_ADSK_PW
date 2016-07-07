@@ -88,8 +88,8 @@ namespace SpacePlanning
                 List<Cell> dummyCell = new List<Cell> { new Cell(Point2d.ByCoordinates(0, 0), 0, 0,0, true) };
                 //List<string> adjList = new List<string>();
                 //adjList.Add(values[8]);
-                ProgramData progData = new ProgramData(Convert.ToInt16(values[0]), values[1], values[2], Convert.ToInt16(values[3]),
-                    Convert.ToDouble(values[4]), Convert.ToInt16(values[6]), progAdjList, dummyCell, dim, dim, values[7]); // prev multipled circulationfactor with unit area of prog
+                ProgramData progData = new ProgramData(Convert.ToInt32(values[0]), values[1], values[2], Convert.ToInt32(Convert.ToDouble(values[3])),
+                    Convert.ToDouble(values[4]), Convert.ToInt32(values[6]), progAdjList, dummyCell, dim, dim,  Convert.ToString(values[7])); // prev multipled circulationfactor with unit area of prog
                 programDataStack.Add(progData);
             }// end of for each statement
 
@@ -192,8 +192,8 @@ namespace SpacePlanning
                 progAdjList.Add(values[8]);
                 List<Cell> dummyCell = new List<Cell> { new Cell(Point2d.ByCoordinates(0, 0), 0, 0, 0, true) };
               
-                ProgramData progData = new ProgramData(Convert.ToInt16(values[0]), values[1], values[2], Convert.ToInt16(values[3]),
-                    Convert.ToDouble(values[4]), Convert.ToInt16(values[6]), progAdjList, dummyCell, dim, dim, values[7]); // prev multipled circulationfactor with unit area of prog
+                ProgramData progData = new ProgramData(Convert.ToInt32(values[0]), values[1], values[2], Convert.ToInt32(Convert.ToDouble(values[3])),
+                    Convert.ToDouble(values[4]), Convert.ToInt32(values[6]), progAdjList, dummyCell, dim, dim, values[7]); // prev multipled circulationfactor with unit area of prog
                 programDataStack.Add(progData);
             }// end of for each statement
             List<List<string>> deptTopList = MakeDeptTopology(progAdjList);
@@ -341,8 +341,8 @@ namespace SpacePlanning
                 progAdjList.Add(values[8]);
                 List<Cell> dummyCell = new List<Cell> { new Cell(Point2d.ByCoordinates(0, 0), 0, 0, 0, true) };
 
-                ProgramData progData = new ProgramData(Convert.ToInt16(values[0]), values[1], values[2], Convert.ToInt16(values[3]),
-                    Convert.ToDouble(values[4]), Convert.ToInt16(values[6]), progAdjList, dummyCell, dim, dim, values[7]); // prev multipled circulationfactor with unit area of prog
+                ProgramData progData = new ProgramData(Convert.ToInt32(values[0]), values[1], values[2], Convert.ToInt32(Convert.ToDouble(values[3])),
+                    Convert.ToDouble(values[4]), Convert.ToInt32(values[6]), progAdjList, dummyCell, dim, dim, values[7]); // prev multipled circulationfactor with unit area of prog
                 programDataStack.Add(progData);
             }// end of for each statement
 
@@ -664,8 +664,9 @@ namespace SpacePlanning
                 {
                     double key = progItems[j].ProgPreferenceVal + eps + weight * progItems[j].AdjacencyWeight;
                     //double key = progItems[j].ProgPreferenceVal + eps;
+                    try { sortedPrograms.Add(key, progItems[j]); }
+                    catch { Random rand = new Random(j);  key += rand.NextDouble(); }
                     progItems[j].ProgramCombinedAdjWeight = key;
-                    sortedPrograms.Add(key, progItems[j]);
                     eps += inc;
                 }
                 eps = 0;
