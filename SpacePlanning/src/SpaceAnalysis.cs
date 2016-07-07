@@ -119,11 +119,11 @@ namespace SpacePlanning
         //Provides information related to program data
 
         [MultiReturn(new[] { "DisplayGeomList" })]
-        public static Dictionary<string, object> VisualizeDeptPrograms(List<DeptData> deptDataInp, int height = 0, int transparency = 255)
+        public static Dictionary<string, object> VisualizeDeptPrograms(List<DeptData> deptDataInp, int height = 0, int transparency = 255, int colorScheme = 0)
         {
             if (transparency < 0 || transparency > 255) transparency = 255;
             // hard coded list of colors for 20 depts
-            List<Color> colorList = new List<Color>();
+            List<Color> colorList = new List<Color>(), colorListSelected = new List<Color>();
             colorList.Add(Color.ByARGB(transparency, 119, 179, 0)); // light green
             colorList.Add(Color.ByARGB(transparency, 255, 51, 204)); // bright pink
             colorList.Add(Color.ByARGB(transparency, 102, 102, 255)); // violetish blue
@@ -136,6 +136,16 @@ namespace SpacePlanning
             colorList.Add(Color.ByARGB(transparency, 255, 51, 153)); // reddish pink
             colorList.Add(Color.ByARGB(transparency, 0, 102, 153)); // teal blue
             colorList.Add(Color.ByARGB(transparency, 153, 0, 204)); // purple
+            List<int> indicesList = new List<int>();
+            for (int i = 0; i < colorList.Count; i++) indicesList.Add(i);
+
+            if (colorScheme == 0) colorListSelected = colorList;
+            else
+            {
+                Random ran = new Random(colorScheme);
+                List<int> indicesRandomList = BasicUtility.RandomizeList(indicesList, ran);
+                for(int i = 0; i < colorList.Count; i++) { colorListSelected.Add(colorList[indicesRandomList[i]]); }
+            }
 
 
 
@@ -158,7 +168,7 @@ namespace SpacePlanning
                
                 int index = i;
                 if (index > colorList.Count) index = 0;
-                Color col = colorList[index];
+                Color col = colorListSelected[index];
                 List<Surface> srfList = new List<Surface>();
                 List<Display.Display> displayList = new List<Display.Display>();
                 for (int j = 0; j < polyProgs.Count; j++)
@@ -225,7 +235,7 @@ namespace SpacePlanning
                     for (int k = 0; k < polyProg.Count; k++)
                     {
                         Point2d center2d = PolygonUtility.CentroidOfPoly(polyProg[k]);
-                        Point center = Point.ByCoordinates(center2d.X, center2d.Y);
+                        Point center = Point.ByCoordinates(center2d.X, center2d.Y,height+1);
                         ptCenterList.Add(center);
                         Polygon poly = DynamoGeometry.PolygonByPolygon2d(polyProg[k], height);
                         polyList.Add(poly);
