@@ -68,7 +68,7 @@ namespace SpacePlanning
         //Provides information related to program data
 
         [MultiReturn(new[] { "DisplayGeomList" })]
-        public static Dictionary<string, object> VisualizeCirculation(List<Polygon2d> deptCirculationPoly, List<Polygon2d> progCirculationPoly, int height =0)
+        public static Dictionary<string, object> VisualizeCirculation(List<Polygon2d> deptCirculationPoly, List<Polygon2d> progCirculationPoly, double height =0)
         {
             List<Color> colorList = new List<Color>();
             colorList.Add(Color.ByARGB(255, 0, 255, 255)); // cyan
