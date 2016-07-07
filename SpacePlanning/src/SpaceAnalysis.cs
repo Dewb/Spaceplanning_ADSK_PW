@@ -16,6 +16,10 @@ namespace SpacePlanning
     /// </summary>
     public static class SpaceAnalysis
     {
+        //const colors
+        
+        
+
         #region - Public Methods
         //provides information related to dept data
         /// <summary>
@@ -63,9 +67,12 @@ namespace SpacePlanning
         }
         //Provides information related to program data
 
-        [MultiReturn(new[] { "DisplayGeomList", "SomethingNotKnown" })]
-        public static Dictionary<string, object> VisualizeCirculation(List<Polygon2d> deptCirculationPoly, List<Polygon2d> progCirculationPoly, int height =0,int recompute = 0)
+        [MultiReturn(new[] { "DisplayGeomList" })]
+        public static Dictionary<string, object> VisualizeCirculation(List<Polygon2d> deptCirculationPoly, List<Polygon2d> progCirculationPoly, int height =0)
         {
+            List<Color> colorList = new List<Color>();
+            colorList.Add(Color.ByARGB(255, 0, 255, 255)); // cyan
+            colorList.Add(Color.ByARGB(255, 153, 255, 102)); // fluoro green
 
             if (!ValidateObject.CheckPolyList(deptCirculationPoly) || !ValidateObject.CheckPolyList(progCirculationPoly)) return null;
             
@@ -75,26 +82,22 @@ namespace SpacePlanning
        
             List<List<Surface>> srfListAll = new List<List<Surface>>();
             List<List<Display.Display>> displayListAll = new List<List<Display.Display>>();
-            Random redRand = new Random(recompute + 10), grnRand = new Random(recompute + 15), bluRand = new Random(recompute + 20);
             for (int i = 0; i < polyProgsList.Count; i++)
             {
                 List<Polygon2d> polyProgs = polyProgsList[i];
-                int a = 255;
-                int r = (int)BasicUtility.RandomBetweenNumbers(redRand, 255, 1);
-                int g = (int)BasicUtility.RandomBetweenNumbers(grnRand, 255, 1);
-                int b = (int)BasicUtility.RandomBetweenNumbers(bluRand, 255, 1);
-                Color col = Color.ByARGB(a, r, g, b);
+                Color col = colorList[i];
                 List<Surface> srfList = new List<Surface>();
                 List<Display.Display> displayList = new List<Display.Display>();
                 for (int j = 0; j < polyProgs.Count; j++)
                 {
-                    List<Point2d> ptList = polyProgs[j].Points;
+                    
+                    Polygon2d polyReduced = new Polygon2d(polyProgs[j].Points);
+                    List<Point2d> ptList = polyReduced.Points;
                     List<Point> ptNewList = new List<Point>();
                     for (int k = 0; k < ptList.Count; k++) ptNewList.Add(Point.ByCoordinates(ptList[k].X, ptList[k].Y));
-                    //ptProgs.Add(ptNewList);
-                    Surface srf = Surface.ByPatch(Polygon.ByPoints(ptNewList));
-                    
-                    //srf.Translate(0, 0, height);
+                    Surface srf;
+                    try { srf = Surface.ByPerimeterPoints(ptNewList); }
+                    catch { continue; }                    
                     Geometry gm = srf.Translate(0, 0, height);
                     Display.Display dis = Display.Display.ByGeometryColor(gm, col);
                     displayList.Add(dis);
@@ -106,21 +109,35 @@ namespace SpacePlanning
                 displayListAll.Add(displayList);
                 //srfListAll.Add(srfList);
             }
-
             return new Dictionary<string, object>
             {
-                { "DisplayGeomList", (displayListAll) },
-                { "SomethingNotKnown", (null) }
+                { "DisplayGeomList", (displayListAll) }
             };
         }
 
 
         //Provides information related to program data
 
-        [MultiReturn(new[] { "DisplayGeomList", "SomethingNotKnown" })]
-        public static Dictionary<string, object> VisualizeDeptPrograms(List<DeptData> deptDataInp, int height = 0,  int recompute = 0)
+        [MultiReturn(new[] { "DisplayGeomList" })]
+        public static Dictionary<string, object> VisualizeDeptPrograms(List<DeptData> deptDataInp, int height = 0)
         {
-            
+            // hard coded list of colors for 20 depts
+            List<Color> colorList = new List<Color>();
+            colorList.Add(Color.ByARGB(255, 119, 179, 0)); // light green
+            colorList.Add(Color.ByARGB(255, 255, 51, 204)); // bright pink
+            colorList.Add(Color.ByARGB(255, 102, 102, 255)); // violetish blue
+            colorList.Add(Color.ByARGB(255, 255, 195, 77)); // orangish yellow
+            colorList.Add(Color.ByARGB(255, 204, 153, 255)); // violet blue
+            colorList.Add(Color.ByARGB(255, 51, 51, 204)); // darker blue
+            colorList.Add(Color.ByARGB(255, 0,128,0)); // darker green
+            colorList.Add(Color.ByARGB(255, 98, 98, 98)); // grey dark
+            colorList.Add(Color.ByARGB(255, 204, 255, 102)); // light green
+            colorList.Add(Color.ByARGB(255, 255, 51, 153)); // reddish pink
+            colorList.Add(Color.ByARGB(255, 0, 102, 153)); // teal blue
+            colorList.Add(Color.ByARGB(255, 153, 0, 204)); // purple
+
+
+
             if (deptDataInp == null) return null;
             List<DeptData> deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy
             List<List<Polygon2d>> polyProgsList = new List<List<Polygon2d>>();
@@ -129,42 +146,39 @@ namespace SpacePlanning
             {
                 List<ProgramData> progsInDept = deptData[i].ProgramsInDept;
                 List<Polygon2d> polyList = new List<Polygon2d>();
-                //List<Polygon2d> polyProgs = new List<Polygon2d>();
-                for (int j = 0; j < progsInDept.Count; j++)
-                {
-                    polyList.AddRange(progsInDept[j].PolyAssignedToProg);
-                }
+                for (int j = 0; j < progsInDept.Count; j++) polyList.AddRange(progsInDept[j].PolyAssignedToProg);
                 polyProgsList.Add(polyList);
             }
-            //List<List<Point>> ptProgs = new List<List<Point>>();
             List<List<Surface>> srfListAll = new List<List<Surface>>();
             List<List<Display.Display>> displayListAll = new List<List<Display.Display>>();
-            Random redRand = new Random(recompute+10), grnRand = new Random(recompute+15), bluRand = new Random(recompute+20);
             for (int i = 0; i < polyProgsList.Count; i++)
             {
                 List<Polygon2d> polyProgs = polyProgsList[i];            
-                int a = 255;
-                int r = (int)BasicUtility.RandomBetweenNumbers(redRand, 255, 1);
-                int g = (int)BasicUtility.RandomBetweenNumbers(grnRand, 255, 1);
-                int b = (int)BasicUtility.RandomBetweenNumbers(bluRand, 255, 1);
-                Color col = Color.ByARGB(a, r, g, b);
+               
+                int index = i;
+                if (index > colorList.Count) index = 0;
+                Color col = colorList[index];
                 List<Surface> srfList = new List<Surface>();
                 List<Display.Display> displayList = new List<Display.Display>();
                 for (int j = 0; j < polyProgs.Count; j++)
                 {
-                    List<Point2d> ptList = polyProgs[j].Points;
+                    Polygon2d polyReduced = new Polygon2d(polyProgs[j].Points);
+                    //polyReduced = PolygonUtility.PolyExtraEdgeRemove(polyReduced);
+                    //polyReduced = PolygonUtility.CreateOrthoPoly(polyReduced);
+                    List<Point2d> ptList = polyReduced.Points;
                     List<Point> ptNewList = new List<Point>();
-                    for (int k = 0; k < ptList.Count; k++) ptNewList.Add(Point.ByCoordinates(ptList[k].X, ptList[k].Y));
-                    //ptProgs.Add(ptNewList);
-                    Surface srf = Surface.ByPatch(Polygon.ByPoints(ptNewList));                  
-                    //srfList.Add(srf);
+                    for (int k = 0; k < ptList.Count; k++) ptNewList.Add(Point.ByCoordinates(ptList[k].X, ptList[k].Y));                    
+                    Surface srf;
+                    try { srf = Surface.ByPerimeterPoints(ptNewList); }
+                    catch { continue; }
+         
                     Geometry gm = srf.Translate(0, 0, height);
                     Display.Display dis = Display.Display.ByGeometryColor(gm, col);
                     displayList.Add(dis);
                     //srfList.Add(srf);
                     srf.Dispose();
                     ptNewList.Clear();
-                }
+                    }
                 displayListAll.Add(displayList);
                 //srfListAll.Add(srfList);
               
@@ -172,8 +186,7 @@ namespace SpacePlanning
             
             return new Dictionary<string, object>
             {
-                { "DisplayGeomList", (displayListAll) },
-                { "SomethingNotKnown", (null) }
+                { "DisplayGeomList", (displayListAll) }
             };
         }
 
