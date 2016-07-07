@@ -509,7 +509,7 @@ namespace SpacePlanning
         /// </summary>
         /// <param name="geomList">List of nurbs geometry</param>
         /// <param name="inset">Integer to inset the given site outline.</param>
-        /// <returns name="InsetSiteOutlineForForm">Site outline inset for form building computation.</returns>
+        /// <returns name="InsetSiteOutline">Site outline inset for form building computation.</returns>
         /// <search>
         /// get points of site outline
         /// </search>
@@ -548,6 +548,19 @@ namespace SpacePlanning
             else return null;
 
             PolyCurve pCrv = PolyCurve.ByJoinedCurves((Curve[])nurbList.ToArray());
+
+
+           /*
+            double area1 = pCrv.Area;
+            Curve siteBoundingCurve = boundingPoly.Offset(dist);
+            Surface srfCurve = Surface.ByPatch(siteBoundingCurve);
+            double area2 = srfCurve.Area;
+            if (area2 < area1) siteBoundingCurve = boundingPoly.Offset(-1 * dist);
+            srfPoly.Dispose(); srfCurve.Dispose(); boundingPoly.Dispose();
+            */
+
+
+
             Curve cInset = pCrv.Offset(inset*-1);
             List<Curve> curvList = new List<Curve>();
             geomList = cInset.Explode().ToList();

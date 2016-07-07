@@ -301,7 +301,7 @@ namespace SpacePlanning
                 { "PolyAssignedProgs", (polyProgList) }
             };
         }
-        
+
         //Visualizes the space plan scores and displays as text
         /// <summary>
         /// Visualizes space plan scores on the viewport.
@@ -311,58 +311,86 @@ namespace SpacePlanning
         /// <param name="extViewScore">External view score of the space plan layout.</param>
         /// <param name="travelDistScore">Travel distance score of the space plan layout.</param>
         /// <param name="percKPUScore">Percentage KPU score of the space plan layout.</param>
+        /// <param name="totalKPURoomsAdded">Total KPU rooms addded to the space plan layout.</param>
         /// <param name="x">X coordinate of the visualization.</param>
         /// <param name="y">Y coordinate of the visualization.</param>
         /// <param name="spacingX">Spacing in the direction of X axis.</param>
         /// <param name="spacingY">Spacing in the direction of Y axis.</param>
         /// <returns name="TextToWrite">String to visualize.</returns>
         /// <returns name="Points">Point at visualiation.</returns>        
-        [MultiReturn(new[] { "TextToWrite", "Points" ,"BoundingBox"})]
+        [MultiReturn(new[] { "TextToWrite", "Points", "SiteBoundingBox", "ScoreBox", "TextScale" })]
         public static Dictionary<string, object> SpacePlanFitnessVisualize(double totalScore, double programFitScore,
-            double extViewScore, double travelDistScore, double percKPUScore, double x = 0, double y = 0, double spacingX = 10, double spacingY = 10, Polygon2d insetSiteOutLine = null )
+            double extViewScore, double travelDistScore, double percKPUScore, double totalKPURoomsAdded, Polygon2d insetSiteOutLine = null)
         {
             List<string> textList = new List<string>();
             List<Point> ptList = new List<Point>();
-            int num = 5, extra = -10;
-            double xDim = x - spacingX, yDim = y;
+            int num = 6, pad = 8, dist = 10;
+            double textScale = dist * 0.7;
+            
             Polygon2d bBox = new Polygon2d(ReadData.FromPointsGetBoundingPoly(insetSiteOutLine.Points));
             Point2d origin = PolygonUtility.GetLowestAndHighestPointFromPoly(bBox)[0]; // get lowest pt of bounding poly
+            origin = Point2d.ByCoordinates(origin.X - dist, origin.Y - dist);
+            double xDim = origin.X + pad, yDim = origin.Y - pad;
             Polygon boundingPoly = DynamoGeometry.PolygonByPolygon2d(bBox,0);
+            Surface srfPoly = Surface.ByPatch(boundingPoly);
+            double area1 = srfPoly.Area;
+            Curve siteBoundingCurve= boundingPoly.Offset(dist);
+            Surface srfCurve = Surface.ByPatch(siteBoundingCurve);
+            double area2 = srfCurve.Area;
+            if(area2<area1) siteBoundingCurve = boundingPoly.Offset(-1*dist);
+            srfPoly.Dispose(); srfCurve.Dispose(); boundingPoly.Dispose();
+
             totalScore = Math.Round(totalScore, 2);
             programFitScore = Math.Round(programFitScore, 4)*100;
             extViewScore = Math.Round(extViewScore, 4)*100;
             travelDistScore = Math.Round(travelDistScore, 4)*100;
             percKPUScore = Math.Round(percKPUScore, 4)*100;
+            double spaceY = 10, spaceX = 85;
 
+            // 6 text elements, each lets say takes 10 pt space height
+            double heightBox = num * spaceY;
+            double widthBox = 2.25 * heightBox;
+
+            Point textBoxCenter = Point.ByCoordinates(origin.X + (widthBox / 2), origin.Y - (heightBox / 2));
+            CoordinateSystem cs = CoordinateSystem.ByOrigin(textBoxCenter);
+            Rectangle textBox = Rectangle.ByWidthLength(cs, widthBox, heightBox);
+
+            //pts for texts or keys
             for (int i = 0; i < num; i++)
             {
                 ptList.Add(Point.ByCoordinates(xDim, yDim));
-                if (i == 0) yDim += spacingY + extra;
-                else yDim += spacingY;
+                yDim -= spaceY;
+                //if (i == 0) 
+                //else yDim += spacingY;
             }
-            xDim = x; yDim = y;
+            //pts for scores or values
+            xDim = origin.X + pad + spaceX; yDim = origin.Y - pad;
             for (int i=0;i< num; i++)
             {
                 ptList.Add(Point.ByCoordinates(xDim, yDim));
-                if (i == 0) yDim += spacingY + extra;
-                else yDim += spacingY;
+                yDim -= spaceY;
+                //if (i == 0) yDim += spacingY + extra;
+                //else yDim += spacingY;
             }
             textList.Add("Total Design Score");
             textList.Add("Program Fitted Score");
             textList.Add("External View Score");
             textList.Add("Travel Distance Score");
             textList.Add("KPU Proportion Score");
+            textList.Add("Number of KPU Rooms");
             textList.Add(totalScore.ToString());
             textList.Add(programFitScore.ToString());
             textList.Add(extViewScore.ToString());
             textList.Add(travelDistScore.ToString());
             textList.Add(percKPUScore.ToString());
-
+            textList.Add(totalKPURoomsAdded.ToString());
             return new Dictionary<string, object>
             {
                 { "TextToWrite", (textList) },
                 { "Points", (ptList) },
-                { "BoundingBox", (boundingPoly) }
+                { "SiteBoundingBox", (siteBoundingCurve) },
+                { "ScoreBox" , (textBox) },
+                { "TextScale", (textScale) }
             };
         }
 
@@ -403,18 +431,14 @@ namespace SpacePlanning
             double areaInpatientRooms = 0, percInpatientFromSite = 0, dim = cellList[0].DimX;
             List<Polygon2d> primaryProgPoly = inPatientDeptData.PolyAssignedToDept;
             List<ProgramData> primaryProg = inPatientDeptData.ProgramsInDept;
-            for (int i = 0; i < primaryProgPoly.Count; i++)
-            {
-                if (!ValidateObject.CheckPoly(primaryProgPoly[i])) continue;
-                List<Polygon2d> polyprog = new List<Polygon2d>();
-                for (int j = 0; j < primaryProg.Count; j++)
-                {
-                   polyprog.AddRange(primaryProg[j].PolyAssignedToProg);
-                }
-                totalPatientRoomCount = polyprog.Count;
-                //totalPatientRoomCount += 1;
-                areaInpatientRooms += PolygonUtility.AreaPolygon(primaryProgPoly[i]);            
-            }   
+
+            List<Polygon2d> polyprog = new List<Polygon2d>();
+           
+                for (int j = 0; j < primaryProg.Count; j++ ) polyprog.AddRange(primaryProg[j].PolyAssignedToProg);         
+          
+            totalPatientRoomCount = polyprog.Count;
+            for(int i = 0; i < polyprog.Count; i++) { areaInpatientRooms += PolygonUtility.AreaPolygon(polyprog[i]); }
+      
 
             percInpatientFromSite = areaInpatientRooms / (2*siteArea);
             testData.Add(totalPatientRoomCount);
@@ -438,7 +462,7 @@ namespace SpacePlanning
 
             List<bool> getsExternalWall = new List<bool>();
             Point2d buildingCenter = PointUtility.CentroidInPointLists(borderPts);
-            List<Polygon2d> polyFlatList = primaryProgPoly; //PolygonUtility.FlattenPolygon2dList(primaryProgPoly);
+            List<Polygon2d> polyFlatList = polyprog;//primaryProgPoly; //PolygonUtility.FlattenPolygon2dList(primaryProgPoly);
             double dimPoly = 0, numTrues = 0, travelDistancePatientRms =0, arbLargeValue = 10000;
             for(int i = 0; i < polyFlatList.Count; i++)
             {
