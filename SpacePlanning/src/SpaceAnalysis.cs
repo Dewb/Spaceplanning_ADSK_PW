@@ -473,10 +473,13 @@ namespace SpacePlanning
         /// <search>
         /// export data, cell data
         /// </search>
-        public static List<List<string>> CellDataExport(List<DeptData> deptData, List<Cell> cellList, List<List<int>> cellNeighborMatrix)
+        public static List<List<string>> CellDataExport(List<DeptData> deptDataInp, List<Cell> cellList, List<List<int>> cellNeighborMatrix)
         {
-            if (deptData == null) return null;
+            
+
+            if (deptDataInp == null) return null;
             if (cellList == null) return null;
+            List<DeptData> deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy
 
             List<List<string>> dataToWriteList = new List<List<string>>();
             List<string> cellStrings = new List<string>();
@@ -558,6 +561,41 @@ namespace SpacePlanning
         }
 
 
+
+        //exports data to excel
+        /// <summary>
+        /// Exports Program Data in excel format.
+        /// </summary>
+        /// <param name="deptData"> List of Department Data object.</param>
+        /// <returns name="ProgramDataExport">Export of program data in excel format.</returns>
+        /// <search>
+        /// export data, program data
+        /// </search>
+        public static List<List<string>> ProgramDataExport(List<DeptData> deptDataInp)
+        {
+            if (deptDataInp == null) return null;
+            List<DeptData> deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy
+
+            List<List<string>> dataAll = new List<List<string>>();
+            List<string> progStrings = new List<string>();
+            progStrings.Add("DEPT NAME");
+            progStrings.Add("PROG NAME");
+            progStrings.Add("PROG AREA NEEDED");
+            progStrings.Add("PROG AREA PROVIDED");
+            progStrings.Add("PROG NUM POLYS ASSIGNED");
+            progStrings.Add("PROG POLY LENGTH");
+            progStrings.Add("PROG POLY WIDTH");
+            dataAll.Add(progStrings);
+            List<ProgramData> progData = new List<ProgramData>();
+            for(int i = 0; i < deptData.Count; i++)
+            {
+                List<List<string>> dataOut = EachDeptProgramDataExport(deptData[i].ProgramsInDept);
+                dataAll.AddRange(dataOut);
+            }
+            return dataAll;
+        }
+
+
         //exports data to excel
         /// <summary>
         /// Exports Program Data in excel format.
@@ -567,9 +605,11 @@ namespace SpacePlanning
         /// <search>
         /// export data, program data
         /// </search>
-        public static List<List<string>>ProgramDataExport(List<ProgramData> progDataList)
+        internal static List<List<string>>EachDeptProgramDataExport(List<ProgramData> progDataListInp)
         {
-            if (progDataList == null) return null;
+            if (progDataListInp == null) return null;
+            List<ProgramData> progDataList = progDataListInp.Select(x => new ProgramData(x)).ToList(); // example of deep copy
+
             List<List<string>> dataToWriteList = new List<List<string>>();
             List<string> progStrings = new List<string>();
             progStrings.Add("DEPT NAME");
@@ -579,7 +619,7 @@ namespace SpacePlanning
             progStrings.Add("PROG NUM POLYS ASSIGNED");
             progStrings.Add("PROG POLY LENGTH");
             progStrings.Add("PROG POLY WIDTH");
-            dataToWriteList.Add(progStrings);
+            //dataToWriteList.Add(progStrings);
            
             for (int i = 0; i < progDataList.Count; i++)
             {
