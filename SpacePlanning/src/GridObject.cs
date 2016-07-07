@@ -24,7 +24,7 @@ namespace SpacePlanning
         private double _dimX;
         private double _dimY;
 
-        private static int MINCELL = 300, MAXCELL = 600;
+        private static int MINCELL = 250, MAXCELL = 550;
 
         //constructor
         internal GridObject(List<Point2d> siteOutline, List<Point2d> siteBoundingBox, double dimensionX, double dimensionY)
@@ -327,7 +327,7 @@ namespace SpacePlanning
         /// bordercells, cellneighbormatrix, 
         /// </search>
         [MultiReturn(new[] { "OrthoSiteOutline", "BorderCells", "CellNeighborMatrix", "SortedCells" })]
-        public static Dictionary<string, object> FindOrthoSiteOutline(Polygon2d polyOutline, double cellDim, int iteration = 100)
+        public static Dictionary<string, object> FindOrthoSiteOutline(Polygon2d polyOutline, double cellDim, int iteration = 100, bool highPrecision = false)
         {
             double proportion = 0.75;
             if (!ValidateObject.CheckPoly(polyOutline)) return null;
@@ -337,6 +337,7 @@ namespace SpacePlanning
             List<List<int>> cellNeighborMatrix = new List<List<int>>();
             List<Polygon2d> cellsFound = new List<Polygon2d>();
             int minCells = MINCELL, maxCells = MAXCELL;
+            if(highPrecision) { minCells = 1000; maxCells = 2500; }
             double dimAdjusted = cellDim;
             double areaPoly = PolygonUtility.AreaPolygon(polyOutline), eps = 0.01;
             int numCells = (int)(areaPoly / (dimAdjusted * dimAdjusted));
@@ -464,12 +465,13 @@ namespace SpacePlanning
         /// form maker, buildingoutline, orthogonal forms
         /// </search>
         [MultiReturn(new[] { "BuildingOutline", "ExtraPoly", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "SiteCoverageAchieved", "CellList", "CellNeighborMatrix" })]
-        public static Dictionary<string, object> FormBuildingOutline(Polygon2d orthoSiteOutline, List<Cell> cellList, List<Point2d> attractorPoints = default(List<Point2d>), List<double> weightList = default(List<double>),
+        public static Dictionary<string, object> FormBuildingOutline(Polygon2d orthoSiteOutline, 
+            List<Cell> cellList, [DefaultArgument("null")]List<Point2d> attractorPoints, [DefaultArgument("null")]List<double> weightList,
      double siteCoverage = 0.5, int iteration = 100, bool removeNotch = false, double minNotchDistance = 10, bool cellRefine = false, int scanResolution = 0)
         {
             Trace.WriteLine("FORM BUILD OUTLINE STARTS+++++++++++++++++++++++++");
             if (iteration < 1) iteration = 1;
-            int count = 0, maxTry = 10;
+            int count = 0, maxTry = 5;
             bool worked = false;
             double siteCoverAchieved = 0, scDifference = 0, scDifferenceBest = 10000;
             Dictionary<string, object> formBuildingOutlineObj = new Dictionary<string, object>();
@@ -480,6 +482,7 @@ namespace SpacePlanning
 
             while (count < maxTry && !worked)
             {
+                //if (attractorPoints.Count == 0 || weightList.Count == 0) { attractorPoints = null; weightList = null; }
                 count += 1;
                 Trace.WriteLine("||||||||||||||||||||||||||||||trying to get the form we want : " + count);
                 formBuildingOutlineObj = BuildOutline(orthoSiteOutline, cellList, attractorPoints, weightList, siteCoverage, iteration, removeNotch, minNotchDistance, dummy, cellRefine);
@@ -514,8 +517,8 @@ namespace SpacePlanning
 
 
         [MultiReturn(new[] { "BuildingOutline", "ExtraPoly", "SubdividedPolys", "SiteArea", "LeftOverArea", "BuildingOutlineArea", "SiteCoverageAchieved", "CellList", "CellNeighborMatrix" })]
-        internal static Dictionary<string, object> BuildOutline(Polygon2d orthoSiteOutline, List<Cell> cellListInp, List<Point2d> attractorPoints = default(List<Point2d>), 
-            List<double>weightList = default(List<double>), double groundCoverage = 0.5, int iteration = 100, 
+        internal static Dictionary<string, object> BuildOutline(Polygon2d orthoSiteOutline, List<Cell> cellListInp, [DefaultArgument("null")]List<Point2d> attractorPoints,
+             [DefaultArgument("null")]List<double>weightList, double groundCoverage = 0.5, int iteration = 100, 
             bool removeNotch = false, double minNotchDistance  = 10,int dummy=100, bool cellRefine = false)
         {
             if (iteration < 1) iteration = 0;
@@ -786,7 +789,7 @@ namespace SpacePlanning
 
  
         //checks if cells are withing the range of given attractor points, with respective weight values.
-        internal static List<Cell> RemoveCellsBasedOnAttractors( List<Cell> cellListInp,List<Point2d> attractorPointList, List<double> weightList)
+        internal static List<Cell> RemoveCellsBasedOnAttractors( List<Cell> cellListInp, [DefaultArgument("{}")]List<Point2d> attractorPointList, [DefaultArgument("{}")]List<double> weightList)
         {
             if (cellListInp == null || attractorPointList == null || weightList == null) return null;
             List<Cell> cellList = cellListInp.Select(x => new Cell(x.CenterPoint, x.DimX, x.DimY,x.CellID)).ToList(); // example of deep copy           
