@@ -366,7 +366,8 @@ namespace SpacePlanning
                 //Trace.WriteLine("Dimension Cell used is " + dimAdjusted);
             }// end of while  
 
-
+            //borderPoly = PolygonUtility.PolyExtraEdgeRemove(borderPoly);
+            borderPoly = PolygonUtility.CreateOrthoPoly(borderPoly);
             return new Dictionary<string, object>
             {
                 { "OrthoSiteOutline", (borderPoly) },

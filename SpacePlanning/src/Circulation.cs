@@ -277,7 +277,7 @@ namespace SpacePlanning
                 {
                     Polygon2d poly2 = polygonsAllProgList[j];
                     Dictionary<string, object> checkNeighbor = PolygonUtility.FindPolyAdjacentEdge(poly1, poly2);
-                    if ((bool)checkNeighbor["Neighbour"] == true) networkLine.Add((Line2d)checkNeighbor["SharedEdge"]);
+                    if(checkNeighbor != null) if((bool)checkNeighbor["Neighbour"] == true) networkLine.Add((Line2d)checkNeighbor["SharedEdge"]);
                 }
             }
             List<Line2d> cleanNetworkLines = LineUtility.RemoveDuplicateLines(networkLine);

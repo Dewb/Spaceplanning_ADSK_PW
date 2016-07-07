@@ -550,18 +550,14 @@ namespace SpacePlanning
             PolyCurve pCrv = PolyCurve.ByJoinedCurves((Curve[])nurbList.ToArray());
 
 
-           /*
-            double area1 = pCrv.Area;
-            Curve siteBoundingCurve = boundingPoly.Offset(dist);
-            Surface srfCurve = Surface.ByPatch(siteBoundingCurve);
-            double area2 = srfCurve.Area;
-            if (area2 < area1) siteBoundingCurve = boundingPoly.Offset(-1 * dist);
-            srfPoly.Dispose(); srfCurve.Dispose(); boundingPoly.Dispose();
-            */
+            Curve cInsetA = pCrv.Offset(inset);
+            Curve cInsetB = pCrv.Offset(inset*-1);
+            Curve cInset;
+            Surface srfA = Surface.ByPatch(cInsetA), srfB = Surface.ByPatch(cInsetB);
+            if (srfA.Area > srfB.Area) cInset = cInsetB;
+            else cInset = cInsetA;
 
-
-
-            Curve cInset = pCrv.Offset(inset*-1);
+            srfA.Dispose(); srfB.Dispose();
             List<Curve> curvList = new List<Curve>();
             geomList = cInset.Explode().ToList();
             for (int i = 0; i < geomList.Count; i++) { curvList.Add((Curve)geomList[i]); }

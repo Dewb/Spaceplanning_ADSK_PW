@@ -389,6 +389,7 @@ namespace stuffer
             }
 
             Polygon2d polyNew = new Polygon2d(polygon.Points);
+            if (polyNew.Points.Count < 3) return null;
             List<Point> points = new List<Point>();
             foreach (Point2d point in polyNew.Points)
             {

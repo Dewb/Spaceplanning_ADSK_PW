@@ -399,7 +399,6 @@ namespace SpacePlanning
         /// Scores the space plan layout based on four key metrics, program fitness score, external view score, travel distance score, percentage of key planning units score.
         /// </summary>
         /// <param name="deptData">Department data object.</param>
-        /// <param name="primaryProgPoly">Primary program element polygon2d list.</param>
         /// <param name="cellList">List of cell objects for the building outline.</param>
         /// <param name="siteArea">Area of the site.</param>
         /// <param name="programFitWeight">User assigned weight for program fitness score.</param>
@@ -411,19 +410,18 @@ namespace SpacePlanning
         /// <returns name="ExtViewKPUScore">External view score of the space plan layout.</returns>
         /// <returns name="TravelDistanceScore">Travel distance score of the space plan layout.</returns>
         /// <returns name="PercentageKPUScore">Percentage KPU score of the space plan layout.</returns>
-        /// <returns name="InpatientDeptData">Department data of primary department.</returns>
+        /// <returns name="TotalKPURoomsAdded">Totol number of KPU rooms added.</returns>
         /// <search>
         /// space plane scoring, space plan metrics
-        /// </search>//List<List<Polygon2d>> primaryProgPoly,
-        [MultiReturn(new[] { "TotalScore", "ProgramFitScore", "ExtViewKPUScore", "TravelDistanceScore", "PercentageKPUScore","InpatientDeptData", "TotalKPURoomsAdded" })]
-        public static Dictionary<string, object> SpacePlanFitness(List<DeptData> deptDataInp,  
-            List<Cell> cellList, double siteArea = 0,  double programFitWeight = 0.6, double extViewWeight = 1, double traveDistWeight = 0.8,
+        /// </search>
+        [MultiReturn(new[] { "TotalScore", "ProgramFitScore", "ExtViewKPUScore", "TravelDistanceScore", "PercentageKPUScore", "TotalKPURoomsAdded" })]
+        public static Dictionary<string, object> SpacePlanFitnessTest(List<DeptData> deptData, List<Cell> cellList, double siteArea = 0, double programFitWeight = 0.6, double extViewWeight = 1, double traveDistWeight = 0.8,
             double percKPUWeight = 0.70)
         {
-            if (deptDataInp == null) return null;
+            if (deptData == null) return null;
             if (cellList == null) return null;
-
-            List<DeptData> deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy
+            List<DeptData> deptDataInp = deptData;
+            deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy
             DeptData inPatientDeptData = deptData[0];
             List<double> testData = new List<double>();
             List<double> inPatientData = new List<double>();
@@ -433,29 +431,29 @@ namespace SpacePlanning
             List<ProgramData> primaryProg = inPatientDeptData.ProgramsInDept;
 
             List<Polygon2d> polyprog = new List<Polygon2d>();
-           
-                for (int j = 0; j < primaryProg.Count; j++ ) polyprog.AddRange(primaryProg[j].PolyAssignedToProg);         
-          
-            totalPatientRoomCount = polyprog.Count;
-            for(int i = 0; i < polyprog.Count; i++) { areaInpatientRooms += PolygonUtility.AreaPolygon(polyprog[i]); }
-      
 
-            percInpatientFromSite = areaInpatientRooms / (2*siteArea);
+            for (int j = 0; j < primaryProg.Count; j++) polyprog.AddRange(primaryProg[j].PolyAssignedToProg);
+
+            totalPatientRoomCount = polyprog.Count;
+            for (int i = 0; i < polyprog.Count; i++) { areaInpatientRooms += PolygonUtility.AreaPolygon(polyprog[i]); }
+
+
+            percInpatientFromSite = areaInpatientRooms / (2 * siteArea);
             testData.Add(totalPatientRoomCount);
             testData.Add(areaInpatientRooms);
             testData.Add(percInpatientFromSite);
             inPatientData.Add(inPatientDeptData.AreaPercentageAchieved);
             inPatientData.Add(inPatientDeptData.DeptAreaNeeded);
-            inPatientData.Add(inPatientDeptData.DeptAreaProvided);          
+            inPatientData.Add(inPatientDeptData.DeptAreaProvided);
 
 
-            Dictionary<string,object> cellNeighborObj = GridObject.BuildCellNeighborMatrix(cellList);
+            Dictionary<string, object> cellNeighborObj = GridObject.BuildCellNeighborMatrix(cellList);
             List<List<int>> cellNeighborMatrix = (List<List<int>>)cellNeighborObj["CellNeighborMatrix"];
             List<Cell> sortedCells = (List<Cell>)cellNeighborObj["SortedCells"];
             List<int> borderCellIndices = GridObject.GetCornerAndEdgeCellId(cellNeighborMatrix);
             List<Point2d> borderPts = new List<Point2d>();
             List<Point2d> polyCenterList = new List<Point2d>();
-            for (int i = 0; i < borderCellIndices.Count;i++)
+            for (int i = 0; i < borderCellIndices.Count; i++)
             {
                 borderPts.Add(sortedCells[borderCellIndices[i]].CenterPoint);
             }
@@ -463,8 +461,8 @@ namespace SpacePlanning
             List<bool> getsExternalWall = new List<bool>();
             Point2d buildingCenter = PointUtility.CentroidInPointLists(borderPts);
             List<Polygon2d> polyFlatList = polyprog;//primaryProgPoly; //PolygonUtility.FlattenPolygon2dList(primaryProgPoly);
-            double dimPoly = 0, numTrues = 0, travelDistancePatientRms =0, arbLargeValue = 10000;
-            for(int i = 0; i < polyFlatList.Count; i++)
+            double dimPoly = 0, numTrues = 0, travelDistancePatientRms = 0, arbLargeValue = 10000;
+            for (int i = 0; i < polyFlatList.Count; i++)
             {
                 bool check = false;
                 Point2d cenPoly = PointUtility.CentroidInPointLists(polyFlatList[i].Points);
@@ -477,24 +475,24 @@ namespace SpacePlanning
                 travelDistancePatientRms += PointUtility.DistanceBetweenPoints(buildingCenter, cenPoly);
 
                 for (int j = 0; j < borderPts.Count; j++)
-                {                    
-                    double distToCell = PointUtility.DistanceBetweenPoints(borderPts[j], cenPoly);    
-                    if (distToCell <= dimAdd) { check = true; numTrues += 1;  break; }
+                {
+                    double distToCell = PointUtility.DistanceBetweenPoints(borderPts[j], cenPoly);
+                    if (distToCell <= dimAdd) { check = true; numTrues += 1; break; }
                 }
                 getsExternalWall.Add(check);
-            }          
+            }
             //double programFitWeight = 0.6, extViewWeight = 1, traveDistWeight = 0.8, percKPUWeight = 0.70;
             double programFitScore = 1, extViewScore = 1, travelDistScore = 1, percKPUScore = 1;
-            
 
-            for(int i = 0; i < deptData.Count; i++) programFitScore += deptData[i].DeptAreaProportionAchieved;
+
+            for (int i = 0; i < deptData.Count; i++) programFitScore += deptData[i].DeptAreaProportionAchieved;
             programFitScore = programFitScore / deptData.Count;
             extViewScore = numTrues / polyFlatList.Count;
             travelDistScore = travelDistancePatientRms / arbLargeValue;
             percKPUScore = inPatientDeptData.DeptAreaProportionAchieved;
             double totalScore = Math.Round(((programFitWeight * programFitScore + extViewWeight * extViewScore +
                                 traveDistWeight * travelDistScore + percKPUWeight * percKPUScore) * 40), 2);
-            
+
             return new Dictionary<string, object>
             {
                 { "TotalScore", (totalScore) },
@@ -502,10 +500,10 @@ namespace SpacePlanning
                 { "ExtViewKPUScore", (extViewWeight * extViewScore) },
                 { "TravelDistanceScore", (traveDistWeight * travelDistScore) },
                 { "PercentageKPUScore", (percKPUWeight * percKPUScore) },
-                { "InpatientDeptData", (inPatientData) },
                 { "TotalKPURoomsAdded", (totalPatientRoomCount) }
             };
         }
+
 
         //scores the space plan layout. currently there are four individual scores and total score is the summation of them.
         /// <summary>
