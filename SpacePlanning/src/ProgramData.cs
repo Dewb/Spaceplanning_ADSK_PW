@@ -39,7 +39,7 @@ namespace SpacePlanning
             _progrID = programID;
             
             _progDept = programDept;
-            _progName = programName + " || " + programDept.Substring(0, 2);//
+            _progName = programID + "|" +programName + "@ " + programDept.Substring(0, 2).ToUpper();//
             _progQuanity = programQuant;
             _progUnitArea = programUnitArea;
             _progPrefValue = programPrefValue;

@@ -51,8 +51,10 @@ namespace SpacePlanning
         /// </search>
         [MultiReturn(new[] { "DeptData","LeftOverPolys", "CirculationPolys","OtherDeptMainPoly"})]
         public static Dictionary<string, object> PlaceDepartments(List<DeptData> deptData, List<Polygon2d> buildingOutline,  double kpuDepth, 
-            double acceptableWidth,double circulationFreq = 8, int designSeed = 50, bool noExternalWall = false, bool unlimitedKPU = true)
+            double acceptableWidth,double polyDivision = 8, int designSeed = 50, bool noExternalWall = false, bool unlimitedKPU = true)
         {
+            if (polyDivision > 1 && polyDivision < 50) { SPACING = polyDivision; SPACING2 = polyDivision; }
+            double circulationFreq = 8;
             List<DeptData> deptDataInp = deptData;
             deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy
 
@@ -220,7 +222,7 @@ namespace SpacePlanning
         /// <param name="recompute">This value is used to restart computing the node every time its value is changed.</param>
         /// <returns></returns>
         [MultiReturn(new[] { "PolyAfterSplit", "ProgramData" })]
-        internal static Dictionary<string, object> PlaceREGPrograms(DeptData deptDataInp,int recompute = 0,bool extra = true)
+        internal static Dictionary<string, object> PlaceREGPrograms(DeptData deptDataInp,int recompute = 0,bool breakPoly = true)
         {
             if (deptDataInp == null) return null;
 
@@ -257,7 +259,7 @@ namespace SpacePlanning
                     Polygon2d currentPoly = polygonAvailable.Dequeue();
                     double areaPoly = PolygonUtility.AreaPolygon(currentPoly);
                     int compareArea = BasicUtility.CheckWithinRange(areaNeeded, areaPoly, eps);
-                    if (extra && compareArea == 1) // current poly area is more =  compareArea == 1
+                    if (breakPoly && compareArea == 1) // current poly area is more =  compareArea == 1
                     {
                         Dictionary<string,object> splitObj = SplitObject.SplitByRatio(currentPoly, 0.5);
                         if (splitObj != null)
@@ -293,6 +295,7 @@ namespace SpacePlanning
               
                 polyList.Add(progItem.PolyAssignedToProg);
                 progItem.ProgAreaProvided = areaAssigned;
+                if (progItem.PolyAssignedToProg.Count > 1) { if (progItem.ProgramName.IndexOf("##") == -1) progItem.ProgramName += " ##"; }// + progItem.ProgID;  }
                 count = 0;
                 areaAssigned = 0;
             }// end of for loop
@@ -343,13 +346,8 @@ namespace SpacePlanning
             */
             //for(int i = 0; i < progData.Count; i++) progData[i].PolyAssignedToProg = polyList[i];
 
-            List<ProgramData> newProgDataList = progData.Select(x => new ProgramData(x)).ToList(); // example of deep copy
-        
-            
-
-
-
-           
+            List<ProgramData> newProgDataList = progData.Select(x => new ProgramData(x)).ToList(); // example of deep copy    
+                       
             return new Dictionary<string, object>
             {
                 { "PolyAfterSplit", (polyList) },
@@ -368,7 +366,7 @@ namespace SpacePlanning
         /// <param name="recompute">Regardless of the recompute value, it is used to restart computing the node every time its value is changed.</param>
         /// <returns></returns>
         [MultiReturn(new[] { "DeptData" })]
-        public static Dictionary<string, object> PlacePrograms(List<DeptData> deptData, double primaryProgramWidth = 30, int recompute = 0)
+        public static Dictionary<string, object> PlacePrograms(List<DeptData> deptData, double primaryProgramWidth = 30, int recompute = 0, bool breakPoly = true)
         {
             if (deptData == null) return null;
             List<DeptData> deptDataInp = deptData;
@@ -384,7 +382,7 @@ namespace SpacePlanning
                 }
                 else
                 {
-                    Dictionary<string, object> placedSecondaryProg = PlaceREGPrograms(deptData[i], recompute);
+                    Dictionary<string, object> placedSecondaryProg = PlaceREGPrograms(deptData[i], recompute, breakPoly);
                     if (placedSecondaryProg != null) deptData[i].ProgramsInDept = (List<ProgramData>)placedSecondaryProg["ProgramData"];
                     else deptData[i].ProgramsInDept = null;
                 }

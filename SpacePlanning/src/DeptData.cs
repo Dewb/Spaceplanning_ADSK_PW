@@ -50,7 +50,7 @@ namespace SpacePlanning
             _polyDepts = null;
             _deptAreaProportion = 0;
             _deptAreaProportionAchieved = 0;
-            _deptAbrv = _deptName.Substring(0, 2).ToUpper() + " || " + _deptType;//_deptName.Split(' ').Select(s => s[0]).ToString();
+            _deptAbrv = _deptName +" = " + _deptName.Substring(0, 2).ToUpper() + " @ " + _deptType;//_deptName.Split(' ').Select(s => s[0]).ToString();
             _deptAdjacencyWeight = 0;
 
         }

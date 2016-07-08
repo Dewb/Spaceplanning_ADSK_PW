@@ -115,28 +115,148 @@ namespace SpacePlanning
             };
         }
 
-
-        //Provides information related to program data
-
         [MultiReturn(new[] { "DisplayGeomList" })]
-        public static Dictionary<string, object> VisualizeDeptPrograms(List<DeptData> deptDataInp, int height = 0, int transparency = 255, int colorScheme = 0)
+        internal static Dictionary<string,object> ColorPrograms(List<DeptData> deptDataInp, int height = 0, int transparency = 255, int colorScheme = 0)
         {
             if (transparency < 0 || transparency > 255) transparency = 255;
             // hard coded list of colors for 20 depts
-            List<Color> colorList = new List<Color>(), colorListSelected = new List<Color>();
+            List<Color> colorList = ProvideColorList(transparency), colorListSelected = new List<Color>();
+           
+
+            List<int> indicesList = new List<int>();
+            for (int i = 0; i < colorList.Count; i++) indicesList.Add(i);
+
+            if (colorScheme == 0) colorListSelected = colorList;
+            else
+            {
+                Random ran = new Random(colorScheme);
+                List<int> indicesRandomList = BasicUtility.RandomizeList(indicesList, ran);
+                for (int i = 0; i < colorList.Count; i++) { colorListSelected.Add(colorList[indicesRandomList[i]]); }
+            }
+           
+            if (deptDataInp == null) return null;
+            List<DeptData> deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy
+            List<List<List<Polygon2d>>> polyProgsList = new List<List<List<Polygon2d>>>();
+            for (int i = 0; i < deptData.Count; i++)
+            {
+                List<ProgramData> progsInDept = deptData[i].ProgramsInDept;
+                List<List<Polygon2d>> polyList = new List<List<Polygon2d>>();
+                for (int j = 0; j < progsInDept.Count; j++) polyList.Add(progsInDept[j].PolyAssignedToProg);
+                polyProgsList.Add(polyList);
+            }
+            List<List<Surface>> srfListAll = new List<List<Surface>>();
+            List<Display.Display> displayListAll = new List<Display.Display>();
+            int index = 0;
+            for (int i = 0; i < polyProgsList.Count; i++)
+            {
+                if (index > colorList.Count - 1) index = 0;
+                Color col = colorListSelected[index];
+                for (int j = 0; j < polyProgsList[i].Count; j++)
+                {
+                    if (i > 0)
+                    {
+                        if (index > colorList.Count - 1) index = 0;
+                        col = colorListSelected[index];
+                    }                   
+                    for (int k = 0; k < polyProgsList[i][j].Count; k++)
+                    {                        
+                        Polygon2d polyReduced = new Polygon2d(polyProgsList[i][j][k].Points);
+                        //polyReduced = PolygonUtility.PolyExtraEdgeRemove(polyReduced);
+                        //polyReduced = PolygonUtility.CreateOrthoPoly(polyReduced);
+                        List<Point2d> ptList = polyReduced.Points;
+                        List<Point> ptNewList = new List<Point>();
+                        for (int l = 0; l < ptList.Count; l++)
+                        {
+                            ptNewList.Add(Point.ByCoordinates(ptList[l].X, ptList[l].Y));
+                        }
+
+                        Surface srf;
+                        try { srf = Surface.ByPerimeterPoints(ptNewList); }
+                        catch { continue; }
+
+                        Geometry gm = srf.Translate(0, 0, height);
+                        Display.Display dis = Display.Display.ByGeometryColor(gm, col);
+                        displayListAll.Add(dis);
+                        //srfList.Add(srf);
+                        srf.Dispose();
+                        ptNewList.Clear();
+                        index += 1;
+                    }
+
+
+                }
+            }
+            return new Dictionary<string, object>
+            {
+                { "DisplayGeomList", (displayListAll) }
+            };
+        }
+
+        internal static List<Color> ProvideColorList(int transparency = 255)
+        {
+            // hard coded list of colors for 20 depts
+            List<Color> colorList = new List<Color>();
             colorList.Add(Color.ByARGB(transparency, 119, 179, 0)); // light green
             colorList.Add(Color.ByARGB(transparency, 255, 51, 204)); // bright pink
             colorList.Add(Color.ByARGB(transparency, 102, 102, 255)); // violetish blue
             colorList.Add(Color.ByARGB(transparency, 255, 195, 77)); // orangish yellow
             colorList.Add(Color.ByARGB(transparency, 204, 153, 255)); // violet blue
             colorList.Add(Color.ByARGB(transparency, 51, 51, 204)); // darker blue
-            colorList.Add(Color.ByARGB(transparency, 0,128,0)); // darker green
+            colorList.Add(Color.ByARGB(transparency, 0, 128, 0)); // darker green
             colorList.Add(Color.ByARGB(transparency, 98, 98, 98)); // grey dark
             colorList.Add(Color.ByARGB(transparency, 204, 255, 102)); // light green
             colorList.Add(Color.ByARGB(transparency, 255, 51, 153)); // reddish pink
             colorList.Add(Color.ByARGB(transparency, 0, 102, 153)); // teal blue
             colorList.Add(Color.ByARGB(transparency, 153, 0, 204)); // purple
+
+            colorList.Add(Color.ByARGB(transparency, 255, 195, 155));
+            colorList.Add(Color.ByARGB(transparency, 204, 153, 255));
+            colorList.Add(Color.ByARGB(transparency, 25, 155, 204));
+            colorList.Add(Color.ByARGB(transparency, 150, 128, 0));
+            colorList.Add(Color.ByARGB(transparency, 98, 98, 98));
+            colorList.Add(Color.ByARGB(transparency, 14, 255, 102));
+
+            colorList.Add(Color.ByARGB(transparency, 119, 179, 0));
+            colorList.Add(Color.ByARGB(transparency, 100, 225, 15));
+            colorList.Add(Color.ByARGB(transparency, 102, 102, 255));
+            colorList.Add(Color.ByARGB(transparency, 15, 195, 77));
+            colorList.Add(Color.ByARGB(transparency, 204, 153, 255));
+
+            colorList.Add(Color.ByARGB(transparency, 255, 195, 5));
+            colorList.Add(Color.ByARGB(transparency, 204, 4, 255));
+            colorList.Add(Color.ByARGB(transparency, 155, 155, 204));
+            colorList.Add(Color.ByARGB(transparency, 5, 179, 0));
+            colorList.Add(Color.ByARGB(transparency, 255, 225, 15));
+
+            colorList.Add(Color.ByARGB(transparency, 119, 179, 0));
+            colorList.Add(Color.ByARGB(transparency, 255, 55, 15));
+            colorList.Add(Color.ByARGB(transparency, 102, 102, 255));
+            colorList.Add(Color.ByARGB(transparency, 15, 195, 77));
+            colorList.Add(Color.ByARGB(transparency, 204, 153, 255));
+
+            colorList.Add(Color.ByARGB(transparency, 55, 195, 5));
+            colorList.Add(Color.ByARGB(transparency, 204, 4, 255));
+            colorList.Add(Color.ByARGB(transparency, 25, 155, 100));
+            colorList.Add(Color.ByARGB(transparency, 5, 55, 0));
+            colorList.Add(Color.ByARGB(transparency, 255, 225, 15));
+            return colorList;
+        }
+
+
+        //Provides information related to program data
+
+        [MultiReturn(new[] { "DisplayGeomList" })]
+        public static Dictionary<string, object> VisualizeDeptPrograms(List<DeptData> deptDataInp, int height = 0, int transparency = 255, int colorScheme = 0, bool colorProgramSeparate = false)
+        {
+            List<DeptData> deptData = deptDataInp;
+            deptDataInp = deptData.Select(x => new DeptData(x)).ToList(); // example of deep copy
+            if (colorProgramSeparate) return ColorPrograms(deptDataInp, height, transparency, colorScheme);
+         
+            if (transparency < 0 || transparency > 255) transparency = 255;
+            
             List<int> indicesList = new List<int>();
+            List<Color> colorList = ProvideColorList(transparency), colorListSelected = new List<Color>();
+
             for (int i = 0; i < colorList.Count; i++) indicesList.Add(i);
 
             if (colorScheme == 0) colorListSelected = colorList;
@@ -150,9 +270,8 @@ namespace SpacePlanning
 
 
             if (deptDataInp == null) return null;
-            List<DeptData> deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy
+            //List<DeptData> deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy
             List<List<Polygon2d>> polyProgsList = new List<List<Polygon2d>>();
-            List<Curve> crvProgs = new List<Curve>();
             for (int i = 0; i < deptData.Count; i++)
             {
                 List<ProgramData> progsInDept = deptData[i].ProgramsInDept;
@@ -199,6 +318,7 @@ namespace SpacePlanning
             {
                 { "DisplayGeomList", (displayListAll) }
             };
+            
         }
 
         //Provides information related to program data
@@ -214,7 +334,7 @@ namespace SpacePlanning
         /// visualize program polgons, program polylines
         /// </search>
         [MultiReturn(new[] { "progPolygons", "progPolyOrigin", "progNameAsText" })]
-        public static Dictionary<string, object> VisualizeProgramPolyLinesAndOrigin(List<DeptData> deptData, double height =0)
+        public static Dictionary<string, object> VisualizeProgramPolyLinesAndOrigin(List<DeptData> deptData, double height =0, double heightPolylines = 0 )
         {
             if (deptData == null) return null;
             List<List<List<Polygon>>> polyDeptListMega = new List<List<List<Polygon>>>();
@@ -238,7 +358,9 @@ namespace SpacePlanning
                         Point2d center2d = PolygonUtility.CentroidOfPoly(polyProg[k]);
                         Point center = Point.ByCoordinates(center2d.X, center2d.Y,height+1);
                         ptCenterList.Add(center);
-                        Polygon poly = DynamoGeometry.PolygonByPolygon2d(polyProg[k], height);
+                        double ht = heightPolylines;
+                        if (i == 0) ht = height;
+                        Polygon poly = DynamoGeometry.PolygonByPolygon2d(polyProg[k], ht);
                         polyList.Add(poly);
                     }
                     polyDeptList.Add(polyList);
