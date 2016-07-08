@@ -20,11 +20,11 @@ namespace SpacePlanning
         }
 
         //method to check a list of polygon2ds if they have all orthogonal lines or not
-        public static bool CheckPolygon2dListOrtho(List<Polygon2d> polyList,double eps =0)
+        public static bool CheckPolygon2dListOrtho(List<Polygon2d> polyList, double eps = 0)
         {
             if (polyList == null) return false;
             bool result = true;
-            for(int i = 0; i < polyList.Count; i++)
+            for (int i = 0; i < polyList.Count; i++)
             {
                 if (!CheckPoly(polyList[i])) return false;
                 Polygon2d polySimple = new Polygon2d(polyList[i].Points);
@@ -35,12 +35,12 @@ namespace SpacePlanning
 
         //checks a polygon2d if its orthogonal or non orthogonal
         public static bool CheckPolygon2dOrtho(Polygon2d nonOrthoPoly, double eps = 0)
-        {            
+        {
             bool result = true;
             Polygon2d polyNew = new Polygon2d(nonOrthoPoly.Points);
             List<Line2d> lineList = polyNew.Lines;
             for (int j = 0; j < lineList.Count; j++) if (!CheckLineOrthogonal(lineList[j])) { result = false; break; }
-            return result;            
+            return result;
         }
 
         //checks a polygon2d if it has self intersecting lines
@@ -55,9 +55,9 @@ namespace SpacePlanning
                 if (a > lineList.Count - 1) a = 0;
                 if (b < 0) b = lineList.Count - 1;
                 for (int j = 0; j < lineList.Count; j++)
-                {                   
+                {
                     if (i == j) continue;
-                    if (j == a || j == b) continue;             
+                    if (j == a || j == b) continue;
                     Point2d intersectPt = GraphicsUtility.LineLineIntersection(lineList[i], lineList[j]);
                     if (intersectPt == null) continue;
                     else if (CheckOnSegment(lineList[i], intersectPt) && CheckOnSegment(lineList[j], intersectPt)) return true;
@@ -67,7 +67,7 @@ namespace SpacePlanning
         }
 
         //this checks a polylist for abnormal polys and returns only those which deem fit
-        internal static List<Polygon2d>CheckAndCleanPolygon2dList(List<Polygon2d> polyList)
+        internal static List<Polygon2d> CheckAndCleanPolygon2dList(List<Polygon2d> polyList)
         {
             if (!CheckPolyList(polyList)) return null;
             List<Polygon2d> cleanPolyList = new List<Polygon2d>();
@@ -175,7 +175,27 @@ namespace SpacePlanning
             };
         }
 
-    
+        //checsk the aspect ratio of polygons
+        internal static bool CheckPolyAspectRatio(Polygon2d poly, double minDimensionAllowed = 5){
+
+            if (!CheckPoly(poly)) return false;
+
+            List<double> spans = PolygonUtility.GetSpansXYFromPolygon2d(poly.Points);
+            if (spans.Count > 1)
+            {
+                if (spans[0] < minDimensionAllowed || spans[1] < minDimensionAllowed) return false;
+                double aspectRatio = spans[0] / spans[1];
+                if (aspectRatio < 1) aspectRatio = 1 / aspectRatio;
+                if (aspectRatio > 5) return false;
+                if (aspectRatio > 1.5)
+                {
+                    double areaShouldBe = spans[0] * spans[1];
+                    double areaPoly = PolygonUtility.AreaPolygon(poly);
+                    if (areaPoly/areaShouldBe < 0.9) return false;
+                }
+            }
+            return true;
+            }
 
         //find lines which will not be inside the poly when offset by a distance
         [MultiReturn(new[] { "LinesFalse", "Offsetables", "IndicesFalse", "PointsOutside" })]

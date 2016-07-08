@@ -218,11 +218,11 @@ namespace SpacePlanning
         /// <summary>
         /// Assigns program elements inside the secondary department polygon2d.
         /// </summary>
-        /// <param name="deptData">Dept Data object.</param>
+        /// <param name="deptDataInp">Dept Data object.</param>
         /// <param name="recompute">This value is used to restart computing the node every time its value is changed.</param>
         /// <returns></returns>
         [MultiReturn(new[] { "PolyAfterSplit", "ProgramData" })]
-        internal static Dictionary<string, object> PlaceREGPrograms(DeptData deptDataInp,int recompute = 0,bool breakPoly = true)
+        internal static Dictionary<string, object> PlaceREGPrograms(DeptData deptDataInp,int recompute = 0,double minAllowedDim = 5, bool checkAspectRatio = true)
         {
             if (deptDataInp == null) return null;
 
@@ -259,7 +259,7 @@ namespace SpacePlanning
                     Polygon2d currentPoly = polygonAvailable.Dequeue();
                     double areaPoly = PolygonUtility.AreaPolygon(currentPoly);
                     int compareArea = BasicUtility.CheckWithinRange(areaNeeded, areaPoly, eps);
-                    if (breakPoly && compareArea == 1) // current poly area is more =  compareArea == 1
+                    if (compareArea == 1) // current poly area is more =  compareArea == 1
                     {
                         Dictionary<string,object> splitObj = SplitObject.SplitByRatio(currentPoly, 0.5);
                         if (splitObj != null)
@@ -274,8 +274,21 @@ namespace SpacePlanning
                             //area within range
                             if (ValidateObject.CheckPoly(currentPoly))
                             {
-                                progItem.PolyAssignedToProg.Add(currentPoly);
-                                areaAssigned += areaPoly;
+                                if (checkAspectRatio)
+                                {
+                                    if (ValidateObject.CheckPolyAspectRatio(currentPoly, minAllowedDim))
+                                    {
+                                        progItem.PolyAssignedToProg.Add(currentPoly);
+                                        areaAssigned += areaPoly;
+                                    }
+                                }
+                                else
+                                {
+                                    progItem.PolyAssignedToProg.Add(currentPoly);
+                                    areaAssigned += areaPoly;
+                                }
+                                
+                              
                             }                            
                             count += 1;
                         }
@@ -284,8 +297,19 @@ namespace SpacePlanning
                         //area within range
                         if (ValidateObject.CheckPoly(currentPoly))
                         {
-                            progItem.PolyAssignedToProg.Add(currentPoly);
-                            areaAssigned += areaPoly;
+                            if (checkAspectRatio)
+                            {
+                                if (ValidateObject.CheckPolyAspectRatio(currentPoly, minAllowedDim))
+                                {
+                                    progItem.PolyAssignedToProg.Add(currentPoly);
+                                    areaAssigned += areaPoly;
+                                }
+                            }
+                            else
+                            {
+                                progItem.PolyAssignedToProg.Add(currentPoly);
+                                areaAssigned += areaPoly;
+                            }
                         }
                         count += 1;
                     }
@@ -366,7 +390,7 @@ namespace SpacePlanning
         /// <param name="recompute">Regardless of the recompute value, it is used to restart computing the node every time its value is changed.</param>
         /// <returns></returns>
         [MultiReturn(new[] { "DeptData" })]
-        public static Dictionary<string, object> PlacePrograms(List<DeptData> deptData, double primaryProgramWidth = 30, int recompute = 0, bool breakPoly = true)
+        public static Dictionary<string, object> PlacePrograms(List<DeptData> deptData, double primaryProgramWidth = 30, int recompute = 0, double minAllowedDim = 5,bool checkAspectRatio = false)
         {
             if (deptData == null) return null;
             List<DeptData> deptDataInp = deptData;
@@ -382,7 +406,7 @@ namespace SpacePlanning
                 }
                 else
                 {
-                    Dictionary<string, object> placedSecondaryProg = PlaceREGPrograms(deptData[i], recompute, breakPoly);
+                    Dictionary<string, object> placedSecondaryProg = PlaceREGPrograms(deptData[i], recompute, minAllowedDim, checkAspectRatio);
                     if (placedSecondaryProg != null) deptData[i].ProgramsInDept = (List<ProgramData>)placedSecondaryProg["ProgramData"];
                     else deptData[i].ProgramsInDept = null;
                 }
