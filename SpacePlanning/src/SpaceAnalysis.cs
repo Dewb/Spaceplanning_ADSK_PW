@@ -234,6 +234,7 @@ namespace SpacePlanning
                    
                     for (int k = 0; k < polyProg.Count; k++)
                     {
+                        if (!ValidateObject.CheckPoly(polyProg[k])) continue;
                         Point2d center2d = PolygonUtility.CentroidOfPoly(polyProg[k]);
                         Point center = Point.ByCoordinates(center2d.X, center2d.Y,height+1);
                         ptCenterList.Add(center);

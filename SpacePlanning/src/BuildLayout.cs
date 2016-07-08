@@ -42,7 +42,7 @@ namespace SpacePlanning
         /// <param name="designSeed">Regardless of the recompute value, it is used to restart computing the node every time its value is changed.</param>
         /// <param name="noExternalWall">Boolean toggle to turn on or off requirement of external wall for KPU.</param>
         /// <param name="unlimitedKPU">Boolean toggle to turn on or off unlimied KPU placement.</param>
-        /// <returns name="UpdatedDeptData">Updated Dept Data object</returns>
+        /// <returns name="DeptData">Updated Dept Data object</returns>
         /// <returns name="LeftOverPolys">Polygon2d's not assigned to any department.</returns>
         /// <returns name="CirculationPolys">Polygon2d's needed to compute circulation networks.</returns>
         /// <returns name="OtherDeptMainPoly">Polygon2d for all other departments except for the primary department.</returns>
@@ -100,8 +100,8 @@ namespace SpacePlanning
         }
 
 
-       
-        
+
+
         //arranges program elements inside primary dept unit and updates program data object
         /// <summary>
         /// Assigns program elements inside the primary department polygon2d.
@@ -111,9 +111,9 @@ namespace SpacePlanning
         /// <param name="primaryProgramWidth">Width of the primary program element in  department.</param>
         /// <param name="recompute">Regardless of the recompute value, it is used to restart computing the node every time it's value is changed.</param>
         /// <returns name="PolyAfterSplit">Polygon2d's obtained after assigning programs inside the department.</returns>
-        /// <returns name="UpdatedProgramData">Updated program data object.</returns>
+        /// <returns name="ProgramData">Updated program data object.</returns>
         /// <returns name="ProgramsAddedCount">Number of program units added.</returns>
-        [MultiReturn(new[] { "DeptData", "ProgramsAddedCount" })]
+        [MultiReturn(new[] { "ProgramData", "ProgramsAddedCount" })]
         internal static Dictionary<string, object> PlaceKPUPrograms(List<Polygon2d> deptPoly, List<ProgramData> progData, double primaryProgramWidth, int recompute = 1, int space = 10)
         {
 
@@ -202,7 +202,7 @@ namespace SpacePlanning
             List<Polygon2d> cleanPolyList = ValidateObject.CheckAndCleanPolygon2dList(polyList);
             return new Dictionary<string, object>
             {
-                { "DeptData",(UpdatedProgramDataList) },
+                { "ProgramData",(UpdatedProgramDataList) },
                 { "ProgramsAddedCount" , (roomCount) }
             };
         }
@@ -368,10 +368,11 @@ namespace SpacePlanning
         /// <param name="recompute">Regardless of the recompute value, it is used to restart computing the node every time its value is changed.</param>
         /// <returns></returns>
         [MultiReturn(new[] { "DeptData" })]
-        public static Dictionary<string, object> PlacePrograms(List<DeptData> deptDataInp, double primaryProgramWidth = 30, int recompute = 0)
+        public static Dictionary<string, object> PlacePrograms(List<DeptData> deptData, double primaryProgramWidth = 30, int recompute = 0)
         {
-            if (deptDataInp == null) return null;
-            List<DeptData> deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy
+            if (deptData == null) return null;
+            List<DeptData> deptDataInp = deptData;
+            deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy
             List<List<Polygon2d>> polyPorgsAdded = new List<List<Polygon2d>>();
             List<ProgramData> progDataNew = new List<ProgramData>();
             for(int i = 0; i < deptData.Count; i++)
@@ -379,7 +380,7 @@ namespace SpacePlanning
                 if (i == 0)
                 {                    
                     Dictionary<string, object> placedPrimaryProg = PlaceKPUPrograms(deptData[i].PolyAssignedToDept, deptData[i].ProgramsInDept, primaryProgramWidth, recompute);
-                    deptData[i].ProgramsInDept = (List<ProgramData>)placedPrimaryProg["DeptData"];
+                    deptData[i].ProgramsInDept = (List<ProgramData>)placedPrimaryProg["ProgramData"];
                 }
                 else
                 {
@@ -389,8 +390,7 @@ namespace SpacePlanning
                 }
               
             }
-            List<DeptData> newDeptData = new List<DeptData>();
-            for(int i = 0; i < deptData.Count; i++) newDeptData.Add(new DeptData(deptData[i]));
+            List<DeptData> newDeptData = deptData.Select(x => new DeptData(x)).ToList(); // example of deep copy
             return new Dictionary<string, object>
             {
                 { "DeptData",(newDeptData) }

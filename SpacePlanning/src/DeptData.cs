@@ -62,6 +62,7 @@ namespace SpacePlanning
             _numCellsDept = other.NumCellsNeededDept();
             _cirFactor = other.DeptCirFactor;
             _deptAreaNeeded = other.AreaEachDept();
+            _deptAreaNeeded = other.DeptAreaNeeded;
             _numCells = other.NumCellsNeededDept();
             _numCellAdded = other.NumCellsInDept;
             _IsAreaSatisfied = other.IsAreaSatisfied;
