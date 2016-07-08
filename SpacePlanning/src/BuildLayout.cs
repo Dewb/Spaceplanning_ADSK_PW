@@ -53,7 +53,7 @@ namespace SpacePlanning
         public static Dictionary<string, object> PlaceDepartments(List<DeptData> deptData, List<Polygon2d> buildingOutline,  double kpuDepth, 
             double acceptableWidth,double polyDivision = 8, int designSeed = 50, bool noExternalWall = false, bool unlimitedKPU = true)
         {
-            if (polyDivision > 1 && polyDivision < 50) { SPACING = polyDivision; SPACING2 = polyDivision; }
+            if (polyDivision >= 1 && polyDivision < 30) { SPACING = polyDivision; SPACING2 = polyDivision; }
             double circulationFreq = 8;
             List<DeptData> deptDataInp = deptData;
             deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy
@@ -136,7 +136,7 @@ namespace SpacePlanning
                 int dir = 0, count = 0,lineId =0;
 
                 List<double> spans = PolygonUtility.GetSpansXYFromPolygon2d(poly.Points);
-                double setSpan = 1000000000000, fac = 1.1;
+                double setSpan = 1000000000000, fac = 1.8;
                 if (spans[0] > spans[1]) { setSpan = spans[0]; dir = 1; } // poly is horizontal, dir should be 1
                 else { setSpan = spans[1]; dir = 0; }// poly is vertical, dir should be 0
                 Polygon2d currentPoly = poly;
