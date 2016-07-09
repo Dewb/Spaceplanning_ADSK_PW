@@ -187,6 +187,92 @@ namespace SpacePlanning
 
         }
 
+        internal static Polygon2d AddpointToPoly(Polygon2d poly, int lineId  = 0)
+        {
+            if (!ValidateObject.CheckPoly(poly)) return null;
+            List<Point2d> ptList = new List<Point2d>();
+            for(int i = 0; i < poly.Points.Count; i++)
+            {
+                if (i == lineId)
+                {
+                    Line2d line = poly.Lines[lineId];
+                }
+                
+                ptList.Add(poly.Points[i]);
+            }
+            return null;
+        }
+
+
+        //splits a polygon based on offset direction from a given line id
+        [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly" })]
+        public static Dictionary<string, object> SplitByOffsetFromLineTest(Polygon2d polyOutline, int lineId, double distance = 10, double minDist = 0, double parameter = 0.5)
+        {
+            if (!ValidateObject.CheckPoly(polyOutline)) return null;
+            Polygon2d poly = new Polygon2d(polyOutline.Points, 0);
+
+            List<Point2d> pointForBlock = new List<Point2d>();
+            List<Point2d> polyPtsCopy = poly.Points.Select(pt => new Point2d(pt.X, pt.Y)).ToList();//deep copy
+            for (int i = 0; i < poly.Points.Count; i++)
+            {
+                int a = i, b = i + 1, c = i - 1;
+                if (c < 0) c = poly.Points.Count - 1;
+                if (i == poly.Points.Count - 1) b = 0;
+                Line2d prevLine = poly.Lines[c];
+                Line2d currLine = poly.Lines[a];
+                Line2d nextLine = poly.Lines[b];
+                if (i == lineId)
+                {
+                    Line2d line = new Line2d(poly.Points[a], poly.Points[b]);
+                    if (line.Length < minDist) continue;
+                    Line2d offsetLine = LineUtility.OffsetLineInsidePoly(line, poly, distance);
+                    pointForBlock.Add(poly.Points[a]);
+                    pointForBlock.Add(poly.Points[b]);
+                    pointForBlock.Add(offsetLine.EndPoint);
+                    pointForBlock.Add(offsetLine.StartPoint);
+                    int orientPrev = ValidateObject.CheckLineOrient(prevLine);
+                    int orientCurr = ValidateObject.CheckLineOrient(currLine);
+                    int orientNext = ValidateObject.CheckLineOrient(nextLine);
+
+                    // case 1
+                    if (orientPrev == orientCurr && orientCurr == orientNext)
+                    {
+                        polyPtsCopy.Insert(b, offsetLine.EndPoint);
+                        polyPtsCopy.Insert(b, offsetLine.StartPoint);
+                    }
+
+                    // case 2
+                    if (orientPrev != orientCurr && orientCurr == orientNext)
+                    {
+                        polyPtsCopy[a] = offsetLine.StartPoint;
+                        polyPtsCopy.Insert(b, offsetLine.EndPoint);
+                    }
+
+                    // case 3
+                    if (orientPrev == orientCurr && orientCurr != orientNext)
+                    {
+                        polyPtsCopy.Insert(b, offsetLine.StartPoint);
+                        polyPtsCopy[b + 1] = offsetLine.EndPoint;
+                    }
+
+                    // case 4
+                    if (orientPrev != orientCurr && orientCurr != orientNext)
+                    {
+                        polyPtsCopy[a] = offsetLine.StartPoint;
+                        polyPtsCopy[b] = offsetLine.EndPoint;
+                    }
+                }
+            }
+            Polygon2d polySplit = new Polygon2d(pointForBlock, 0);
+            Polygon2d leftPoly = new Polygon2d(polyPtsCopy, 0); //poly.Points
+            return new Dictionary<string, object>
+            {
+                { "PolyAfterSplit", (polySplit) },
+                { "LeftOverPoly", (leftPoly) },
+            };
+
+        }
+
         //splits a polygon based on offset direction from a given line id
         [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly" })]
         public static Dictionary<string, object> SplitByOffsetFromLine(Polygon2d polyOutline, int lineId, double distance = 10, double minDist = 0)
