@@ -538,7 +538,7 @@ namespace SpacePlanning
         //blocks are assigne based on offset distance, used for inpatient blocks
         [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly", "AreaAssignedToBlock", "FalseLines", "LineOptions", "PointAdded" })]
         internal static Dictionary<string, object> AssignBlocksBasedOnDistance(List<Polygon2d> polyList, double distance = 16, 
-            double area = 0, double thresDistance = 10, int iteration = 5, bool noExternalWall = false, double parameter =0.5, bool stackOptions = false)
+            double area = 0, double thresDistance = 10, int iteration = 5,  bool noExternalWall = false, double parameter =0.5, bool stackOptions = false)
         {
 
             if (!ValidateObject.CheckPolyList(polyList)) return null;
@@ -575,10 +575,11 @@ namespace SpacePlanning
                 //thresDistance = BasicUtility.RandomBetweenNumbers(ran, a, b);
                 while (polyLeftList.Count > 0 && areaAdded < area) //count<recompute count < maxTry
                 {
+                    double areaLeftToAdd = area - areaAdded;
                     error = false;
                     Polygon2d currentPoly = polyLeftList.Pop();
                     Polygon2d tempPoly = new Polygon2d(currentPoly.Points, 0);
-                    Dictionary<string, object> splitObject = CreateBlocksByLines(currentPoly, poly, distance, thresDistance, noExternalWall,parameter);
+                    Dictionary<string, object> splitObject = CreateBlocksByLines(currentPoly, poly, distance,areaLeftToAdd, thresDistance, noExternalWall,parameter);
                     if (splitObject == null) { count += 1; Trace.WriteLine("Split errored"); continue; }
                     Polygon2d blockPoly = (Polygon2d)splitObject["PolyAfterSplit"];
                     Polygon2d leftPoly = (Polygon2d)splitObject["LeftOverPoly"];
@@ -648,11 +649,32 @@ namespace SpacePlanning
             };
         }
 
+
+        //gets a poly and its lineId and distance,
+        //checks if area is more then it will provide a parameter value
+        internal static Polygon2d BuildPolyToSatisfyArea(Polygon2d poly, int lineId = 0, double areaTarget = 100, double offsetDistance = 10)
+        {      
+            if (!ValidateObject.CheckPoly(poly)) return null;            
+            poly = new Polygon2d(poly.Points, 0);
+            List<Point2d> ptList = new List<Point2d>();
+
+            double lineLength = poly.Lines[lineId].Length;
+            double areaAvailable = lineLength * offsetDistance, eps = 10;
+            //int compareArea = BasicUtility.CheckWithinRange(areaTarget, areaAvailable, eps);
+            if (areaTarget / areaAvailable < 0.9) // current poly area is more =  compareArea == 1
+            {
+                double lineLengthExpected = areaTarget / offsetDistance;
+                double parameter = lineLengthExpected / lineLength;
+                if (parameter >= 1 || parameter <= 0) return poly;
+                return AddPointToPoly(poly, lineId, parameter);
+            }
+            else return poly;          
+        }
     
         //splits a polygon based on offset direction
         [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly", "LineOptions", "SortedLengths" })]
         internal static Dictionary<string, object> CreateBlocksByLines(Polygon2d polyOutline, Polygon2d containerPoly, double distance = 10, 
-            double minDist = 20,bool tag = true, double parameter = 0.5)
+            double areaTarget = 10, double minDist = 20,bool tag = true, double parameter = 0.5)
         {
             if (!ValidateObject.CheckPoly(polyOutline)) return null;
             if (parameter <= 0 && parameter >= 1) parameter = 0.5;
@@ -669,6 +691,9 @@ namespace SpacePlanning
             List<int> sortedIndices = BasicUtility.Quicksort(lineLength);
             if (sortedIndices != null) sortedIndices.Reverse();
             for (int i = 0; i < poly.Points.Count; i++) if (lineLength[i] > 0 && i != sortedIndices[0]) { lineOptions.Add(poly.Lines[i]); }
+            // add a funct, which takes a lineid, poly, areatarget
+            // it checks what parameter it should split to have it meet area requirement correctly
+            poly = BuildPolyToSatisfyArea(poly, sortedIndices[0], areaTarget, distance);
             poly = AddPointToPoly(poly, sortedIndices[0], parameter);
             Dictionary<string, object> splitObj = SplitObject.SplitByOffsetFromLine(poly, sortedIndices[0], distance, minDist);
             Polygon2d polyBlock = (Polygon2d)splitObj["PolyAfterSplit"];
