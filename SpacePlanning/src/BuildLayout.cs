@@ -573,8 +573,10 @@ namespace SpacePlanning
                 Random ran = new Random(iteration);
                 double a = 60, b = 20;
                 //thresDistance = BasicUtility.RandomBetweenNumbers(ran, a, b);
+                double maxValue = distance * 2, minValue = distance * 0.3;
                 while (polyLeftList.Count > 0 && areaAdded < area) //count<recompute count < maxTry
                 {
+                    distance = BasicUtility.RandomBetweenNumbers(ran, maxValue, minValue);
                     double areaLeftToAdd = area - areaAdded;
                     error = false;
                     Polygon2d currentPoly = polyLeftList.Pop();
