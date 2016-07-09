@@ -28,7 +28,7 @@ namespace SpacePlanning
         /// <search>
         /// Department Circulation Network, Shared Edges between departments
         /// </search>
-        [MultiReturn(new[] { "CirculationNetworkLines", "ExtraNetworkLines", "PolyKPU" })]
+        [MultiReturn(new[] { "CirculationNetworkLines" })]
         public static Dictionary<string,object> FindDeptCirculationNetwork(List<DeptData> deptData, Polygon2d leftOverPoly = null, bool noExternalWall = false, double circulationFrequency = 0.75)
         {
             if (deptData == null || deptData.Count == 0) return null;
@@ -92,9 +92,7 @@ namespace SpacePlanning
             //return cleanNetworkLines;
             return new Dictionary<string, object>
             {
-                { "CirculationNetworkLines", (cleanNetworkLines) },
-                { "ExtraNetworkLines", (extraLines) },
-                { "PolyKPU", (polyKeyList) },
+                { "CirculationNetworkLines", (cleanNetworkLines) }
 
             };
         }
@@ -153,7 +151,7 @@ namespace SpacePlanning
           
         }
 
-       
+
 
         //Make circulation Polygons2d's between departments
         /// <summary>
@@ -162,12 +160,11 @@ namespace SpacePlanning
         /// <param name="deptData">Dept Data object.</param>
         /// <param name="circulationNetwork">List of line2d's representing circulation network between departments.</param>
         /// <param name="circulationWidth">Width in metres for circulation corridors between departments.</param>
-        /// <returns name="CirculationPolygons">Polygon2d's representing circulation areas between departments.</returns>
-        /// <returns name="UpdatedDeptPolygons">Updated polygon2d's representing departments.</returns>
+        /// <returns name="DeptCirculationPoly">Polygon2d's representing circulation areas between departments.</returns>
         /// <search>
         /// Department Circulation Network, Shared Edges between departments
         /// </search>
-        [MultiReturn(new[] { "DeptCirculationPoly", "UpdatedDeptPolys" })]
+        [MultiReturn(new[] { "DeptCirculationPoly" })]
         public static Dictionary<string, object> MakeDeptCirculationPolys(List<DeptData> deptData, List<List<Line2d>> circulationNetwork, double circulationWidth = 8)
         {
             if (deptData == null || deptData.Count == 0 || circulationNetwork == null || circulationNetwork.Count == 0) return null;
@@ -247,7 +244,7 @@ namespace SpacePlanning
         /// <param name="deptData">List of department data object.</param>
         /// <param name="buildingOutline">Polygon2d of building outline.</param>
         /// <param name="leftOverPoly">Polygon2d for programs of department A</param>
-        /// <returns name="CirculationPolygons">Polygon2d's representing circulation areas between programs.</returns>
+        /// <returns name="CirculationNetwork">Polygon2d's representing circulation areas between programs.</returns>
         /// <returns name="PolygonsForAllPrograms">All program element's polygon2d geometry in one list.</returns>
         [MultiReturn(new[] { "CirculationNetwork", "PolygonsForAllPrograms" })]
         public static Dictionary<string, object> FindProgCirculationNetwork(List<DeptData> deptData, Polygon2d buildingOutline, List<Polygon2d> leftOverPoly = null)
@@ -306,11 +303,10 @@ namespace SpacePlanning
         /// <param name="polyProgList">Polygon2d's of all programs in every department and of any left over space.</param>
         /// <param name="circulationWidth">Width in metres for circulation corridors between programs.</param>
         /// <param name="circulationFrequency">Allowed frequncy of circulation spaces. Higher value allows more spaces for circulation network.</param>
-        /// <param name="iteration">Design seed value as an integer.</param>
-        /// <returns name = "CirculationPolygons">Circulation Polygon2d's between programs.</returns>
-        /// <returns name = "UpdatedProgPolygons">Updated Program Polygon2d's after removing circulation space.</returns>
-        [MultiReturn(new[] { "ProgCirculationPoly", "UpdatedProgPolygons" })]
-        public static Dictionary<string, object> MakeProgCirculationPolys(List<Line2d> circulationNetwork, List<Polygon2d> polyProgList, double circulationWidth = 8,  double circulationFrequency = 0.5, int iteration = 10)
+        /// <param name="designSeed">Design seed value as an integer.</param>
+        /// <returns name = "ProgCirculationPoly">Circulation Polygon2d's between programs.</returns>
+        [MultiReturn(new[] { "ProgCirculationPoly" })]
+        public static Dictionary<string, object> MakeProgCirculationPolys(List<Line2d> circulationNetwork, List<Polygon2d> polyProgList, double circulationWidth = 8,  double circulationFrequency = 0.5, int designSeed = 10)
         {
             if (!ValidateObject.CheckPolyList(polyProgList)) return null;
             if (circulationNetwork == null || circulationNetwork.Count == 0) return null;
@@ -331,7 +327,7 @@ namespace SpacePlanning
             areaProgPolyList.Sort();
             int value = (int)(areaProgPolyList.Count / 3);
             double areaThresh = areaProgPolyList[value];
-            Random ran = new Random(iteration);
+            Random ran = new Random(designSeed);
 
             for (int i = 0; i < circulationNetwork.Count; i++)
             {
@@ -373,8 +369,7 @@ namespace SpacePlanning
 
             return new Dictionary<string, object>
             {               
-                { "ProgCirculationPoly", (circulationPolyList) },
-                { "UpdatedProgPolygons", (updatedProgPolyList) }
+                { "ProgCirculationPoly", (circulationPolyList) }
             };
         }
 

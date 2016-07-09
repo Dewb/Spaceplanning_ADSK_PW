@@ -56,7 +56,7 @@ namespace SpacePlanning
         /// </summary>
         /// <param name="deptData">List of DeptData object.</param>
         /// <param name="buildingOutline">Building outline polygon2d geometry.</param>
-        /// <param name="kpuDepth">Depth in feet of the main department.</param>
+        /// <param name="kpuDepthList">Depth of the main department.</param>
         /// <param name="acceptableWidth">Acceptable width in meters while allocating area and polygon2d to each dept on site.</param>
         /// <param name="minNotchDistance">Minimum distance below which an edge will be considered as a removable notch.</param>
         /// <param name="circulationFreq">Value to consider while checking frequency of cirulation computation polygon2d.</param>
@@ -70,7 +70,7 @@ namespace SpacePlanning
         /// <search>
         /// DeptData object, department arrangement on site
         /// </search>
-        [MultiReturn(new[] { "DeptData", "LeftOverPolys", "CirculationPolys", "OtherDeptMainPoly" })]
+        [MultiReturn(new[] { "DeptData", "LeftOverPolys"})]//"CirculationPolys", "OtherDeptMainPoly" 
         public static Dictionary<string, object> PlaceDepartments(List<DeptData> deptData, List<Polygon2d> buildingOutline, List<double> kpuDepthList, List<double> kpuWidthList,
             double acceptableWidth, double polyDivision = 8, int designSeed = 50, bool noExternalWall = false, 
             bool unlimitedKPU = true)
@@ -144,7 +144,7 @@ namespace SpacePlanning
         /// <returns name="ProgramData">Updated program data object.</returns>
         /// <returns name="ProgramsAddedCount">Number of program units added.</returns>
         [MultiReturn(new[] { "ProgramData", "ProgramsAddedCount" })]
-        internal static Dictionary<string, object> PlaceKPUPrograms(List<Polygon2d> deptPoly, List<ProgramData> progData, double primaryProgramWidth, int recompute = 1, int space = 10)
+        internal static Dictionary<string, object> PlaceKPUPrograms(List<Polygon2d> deptPoly, List<ProgramData> progData, List<double> primaryProgramWidthList, int space = 10)
         {
 
             if (!ValidateObject.CheckPolyList(deptPoly)) return null;
@@ -155,7 +155,7 @@ namespace SpacePlanning
             Queue<ProgramData> programDataRetrieved = new Queue<ProgramData>();
             List<ProgramData> progDataAddedList = new List<ProgramData>();
             ProgramData copyProgData = new ProgramData(progData[0]);
-
+            int index = 0;
             for (int i = 0; i < progData.Count; i++) programDataRetrieved.Enqueue(progData[i]);
             for (int i = 0; i < deptPoly.Count; i++)
             {
@@ -164,7 +164,7 @@ namespace SpacePlanning
                 int dir = 0, count = 0,lineId =0;
 
                 List<double> spans = PolygonUtility.GetSpansXYFromPolygon2d(poly.Points);
-                double setSpan = 1000000000000, fac = 1.8;
+                double setSpan = 1000000000000, fac = 1.5;
                 if (spans[0] > spans[1]) { setSpan = spans[0]; dir = 1; } // poly is horizontal, dir should be 1
                 else { setSpan = spans[1]; dir = 0; }// poly is vertical, dir should be 0
                 Polygon2d currentPoly = poly;
@@ -174,8 +174,10 @@ namespace SpacePlanning
 
                 int lineOrient = ValidateObject.CheckLineOrient(currentPoly.Lines[0]);
                 if (lineOrient == dir) lineId = 0;
-                else lineId = 1;
-
+                else lineId = 1;                
+                if (i > 2) index += 1;
+                if (index > primaryProgramWidthList.Count - 1) index = 0;
+                double primaryProgramWidth = primaryProgramWidthList[index];
                 while (setSpan > primaryProgramWidth && count < 2000)
                 {
                     if (programDataRetrieved.Count == 0) programDataRetrieved.Enqueue(copyProgData);
@@ -250,7 +252,7 @@ namespace SpacePlanning
         /// <param name="recompute">This value is used to restart computing the node every time its value is changed.</param>
         /// <returns></returns>
         [MultiReturn(new[] { "PolyAfterSplit", "ProgramData" })]
-        internal static Dictionary<string, object> PlaceREGPrograms(DeptData deptDataInp,int recompute = 0,double minAllowedDim = 5, bool checkAspectRatio = true)
+        internal static Dictionary<string, object> PlaceREGPrograms(DeptData deptDataInp,double minAllowedDim = 5, bool checkAspectRatio = true)
         {
             if (deptDataInp == null) return null;
 
@@ -414,11 +416,12 @@ namespace SpacePlanning
         /// Assigns program elements inside the secondary department polygon2d.
         /// </summary>
         /// <param name="deptData">List of Department Data Objects.</param>
-        /// <param name="primaryProgramWidth">Width of the program poly in the primary department</param>
-        /// <param name="recompute">Regardless of the recompute value, it is used to restart computing the node every time its value is changed.</param>
-        /// <returns></returns>
+        /// <param name="kpuProgramWidthList">Width of the program poly in the primary department</param>
+        /// <param name="minAllowedDim">Minimum allowed dimension of the program space.</param>
+        /// <param name="checkAspectRatio">Boolean value to toggle check aspect ratio of the programs.</param>
+        /// <returns name="DeptData">Updated department data object.</returns>
         [MultiReturn(new[] { "DeptData" })]
-        public static Dictionary<string, object> PlacePrograms(List<DeptData> deptData, double primaryProgramWidth = 30, int recompute = 0, double minAllowedDim = 5,bool checkAspectRatio = false)
+        public static Dictionary<string, object> PlacePrograms(List<DeptData> deptData, List<double> kpuProgramWidthList, double minAllowedDim = 5,bool checkAspectRatio = false)
         {
             if (deptData == null) return null;
             List<DeptData> deptDataInp = deptData;
@@ -429,12 +432,12 @@ namespace SpacePlanning
             {
                 if (i == 0)
                 {                    
-                    Dictionary<string, object> placedPrimaryProg = PlaceKPUPrograms(deptData[i].PolyAssignedToDept, deptData[i].ProgramsInDept, primaryProgramWidth, recompute);
+                    Dictionary<string, object> placedPrimaryProg = PlaceKPUPrograms(deptData[i].PolyAssignedToDept, deptData[i].ProgramsInDept, kpuProgramWidthList);
                     deptData[i].ProgramsInDept = (List<ProgramData>)placedPrimaryProg["ProgramData"];
                 }
                 else
                 {
-                    Dictionary<string, object> placedSecondaryProg = PlaceREGPrograms(deptData[i], recompute, minAllowedDim, checkAspectRatio);
+                    Dictionary<string, object> placedSecondaryProg = PlaceREGPrograms(deptData[i], minAllowedDim, checkAspectRatio);
                     if (placedSecondaryProg != null)  deptData[i].ProgramsInDept = (List<ProgramData>)placedSecondaryProg["ProgramData"];
                     else deptData[i].ProgramsInDept = null;
                 }
@@ -724,10 +727,10 @@ namespace SpacePlanning
             };
 
         }
-        
+
 
         //dept assignment new way
-        [MultiReturn(new[] { "DeptData", "LeftOverPolys", "CirculationPolys", "OtherDeptMainPoly" })]
+        [MultiReturn(new[] { "DeptData", "LeftOverPolys" })]//"CirculationPolys", "OtherDeptMainPoly" 
         internal static Dictionary<string, object> DeptPlacer(List<DeptData> deptData, List<Polygon2d> polyList, List<double> kpuDepthList, List<double> kpuWidthList,
             double acceptableWidth = 20, double circulationFreq = 10, int designSeed = 5, bool noExternalWall = false, 
             bool unlimitedKPU = true, bool stackOptionsDept = false, bool stackOptionsProg = false, double parameter = 0.5)
@@ -845,7 +848,7 @@ namespace SpacePlanning
                             double arealeft = 0;
                             for (int j = 0; j < leftOverPoly.Count; j++) { arealeft += PolygonUtility.AreaPolygon(leftOverPoly[j]); }
                             double upper = arealeft / 6, lower = arealeft / 12;
-                            acceptableWidth = BasicUtility.RandomBetweenNumbers(new Random(designSeed), upper, lower);
+                            //acceptableWidth = BasicUtility.RandomBetweenNumbers(new Random(designSeed), upper, lower);
                            
                         }
                         polySubDivs = SplitObject.SplitRecursivelyToSubdividePoly(leftOverPoly, acceptableWidth, circulationFreq, ratio);
@@ -925,12 +928,15 @@ namespace SpacePlanning
 
             if (leftOverPoly.Count == 0) leftOverPoly = null;
             Trace.WriteLine("DEPT PLACE KPU ENDS +++++++++++++++++++++++++++++++");
+            /*
+            
+                { "CirculationPolys", (polyCirculation) },
+                { "OtherDeptMainPoly", (otherDeptPoly) }
+            */
             return new Dictionary<string, object>
             {
                 { "DeptData", (UpdatedDeptData) },
-                { "LeftOverPolys", (leftOverPoly) },
-                { "CirculationPolys", (polyCirculation) },
-                { "OtherDeptMainPoly", (otherDeptPoly) }
+                { "LeftOverPolys", (leftOverPoly) }
             };
         }
 

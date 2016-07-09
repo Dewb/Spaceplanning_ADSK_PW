@@ -469,12 +469,13 @@ namespace SpacePlanning
         [MultiReturn(new[] { "BuildingOutline",  "SiteArea", "LeftOverArea", "BuildingOutlineArea", "SiteCoverageAchieved", "CellList", "CellNeighborMatrix" })]
         public static Dictionary<string, object> FormBuildingOutline(Polygon2d orthoSiteOutline, 
             List<Cell> cellList, [DefaultArgument("null")]List<Point2d> attractorPoints, [DefaultArgument("null")]List<double> weightList,
-     double siteCoverage = 0.5, int designSeed = 100, bool removeNotch = false, double minNotchDistance = 10, bool cellRefine = false, int scanResolution = 0, bool stackOptions = false)
+     double siteCoverage = 0.5, int designSeed = 100, bool removeNotch = false, double minNotchDistance = 10)
         {
             Trace.WriteLine("FORM BUILD OUTLINE STARTS+++++++++++++++++++++++++");
             if (designSeed < 1) designSeed = 1;
             int count = 0, maxTry = 3;
-            
+            bool cellRefine = false;
+            int scanResolution = 8;
             bool worked = false;
             double siteCoverAchieved = 0, scDifference = 0, scDifferenceBest = 10000;
             Dictionary<string, object> formBuildingOutlineObj = new Dictionary<string, object>();
@@ -482,7 +483,6 @@ namespace SpacePlanning
             int dummy = 0;
             if (scanResolution == 0) dummy = (int)BasicUtility.RandomBetweenNumbers(new Random(designSeed), 40, 3);
             else dummy = scanResolution;
-            //if (stackOptions) { maxTry = 25; }
             while (count < maxTry && !worked)
             {
                 //if (attractorPoints.Count == 0 || weightList.Count == 0) { attractorPoints = null; weightList = null; }
