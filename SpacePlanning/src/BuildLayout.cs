@@ -89,7 +89,7 @@ namespace SpacePlanning
             bool stackOptionsProg = deptData[0].ProgramsInDept[0].StackingOptions;
             while (deptPlaced == false && count < MAXCOUNT)//MAXCOUNT
             {
-                double parameter = BasicUtility.RandomBetweenNumbers(ran, 0.95, 0.35);
+                double parameter = BasicUtility.RandomBetweenNumbers(ran, 0.9, 0.5);
                 if (!stackOptionsDept) parameter = 0;
                 //parameter = 0;
                 Trace.WriteLine("PLACE DEPT STARTS , Lets arrange dept again ++++++++++++++++ : " + count);
