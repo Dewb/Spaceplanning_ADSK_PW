@@ -71,7 +71,7 @@ namespace SpacePlanning
         /// DeptData object, department arrangement on site
         /// </search>
         [MultiReturn(new[] { "DeptData", "LeftOverPolys", "CirculationPolys", "OtherDeptMainPoly" })]
-        public static Dictionary<string, object> PlaceDepartments(List<DeptData> deptData, List<Polygon2d> buildingOutline, double kpuDepth,
+        public static Dictionary<string, object> PlaceDepartments(List<DeptData> deptData, List<Polygon2d> buildingOutline, List<double> kpuDepthList,
             double acceptableWidth, double polyDivision = 8, int designSeed = 50, bool noExternalWall = false, 
             bool unlimitedKPU = true)
         {
@@ -93,7 +93,7 @@ namespace SpacePlanning
                 if (!stackOptionsDept) parameter = 0;
                 //parameter = 0;
                 Trace.WriteLine("PLACE DEPT STARTS , Lets arrange dept again ++++++++++++++++ : " + count);
-                deptArrangement = DeptPlacer(deptData, buildingOutline, kpuDepth, acceptableWidth, circulationFreq, designSeed, noExternalWall, unlimitedKPU, stackOptionsDept, stackOptionsProg, parameter);
+                deptArrangement = DeptPlacer(deptData, buildingOutline, kpuDepthList, acceptableWidth, circulationFreq, designSeed, noExternalWall, unlimitedKPU, stackOptionsDept, stackOptionsProg, parameter);
                 if(deptArrangement != null)
                 {
                     List<DeptData> deptDataUpdated =(List<DeptData>) deptArrangement["DeptData"];
@@ -537,12 +537,12 @@ namespace SpacePlanning
 
         //blocks are assigne based on offset distance, used for inpatient blocks
         [MultiReturn(new[] { "PolyAfterSplit", "LeftOverPoly", "AreaAssignedToBlock", "FalseLines", "LineOptions", "PointAdded" })]
-        internal static Dictionary<string, object> AssignBlocksBasedOnDistance(List<Polygon2d> polyList, double distance = 16, 
-            double area = 0, double thresDistance = 10, int iteration = 5,  bool noExternalWall = false, double parameter =0.5, bool stackOptions = false)
+        internal static Dictionary<string, object> AssignBlocksBasedOnDistance(List<Polygon2d> polyList, List<double> distanceList, 
+            double area,List<double> areaEachKPUList, double thresDistance = 10, int iteration = 5,  bool noExternalWall = false, double parameter =0.5, bool stackOptions = false)
         {
 
             if (!ValidateObject.CheckPolyList(polyList)) return null;
-            if (distance < 1) return null;
+            //if (distance < 1) return null;
             if (parameter <= 0 && parameter >= 1) parameter = 0.5;
             PriorityQueue<double, Polygon2d> priorityPolyQueue = new PriorityQueue<double, Polygon2d>();
             List<Polygon2d> blockPolyList = new List<Polygon2d>();
@@ -558,6 +558,7 @@ namespace SpacePlanning
                 double areaPoly = PolygonUtility.AreaPolygon(polyList[i]); // negated to make sorted dictionary store in negative 
                 priorityPolyQueue.Enqueue(-1 * areaPoly, polyList[i]);
             }
+            int index = 0;
             for (int i = 0; i < polyList.Count; i++)
             {
                 if (areaAdded > area) break;
@@ -573,6 +574,7 @@ namespace SpacePlanning
                 Random ran = new Random(iteration);
                 double a = 60, b = 20;
                 //thresDistance = BasicUtility.RandomBetweenNumbers(ran, a, b);
+                double distance = distanceList[index];
                 double maxValue = distance * 2, minValue = distance * 0.3;
                 while (polyLeftList.Count > 0 && areaAdded < area) //count<recompute count < maxTry
                 {
@@ -713,7 +715,7 @@ namespace SpacePlanning
 
         //dept assignment new way
         [MultiReturn(new[] { "DeptData", "LeftOverPolys", "CirculationPolys", "OtherDeptMainPoly" })]
-        internal static Dictionary<string, object> DeptPlacer(List<DeptData> deptData, List<Polygon2d> polyList, double kpuDepth,
+        internal static Dictionary<string, object> DeptPlacer(List<DeptData> deptData, List<Polygon2d> polyList, List<double> kpuDepthList,
             double acceptableWidth = 20, double circulationFreq = 10, int designSeed = 5, bool noExternalWall = false, 
             bool unlimitedKPU = true, bool stackOptionsDept = false, bool stackOptionsProg = false, double parameter = 0.5)
         {
@@ -778,6 +780,7 @@ namespace SpacePlanning
 
             List<Polygon2d> leftOverBlocks = polyList;
             Polygon2d currentPoly = polyList[0];
+            List<double> areaEachKPUList = new List<double>();
             for (int i = 0; i < deptData.Count; i++)
             {
                 double thresDistance = 20;
@@ -791,11 +794,12 @@ namespace SpacePlanning
                     double areaNeeded = areaNeededDept[i];
                     double areaLeftOverBlocks = 0;
                     for (int k = 0; k < leftOverBlocks.Count; k++) areaLeftOverBlocks += PolygonUtility.AreaPolygon(leftOverBlocks[k]);
-                    if (unlimitedKPU) areaNeeded = 0.75 * areaLeftOverBlocks;
+                    if (unlimitedKPU) areaNeeded = 0.9 * areaLeftOverBlocks;
                     //else areaNeeded = 6000;
-                    if(!stackOptionsDept && areaNeeded> 0.75 * areaLeftOverBlocks) areaNeeded = 0.75 * areaLeftOverBlocks;
+                    //if(!stackOptionsDept && areaNeeded> 0.75 * areaLeftOverBlocks) areaNeeded = 0.75 * areaLeftOverBlocks;
                     
-                    Dictionary<string, object> inpatientObject = AssignBlocksBasedOnDistance(leftOverBlocks, kpuDepth, areaNeeded, thresDistance, designSeed, noExternalWall,parameter, stackOptionsDept);
+                    Dictionary<string, object> inpatientObject = AssignBlocksBasedOnDistance(leftOverBlocks, kpuDepthList, areaNeeded, areaEachKPUList,
+                        thresDistance, designSeed, noExternalWall,parameter, stackOptionsDept);
                     if (inpatientObject == null) return null;
                     List<Polygon2d> inpatienBlocks = (List<Polygon2d>)inpatientObject["PolyAfterSplit"];
                     leftOverBlocks = (List<Polygon2d>)inpatientObject["LeftOverPoly"];
