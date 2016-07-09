@@ -71,7 +71,7 @@ namespace SpacePlanning
         /// DeptData object, department arrangement on site
         /// </search>
         [MultiReturn(new[] { "DeptData", "LeftOverPolys", "CirculationPolys", "OtherDeptMainPoly" })]
-        public static Dictionary<string, object> PlaceDepartments(List<DeptData> deptData, List<Polygon2d> buildingOutline, List<double> kpuDepthList,
+        public static Dictionary<string, object> PlaceDepartments(List<DeptData> deptData, List<Polygon2d> buildingOutline, List<double> kpuDepthList, List<double> kpuWidthList,
             double acceptableWidth, double polyDivision = 8, int designSeed = 50, bool noExternalWall = false, 
             bool unlimitedKPU = true)
         {
@@ -93,7 +93,7 @@ namespace SpacePlanning
                 if (!stackOptionsDept) parameter = 0;
                 //parameter = 0;
                 Trace.WriteLine("PLACE DEPT STARTS , Lets arrange dept again ++++++++++++++++ : " + count);
-                deptArrangement = DeptPlacer(deptData, buildingOutline, kpuDepthList, acceptableWidth, circulationFreq, designSeed, noExternalWall, unlimitedKPU, stackOptionsDept, stackOptionsProg, parameter);
+                deptArrangement = DeptPlacer(deptData, buildingOutline, kpuDepthList, kpuWidthList, acceptableWidth, circulationFreq, designSeed, noExternalWall, unlimitedKPU, stackOptionsDept, stackOptionsProg, parameter);
                 if(deptArrangement != null)
                 {
                     List<DeptData> deptDataUpdated =(List<DeptData>) deptArrangement["DeptData"];
@@ -574,11 +574,12 @@ namespace SpacePlanning
                 Random ran = new Random(iteration);
                 double a = 60, b = 20;
                 //thresDistance = BasicUtility.RandomBetweenNumbers(ran, a, b);
+                double areaCurrentKPU = areaEachKPUList[index];
                 double distance = distanceList[index];
                 double maxValue = distance * 2, minValue = distance * 0.3;
                 while (polyLeftList.Count > 0 && areaAdded < area) //count<recompute count < maxTry
-                {
-                    distance = BasicUtility.RandomBetweenNumbers(ran, maxValue, minValue);
+                {    
+                    //distance = BasicUtility.RandomBetweenNumbers(ran, maxValue, minValue);
                     double areaLeftToAdd = area - areaAdded;
                     error = false;
                     Polygon2d currentPoly = polyLeftList.Pop();
@@ -596,6 +597,18 @@ namespace SpacePlanning
                     areaAdded += PolygonUtility.AreaPolygon(blockPoly);
                     polyLeftList.Push(leftPoly);
                     blockPolyList.Add(blockPoly);
+
+                    areaCurrentKPU -= areaAdded;
+                    if (areaCurrentKPU < 50)
+                    {
+                        index += 1;
+                        if (index > areaEachKPUList.Count - 1) index = 0;
+                        distance = distanceList[index];
+                        areaCurrentKPU = areaEachKPUList[index];
+                      
+                    }
+
+
                     count += 1;
                     if (lineOptions.Count == 0) error = true;
                     else
@@ -715,7 +728,7 @@ namespace SpacePlanning
 
         //dept assignment new way
         [MultiReturn(new[] { "DeptData", "LeftOverPolys", "CirculationPolys", "OtherDeptMainPoly" })]
-        internal static Dictionary<string, object> DeptPlacer(List<DeptData> deptData, List<Polygon2d> polyList, List<double> kpuDepthList,
+        internal static Dictionary<string, object> DeptPlacer(List<DeptData> deptData, List<Polygon2d> polyList, List<double> kpuDepthList, List<double> kpuWidthList,
             double acceptableWidth = 20, double circulationFreq = 10, int designSeed = 5, bool noExternalWall = false, 
             bool unlimitedKPU = true, bool stackOptionsDept = false, bool stackOptionsProg = false, double parameter = 0.5)
         {
@@ -780,7 +793,10 @@ namespace SpacePlanning
 
             List<Polygon2d> leftOverBlocks = polyList;
             Polygon2d currentPoly = polyList[0];
-            List<double> areaEachKPUList = new List<double>();
+            List<double> areaEachKPUList = new List<double>();            
+            double areaKpu = 0;
+            for(int j = 0; j < kpuDepthList.Count; j++) areaEachKPUList.Add(kpuWidthList[j] * kpuDepthList[j]);
+            
             for (int i = 0; i < deptData.Count; i++)
             {
                 double thresDistance = 20;
