@@ -670,7 +670,7 @@ namespace SpacePlanning
                 foreach (KeyValuePair<double, ProgramData> p in sortedPrograms) sortedProgramData.Add(p.Value);
                 sortedProgramData.Reverse();
 
-                if (stackingOptions) sortedProgramData = RandomizeProgramList(sortedProgramData,designSeed);
+                //if (stackingOptions) sortedProgramData = RandomizeProgramList(sortedProgramData,designSeed);
                 deptItem.ProgramsInDept = sortedProgramData;
             }
             List<DeptData> newDept = deptData.Select(x => new DeptData(x)).ToList(); // example of deep copy

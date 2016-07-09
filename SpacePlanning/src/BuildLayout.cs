@@ -85,14 +85,15 @@ namespace SpacePlanning
             Random rand = new Random();
             bool deptPlaced = false;
             Random ran = new Random(designSeed);
-            bool stackOptions = deptData[0].StackingOptions;
+            bool stackOptionsDept = deptData[0].StackingOptions;
+            bool stackOptionsProg = deptData[0].ProgramsInDept[0].StackingOptions;
             while (deptPlaced == false && count < MAXCOUNT)//MAXCOUNT
             {
                 double parameter = BasicUtility.RandomBetweenNumbers(ran, 0.95, 0.35);
-                if (!stackOptions) parameter = 0;
+                if (!stackOptionsDept) parameter = 0;
                 //parameter = 0;
                 Trace.WriteLine("PLACE DEPT STARTS , Lets arrange dept again ++++++++++++++++ : " + count);
-                deptArrangement = DeptPlacer(deptData, buildingOutline, kpuDepth, acceptableWidth, circulationFreq, designSeed, noExternalWall, unlimitedKPU,stackOptions,parameter);
+                deptArrangement = DeptPlacer(deptData, buildingOutline, kpuDepth, acceptableWidth, circulationFreq, designSeed, noExternalWall, unlimitedKPU, stackOptionsDept, stackOptionsProg, parameter);
                 if(deptArrangement != null)
                 {
                     List<DeptData> deptDataUpdated =(List<DeptData>) deptArrangement["DeptData"];
@@ -434,7 +435,7 @@ namespace SpacePlanning
                 else
                 {
                     Dictionary<string, object> placedSecondaryProg = PlaceREGPrograms(deptData[i], recompute, minAllowedDim, checkAspectRatio);
-                    if (placedSecondaryProg != null) deptData[i].ProgramsInDept = (List<ProgramData>)placedSecondaryProg["ProgramData"];
+                    if (placedSecondaryProg != null)  deptData[i].ProgramsInDept = (List<ProgramData>)placedSecondaryProg["ProgramData"];
                     else deptData[i].ProgramsInDept = null;
                 }
               
@@ -687,7 +688,7 @@ namespace SpacePlanning
         [MultiReturn(new[] { "DeptData", "LeftOverPolys", "CirculationPolys", "OtherDeptMainPoly" })]
         internal static Dictionary<string, object> DeptPlacer(List<DeptData> deptData, List<Polygon2d> polyList, double kpuDepth,
             double acceptableWidth = 20, double circulationFreq = 10, int designSeed = 5, bool noExternalWall = false, 
-            bool unlimitedKPU = true, bool stackOptions = false,double parameter = 0.5)
+            bool unlimitedKPU = true, bool stackOptionsDept = false, bool stackOptionsProg = false, double parameter = 0.5)
         {
             if (deptData == null) { return null; }
             if (!ValidateObject.CheckPolyList(polyList)) return null;
@@ -765,9 +766,9 @@ namespace SpacePlanning
                     for (int k = 0; k < leftOverBlocks.Count; k++) areaLeftOverBlocks += PolygonUtility.AreaPolygon(leftOverBlocks[k]);
                     if (unlimitedKPU) areaNeeded = 0.75 * areaLeftOverBlocks;
                     //else areaNeeded = 6000;
-                    if(!stackOptions && areaNeeded> 0.75 * areaLeftOverBlocks) areaNeeded = 0.75 * areaLeftOverBlocks;
+                    if(!stackOptionsDept && areaNeeded> 0.75 * areaLeftOverBlocks) areaNeeded = 0.75 * areaLeftOverBlocks;
                     
-                    Dictionary<string, object> inpatientObject = AssignBlocksBasedOnDistance(leftOverBlocks, kpuDepth, areaNeeded, thresDistance, designSeed, noExternalWall,parameter, stackOptions);
+                    Dictionary<string, object> inpatientObject = AssignBlocksBasedOnDistance(leftOverBlocks, kpuDepth, areaNeeded, thresDistance, designSeed, noExternalWall,parameter, stackOptionsDept);
                     if (inpatientObject == null) return null;
                     List<Polygon2d> inpatienBlocks = (List<Polygon2d>)inpatientObject["PolyAfterSplit"];
                     leftOverBlocks = (List<Polygon2d>)inpatientObject["LeftOverPoly"];
@@ -792,6 +793,14 @@ namespace SpacePlanning
                     {
                         List<List<Polygon2d>> polySubDivs = new List<List<Polygon2d>>();
                         Point2d center = PolygonUtility.CentroidOfPolyList(leftOverPoly);
+                        if(stackOptionsProg)
+                        {
+                            double arealeft = 0;
+                            for (int j = 0; j < leftOverPoly.Count; j++) { arealeft += PolygonUtility.AreaPolygon(leftOverPoly[j]); }
+                            double upper = arealeft / 6, lower = arealeft / 12;
+                            acceptableWidth = BasicUtility.RandomBetweenNumbers(new Random(designSeed), upper, lower);
+                           
+                        }
                         polySubDivs = SplitObject.SplitRecursivelyToSubdividePoly(leftOverPoly, acceptableWidth, circulationFreq, ratio);
                         bool checkPoly1 = ValidateObject.CheckPolygon2dListOrtho(polySubDivs[0], 0.5);
                         bool checkPoly2 = ValidateObject.CheckPolygon2dListOrtho(polySubDivs[1], 0.5);
@@ -857,7 +866,15 @@ namespace SpacePlanning
             //added to compute area percentage for each dept
             double totalDeptArea = 0;
             for (int i = 0; i < UpdatedDeptData.Count; i++) totalDeptArea += UpdatedDeptData[i].DeptAreaProvided;
-            for (int i = 0; i < UpdatedDeptData.Count; i++) UpdatedDeptData[i].DeptAreaProportionAchieved = Math.Round((UpdatedDeptData[i].DeptAreaProvided / totalDeptArea), 3);
+            for (int i = 0; i < UpdatedDeptData.Count; i++)
+            {
+                UpdatedDeptData[i].DeptAreaProportionAchieved = Math.Round((UpdatedDeptData[i].DeptAreaProvided / totalDeptArea), 3);
+                if (stackOptionsProg)
+                {
+                    UpdatedDeptData[i].ProgramsInDept = ReadData.RandomizeProgramList(UpdatedDeptData[i].ProgramsInDept, designSeed);
+                }
+
+            }
 
             if (leftOverPoly.Count == 0) leftOverPoly = null;
             Trace.WriteLine("DEPT PLACE KPU ENDS +++++++++++++++++++++++++++++++");
