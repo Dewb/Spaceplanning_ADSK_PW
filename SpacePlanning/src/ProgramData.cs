@@ -31,10 +31,10 @@ namespace SpacePlanning
         private List<Polygon2d> _polyProgs;
         private int _adjacencyWeight;
         private double _combinedProgramWeight;
-
+        private bool _stackingOptions;
 
         internal ProgramData(int programID,string programName,string programDept,
-            int programQuant,double programUnitArea, int programPrefValue, List<string> programAdjList,List<Cell> programCell, double dimX, double dimY, string progType)
+            int programQuant,double programUnitArea, int programPrefValue, List<string> programAdjList,List<Cell> programCell, double dimX, double dimY, string progType, bool stackingOptions)
         {
             _progrID = programID;
             
@@ -49,6 +49,7 @@ namespace SpacePlanning
             _gridX = dimX;
             _gridY = dimY;
             _progType = progType;
+            _stackingOptions = stackingOptions;
 
             _combinedProgramWeight = _progPrefValue;
             _adjacencyWeight = 0;
@@ -73,6 +74,7 @@ namespace SpacePlanning
             _gridX = other._gridX;
             _gridY = other._gridY;
             _progType = other.ProgramType;
+            _stackingOptions = other._stackingOptions;
 
             _numCellAdded = other.NumberofCellsAdded;
             _areaGiven = other.ProgAreaProvided;
@@ -103,7 +105,13 @@ namespace SpacePlanning
         {
             get { return _progType; }
         }
-
+        /// <summary>
+        /// Program Stacking Options boolean value.
+        /// </summary>
+        internal bool StackingOptions
+        {
+            get { return _stackingOptions; }
+        }
 
         /// <summary>
         /// Polygon2d's assigned to each program.

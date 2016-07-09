@@ -39,7 +39,7 @@ namespace SpacePlanning
         /// <search>
         /// make data stack, dept data object, program data object
         /// </search>
-        public static List<DeptData> MakeDataStack(double circulationFactor = 1, int caseStudy = 0, string programDocumentPath = "")
+        public static List<DeptData> MakeDataStack(double circulationFactor = 1, int caseStudy = 0, string programDocumentPath = "", bool stackingOptionsDept = false, bool stackingOptionsProg =false, int designSeed = 0)
         {
             double dim = 5;
             StreamReader reader;
@@ -89,13 +89,13 @@ namespace SpacePlanning
                 //List<string> adjList = new List<string>();
                 //adjList.Add(values[8]);
                 ProgramData progData = new ProgramData(Convert.ToInt32(values[0]), values[1], values[2], Convert.ToInt32(Convert.ToDouble(values[3])),
-                    Convert.ToDouble(values[4]), Convert.ToInt32(values[6]), progAdjList, dummyCell, dim, dim,  Convert.ToString(values[7])); // prev multipled circulationfactor with unit area of prog
+                    Convert.ToDouble(values[4]), Convert.ToInt32(values[6]), progAdjList, dummyCell, dim, dim,  Convert.ToString(values[7]), stackingOptionsProg); // prev multipled circulationfactor with unit area of prog
                 programDataStack.Add(progData);
             }// end of for each statement
 
             List<string> deptNames = GetDeptNames(deptNameList);
             List<DeptData> deptDataStack = new List<DeptData>();
-            Dictionary<string, object> progAdjWeightObj = FindPreferredProgs(circulationFactor = 1, caseStudy = 0, programDocumentPath);
+            Dictionary<string, object> progAdjWeightObj = FindPreferredProgs(circulationFactor = 1, caseStudy = 0, programDocumentPath,stackingOptionsProg);
             List<int> adjWeightList = (List<int>)progAdjWeightObj["ProgAdjWeightList"];
             for (int i = 0; i < deptNames.Count; i++)
             {
@@ -107,10 +107,10 @@ namespace SpacePlanning
                         progInDept.Add(programDataStack[j]);
                     }
                 List<ProgramData> programBasedOnQuanity = MakeProgramListBasedOnQuantity(progInDept);
-                DeptData dept = new DeptData(deptNames[i], programBasedOnQuanity, circulationFactor, dim, dim);
+                DeptData dept = new DeptData(deptNames[i], programBasedOnQuanity, circulationFactor, dim, dim, stackingOptionsDept);
                 deptDataStack.Add(dept);
             }// end of for loop statement
-            Dictionary<string, object> programDocObj = FindPreferredDepts(circulationFactor, caseStudy, programDocumentPath);
+            Dictionary<string, object> programDocObj = FindPreferredDepts(circulationFactor, caseStudy, programDocumentPath,stackingOptionsDept);
             List<string> preferredDept = (List<string>)programDocObj["MostFrequentDeptSorted"];
             //sort the depts by high area
             deptDataStack = SortDeptData(deptDataStack, preferredDept);
@@ -120,7 +120,7 @@ namespace SpacePlanning
             for(int i = 0; i < deptDataStack.Count; i++) totalDeptArea += deptDataStack[i].DeptAreaNeeded;
             for (int i = 0; i < deptDataStack.Count; i++) deptDataStack[i].DeptAreaProportionNeeded = Math.Round((deptDataStack[i].DeptAreaNeeded / totalDeptArea), 3);
 
-            return SortProgramsByPrefInDept(deptDataStack);    
+            return SortProgramsByPrefInDept(deptDataStack, stackingOptionsProg, designSeed);    
 
         }
 
@@ -143,7 +143,7 @@ namespace SpacePlanning
         [MultiReturn(new[] { "ProgIdList", "ProgramList","DeptNameList", "ProgQuantList","AreaEachProgList",
             "ProgPrefValList","ProgAdjList", "DeptTopoList", "DeptTopoAdjacency" , "EachDeptAdjDeptList",
             "DeptTopListTotal", "DeptNamesUnique", "MostFrequentDept", "MostFrequentDeptSorted"})]
-        internal static Dictionary<string,object> FindPreferredDepts(double circulationFactor = 1, int caseStudy = 0, string programDocumentPath = "")
+        internal static Dictionary<string, object> FindPreferredDepts(double circulationFactor = 1, int caseStudy = 0, string programDocumentPath = "", bool stackingOptionsProg = false)
         {
             double dim = 5;
             StreamReader reader;
@@ -193,7 +193,7 @@ namespace SpacePlanning
                 List<Cell> dummyCell = new List<Cell> { new Cell(Point2d.ByCoordinates(0, 0), 0, 0, 0, true) };
               
                 ProgramData progData = new ProgramData(Convert.ToInt32(values[0]), values[1], values[2], Convert.ToInt32(Convert.ToDouble(values[3])),
-                    Convert.ToDouble(values[4]), Convert.ToInt32(values[6]), progAdjList, dummyCell, dim, dim, values[7]); // prev multipled circulationfactor with unit area of prog
+                    Convert.ToDouble(values[4]), Convert.ToInt32(values[6]), progAdjList, dummyCell, dim, dim, values[7], stackingOptionsProg); // prev multipled circulationfactor with unit area of prog
                 programDataStack.Add(progData);
             }// end of for each statement
             List<List<string>> deptTopList = MakeDeptTopology(progAdjList);
@@ -283,16 +283,13 @@ namespace SpacePlanning
 
             };
         }
-
-
-
-
+        
 
         //read embedded .csv file and make data stack
  
         [MultiReturn(new[] { "ProgIdList", "ProgramList","DeptNameList", "ProgQuantList","AreaEachProgList",
             "ProgPrefValList","ProgAdjList", "ProgAdjWeightList"})]
-        internal static Dictionary<string, object> FindPreferredProgs(double circulationFactor = 1, int caseStudy = 0, string programDocumentPath = "")
+        internal static Dictionary<string, object> FindPreferredProgs(double circulationFactor = 1, int caseStudy = 0, string programDocumentPath = "", bool stackingOptionsProg = false)
         {
             double dim = 5;
             StreamReader reader;
@@ -342,7 +339,7 @@ namespace SpacePlanning
                 List<Cell> dummyCell = new List<Cell> { new Cell(Point2d.ByCoordinates(0, 0), 0, 0, 0, true) };
 
                 ProgramData progData = new ProgramData(Convert.ToInt32(values[0]), values[1], values[2], Convert.ToInt32(Convert.ToDouble(values[3])),
-                    Convert.ToDouble(values[4]), Convert.ToInt32(values[6]), progAdjList, dummyCell, dim, dim, values[7]); // prev multipled circulationfactor with unit area of prog
+                    Convert.ToDouble(values[4]), Convert.ToInt32(values[6]), progAdjList, dummyCell, dim, dim, values[7], stackingOptionsProg); // prev multipled circulationfactor with unit area of prog
                 programDataStack.Add(progData);
             }// end of for each statement
 
@@ -645,7 +642,7 @@ namespace SpacePlanning
         }
 
         //sorts a program data inside dept data based on PREFERENCEPOINT 
-        internal static List<DeptData> SortProgramsByPrefInDept(List<DeptData> deptDataInp)
+        internal static List<DeptData> SortProgramsByPrefInDept(List<DeptData> deptDataInp, bool stackingOptions = false, int designSeed = 0)
         {
             double weight = 100;
             if (deptDataInp == null) return null;
@@ -672,13 +669,30 @@ namespace SpacePlanning
                 eps = 0;
                 foreach (KeyValuePair<double, ProgramData> p in sortedPrograms) sortedProgramData.Add(p.Value);
                 sortedProgramData.Reverse();
+
+                if (stackingOptions) sortedProgramData = RandomizeProgramList(sortedProgramData,designSeed);
                 deptItem.ProgramsInDept = sortedProgramData;
             }
             List<DeptData> newDept = deptData.Select(x => new DeptData(x)).ToList(); // example of deep copy
             return newDept;
         }
 
-         //sorts a deptdata based on area 
+        //randomize program data
+        internal static List<ProgramData> RandomizeProgramList(List<ProgramData> progList, int designSeed = 0)
+        {
+            if (progList == null) return null;
+            List<ProgramData> progListNew = progList.Select(x => new ProgramData(x)).ToList();
+            List<int> indices = new List<int>();
+            for (int i = 0; i < progList.Count; i++) indices.Add(i);
+            List<int> indicesRandom = BasicUtility.RandomizeList(indices, new Random(designSeed));
+            List<ProgramData> progListOut = new List<ProgramData>();
+            for (int i = 0; i < progListNew.Count; i++) progListOut.Add(progListNew[indicesRandom[i]]);
+            return progListOut;
+        }
+
+
+
+        //sorts a deptdata based on area 
         internal static List<DeptData> SortDeptData(List<DeptData> deptDataInp, List<string> preferredDept)
         {
 

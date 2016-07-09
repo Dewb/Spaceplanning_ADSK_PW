@@ -30,10 +30,11 @@ namespace SpacePlanning
         private double _cirFactor;
         private string _deptAbrv;
         private double _deptAdjacencyWeight;
+        private bool _stackingOptions;
 
 
         #region - internal constructor
-        internal DeptData(string deptName, List<ProgramData> programDataList, double circulationFactor, double dimX, double dimY)
+        internal DeptData(string deptName, List<ProgramData> programDataList, double circulationFactor, double dimX, double dimY, bool stackingOptions)
         {
             _deptName = deptName;
             _progDataList = programDataList;
@@ -52,6 +53,7 @@ namespace SpacePlanning
             _deptAreaProportionAchieved = 0;
             _deptAbrv = _deptName +" = " + _deptName.Substring(0, 2).ToUpper() + " @ " + _deptType;//_deptName.Split(' ').Select(s => s[0]).ToString();
             _deptAdjacencyWeight = 0;
+            _stackingOptions = stackingOptions;
 
         }
 
@@ -76,6 +78,7 @@ namespace SpacePlanning
             _areaGivenDept = other.DeptAreaProvided;
             _deptAbrv = other.DepartmentAbbrev;
             _deptAdjacencyWeight = other.DeptAdjacencyWeight;
+            _stackingOptions = other._stackingOptions;
 
             if (other.PolyAssignedToDept != null && other.PolyAssignedToDept.Count > 0) _polyDepts = other.PolyAssignedToDept;
             else _polyDepts = null;
@@ -101,6 +104,14 @@ namespace SpacePlanning
         {
             get { return _deptAdjacencyWeight; }
             set { _deptAdjacencyWeight = value; }
+        }
+
+        /// <summary>
+        /// Department Stacking Options boolean value.
+        /// </summary>
+        internal bool StackingOptions
+        {
+            get { return _stackingOptions; }
         }
 
         /// <summary>
