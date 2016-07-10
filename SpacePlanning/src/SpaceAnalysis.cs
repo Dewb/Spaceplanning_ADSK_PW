@@ -352,6 +352,7 @@ namespace SpacePlanning
             else { return VisualizeDeptProgramsIn2D(deptDataInp, height, transparency, colorScheme, colorProgramSeparate); }           
         }
 
+
         //Provides information related to program data
         /// <summary>
         /// Provides analytics on Program data after spaces has been assigned.
@@ -365,7 +366,7 @@ namespace SpacePlanning
         /// visualize program polgons, program polylines
         /// </search>
         [MultiReturn(new[] { "progPolygons", "progPolyOrigin", "progNameAsText" })]
-        public static Dictionary<string, object> VisualizeProgramPolyLinesAndOrigin(List<DeptData> deptData, double height =0, double heightPolylines = 0, bool fullProgramNames = true)
+        internal static Dictionary<string, object> VisualizeProgramPolyLinesAndOrigin2D(List<DeptData> deptData, double height = 0, double heightPolylines = 0, bool fullProgramNames = true)
         {
             if (deptData == null) return null;
             List<List<List<Polygon>>> polyDeptListMega = new List<List<List<Polygon>>>();
@@ -382,12 +383,12 @@ namespace SpacePlanning
                     List<Polygon2d> polyProg = progInDept[j].PolyAssignedToProg;
                     List<Point> ptCenterList = new List<Point>();
                     List<Polygon> polyList = new List<Polygon>();
-                   
+
                     for (int k = 0; k < polyProg.Count; k++)
                     {
                         if (!ValidateObject.CheckPoly(polyProg[k])) continue;
                         Point2d center2d = PolygonUtility.CentroidOfPoly(polyProg[k]);
-                        Point center = Point.ByCoordinates(center2d.X, center2d.Y,height+1);
+                        Point center = Point.ByCoordinates(center2d.X, center2d.Y, height + 1);
                         ptCenterList.Add(center);
                         double ht = heightPolylines;
                         if (i == 0) ht = height;
@@ -407,19 +408,74 @@ namespace SpacePlanning
                         {
                             nameDeptList.Add(progInDept[j].ProgramNameShort);
                         }
-                       
+
                     }
                 }
                 polyDeptListMega.Add(polyDeptList);
                 ptDeptListMega.Add(ptDeptList);
                 nameDeptListMega.Add(nameDeptList);
-            }            
+            }
             return new Dictionary<string, object>
             {
                 { "progPolygons", (polyDeptListMega) },
                 { "progPolyOrigin", (ptDeptListMega) },
                 { "progNameAsText", (nameDeptListMega) }
             };
+        }
+
+
+        //Provides information related to program data
+        /// <summary>
+        /// Provides analytics on Program data after spaces has been assigned.
+        /// </summary>
+        /// <param name="deptData">List of Department Data Object</param>
+        /// <param name="height">Z height of the geometry returned</param>
+        /// <returns name="progPolygons">Polygons representing programs.</returns>
+        /// <returns name="progPolyOrigin">Centroid of the polygons representing programs.</returns>
+        /// <returns name="progNameAsText">Name of the programs.</returns>
+        /// <search>
+        /// visualize program polgons, program polylines
+        /// </search>
+        [MultiReturn(new[] { "progPolygons", "progPolyOrigin", "progNameAsText" })]
+        internal static List<Dictionary<string, object>> VisualizeProgramPolyLinesAndOrigin3D(List<DeptData> deptDataInp, double height = 0, double heightPolylines = 0, bool fullProgramNames = true)
+        {
+            List<DeptData> deptData = deptDataInp;
+            List<Dictionary<string, object>> visObjList = new List<Dictionary<string, object>>();
+            deptDataInp = deptData.Select(x => new DeptData(x)).ToList(); // example of deep copy
+            List<List<Display.Display>> displayListAll = new List<List<Display.Display>>();
+            List<double> floorHeightList = deptDataInp[0].FloorHeightList;
+            for (int i = 0; i < floorHeightList.Count; i++)
+            {
+
+                Dictionary<string, object> displayObj = VisualizeProgramPolyLinesAndOrigin2D(deptDataInp, floorHeightList[i], floorHeightList[i]-0.1, fullProgramNames);
+                if (displayObj != null) visObjList.Add(displayObj);
+            }
+            return visObjList;
+        }
+
+        //Provides information related to program data
+        /// <summary>
+        /// Provides analytics on Program data after spaces has been assigned.
+        /// </summary>
+        /// <param name="deptData">List of Department Data Object</param>
+        /// <param name="height">Z height of the geometry returned</param>
+        /// <returns name="progPolygons">Polygons representing programs.</returns>
+        /// <returns name="progPolyOrigin">Centroid of the polygons representing programs.</returns>
+        /// <returns name="progNameAsText">Name of the programs.</returns>
+        /// <search>
+        /// visualize program polgons, program polylines
+        /// </search>
+        [MultiReturn(new[] { "progPolygons", "progPolyOrigin", "progNameAsText" })]
+        public static List<Dictionary<string, object>> VisualizeProgramPolyLinesAndOrigin(List<DeptData> deptDataInp, double height =0, double heightPolylines = 0, bool fullProgramNames = true)
+        {
+            List<DeptData> deptData = deptDataInp;
+            Dictionary<string, object> obj = new Dictionary<string, object>();
+            deptDataInp = deptData.Select(x => new DeptData(x)).ToList(); // example of deep copy
+            if (deptDataInp[0].Mode3D) { return VisualizeProgramPolyLinesAndOrigin3D(deptDataInp, height, heightPolylines, fullProgramNames); }
+            else { obj = VisualizeProgramPolyLinesAndOrigin2D(deptDataInp, height, heightPolylines, fullProgramNames); }
+            List<Dictionary<string, object>> objList = new List<Dictionary<string, object>>();
+            objList.Add(obj);
+            return objList;
         }
 
 
