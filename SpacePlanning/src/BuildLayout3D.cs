@@ -193,7 +193,10 @@ namespace SpacePlanning
             List<ProgramData> progDataNew = new List<ProgramData>();
             for (int i = 0; i < deptData.Count; i++)
             {
-                if (i == 0)
+                DeptData deptItem = deptData[i];
+                //if (i == 0)
+                if ((deptItem.DepartmentType.IndexOf(BuildLayout.KPU.ToLower()) != -1 ||
+                deptItem.DepartmentType.IndexOf(BuildLayout.KPU.ToUpper()) != -1))
                 {
                     Dictionary<string, object> placedPrimaryProg = BuildLayout.PlaceKPUPrograms(deptData[i].PolyAssignedToDept, deptData[i].ProgramsInDept, kpuProgramWidthList);
                     deptData[i].ProgramsInDept = (List<ProgramData>)placedPrimaryProg["ProgramData"];

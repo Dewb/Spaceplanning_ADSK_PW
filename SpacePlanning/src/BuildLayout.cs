@@ -91,6 +91,7 @@ namespace SpacePlanning
                 {
                     deptData[i].Mode3D = true;
                     deptData[i].FloorHeightList = heightList;
+                    deptData[i].NumDeptPerFloor = numDeptPerFloor;
                 }
             }
             if (deptData[0].Mode3D)

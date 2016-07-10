@@ -118,6 +118,7 @@ namespace SpacePlanning
         [MultiReturn(new[] { "DisplayGeomList" })]
         internal static Dictionary<string,object> ColorPrograms(List<DeptData> deptDataInp, double height = 0, int transparency = 255, int colorScheme = 0)
         {
+            double heightPlan = 0 + height;
             if (deptDataInp == null) return null;
             List<DeptData> deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy
             if (transparency < 0 || transparency > 255) transparency = 255;
@@ -135,8 +136,8 @@ namespace SpacePlanning
                 List<int> indicesRandomList = BasicUtility.RandomizeList(indicesList, ran);
                 for (int i = 0; i < colorList.Count; i++) { colorListSelected.Add(colorList[indicesRandomList[i]]); }
             }
-           
-            
+
+            //Color kpuColor = colorListSelected[0];
             List<List<List<Polygon2d>>> polyProgsList = new List<List<List<Polygon2d>>>();
             for (int i = 0; i < deptData.Count; i++)
             {
@@ -150,11 +151,21 @@ namespace SpacePlanning
             int index = 0;
             for (int i = 0; i < polyProgsList.Count; i++)
             {
+                bool kpuFound = false;
+                int indexHeight = deptData[i].DeptFloorLevel;
+                heightPlan = deptData[i].FloorHeightList[indexHeight] + height;
+
+                if ((deptData[i].DepartmentType.IndexOf(BuildLayout.KPU.ToLower()) != -1 ||
+                deptData[i].DepartmentType.IndexOf(BuildLayout.KPU.ToUpper()) != -1))
+                {
+                    kpuFound = true;
+                }
+
                 if (index > colorList.Count - 1) index = 0;
                 Color col = colorListSelected[index];
                 for (int j = 0; j < polyProgsList[i].Count; j++)
                 {
-                    if (i > 0)
+                    if (!kpuFound)
                     {
                         if (index > colorList.Count - 1) index = 0;
                         col = colorListSelected[index];
@@ -175,7 +186,7 @@ namespace SpacePlanning
                         try { srf = Surface.ByPerimeterPoints(ptNewList); }
                         catch { continue; }
 
-                        Geometry gm = srf.Translate(0, 0, height);
+                        Geometry gm = srf.Translate(0, 0, heightPlan);
                         Display.Display dis = Display.Display.ByGeometryColor(gm, col);
                         displayList.Add(dis);
                         //srfList.Add(srf);
@@ -283,17 +294,24 @@ namespace SpacePlanning
                 for (int j = 0; j < progsInDept.Count; j++) polyList.AddRange(progsInDept[j].PolyAssignedToProg);
                 polyProgsList.Add(polyList);
             }
+
+            Color kpuColor = colorListSelected[0];
             List<List<Surface>> srfListAll = new List<List<Surface>>();
             List<List<Display.Display>> displayListAll = new List<List<Display.Display>>();
             for (int i = 0; i < polyProgsList.Count; i++)
             {
+                int numDeptFloor = deptDataInp[i].NumDeptPerFloor;
                 List<Polygon2d> polyProgs = polyProgsList[i];
                 int indexHeight = deptDataInp[i].DeptFloorLevel;
                 heightPlan = deptDataInp[i].FloorHeightList[indexHeight] + height;
                 //heightPlan = 100;
-                int index = i;
-                if (index > colorList.Count) index = 0;
+                int index = i+1;
+                if (index > colorList.Count-1) index = 1;
                 Color col = colorListSelected[index];
+                DeptData deptItem = deptData[i];
+                //if (i == 0)
+                if ((deptItem.DepartmentType.IndexOf(BuildLayout.KPU.ToLower()) != -1 ||
+                deptItem.DepartmentType.IndexOf(BuildLayout.KPU.ToUpper()) != -1)) col = kpuColor;
                 List<Surface> srfList = new List<Surface>();
                 List<Display.Display> displayList = new List<Display.Display>();
                 for (int j = 0; j < polyProgs.Count; j++)
