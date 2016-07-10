@@ -76,7 +76,7 @@ namespace SpacePlanning
         [MultiReturn(new[] { "DeptData", "LeftOverPolys" })]//"CirculationPolys", "OtherDeptMainPoly" 
         public static Dictionary<string, object> PlaceDepartments(List<DeptData> deptData, List<Polygon2d> buildingOutline, List<double> kpuDepthList, List<double> kpuWidthList,
             double acceptableWidth, double polyDivision = 8, int designSeed = 50, bool noExternalWall = false, 
-            bool unlimitedKPU = true, bool mode3D = false, double totalBuildingHeight = 60, double avgFloorHeight = 15)
+            bool unlimitedKPU = true, bool mode3D = false, double totalBuildingHeight = 60, double avgFloorHeight = 15, int numDeptPerFloor = 2)
         {
             List<DeptData> deptDataInp = deptData;
             Dictionary<string, object> obj = new Dictionary<string, object>();
@@ -96,11 +96,11 @@ namespace SpacePlanning
             if (deptData[0].Mode3D)
             {
                 return BuildLayout3D.PlaceDepartments3D(deptData, buildingOutline, kpuDepthList, kpuWidthList, acceptableWidth,
-                                        polyDivision, designSeed, noExternalWall);
+                                        polyDivision, designSeed, noExternalWall,unlimitedKPU, numDeptPerFloor);
             }
             else {
                 return BuildLayout3D.PlaceDepartments2D(deptData, buildingOutline, kpuDepthList, kpuWidthList, acceptableWidth,
-                                        polyDivision, designSeed, noExternalWall);
+                                        polyDivision, designSeed, noExternalWall,unlimitedKPU);
             }  
         }
 

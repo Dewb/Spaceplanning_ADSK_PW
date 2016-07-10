@@ -36,7 +36,7 @@ namespace SpacePlanning
         [MultiReturn(new[] { "DeptData", "LeftOverPolys" })]//"CirculationPolys", "OtherDeptMainPoly" 
         public static Dictionary<string, object> PlaceDepartments3D(List<DeptData> deptData, List<Polygon2d> buildingOutline, List<double> kpuDepthList, List<double> kpuWidthList,
             double acceptableWidth, double polyDivision = 8, int designSeed = 50, bool noExternalWall = false,
-            bool unlimitedKPU = true, bool mode3D = false, double totalBuildingHeight = 60, double avgFloorHeight = 15)
+            bool unlimitedKPU = true, int numDeptPerFloor = 2)
         {
             Trace.WriteLine("Dept 3d mode");
             List<DeptData> deptDataInp = deptData;
@@ -47,7 +47,7 @@ namespace SpacePlanning
 
             //KPUDept
             //DeptData KPUDept = new DeptData(deptData[0]);
-            int number = 1, index = 1;
+            int index = 1;
             bool deptUpperLimit = false;
             List<List<DeptData>> deptRegPerFloorList = new List<List<DeptData>>();
             for (int i = 0; i < floorHeightList.Count; i++)            {
@@ -55,7 +55,8 @@ namespace SpacePlanning
                 DeptData KPUDept = new DeptData(deptData[0]);
                 KPUDept.DeptFloorLevel = i;
                 deptInFloor.Add(KPUDept);
-                for (int j = 0; j < number; j++)
+                if (numDeptPerFloor < 0 || numDeptPerFloor > 4) numDeptPerFloor = 2;
+                for (int j = 0; j < numDeptPerFloor; j++)
                 {
                     DeptData REGDept = new DeptData(deptData[index]);
                     REGDept.DeptFloorLevel = i;
@@ -81,7 +82,7 @@ namespace SpacePlanning
                 deptAll.AddRange(depInObj);
             }
             deptObj["DeptData"] = deptAll;
-            string test = "";
+            //string test = "";
             return deptObj;
 
         }
@@ -240,7 +241,7 @@ namespace SpacePlanning
                     if (depInObj[j].ProgramsInDept == null || depInObj[j].ProgramsInDept.Count < 1) continue;
                     for (int k = 0; k < depInObj[j].ProgramsInDept.Count; k++)
                     {
-                        depInObj[j].ProgramsInDept[k].ProgFloorLevel = i;
+                        depInObj[j].ProgramsInDept[k].ProgFloorLevel = depInObj[j].DeptFloorLevel;
                     }
                 }
                 deptObj["DeptData"] = depInObj;
