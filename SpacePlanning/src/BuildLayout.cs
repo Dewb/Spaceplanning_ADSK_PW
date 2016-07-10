@@ -70,16 +70,29 @@ namespace SpacePlanning
         /// <search>
         /// DeptData object, department arrangement on site
         /// </search>
-        [MultiReturn(new[] { "DeptData", "LeftOverPolys"})]//"CirculationPolys", "OtherDeptMainPoly" 
+        [MultiReturn(new[] { "DeptData", "LeftOverPolys" })]//"CirculationPolys", "OtherDeptMainPoly" 
         public static Dictionary<string, object> PlaceDepartments(List<DeptData> deptData, List<Polygon2d> buildingOutline, List<double> kpuDepthList, List<double> kpuWidthList,
             double acceptableWidth, double polyDivision = 8, int designSeed = 50, bool noExternalWall = false, 
-            bool unlimitedKPU = true)
+            bool unlimitedKPU = true, bool mode3D = false, double totalBuildingHeight = 60, double avgFloorHeight = 15)
         {
+         
+
             if (polyDivision >= 1 && polyDivision < 30) { SPACING = polyDivision; SPACING2 = polyDivision; }
             double circulationFreq = 8;
             List<DeptData> deptDataInp = deptData;
             deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy
-
+            List<double> heightList = new List<double>();
+            if (mode3D == true)
+            {
+                int numFloors = (int)Math.Floor(totalBuildingHeight / avgFloorHeight);
+                for (int i = 0; i < numFloors; i++) heightList.Add((i + 1) * avgFloorHeight);
+                Trace.WriteLine("Heightlist formed");
+                for(int i = 0; i < deptData.Count; i++)
+                {
+                    deptData[i].Mode3D = true;
+                    deptData[i].FloorHeightList = heightList;
+                }
+            }
             Dictionary<string, object> deptArrangement = new Dictionary<string, object>();
             double count = 0,eps = 5;            
             Random rand = new Random();

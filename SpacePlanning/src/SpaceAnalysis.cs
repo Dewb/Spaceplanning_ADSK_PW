@@ -116,8 +116,10 @@ namespace SpacePlanning
         }
 
         [MultiReturn(new[] { "DisplayGeomList" })]
-        internal static Dictionary<string,object> ColorPrograms(List<DeptData> deptDataInp, int height = 0, int transparency = 255, int colorScheme = 0)
+        internal static Dictionary<string,object> ColorPrograms(List<DeptData> deptDataInp, double height = 0, int transparency = 255, int colorScheme = 0)
         {
+            if (deptDataInp == null) return null;
+            List<DeptData> deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy
             if (transparency < 0 || transparency > 255) transparency = 255;
             // hard coded list of colors for 20 depts
             List<Color> colorList = ProvideColorList(transparency), colorListSelected = new List<Color>();
@@ -134,8 +136,7 @@ namespace SpacePlanning
                 for (int i = 0; i < colorList.Count; i++) { colorListSelected.Add(colorList[indicesRandomList[i]]); }
             }
            
-            if (deptDataInp == null) return null;
-            List<DeptData> deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy
+            
             List<List<List<Polygon2d>>> polyProgsList = new List<List<List<Polygon2d>>>();
             for (int i = 0; i < deptData.Count; i++)
             {
@@ -145,7 +146,7 @@ namespace SpacePlanning
                 polyProgsList.Add(polyList);
             }
             List<List<Surface>> srfListAll = new List<List<Surface>>();
-            List<Display.Display> displayListAll = new List<Display.Display>();
+            List<Display.Display> displayList = new List<Display.Display>();
             int index = 0;
             for (int i = 0; i < polyProgsList.Count; i++)
             {
@@ -176,7 +177,7 @@ namespace SpacePlanning
 
                         Geometry gm = srf.Translate(0, 0, height);
                         Display.Display dis = Display.Display.ByGeometryColor(gm, col);
-                        displayListAll.Add(dis);
+                        displayList.Add(dis);
                         //srfList.Add(srf);
                         srf.Dispose();
                         ptNewList.Clear();
@@ -186,6 +187,8 @@ namespace SpacePlanning
 
                 }
             }
+            List<List<Display.Display>> displayListAll = new List<List<Display.Display>>();
+            displayListAll.Add(displayList);
             return new Dictionary<string, object>
             {
                 { "DisplayGeomList", (displayListAll) }
@@ -244,16 +247,17 @@ namespace SpacePlanning
 
 
         //Provides information related to program data
-
         [MultiReturn(new[] { "DisplayGeomList" })]
-        public static Dictionary<string, object> VisualizeDeptPrograms(List<DeptData> deptDataInp, int height = 0, int transparency = 255, int colorScheme = 0, bool colorProgramSeparate = false)
+        internal static Dictionary<string, object> VisualizeDeptProgramsIn2D(List<DeptData> deptDataInp, double height = 0, int transparency = 255, int colorScheme = 0, bool colorProgramSeparate = false)
         {
+
+
             List<DeptData> deptData = deptDataInp;
             deptDataInp = deptData.Select(x => new DeptData(x)).ToList(); // example of deep copy
             if (colorProgramSeparate) return ColorPrograms(deptDataInp, height, transparency, colorScheme);
-         
+
             if (transparency < 0 || transparency > 255) transparency = 255;
-            
+
             List<int> indicesList = new List<int>();
             List<Color> colorList = ProvideColorList(transparency), colorListSelected = new List<Color>();
 
@@ -264,11 +268,9 @@ namespace SpacePlanning
             {
                 Random ran = new Random(colorScheme);
                 List<int> indicesRandomList = BasicUtility.RandomizeList(indicesList, ran);
-                for(int i = 0; i < colorList.Count; i++) { colorListSelected.Add(colorList[indicesRandomList[i]]); }
+                for (int i = 0; i < colorList.Count; i++) { colorListSelected.Add(colorList[indicesRandomList[i]]); }
             }
-
-
-
+            
             if (deptDataInp == null) return null;
             //List<DeptData> deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy
             List<List<Polygon2d>> polyProgsList = new List<List<Polygon2d>>();
@@ -283,8 +285,8 @@ namespace SpacePlanning
             List<List<Display.Display>> displayListAll = new List<List<Display.Display>>();
             for (int i = 0; i < polyProgsList.Count; i++)
             {
-                List<Polygon2d> polyProgs = polyProgsList[i];            
-               
+                List<Polygon2d> polyProgs = polyProgsList[i];
+
                 int index = i;
                 if (index > colorList.Count) index = 0;
                 Color col = colorListSelected[index];
@@ -297,28 +299,57 @@ namespace SpacePlanning
                     //polyReduced = PolygonUtility.CreateOrthoPoly(polyReduced);
                     List<Point2d> ptList = polyReduced.Points;
                     List<Point> ptNewList = new List<Point>();
-                    for (int k = 0; k < ptList.Count; k++) ptNewList.Add(Point.ByCoordinates(ptList[k].X, ptList[k].Y));                    
+                    for (int k = 0; k < ptList.Count; k++) ptNewList.Add(Point.ByCoordinates(ptList[k].X, ptList[k].Y));
                     Surface srf;
                     try { srf = Surface.ByPerimeterPoints(ptNewList); }
                     catch { continue; }
-         
+
                     Geometry gm = srf.Translate(0, 0, height);
                     Display.Display dis = Display.Display.ByGeometryColor(gm, col);
                     displayList.Add(dis);
                     //srfList.Add(srf);
                     srf.Dispose();
                     ptNewList.Clear();
-                    }
+                }
                 displayListAll.Add(displayList);
                 //srfListAll.Add(srfList);
-              
+
             }
-            
+
             return new Dictionary<string, object>
             {
                 { "DisplayGeomList", (displayListAll) }
             };
-            
+
+        }
+
+        [MultiReturn(new[] { "DisplayGeomList" })]
+        internal static Dictionary<string, object> VisualizeDeptProgramsIn3D(List<DeptData> deptDataInp, double height = 0, int transparency = 255, int colorScheme = 0, bool colorProgramSeparate = false)
+        {
+            List<DeptData> deptData = deptDataInp;
+            deptDataInp = deptData.Select(x => new DeptData(x)).ToList(); // example of deep copy
+            List<List<Display.Display>> displayListAll = new List<List<Display.Display>>();
+            List<double> floorHeightList = deptDataInp[0].FloorHeightList;
+            for (int i = 0; i < floorHeightList.Count; i++)
+            {
+                transparency -= (i+1) * 10;
+                Dictionary<string, object> displayObj = VisualizeDeptProgramsIn2D(deptDataInp, floorHeightList[i], transparency, colorScheme, colorProgramSeparate);
+                if(displayObj != null) displayListAll.AddRange((List<List<Display.Display>>)displayObj["DisplayGeomList"]); 
+            }
+            return new Dictionary<string, object>
+            {
+                { "DisplayGeomList", (displayListAll) }
+            };
+        }
+
+        //Provides information related to program data
+        [MultiReturn(new[] { "DisplayGeomList" })]
+        public static Dictionary<string, object> VisualizeDeptPrograms(List<DeptData> deptDataInp, double height = 0, int transparency = 255, int colorScheme = 0, bool colorProgramSeparate = false)
+        {
+            List<DeptData> deptData = deptDataInp;
+            deptDataInp = deptData.Select(x => new DeptData(x)).ToList(); // example of deep copy
+            if (deptDataInp[0].Mode3D) { return VisualizeDeptProgramsIn3D(deptDataInp, height, transparency, colorScheme, colorProgramSeparate); }
+            else { return VisualizeDeptProgramsIn2D(deptDataInp, height, transparency, colorScheme, colorProgramSeparate); }           
         }
 
         //Provides information related to program data

@@ -32,6 +32,9 @@ namespace SpacePlanning
         private double _deptAdjacencyWeight;
         private bool _stackingOptions;
 
+        private List<double> _flrHeightList;
+        private bool _mode3D;
+
 
         #region - internal constructor
         internal DeptData(string deptName, List<ProgramData> programDataList, double circulationFactor, double dimX, double dimY, bool stackingOptions)
@@ -54,6 +57,10 @@ namespace SpacePlanning
             _deptAbrv = _deptName +" = " + _deptName.Substring(0, 2).ToUpper() + " @ " + _deptType;//_deptName.Split(' ').Select(s => s[0]).ToString();
             _deptAdjacencyWeight = 0;
             _stackingOptions = stackingOptions;
+
+            _mode3D = false;
+            _flrHeightList = new List<double>();
+            _flrHeightList.Add(0);
 
         }
 
@@ -79,6 +86,8 @@ namespace SpacePlanning
             _deptAbrv = other.DepartmentAbbrev;
             _deptAdjacencyWeight = other.DeptAdjacencyWeight;
             _stackingOptions = other._stackingOptions;
+            _mode3D = other._mode3D;
+            _flrHeightList = other._flrHeightList;
 
             if (other.PolyAssignedToDept != null && other.PolyAssignedToDept.Count > 0) _polyDepts = other.PolyAssignedToDept;
             else _polyDepts = null;
@@ -95,6 +104,25 @@ namespace SpacePlanning
         {
             get { return _deptAreaProportion; }
             set { _deptAreaProportion = value; }
+        }
+
+        /// <summary>
+        /// 3d Mode of the program.
+        /// </summary>
+        public bool Mode3D
+        {
+            get { return _mode3D; }
+            set { _mode3D = value; }
+        }
+
+
+        /// <summary>
+        /// Floor HeightList
+        /// </summary>
+        public List<double> FloorHeightList
+        {
+            get { return _flrHeightList; }
+            set { _flrHeightList = value; }
         }
 
         /// <summary>

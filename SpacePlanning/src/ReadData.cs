@@ -212,7 +212,9 @@ namespace SpacePlanning
                 List<string> deptNameAdjacency = new List<string>();             
                 for (int j = 0; j < deptTopList[i].Count; j++)
                 {
-                    string depName = deptNameList[Convert.ToInt16(deptTopList[i][j])];
+                    string str = deptTopList[i][j];
+                    if (str.Count() < 1 || str == "" || str == " " || str == "\r" ) str = (i + j).ToString();
+                    string depName = deptNameList[Convert.ToInt16(str)];
                     deptNameAdjacency.Add(depName);
                 }
                 deptNameAdjacencyList.Add(deptNameAdjacency);
@@ -355,7 +357,9 @@ namespace SpacePlanning
             for (int i = 0; i < progAdjId.Count; i++)
             {
                 strList.Add(progAdjId[i]);
-                int value = Int32.Parse(progAdjId[i]);
+                int value = 0;
+                try { value = Int32.Parse(progAdjId[i]); }
+                catch { value = (int)BasicUtility.RandomBetweenNumbers(new Random(i), progAdjId.Count-1,0);  }
                 numIdList.Add(value);
                 progAdjId[i] = value.ToString();
             }

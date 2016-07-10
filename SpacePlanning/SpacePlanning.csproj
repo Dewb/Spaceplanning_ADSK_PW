@@ -95,6 +95,7 @@
   <ItemGroup>
     <Compile Include="src\BasicUtility.cs" />
     <Compile Include="src\Bubble Chart.cs" />
+    <Compile Include="src\BuildLayout3D.cs" />
     <Compile Include="src\Cell.cs" />
     <Compile Include="src\Circulation.cs" />
     <Compile Include="src\Dynamo Primitives\Geometry\DynamoGeometry.cs" />
