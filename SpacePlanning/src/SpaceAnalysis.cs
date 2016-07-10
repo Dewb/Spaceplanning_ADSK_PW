@@ -245,91 +245,14 @@ namespace SpacePlanning
             return colorList;
         }
 
-        //Provides information related to program data
-        [MultiReturn(new[] { "DisplayGeomList" })]
-        internal static Dictionary<string, object> VisualizeDeptProgramsOld(List<DeptData> deptDataInp, double height = 0, int transparency = 255, int colorScheme = 0, bool colorProgramSeparate = false)
-        {
-
-
-            List<DeptData> deptData = deptDataInp;
-            deptDataInp = deptData.Select(x => new DeptData(x)).ToList(); // example of deep copy
-            if (colorProgramSeparate) return ColorPrograms(deptDataInp, height, transparency, colorScheme);
-
-            if (transparency < 0 || transparency > 255) transparency = 255;
-
-            List<int> indicesList = new List<int>();
-            List<Color> colorList = ProvideColorList(transparency), colorListSelected = new List<Color>();
-
-            for (int i = 0; i < colorList.Count; i++) indicesList.Add(i);
-
-            if (colorScheme == 0) colorListSelected = colorList;
-            else
-            {
-                Random ran = new Random(colorScheme);
-                List<int> indicesRandomList = BasicUtility.RandomizeList(indicesList, ran);
-                for (int i = 0; i < colorList.Count; i++) { colorListSelected.Add(colorList[indicesRandomList[i]]); }
-            }
-
-            if (deptDataInp == null) return null;
-            //List<DeptData> deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy
-            List<List<Polygon2d>> polyProgsList = new List<List<Polygon2d>>();
-            for (int i = 0; i < deptDataInp.Count; i++)
-            {
-                List<ProgramData> progsInDept = deptDataInp[i].ProgramsInDept;
-                List<Polygon2d> polyList = new List<Polygon2d>();
-                if (progsInDept == null || progsInDept.Count < 1) continue;
-                for (int j = 0; j < progsInDept.Count; j++) polyList.AddRange(progsInDept[j].PolyAssignedToProg);
-                polyProgsList.Add(polyList);
-            }
-            List<List<Surface>> srfListAll = new List<List<Surface>>();
-            List<List<Display.Display>> displayListAll = new List<List<Display.Display>>();
-            for (int i = 0; i < polyProgsList.Count; i++)
-            {
-                List<Polygon2d> polyProgs = polyProgsList[i];
-                height = deptDataInp[i].DeptFloorLevel;
-                int index = i;
-                if (index > colorList.Count) index = 0;
-                Color col = colorListSelected[index];
-                List<Surface> srfList = new List<Surface>();
-                List<Display.Display> displayList = new List<Display.Display>();
-                for (int j = 0; j < polyProgs.Count; j++)
-                {
-                    Polygon2d polyReduced = new Polygon2d(polyProgs[j].Points);
-                    //polyReduced = PolygonUtility.PolyExtraEdgeRemove(polyReduced);
-                    //polyReduced = PolygonUtility.CreateOrthoPoly(polyReduced);
-                    List<Point2d> ptList = polyReduced.Points;
-                    List<Point> ptNewList = new List<Point>();
-                    for (int k = 0; k < ptList.Count; k++) ptNewList.Add(Point.ByCoordinates(ptList[k].X, ptList[k].Y));
-                    Surface srf;
-                    try { srf = Surface.ByPerimeterPoints(ptNewList); }
-                    catch { continue; }
-
-                    Geometry gm = srf.Translate(0, 0, height);
-                    Display.Display dis = Display.Display.ByGeometryColor(gm, col);
-                    displayList.Add(dis);
-                    //srfList.Add(srf);
-                    srf.Dispose();
-                    ptNewList.Clear();
-                }
-                displayListAll.Add(displayList);
-                //srfListAll.Add(srfList);
-
-            }
-
-            return new Dictionary<string, object>
-            {
-                { "DisplayGeomList", (displayListAll) }
-            };
-
-        }
-
+     
 
         //Provides information related to program data
         [MultiReturn(new[] { "DisplayGeomList" })]
         public static Dictionary<string, object> VisualizeDeptPrograms(List<DeptData> deptDataInp, double height = 0, int transparency = 255, int colorScheme = 0, bool colorProgramSeparate = false)
         {
 
-
+            double heightPlan = 0 + height;
             List<DeptData> deptData = deptDataInp;
             deptDataInp = deptData.Select(x => new DeptData(x)).ToList(); // example of deep copy
             if (colorProgramSeparate) return ColorPrograms(deptDataInp, height, transparency, colorScheme);
@@ -365,7 +288,9 @@ namespace SpacePlanning
             for (int i = 0; i < polyProgsList.Count; i++)
             {
                 List<Polygon2d> polyProgs = polyProgsList[i];
-                height = deptDataInp[i].DeptFloorLevel;
+                int indexHeight = deptDataInp[i].DeptFloorLevel;
+                heightPlan = deptDataInp[i].FloorHeightList[indexHeight] + height;
+                //heightPlan = 100;
                 int index = i;
                 if (index > colorList.Count) index = 0;
                 Color col = colorListSelected[index];
@@ -383,7 +308,7 @@ namespace SpacePlanning
                     try { srf = Surface.ByPerimeterPoints(ptNewList); }
                     catch { continue; }
 
-                    Geometry gm = srf.Translate(0, 0, height);
+                    Geometry gm = srf.Translate(0, 0, heightPlan);
                     Display.Display dis = Display.Display.ByGeometryColor(gm, col);
                     displayList.Add(dis);
                     //srfList.Add(srf);
@@ -596,14 +521,16 @@ namespace SpacePlanning
         [MultiReturn(new[] { "progPolygons", "progPolyOrigin", "progNameAsText" })]
         public static Dictionary<string, object> VisualizeProgramPolyLinesAndOrigin(List<DeptData> deptData, double height = 0, double heightPolylines = 0, bool fullProgramNames = true)
         {
+            double heightPlan = 0 + height;
             if (deptData == null) return null;
             List<List<List<Polygon>>> polyDeptListMega = new List<List<List<Polygon>>>();
             List<List<List<Point>>> ptDeptListMega = new List<List<List<Point>>>();
             List<List<string>> nameDeptListMega = new List<List<string>>();
             for (int i = 0; i < deptData.Count; i++)
             {
-                height = deptData[i].DeptFloorLevel;
-                heightPolylines = height - 0.2;
+                int indexHeight = deptData[i].DeptFloorLevel;
+                heightPlan = deptData[i].FloorHeightList[indexHeight] + height;
+                heightPolylines = heightPlan - 0.2;
                 List<ProgramData> progInDept = deptData[i].ProgramsInDept;
                 List<List<Polygon>> polyDeptList = new List<List<Polygon>>();
                 List<List<Point>> ptDeptList = new List<List<Point>>();
