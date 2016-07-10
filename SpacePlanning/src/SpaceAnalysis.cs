@@ -206,7 +206,7 @@ namespace SpacePlanning
             };
         }
 
-        internal static List<Color> ProvideColorList(int transparency = 255)
+        internal static List<Color> ProvideColorList(int transparency = 255, int opacity = 10)
         {
             // hard coded list of colors for 20 depts
             List<Color> colorList = new List<Color>();
@@ -256,11 +256,23 @@ namespace SpacePlanning
             return colorList;
         }
 
-     
+        internal static List<Color> SetTransparency(List<Color> colorList, int transparency = 255, int opacity = 20, int minValue = 20)
+        {
+            // change transparency
+            List<Color> colorChanged = new List<Color>();
+            for (int i = 0; i < colorList.Count; i++)
+            {
+                transparency -= opacity;
+                if (transparency < minValue || transparency > 255) transparency = 255;
+                Color col = colorList[i];
+                colorChanged.Add(Color.ByARGB(transparency, col.Red, col.Green, col.Blue));
+            }
+            return colorChanged;
+        }
 
         //Provides information related to program data
         [MultiReturn(new[] { "DisplayGeomList" })]
-        public static Dictionary<string, object> VisualizeDeptPrograms(List<DeptData> deptDataInp, double height = 0, int transparency = 255, int colorScheme = 0, bool colorProgramSeparate = false)
+        public static Dictionary<string, object> VisualizeDeptPrograms(List<DeptData> deptDataInp, double height = 0, int transparency = 255, int colorScheme = 0, bool colorProgramSeparate = false, int opacity = 10)
         {
 
             double heightPlan = 0 + height;
@@ -282,6 +294,9 @@ namespace SpacePlanning
                 List<int> indicesRandomList = BasicUtility.RandomizeList(indicesList, ran);
                 for (int i = 0; i < colorList.Count; i++) { colorListSelected.Add(colorList[indicesRandomList[i]]); }
             }
+
+
+            colorListSelected = SetTransparency(colorListSelected, transparency, opacity);
 
             if (deptDataInp == null) return null;
             //List<DeptData> deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy
@@ -424,7 +439,7 @@ namespace SpacePlanning
         }
 
         [MultiReturn(new[] { "DisplayGeomList" })]
-        internal static Dictionary<string, object> VisualizeDeptProgramsIn3D(List<DeptData> deptDataInp, double height = 0, int transparency = 255, int colorScheme = 0, bool colorProgramSeparate = false)
+        internal static Dictionary<string, object> VisualizeDeptProgramsIn3D(List<DeptData> deptDataInp, double height = 0, int transparency = 255, int colorScheme = 0, bool colorProgramSeparate = false, int opacity = 10)
         {
             List<DeptData> deptData = deptDataInp;
             deptDataInp = deptData.Select(x => new DeptData(x)).ToList(); // example of deep copy
@@ -432,7 +447,7 @@ namespace SpacePlanning
             List<double> floorHeightList = deptDataInp[0].FloorHeightList;
             for (int i = 0; i < floorHeightList.Count; i++)
             {
-                transparency -= (i+1) * 10;
+                transparency -= (i+1) * opacity;
                 Dictionary<string, object> displayObj = VisualizeDeptProgramsIn2D(deptDataInp, floorHeightList[i], transparency, colorScheme, colorProgramSeparate);
                 if(displayObj != null) displayListAll.AddRange((List<List<Display.Display>>)displayObj["DisplayGeomList"]); 
             }
@@ -564,7 +579,7 @@ namespace SpacePlanning
                     {
                         if (!ValidateObject.CheckPoly(polyProg[k])) continue;
                         Point2d center2d = PolygonUtility.CentroidOfPoly(polyProg[k]);
-                        Point center = Point.ByCoordinates(center2d.X, center2d.Y, height + 1);
+                        Point center = Point.ByCoordinates(center2d.X, center2d.Y, heightPlan + 1);
                         ptCenterList.Add(center);
                         double ht = heightPolylines;
                         if (i == 0) ht = height;
