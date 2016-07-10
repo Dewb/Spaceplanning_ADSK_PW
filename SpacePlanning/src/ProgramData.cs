@@ -33,6 +33,7 @@ namespace SpacePlanning
         private double _adjacencyWeight;
         private double _combinedProgramWeight;
         private bool _stackingOptions;
+        private int _floorLevel;
 
         internal ProgramData(int programID,string programName,string programDept,
             int programQuant,double programUnitArea, int programPrefValue, List<string> programAdjList,List<Cell> programCell, double dimX, double dimY, string progType, bool stackingOptions)
@@ -60,6 +61,7 @@ namespace SpacePlanning
             _CellsAssigned = new List<Cell>();
             _polyProgs = null;
             _progNameShort = ProgramNameShorten();
+            _floorLevel = 0;
         }
         
         internal ProgramData(ProgramData other)
@@ -85,6 +87,7 @@ namespace SpacePlanning
             _adjacencyWeight = other.AdjacencyWeight;
             _combinedProgramWeight = other.ProgramCombinedAdjWeight;
             _progNameShort = other.ProgramNameShort;
+            _floorLevel = other.ProgFloorLevel;
 
             if (other.PolyAssignedToProg != null) _polyProgs = other.PolyAssignedToProg;
             else _polyProgs = null;            
@@ -100,7 +103,14 @@ namespace SpacePlanning
             get { return _progName; }
             set { _progName = value; }
         }
-
+        /// <summary>
+        /// Floor Level of the program.
+        /// </summary>
+        public int ProgFloorLevel
+        {
+            get { return _floorLevel; }
+            set { _floorLevel = value; }
+        }
 
         /// <summary>
         /// Name of the program.

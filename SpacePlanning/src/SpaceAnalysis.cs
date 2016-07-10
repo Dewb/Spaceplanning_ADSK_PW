@@ -278,6 +278,7 @@ namespace SpacePlanning
             {
                 List<ProgramData> progsInDept = deptData[i].ProgramsInDept;
                 List<Polygon2d> polyList = new List<Polygon2d>();
+                if (progsInDept == null || progsInDept.Count < 1) continue;
                 for (int j = 0; j < progsInDept.Count; j++) polyList.AddRange(progsInDept[j].PolyAssignedToProg);
                 polyProgsList.Add(polyList);
             }
@@ -378,6 +379,7 @@ namespace SpacePlanning
                 List<List<Polygon>> polyDeptList = new List<List<Polygon>>();
                 List<List<Point>> ptDeptList = new List<List<Point>>();
                 List<string> nameDeptList = new List<string>();
+                if (progInDept == null || progInDept.Count < 1) continue;
                 for (int j = 0; j < progInDept.Count; j++)
                 {
                     List<Polygon2d> polyProg = progInDept[j].PolyAssignedToProg;

@@ -93,7 +93,7 @@ namespace SpacePlanning
                     deptData[i].FloorHeightList = heightList;
                 }
             }
-            if (deptDataInp[0].Mode3D)
+            if (deptData[0].Mode3D)
             {
                 return BuildLayout3D.PlaceDepartments3D(deptData, buildingOutline, kpuDepthList, kpuWidthList, acceptableWidth,
                                         polyDivision, designSeed, noExternalWall);
@@ -266,7 +266,7 @@ namespace SpacePlanning
                     Polygon2d currentPoly = polygonAvailable.Dequeue();
                     double areaPoly = PolygonUtility.AreaPolygon(currentPoly);
                     int compareArea = BasicUtility.CheckWithinRange(areaNeeded, areaPoly, eps);
-                    if (!checkAspectRatio && compareArea == 1) // current poly area is more =  compareArea == 1
+                    if (compareArea == 1) // current poly area is more =  compareArea == 1
                     {
                         Dictionary<string,object> splitObj = SplitObject.SplitByRatio(currentPoly, ratio);
                         if (splitObj != null)
@@ -846,6 +846,12 @@ namespace SpacePlanning
                     Trace.WriteLine("Dept playing : " + i);
                     newDeptData.DeptAreaProvided = AllDeptAreaAdded[i];
                     newDeptData.PolyAssignedToDept = AllDeptPolys[i];
+                    UpdatedDeptData.Add(newDeptData);
+                }
+                else
+                {
+                    newDeptData.DeptAreaProvided = 0;
+                    newDeptData.PolyAssignedToDept = null; 
                     UpdatedDeptData.Add(newDeptData);
                 }
             

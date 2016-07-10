@@ -38,17 +38,21 @@ namespace SpacePlanning
             double acceptableWidth, double polyDivision = 8, int designSeed = 50, bool noExternalWall = false,
             bool unlimitedKPU = true, bool mode3D = false, double totalBuildingHeight = 60, double avgFloorHeight = 15)
         {
+            Trace.WriteLine("Dept 3d mode");
             List<DeptData> deptDataInp = deptData;
             deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy
-            List<Dictionary<string, object>> visObjList = new List<Dictionary<string, object>>();
 
-            List<List<Display.Display>> displayListAll = new List<List<Display.Display>>();
             List<double> floorHeightList = deptDataInp[0].FloorHeightList;
             Dictionary<string, object> deptObj = new Dictionary<string, object>();
             for (int i = 0; i < floorHeightList.Count; i++)
             {
                 deptObj = PlaceDepartments2D(deptData, buildingOutline, kpuDepthList, kpuWidthList, acceptableWidth,
                                         polyDivision, designSeed, noExternalWall);
+                List<DeptData> deptDataList = (List<DeptData>)deptObj["DeptData"];
+                for (int j = 0; j < deptDataList.Count; j++) { deptDataList[j].DeptFloorLevel = i; }
+
+                List<DeptData> depInObj = deptDataList.Select(x => new DeptData(x)).ToList(); // example of deep copy
+                deptObj["DeptData"] = depInObj;
             }
             return deptObj;
 
@@ -193,6 +197,7 @@ namespace SpacePlanning
         [MultiReturn(new[] { "DeptData" })]
         public static Dictionary<string, object> PlacePrograms3D(List<DeptData> deptData, List<double> kpuProgramWidthList, double minAllowedDim = 5, int designSeed = 5, bool checkAspectRatio = false)
         {
+            Trace.WriteLine("Dept 3d mode");
             List<DeptData> deptDataInp = deptData;
             deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy
             List<double> floorHeightList = deptDataInp[0].FloorHeightList;
@@ -200,6 +205,18 @@ namespace SpacePlanning
             for (int i = 0; i < floorHeightList.Count; i++)
             {
                 deptObj = PlacePrograms2D(deptData, kpuProgramWidthList, minAllowedDim, designSeed, checkAspectRatio);
+                List<DeptData> deptDataList = (List<DeptData>)deptObj["DeptData"];
+                List<DeptData> depInObj = deptDataList.Select(x => new DeptData(x)).ToList(); // example of deep copy
+                for (int j = 0; j < depInObj.Count; j++)
+                {
+                    if (depInObj[j].ProgramsInDept == null || depInObj[j].ProgramsInDept.Count < 1) continue;
+                    for (int k = 0; k < depInObj[j].ProgramsInDept.Count; k++)
+                    {
+                        depInObj[j].ProgramsInDept[k].ProgFloorLevel = i;
+                    }
+                }
+                deptObj["DeptData"] = depInObj;
+
             }
             return deptObj;
 

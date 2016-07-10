@@ -34,6 +34,7 @@ namespace SpacePlanning
 
         private List<double> _flrHeightList;
         private bool _mode3D;
+        private int _floorLevel;
 
 
         #region - internal constructor
@@ -61,6 +62,7 @@ namespace SpacePlanning
             _mode3D = false;
             _flrHeightList = new List<double>();
             _flrHeightList.Add(0);
+            _floorLevel = 0;
 
         }
 
@@ -88,6 +90,7 @@ namespace SpacePlanning
             _stackingOptions = other._stackingOptions;
             _mode3D = other._mode3D;
             _flrHeightList = other._flrHeightList;
+            _floorLevel = other.DeptFloorLevel;
 
             if (other.PolyAssignedToDept != null && other.PolyAssignedToDept.Count > 0) _polyDepts = other.PolyAssignedToDept;
             else _polyDepts = null;
@@ -114,7 +117,14 @@ namespace SpacePlanning
             get { return _mode3D; }
             set { _mode3D = value; }
         }
-
+        /// <summary>
+        /// Floor Level of the department
+        /// </summary>
+        public int DeptFloorLevel
+        {
+            get { return _floorLevel; }
+            set { _floorLevel = value; }
+        }
 
         /// <summary>
         /// Floor HeightList
