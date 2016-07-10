@@ -44,16 +44,44 @@ namespace SpacePlanning
 
             List<double> floorHeightList = deptDataInp[0].FloorHeightList;
             Dictionary<string, object> deptObj = new Dictionary<string, object>();
+
+            //KPUDept
+            //DeptData KPUDept = new DeptData(deptData[0]);
+            int number = 1, index = 1;
+            bool deptUpperLimit = false;
+            List<List<DeptData>> deptRegPerFloorList = new List<List<DeptData>>();
+            for (int i = 0; i < floorHeightList.Count; i++)            {
+                List<DeptData> deptInFloor = new List<DeptData>();
+                DeptData KPUDept = new DeptData(deptData[0]);
+                KPUDept.DeptFloorLevel = i;
+                deptInFloor.Add(KPUDept);
+                for (int j = 0; j < number; j++)
+                {
+                    DeptData REGDept = new DeptData(deptData[index]);
+                    REGDept.DeptFloorLevel = i;
+                    deptInFloor.Add(REGDept);
+                    index += 1;
+                    //if (index > deptData.Count-1) { deptUpperLimit = true; break; }
+                    if (index > deptData.Count - 1) index = 1;
+                }
+                deptRegPerFloorList.Add(deptInFloor);
+                //if (deptUpperLimit) break;
+            }
+
+            List<DeptData> deptAll = new List<DeptData>();
             for (int i = 0; i < floorHeightList.Count; i++)
             {
-                deptObj = PlaceDepartments2D(deptData, buildingOutline, kpuDepthList, kpuWidthList, acceptableWidth,
+                // replaced deptData with deptRegPerFloorList[i]
+                deptObj = PlaceDepartments2D(deptRegPerFloorList[i], buildingOutline, kpuDepthList, kpuWidthList, acceptableWidth,
                                         polyDivision, designSeed, noExternalWall);
                 List<DeptData> deptDataList = (List<DeptData>)deptObj["DeptData"];
-                for (int j = 0; j < deptDataList.Count; j++) { deptDataList[j].DeptFloorLevel = i; }
-
+                //for (int j = 0; j < deptDataList.Count; j++) { deptDataList[j].DeptFloorLevel = i; }
                 List<DeptData> depInObj = deptDataList.Select(x => new DeptData(x)).ToList(); // example of deep copy
                 deptObj["DeptData"] = depInObj;
+                deptAll.AddRange(depInObj);
             }
+            deptObj["DeptData"] = deptAll;
+            string test = "";
             return deptObj;
 
         }

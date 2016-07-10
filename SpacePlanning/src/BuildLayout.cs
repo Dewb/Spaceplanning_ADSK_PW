@@ -851,7 +851,7 @@ namespace SpacePlanning
                 else
                 {
                     newDeptData.DeptAreaProvided = 0;
-                    newDeptData.PolyAssignedToDept = null; 
+                    newDeptData.PolyAssignedToDept = new List<Polygon2d>(); 
                     UpdatedDeptData.Add(newDeptData);
                 }
             
@@ -865,7 +865,10 @@ namespace SpacePlanning
                 UpdatedDeptData[i].DeptAreaProportionAchieved = Math.Round((UpdatedDeptData[i].DeptAreaProvided / totalDeptArea), 3);
                 if (stackOptionsProg)
                 {
-                    UpdatedDeptData[i].ProgramsInDept = ReadData.RandomizeProgramList(UpdatedDeptData[i].ProgramsInDept, designSeed);
+                    if (UpdatedDeptData[i].ProgramsInDept != null || UpdatedDeptData[i].ProgramsInDept.Count > 0)
+                    {
+                        UpdatedDeptData[i].ProgramsInDept = ReadData.RandomizeProgramList(UpdatedDeptData[i].ProgramsInDept, designSeed);
+                    }
                 }
 
             }
