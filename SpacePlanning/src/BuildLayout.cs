@@ -252,10 +252,10 @@ namespace SpacePlanning
         /// <param name="recompute">This value is used to restart computing the node every time its value is changed.</param>
         /// <returns></returns>
         [MultiReturn(new[] { "PolyAfterSplit", "ProgramData" })]
-        internal static Dictionary<string, object> PlaceREGPrograms(DeptData deptDataInp,double minAllowedDim = 5, bool checkAspectRatio = true)
+        internal static Dictionary<string, object> PlaceREGPrograms(DeptData deptDataInp,double minAllowedDim = 5, int designSeed = 10, bool checkAspectRatio = true)
         {
             if (deptDataInp == null) return null;
-
+            double ratio = 0.5;
             DeptData deptData = new DeptData(deptDataInp);
             List<Polygon2d> deptPoly = deptData.PolyAssignedToDept;
             List<ProgramData> progData = deptData.ProgramsInDept;
@@ -277,8 +277,9 @@ namespace SpacePlanning
             //Stack<Polygon2d> polygonAvailable = new Stack<Polygon2d>();
             Queue<Polygon2d> polygonAvailable = new Queue<Polygon2d>();
             for (int j = 0; j < deptPoly.Count; j++) { polygonAvailable.Enqueue(deptPoly[j]); }
-            double areaAssigned = 0, eps = 50;
+            double areaAssigned = 0, eps = 50, max = 0.73, min = 0.27;
             int count = 0, maxTry = 100;
+            Random ran = new Random(designSeed);
             for(int i = 0; i < progData.Count; i++)
             {
                 ProgramData progItem = progData[i];
@@ -286,12 +287,13 @@ namespace SpacePlanning
                 double areaNeeded = progItem.ProgAreaNeeded;
                 while (areaAssigned < areaNeeded && polygonAvailable.Count > 0)// && count < maxTry
                 {
+                    ratio = BasicUtility.RandomBetweenNumbers(ran, max, min);
                     Polygon2d currentPoly = polygonAvailable.Dequeue();
                     double areaPoly = PolygonUtility.AreaPolygon(currentPoly);
                     int compareArea = BasicUtility.CheckWithinRange(areaNeeded, areaPoly, eps);
-                    if (compareArea == 1) // current poly area is more =  compareArea == 1
+                    if (!checkAspectRatio && compareArea == 1) // current poly area is more =  compareArea == 1
                     {
-                        Dictionary<string,object> splitObj = SplitObject.SplitByRatio(currentPoly, 0.5);
+                        Dictionary<string,object> splitObj = SplitObject.SplitByRatio(currentPoly, ratio);
                         if (splitObj != null)
                         {
                             List<Polygon2d> polyAfterSplit = (List<Polygon2d>)splitObj["PolyAfterSplit"];
@@ -421,7 +423,7 @@ namespace SpacePlanning
         /// <param name="checkAspectRatio">Boolean value to toggle check aspect ratio of the programs.</param>
         /// <returns name="DeptData">Updated department data object.</returns>
         [MultiReturn(new[] { "DeptData" })]
-        public static Dictionary<string, object> PlacePrograms(List<DeptData> deptData, List<double> kpuProgramWidthList, double minAllowedDim = 5,bool checkAspectRatio = false)
+        public static Dictionary<string, object> PlacePrograms(List<DeptData> deptData, List<double> kpuProgramWidthList, double minAllowedDim = 5, int designSeed = 5,bool checkAspectRatio = false)
         {
             if (deptData == null) return null;
             List<DeptData> deptDataInp = deptData;
@@ -437,7 +439,7 @@ namespace SpacePlanning
                 }
                 else
                 {
-                    Dictionary<string, object> placedSecondaryProg = PlaceREGPrograms(deptData[i], minAllowedDim, checkAspectRatio);
+                    Dictionary<string, object> placedSecondaryProg = PlaceREGPrograms(deptData[i], minAllowedDim,designSeed, checkAspectRatio);
                     if (placedSecondaryProg != null)  deptData[i].ProgramsInDept = (List<ProgramData>)placedSecondaryProg["ProgramData"];
                     else deptData[i].ProgramsInDept = null;
                 }
@@ -457,37 +459,10 @@ namespace SpacePlanning
         
         #region - Private Methods  
 
-        [MultiReturn(new[] { "DeptPoly", "LeftOverPoly", "AllPolys", "AreaAdded", "AllNodes" })]
-        internal static Dictionary<string, object> AssignBlocksBasedOnRatio(double areaFactor, double areaAvailable, List<Polygon2d> polyList, double acceptableWidth = 10, double ratio = 0.5)
-        {
-            //if (!ValidateObject.CheckPolyList(polyList)) return null;           
-            //for (int i = 0; i < polyList.Count; i++) areaAvailable += PolygonUtility.AreaPolygon(polyList[i]);
-            Queue<Polygon2d> polyAvailable = new Queue<Polygon2d>();
-            List<Polygon2d> polysToDept = new List<Polygon2d>(), leftOverPoly = new List<Polygon2d>();
-            for (int i = 0; i < polyList.Count; i++) polyAvailable.Enqueue(polyList[i]);
-            double deptAreaTarget = areaFactor * areaAvailable, areaAssigned = 0;
-            //deptAreaTarget = areaFactor;
-            //double deptAreaTarget = deptItem.DeptAreaNeeded,areaAssigned = 0;
-            while (areaAssigned < deptAreaTarget && polyAvailable.Count > 0)
-            {
-                Polygon2d currentPoly = polyAvailable.Dequeue();
-                areaAssigned += PolygonUtility.AreaPolygon(currentPoly);
-                polysToDept.Add(currentPoly);
-            }
-            return new Dictionary<string, object>
-            {
-                { "DeptPoly", (polysToDept) },
-                { "LeftOverPoly", (polyAvailable.ToList()) },
-                { "AllPolys", (polyList)},
-                { "AreaAdded", (areaAssigned) },
-                { "AllNodes", (null)}
-            };
-        }
-
-
+       
 
         [MultiReturn(new[] { "DeptPoly", "LeftOverPoly", "AllPolys", "AreaAdded", "AllNodes" })]
-        internal static Dictionary<string, object> AssignBlocksBasedOnRatioTest(double deptAreaTarget, List<Polygon2d> polyList, double acceptableWidth = 10, double ratio = 0.5)
+        internal static Dictionary<string, object> AssignBlocksBasedOnRatio(double deptAreaTarget, List<Polygon2d> polyList)
         {
             if (!ValidateObject.CheckPolyList(polyList))
             {
@@ -747,6 +722,8 @@ namespace SpacePlanning
             bool prepareReg = false, kpuPlaced = false, noKpuMode = false;// to disable multiple KPU
             double  areaAvailable = 0, ratio = 0.6;
 
+            ratio = BasicUtility.RandomBetweenNumbers(new Random(designSeed), 0.76, 0.23);
+
             double totalAreaInPoly = 0;
             for (int i = 0; i < polyList.Count; i++) totalAreaInPoly += Math.Abs(PolygonUtility.AreaPolygon(polyList[i]));
 
@@ -880,7 +857,7 @@ namespace SpacePlanning
                     //areaFactor = BasicUtility.RandomBetweenNumbers(new Random(iteration), 0.8, 0.5); // adding random area factor, need fix later
                     //if(noKpuMode) areaFactor = BasicUtility.RandomBetweenNumbers(new Random(iteration), 0.6, 0.3); // when there is no kpu at all
 
-                    Dictionary<string, object> assignedByRatioObj = AssignBlocksBasedOnRatioTest(areaNeeded, leftOverPoly, acceptableWidth, 0.5);
+                    Dictionary<string, object> assignedByRatioObj = AssignBlocksBasedOnRatio(areaNeeded, leftOverPoly);
                     if (assignedByRatioObj == null)
                     {
                         //Trace.WriteLine("Null it is " + i);

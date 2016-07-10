@@ -96,7 +96,7 @@ namespace SpacePlanning
             List<string> deptNames = GetDeptNames(deptNameList);
             List<DeptData> deptDataStack = new List<DeptData>();
             Dictionary<string, object> progAdjWeightObj = FindPreferredProgs(circulationFactor = 1, caseStudy = 0, programDocumentPath,stackingOptionsProg);
-            List<int> adjWeightList = (List<int>)progAdjWeightObj["ProgAdjWeightList"];
+            List<double> adjWeightList = (List<double>)progAdjWeightObj["ProgAdjWeightList"];
             for (int i = 0; i < deptNames.Count; i++)
             {
                 List<ProgramData> progInDept = new List<ProgramData>();
@@ -359,7 +359,7 @@ namespace SpacePlanning
                 numIdList.Add(value);
                 progAdjId[i] = value.ToString();
             }
-            List<int> adjWeightList = new List<int>();
+            List<double> adjWeightList = new List<double>();
             for (int i=0;i< progIdList.Count; i++)
             {
                 int count = 0;
@@ -367,6 +367,8 @@ namespace SpacePlanning
                 adjWeightList.Add(count);
             }
 
+            adjWeightList = BasicUtility.NormalizeList(adjWeightList, 0, 10);
+            string x  = "";
             return new Dictionary<string, object>
             {
                  { "ProgIdList", (progIdList) },
@@ -644,7 +646,7 @@ namespace SpacePlanning
         //sorts a program data inside dept data based on PREFERENCEPOINT 
         internal static List<DeptData> SortProgramsByPrefInDept(List<DeptData> deptDataInp, bool stackingOptions = false, int designSeed = 0)
         {
-            double weight = 100;
+            double weight = 1; //
             if (deptDataInp == null) return null;
             List<DeptData> deptData = deptDataInp.Select(x => new DeptData(x)).ToList(); // example of deep copy
 

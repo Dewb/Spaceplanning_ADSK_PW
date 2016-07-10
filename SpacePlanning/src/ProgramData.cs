@@ -30,7 +30,7 @@ namespace SpacePlanning
         private double _areaGiven;
         private bool _IsAreaSatsifed;
         private List<Polygon2d> _polyProgs;
-        private int _adjacencyWeight;
+        private double _adjacencyWeight;
         private double _combinedProgramWeight;
         private bool _stackingOptions;
 
@@ -152,7 +152,7 @@ namespace SpacePlanning
         /// <summary>
         /// Computed Adjacency weight value of the program.
         /// </summary>
-        public int AdjacencyWeight
+        public double AdjacencyWeight
         {
             get { return _adjacencyWeight; }
             set { _adjacencyWeight = value; }
