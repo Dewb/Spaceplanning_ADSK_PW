@@ -2,7 +2,7 @@
 
 namespace stuffer
 {
-  public class Floor
+    public class Floor
   {
     private int m_level;
     private List<Region> m_regions;

@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace stuffer
 {
-  public class RangeAxis2d
+    public class RangeAxis2d
   {
     [DebuggerDisplay("{m_abscissa}, [({m_ordinate.Min}, {m_ordinate.Max}]")]
     public class Value

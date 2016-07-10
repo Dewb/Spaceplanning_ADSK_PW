@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace stuffer
 {
-  public class Grid2d
+  internal class Grid2d
   {
     private Outline2d m_outline;
     private GridBasis m_basis;

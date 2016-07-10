@@ -19,7 +19,7 @@ namespace SpacePlanning
         internal static Random RANGENERATE = new Random();
         internal static double RECURSE = 0;
         internal static Point2d REFERENCEPOINT = new Point2d(0,0);
-        internal static int MAXCOUNT = 3;
+        internal static int MAXCOUNT = 1;
 
         internal const string KPU = "kpu";
         internal const string REG = "regular";
@@ -178,7 +178,7 @@ namespace SpacePlanning
                 if (i > 2) index += 1;
                 if (index > primaryProgramWidthList.Count - 1) index = 0;
                 double primaryProgramWidth = primaryProgramWidthList[index];
-                while (setSpan > primaryProgramWidth && count < 2000)
+                while (setSpan > primaryProgramWidth && count < 200)
                 {
                     if (programDataRetrieved.Count == 0) programDataRetrieved.Enqueue(copyProgData);
                     //Trace.WriteLine("Keep going : " + count);

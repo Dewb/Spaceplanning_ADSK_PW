@@ -2,7 +2,7 @@
 
 namespace stuffer
 {
-  public class STLx
+    public class STLx
   {
     protected string m_name;
     protected int m_precision;

@@ -15,6 +15,7 @@ namespace SpacePlanning
         private int _progrID;
         private string _progName;
         private string _progDept;
+        private string _progNameShort;
         private int _progQuanity;
         private double _progUnitArea;
         private int _progPrefValue;
@@ -58,6 +59,7 @@ namespace SpacePlanning
             _IsAreaSatsifed = false;
             _CellsAssigned = new List<Cell>();
             _polyProgs = null;
+            _progNameShort = ProgramNameShorten();
         }
         
         internal ProgramData(ProgramData other)
@@ -82,6 +84,7 @@ namespace SpacePlanning
             _CellsAssigned = new List<Cell>();
             _adjacencyWeight = other.AdjacencyWeight;
             _combinedProgramWeight = other.ProgramCombinedAdjWeight;
+            _progNameShort = other.ProgramNameShort;
 
             if (other.PolyAssignedToProg != null) _polyProgs = other.PolyAssignedToProg;
             else _polyProgs = null;            
@@ -98,6 +101,14 @@ namespace SpacePlanning
             set { _progName = value; }
         }
 
+
+        /// <summary>
+        /// Name of the program.
+        /// </summary>
+        public string ProgramNameShort
+        {
+            get { return _progNameShort; }
+        }
         /// <summary>
         /// Type of Program (either KPU or Regular ).
         /// </summary>
@@ -267,6 +278,41 @@ namespace SpacePlanning
         {
             get { return _numCellAdded; }
             set { _numCellAdded = value; }
+        }
+
+        internal string ProgramNameShorten()
+        {
+
+            int number = 6;
+            bool hasHash = false;
+            
+            if (_progName.IndexOf("#") != -1)
+            {
+                hasHash = true;
+
+            }
+            string[] str = _progName.Split(' ');
+            string part = "";
+            for (int i = 0; i < str.Length; i++)
+            {
+                if (i == 0) number = 7;
+                else number = 4;
+                if (i < 2)
+                {
+                    if (str[i].Length > number) part += str[i].Substring(0, number - 1) + " ";
+                    else part += str[i];
+                }else
+                {
+                    //part += str[i] + " ";
+                }            
+                
+            }
+
+            //part += " " + str[str.Length-2];
+            part += " @" + str[str.Length-1];
+            //if (hasHash) part  += " ##";
+            return part;
+         
         }
 
         public double CurrentAreaNeeds

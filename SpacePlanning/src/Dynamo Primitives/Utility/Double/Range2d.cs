@@ -4,7 +4,7 @@ using System.Diagnostics;
 namespace stuffer
 {
   [DebuggerDisplay("[({m_x.Min}, {m_y.Min}) - ({m_x.Max}, {m_y.Max})]")]
-  public class Range2d
+    public class Range2d
   {
     private Range1d m_x;
     private Range1d m_y;

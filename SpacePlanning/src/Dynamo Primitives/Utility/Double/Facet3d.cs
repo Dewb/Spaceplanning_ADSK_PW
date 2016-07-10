@@ -1,6 +1,6 @@
 ﻿namespace stuffer
 {
-  public class Facet3d
+    public class Facet3d
   {
     private Point3d m_p0;
     private Point3d m_p1;

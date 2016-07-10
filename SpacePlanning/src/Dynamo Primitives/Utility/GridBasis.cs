@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace stuffer
 {
-  public class GridBasis
+    public class GridBasis
   {
     ///////////////////////////////////////////////////////////////////////////////////////
     // Internals

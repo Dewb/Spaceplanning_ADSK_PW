@@ -1,6 +1,6 @@
 ﻿namespace stuffer
 {
-  public class Rect2i
+    public class Rect2i
   {
     protected Point2i m_tl;
     protected Point2i m_br;

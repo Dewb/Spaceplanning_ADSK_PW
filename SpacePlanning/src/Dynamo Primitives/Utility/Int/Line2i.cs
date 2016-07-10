@@ -1,6 +1,6 @@
 ﻿namespace stuffer
 {
-  public class Line2i
+    public class Line2i
   {
     private Point2i m_start;
     private Point2i m_end;

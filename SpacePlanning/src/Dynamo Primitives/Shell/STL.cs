@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace stuffer
 {
-  public class STL : STLx
+    public class STL : STLx
   {
     Range3d m_bbox;
     List<Facet3d> m_facets;

@@ -2,7 +2,7 @@
 
 namespace stuffer
 {
-  public class Bag
+    public class Bag
   {
     private Dictionary<string, object> m_data;
 

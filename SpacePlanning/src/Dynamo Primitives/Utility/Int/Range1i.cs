@@ -1,6 +1,6 @@
 ﻿namespace stuffer
 {
-  public class Range1i
+    internal class Range1i
   {
     protected int m_low;
     protected int m_high;

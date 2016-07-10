@@ -1,6 +1,6 @@
 ﻿namespace stuffer
 {
-  public class Plane3d
+  internal class Plane3d
   {
     private Point3d m_origin;
     private Vector3d m_normal;

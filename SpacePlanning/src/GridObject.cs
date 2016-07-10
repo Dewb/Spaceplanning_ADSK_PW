@@ -473,7 +473,7 @@ namespace SpacePlanning
         {
             Trace.WriteLine("FORM BUILD OUTLINE STARTS+++++++++++++++++++++++++");
             if (designSeed < 1) designSeed = 1;
-            int count = 0, maxTry = 3;
+            int count = 0, maxTry = 1;
             bool cellRefine = false;
             int scanResolution = 8;
             bool worked = false;

@@ -2,7 +2,7 @@
 
 namespace stuffer
 {
-  public class Design
+  internal class Design
   {
     private List<Space> m_spaces;
     private List<Mesh> m_meshes;

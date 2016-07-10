@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace stuffer
 {
-  public class STLxGrids : STLx
+  internal class STLxGrids : STLx
   {
     List<double> m_heights;
     List<Grid2d> m_grids;

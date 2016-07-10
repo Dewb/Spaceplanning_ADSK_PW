@@ -1,6 +1,6 @@
 ﻿namespace stuffer
 {
-  public class Region
+    public class Region
   {
     private Floor m_floor;
     private Rect2i m_rect;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace stuffer
 {
-  public class Outline2d
+    public class Outline2d
   {
     List<Polygon2d> m_polygons;
     Range2d m_bbox;

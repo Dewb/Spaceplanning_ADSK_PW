@@ -1,6 +1,6 @@
 ﻿namespace stuffer
 {
-  public class Mesh
+  internal class Mesh
   {
     private string m_name;
     private string m_url;

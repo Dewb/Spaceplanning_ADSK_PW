@@ -334,7 +334,7 @@ namespace SpacePlanning
         /// visualize program polgons, program polylines
         /// </search>
         [MultiReturn(new[] { "progPolygons", "progPolyOrigin", "progNameAsText" })]
-        public static Dictionary<string, object> VisualizeProgramPolyLinesAndOrigin(List<DeptData> deptData, double height =0, double heightPolylines = 0 )
+        public static Dictionary<string, object> VisualizeProgramPolyLinesAndOrigin(List<DeptData> deptData, double height =0, double heightPolylines = 0, bool fullProgramNames = true)
         {
             if (deptData == null) return null;
             List<List<List<Polygon>>> polyDeptListMega = new List<List<List<Polygon>>>();
@@ -365,7 +365,19 @@ namespace SpacePlanning
                     }
                     polyDeptList.Add(polyList);
                     ptDeptList.Add(ptCenterList);
-                    nameDeptList.Add(progInDept[j].ProgramName);
+                    if (fullProgramNames) nameDeptList.Add(progInDept[j].ProgramName);
+                    else
+                    {
+                        if (progInDept[j].ProgramName.IndexOf("#") != -1)
+                        {
+                            nameDeptList.Add(progInDept[j].ProgramNameShort + " ##");
+                        }
+                        else
+                        {
+                            nameDeptList.Add(progInDept[j].ProgramNameShort);
+                        }
+                       
+                    }
                 }
                 polyDeptListMega.Add(polyDeptList);
                 ptDeptListMega.Add(ptDeptList);

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace stuffer
 {
-  public class Shell
+    public class Shell
   {
     private STL m_stl;
 

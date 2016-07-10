@@ -2,7 +2,7 @@
 
 namespace stuffer
 {
-  public class Building
+  internal class Building
   {
     private SortedList<int, Floor> m_floors;
 

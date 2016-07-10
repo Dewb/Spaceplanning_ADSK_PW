@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace stuffer
 {
-  public class PointAxis2d
+    public class PointAxis2d
   {
     [DebuggerDisplay("{m_abscissa}, [{m_ordinate}]")]
     public class Value

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace stuffer
 {
-  public class STLxOutlines : STLx
+  internal class STLxOutlines : STLx
   {
     List<double> m_heights;
     List<Outline2d> m_outlines;

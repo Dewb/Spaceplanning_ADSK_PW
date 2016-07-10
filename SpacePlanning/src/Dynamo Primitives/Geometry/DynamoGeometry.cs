@@ -29,6 +29,17 @@ namespace stuffer
                 Point.ByCoordinates(line.EndPoint.X, line.EndPoint.Y, line.EndPoint.Z));
         }
 
+        public static Polygon PolygonByPolygon2d(Polygon2d poly)
+        {
+            if (poly == null) return null;
+            List<Point> ptList = new List<Point>();
+            for(int i = 0; i<poly.Points.Count; i++)
+            {
+                ptList.Add(Point.ByCoordinates(poly.Points[i].X, poly.Points[i].Y));
+            }
+            return Polygon.ByPoints(ptList);
+        }
+
 
         //convert point to point2dList
         internal static List<Point2d> PointtoPoint2D(List<Point> pointList)
