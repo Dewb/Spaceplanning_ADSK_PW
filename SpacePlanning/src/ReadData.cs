@@ -41,19 +41,7 @@ namespace SpacePlanning
         /// </search>
         public static List<DeptData> MakeDataStack(double circulationFactor = 1, int caseStudy = 0, string programDocumentPath = "", bool stackingOptionsDept = false, bool stackingOptionsProg =false, int designSeed = 0)
         {
-            double dim = 5;
-            StreamReader reader;
-            List<string> progIdList = new List<string>();
-            List<string> programList = new List<string>();
-            List<string> deptNameList = new List<string>();
-            List<string> progQuantList = new List<string>();
-            List<string> areaEachProgList = new List<string>();
-            List<string> prefValProgList = new List<string>();
-            List<string> progAdjList = new List<string>();
 
-            List<List<string>> dataStack = new List<List<string>>();
-            List<ProgramData> programDataStack = new List<ProgramData>();
-            Stream res;
             if (programDocumentPath == "")
             {               
                 //string[] csvText = Properties.Resources.PROGRAMCSV.Split('\n'); 
@@ -67,12 +55,31 @@ namespace SpacePlanning
                 reader = new StreamReader(res);
             }
             else reader = new StreamReader(File.OpenRead(@programDocumentPath));
-            int readCount = 0;
+            string programDocumentString = reader.ReadToEnd();
+
+            return MakeDataStackFromString(circulationFactor, programDocumentString, stackingOptionsDept, stackingOptionsProg, designSeed);
+        }
+
+        public static List<DeptData> MakeDataStackFromString(double circulationFactor = 1, string programDocumentString = "", bool stackingOptionsDept = false, bool stackingOptionsProg =false, int designSeed = 0)
+        {   
+
+            double dim = 5;
+            StreamReader reader;
+            List<string> progIdList = new List<string>();
+            List<string> programList = new List<string>();
+            List<string> deptNameList = new List<string>();
+            List<string> progQuantList = new List<string>();
+            List<string> areaEachProgList = new List<string>();
+            List<string> prefValProgList = new List<string>();
+            List<string> progAdjList = new List<string>();
+
+            List<List<string>> dataStack = new List<List<string>>();
+            List<ProgramData> programDataStack = new List<ProgramData>();
+            Stream res;
             
+            int readCount = 0;
        
-            //StreamReader reader = new StreamReader(res);
-            string docInfo = reader.ReadToEnd();
-            string[] csvText = docInfo.Split('\n');
+            string[] csvText = programDocumentString.Split('\n');
             Trace.WriteLine(csvText);
             foreach (string s in csvText)
             {
